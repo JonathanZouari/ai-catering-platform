@@ -34,7 +34,7 @@
   --color-bubble-user: #EFE3D6;     /* user chat bubble */
   --color-plate: #F3D9BF;           /* scroll-built table plate */
   --color-line: #E8D6C3;            /* hairlines, card borders */
-  --color-input-border: #B9A493;    /* form field border (3:1 non-text contrast) */
+  --color-input-border: #9A8574;    /* form field border, 3.5:1 on white (WCAG 1.4.11 needs 3:1 for non-text components) */
 
   /* Spacing (4px scale) */
   --space-1: 4px;
