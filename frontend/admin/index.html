@@ -1,17 +1,85 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business dashboard</title>
-  <link rel="stylesheet" href="/css/base.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>לוח בקרה לעסק</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-  <main>
-    <h1>Business dashboard</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
+<a class="skip-link" href="#main">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="wrap">
+    <!-- TEMPORARY brand name placeholder (OPEN_DECISIONS #20) -->
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>שולחן ערוך</a>
+    <nav aria-label="ניווט ראשי">
+      <ul class="nav">
+      <li><a href="/">חזרה לאתר</a></li>
+      <li><a href="/admin/" aria-current="page">לוח בקרה</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main" class="inner">
+  <div class="wrap">
+    <div class="page-head">
+      <p class="eyebrow">אזור בעל העסק</p>
+      <h1>לוח בקרה לעסק</h1>
+      <p>מסכי הניהול A1 עד A5 ייבנו בשלב מאוחר יותר. בינתיים זו תצוגה מקדימה של המבנה, ללא נתונים וללא פעולות.</p>
+    </div>
+
+    <ul class="admin-grid" aria-label="מסכי ניהול מתוכננים">
+      <li>
+        <section class="card admin-card" aria-labelledby="a1-title">
+          <span class="code" aria-hidden="true">A1</span>
+          <h2 id="a1-title" class="h3-size">ניהול הזמנות</h2>
+          <p>סינון לפי סטטוס, רשימת בקשות עם תאריך, מספר אורחים וסכום, ואישור או דחייה עם הערה.</p>
+          <p class="status status-draft">בשלב מאוחר יותר</p>
+        </section>
+      </li>
+      <li>
+        <section class="card admin-card" aria-labelledby="a2-title">
+          <span class="code" aria-hidden="true">A2</span>
+          <h2 id="a2-title" class="h3-size">מנות וקטגוריות</h2>
+          <p>הוספה ועריכה של מנות, תמונות, סימונים תזונתיים ואלרגנים, כולל אפשרות מפורשת של "לא ידוע".</p>
+          <p class="status status-draft">בשלב מאוחר יותר</p>
+        </section>
+      </li>
+      <li>
+        <section class="card admin-card" aria-labelledby="a3-title">
+          <span class="code" aria-hidden="true">A3</span>
+          <h2 id="a3-title" class="h3-size">תמחור</h2>
+          <p>יחידת תמחור, מחיר ליחידה ותיאור היחידה לכל מנה, עם תצוגה מרוכזת.</p>
+          <p class="status status-draft">בשלב מאוחר יותר</p>
+        </section>
+      </li>
+      <li>
+        <section class="card admin-card" aria-labelledby="a4-title">
+          <span class="code" aria-hidden="true">A4</span>
+          <h2 id="a4-title" class="h3-size">זמינות</h2>
+          <p>לוח שנה של תאריכים חסומים.</p>
+          <p class="status status-draft">בשלב מאוחר יותר</p>
+        </section>
+      </li>
+      <li>
+        <section class="card admin-card" aria-labelledby="a5-title">
+          <span class="code" aria-hidden="true">A5</span>
+          <h2 id="a5-title" class="h3-size">חלונות זמן ואזורי משלוח</h2>
+          <p>חלונות זמן לפי יום בשבוע ולפי משלוח או איסוף, ואזורי משלוח עם דמי משלוח.</p>
+          <p class="status status-draft">בשלב מאוחר יותר</p>
+        </section>
+      </li>
+    </ul>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 · לוח בקרה לעסק</p>
+    <p class="server-status">מצב שרת: <span id="status" aria-live="polite">בודק…</span></p>
+    <a href="/">חזרה לאתר</a>
+  </div>
+</footer>
   <script type="module">
     import { api } from "/js/api.js";
     const el = document.getElementById("status");

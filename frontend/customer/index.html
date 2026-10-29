@@ -1,17 +1,407 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
-  <link rel="stylesheet" href="/css/base.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תכנון אירוע והזמנה</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-  <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
+<a class="skip-link" href="#main">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="wrap">
+    <!-- TEMPORARY brand name placeholder (OPEN_DECISIONS #20) -->
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>שולחן ערוך</a>
+    <nav aria-label="ניווט ראשי">
+      <ul class="nav">
+      <li class="nav-hide-sm"><a href="/">ראשי</a></li>
+      <li><a href="#event">תכנון אירוע</a></li>
+      <li><a href="#menu">תפריט</a></li>
+      <li><a href="#assistant">העוזר</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main" class="inner">
+  <div class="wrap">
+    <div class="page-head">
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="stepper">
+          <li><a href="#event"><span><span class="num">1</span> <span class="label-long">· </span>פרטי האירוע</span></a></li>
+          <li><a href="#menu"><span><span class="num">2</span> <span class="label-long">· </span>תפריט</span></a></li>
+          <li><a href="#summary"><span><span class="num">3</span> <span class="label-long">· </span>סיכום ההזמנה</span></a></li>
+          <li><a href="#quote"><span><span class="num">4</span> <span class="label-long">· </span>הצעת מחיר</span></a></li>
+        </ol>
+      </nav>
+      <h1>תכנון האירוע שלכם</h1>
+      <p>פרטי האירוע, בניית התפריט, סיכום ושליחת בקשה להצעת מחיר. אפשר לשנות הכול עד שליחת הבקשה.</p>
+    </div>
+
+    <!-- C1: event setup -->
+    <section class="flow-section" id="event" aria-labelledby="event-title">
+      <div class="section-head">
+        <p class="fine">שלב 1 מתוך 4</p>
+        <h2 id="event-title">ספרו לנו על האירוע</h2>
+        <p>הפרטים קובעים את הכמויות ואת המחיר. אפשר לשנות הכול עד שליחת הבקשה.</p>
+      </div>
+
+      <div class="event-layout">
+        <form class="form-card" action="/customer/#menu" method="get" id="event-form">
+          <fieldset>
+            <legend>סוג האירוע</legend>
+            <div class="chips">
+            <label class="chip"><input type="radio" name="type" value="bar-mitzvah">בר/בת מצווה</label>
+            <label class="chip"><input type="radio" name="type" value="shabbat">שבת וחג</label>
+            <label class="chip"><input type="radio" name="type" value="birthday" checked>יום הולדת</label>
+            <label class="chip"><input type="radio" name="type" value="family">אירוע משפחתי</label>
+            </div>
+          </fieldset>
+
+          <div class="field-row">
+            <div>
+              <label class="field-label" for="date">תאריך האירוע</label>
+              <input class="input" type="date" id="date" name="date" value="2026-12-17" min="2026-11-05" aria-describedby="date-hint" required>
+              <p class="hint" id="date-hint">תאריכים תפוסים אינם זמינים לבחירה. הזמנה עד 7 ימים מראש.</p>
+            </div>
+            <div>
+              <label class="field-label" for="slot">שעת הגעה</label>
+              <select class="input" id="slot" name="slot">
+                <option>11:00 - 13:00</option>
+                <option selected>17:00 - 19:00</option>
+                <option>19:00 - 21:00</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div>
+              <label class="field-label" for="adults">מספר אורחים (מבוגרים)</label>
+              <input class="input input-number" type="number" id="adults" name="adults" value="32" min="10" max="300" inputmode="numeric" aria-describedby="adults-hint">
+              <p class="hint" id="adults-hint">מינימום 10 אורחים.</p>
+            </div>
+            <div>
+              <label class="field-label" for="kids">מתוכם ילדים</label>
+              <input class="input input-number" type="number" id="kids" name="kids" value="8" min="0" max="300" inputmode="numeric" aria-describedby="kids-hint">
+              <p class="hint" id="kids-hint">ילדים מקבלים מנה מוקטנת. סה"כ 40 אורחים.</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="field-label" for="notes">הערות תזונתיות</label>
+            <textarea class="input" id="notes" name="notes" rows="2" aria-describedby="notes-hint">שלושה אורחים צמחונים, ילד אחד אלרגי לשומשום</textarea>
+            <p class="hint" id="notes-hint">בעל העסק יראה את ההערות לפני האישור.</p>
+          </div>
+
+          <fieldset>
+            <legend>משלוח או איסוף</legend>
+            <div class="options">
+              <label class="option"><input type="radio" name="delivery" value="delivery" checked><strong>משלוח עד הבית</strong><span>דמי משלוח לפי אזור. מרכז: &lrm;₪120</span></label>
+              <label class="option"><input type="radio" name="delivery" value="pickup"><strong>איסוף עצמי</strong><span>מהמטבח שלנו, ללא עלות</span></label>
+            </div>
+          </fieldset>
+
+          <div>
+            <label class="field-label" for="address">כתובת למשלוח</label>
+            <input class="input" type="text" id="address" name="address" value="הרצל 12, רחובות" autocomplete="street-address">
+          </div>
+
+          <div class="form-actions">
+            <a class="btn btn-outline" href="/">הקודם</a>
+            <button class="btn btn-primary" type="submit">המשך לתפריט</button>
+          </div>
+        </form>
+
+        <aside class="aside-note" aria-labelledby="sofar-title">
+          <h3 id="sofar-title" class="h3-size">עד עכשיו</h3>
+          <dl>
+            <dt>אירוע</dt><dd>יום הולדת</dd>
+            <dt>תאריך</dt><dd>17.12.2026</dd>
+            <dt>אורחים</dt><dd>40</dd>
+            <dt>משלוח</dt><dd>רחובות</dd>
+          </dl>
+          <p class="fine">המחיר הסופי ייקבע רק אחרי אישור בעל העסק.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- C2: dish catalog, C3: order summary, C4: assistant -->
+    <section class="flow-section" id="menu" aria-labelledby="menu-title">
+      <div class="section-head">
+        <p class="fine">שלב 2 מתוך 4 · יום הולדת, 40 אורחים</p>
+        <h2 id="menu-title">בניית התפריט</h2>
+        <p>הכמויות המוצעות מחושבות לפי מספר האורחים. אפשר להגדיל או להקטין כל מנה.</p>
+      </div>
+      <div class="menu-layout">
+        <div class="catalog">
+          <nav class="cat-nav" aria-label="קטגוריות">
+            <div class="chips"><a class="chip" href="#cat-salads" aria-current="true">הכול</a><a class="chip" href="#cat-salads">סלטים ומזה</a><a class="chip" href="#cat-breads">לחמים וחלות</a><a class="chip" href="#cat-mains">מנות עיקריות</a><a class="chip" href="#cat-desserts">קינוחים</a></div>
+          </nav>
+
+          <section class="cat-section" id="cat-salads" aria-labelledby="h-salads">
+            <h3 id="h-salads">סלטים ומזה</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-mezze">
+                  <div class="card-media"><img src="/assets/dish-mezze.jpg" alt="מגש מזה עם חומוס, חצילים קלויים, זיתים, טחינה ועשבי תיבול" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-mezze">מגש מזה ים-תיכוני</h4>
+                      <p class="price">&lrm;₪220 <small>למגש · ל-10 סועדים</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-kosher">כשר · פרווה</span></li><li><span class="badge badge-veg">צמחוני</span></li><li><span class="badge badge-veg badge-vegan">טבעוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>שומשום (טחינה).</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="stepper-qty" role="group" aria-label="כמות: מגש מזה ים-תיכוני">
+                        <button type="button" aria-label="הוספת מגש של מגש מזה ים-תיכוני">+</button>
+                        <output aria-label="כמות נוכחית">4</output>
+                        <button type="button" aria-label="הפחתת מגש של מגש מזה ים-תיכוני">−</button>
+                      </div>
+                      <span class="fine">4 × &lrm;₪220</span>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-tabbouleh">
+                  <div class="card-media dish-crop-tabbouleh"><img src="/assets/hero-feast.jpg" alt="סלט טאבולה ירוק עם בורגול, עגבניות, פטרוזיליה ורימונים" width="1152" height="864" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-tabbouleh">סלט טאבולה</h4>
+                      <p class="price">&lrm;₪150 <small>למגש · ל-10 סועדים</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-kosher">כשר · פרווה</span></li><li><span class="badge badge-veg">צמחוני</span></li><li><span class="badge badge-veg badge-vegan">טבעוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>גלוטן (בורגול).</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="stepper-qty is-zero" role="group" aria-label="כמות: סלט טאבולה">
+                        <button type="button" aria-label="הוספת מגש של סלט טאבולה">+</button>
+                        <output aria-label="כמות נוכחית">0</output>
+                        <button type="button" aria-label="הפחתת מגש של סלט טאבולה">−</button>
+                      </div>
+                      <span class="fine">לא בהזמנה</span>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+
+          <section class="cat-section" id="cat-breads" aria-labelledby="h-breads">
+            <h3 id="h-breads">לחמים וחלות</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-challah">
+                  <div class="card-media"><img src="/assets/dish-challah.jpg" alt="חלה קלועה זהובה עם שומשום על קרש עץ" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-challah">חלה מתוקה קלועה</h4>
+                      <p class="price">&lrm;₪24 <small>ליחידה · כ-6 פרוסות</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-kosher">כשר · פרווה</span></li><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>גלוטן, ביצים, שומשום.</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="stepper-qty" role="group" aria-label="כמות: חלה מתוקה קלועה">
+                        <button type="button" aria-label="הוספת יחידה של חלה מתוקה קלועה">+</button>
+                        <output aria-label="כמות נוכחית">4</output>
+                        <button type="button" aria-label="הפחתת יחידה של חלה מתוקה קלועה">−</button>
+                      </div>
+                      <span class="fine">4 × &lrm;₪24</span>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+
+          <section class="cat-section" id="cat-mains" aria-labelledby="h-mains">
+            <h3 id="h-mains">מנות עיקריות</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-chicken">
+                  <div class="card-media"><img src="/assets/dish-chicken.jpg" alt="נתחי עוף צלויים עם פרוסות לימון, זיתים ורוזמרין בתבנית" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-chicken">עוף בלימון וזיתים</h4>
+                      <p class="price">&lrm;₪260 <small>למגש · 8 מנות</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-kosher">כשר · בשרי</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>ללא אלרגנים מוצהרים במנה.<br><span class="unknown">רוטב: מידע חלקי, לא ידוע. נא לברר מול העסק.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="stepper-qty" role="group" aria-label="כמות: עוף בלימון וזיתים">
+                        <button type="button" aria-label="הוספת מגש של עוף בלימון וזיתים">+</button>
+                        <output aria-label="כמות נוכחית">5</output>
+                        <button type="button" aria-label="הפחתת מגש של עוף בלימון וזיתים">−</button>
+                      </div>
+                      <span class="fine">5 × &lrm;₪260</span>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+
+          <section class="cat-section" id="cat-desserts" aria-labelledby="h-desserts">
+            <h3 id="h-desserts">קינוחים</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-dessert">
+                  <div class="card-media"><img src="/assets/dish-dessert.jpg" alt="טארטים קטנים עם תותים, אוכמניות וקיווי לצד כדורי שוקולד" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-dessert">מגש טארטים ופרלינים</h4>
+                      <p class="price">&lrm;₪190 <small>למגש · 12 יחידות</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-kosher">כשר · פרווה</span></li><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>גלוטן, ביצים, אגוזים.</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="stepper-qty" role="group" aria-label="כמות: מגש טארטים ופרלינים">
+                        <button type="button" aria-label="הוספת מגש של מגש טארטים ופרלינים">+</button>
+                        <output aria-label="כמות נוכחית">3</output>
+                        <button type="button" aria-label="הפחתת מגש של מגש טארטים ופרלינים">−</button>
+                      </div>
+                      <span class="fine">3 × &lrm;₪190</span>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <div class="side">
+          <!-- C3: order summary -->
+          <aside class="summary" id="summary" aria-labelledby="sum-title">
+            <p class="fine">שלב 3 מתוך 4</p>
+            <h3 id="sum-title">ההזמנה שלך</h3>
+            <p class="status status-draft">טיוטה · עוד לא נשלחה</p>
+            <p class="fine">יום הולדת · 17.12.2026 · 40 אורחים · משלוח לרחובות</p>
+            <ul class="lines"><li><span>מגש מזה ים-תיכוני</span><span class="calc">4 × &lrm;₪220</span><span class="amt">&lrm;₪880</span></li><li><span>חלה מתוקה קלועה</span><span class="calc">4 × &lrm;₪24</span><span class="amt">&lrm;₪96</span></li><li><span>עוף בלימון וזיתים</span><span class="calc">5 × &lrm;₪260</span><span class="amt">&lrm;₪1,300</span></li><li><span>מגש טארטים ופרלינים</span><span class="calc">3 × &lrm;₪190</span><span class="amt">&lrm;₪570</span></li></ul>
+            <dl class="totals">
+              <div><dt>סכום מנות</dt><dd>&lrm;₪2,846</dd></div>
+              <div><dt>דמי משלוח (מרכז)</dt><dd>&lrm;₪120</dd></div>
+              <div class="grand"><dt>סה"כ משוער</dt><dd aria-live="polite">&lrm;₪2,966</dd></div>
+            </dl>
+            <p class="fine">המחיר מחושב אוטומטית. ההזמנה נסגרת רק אחרי אישור בעל העסק.</p>
+            <a class="btn btn-primary btn-block" href="#quote">שליחת בקשה להצעת מחיר</a>
+            <a class="btn btn-quiet btn-block ai-fab-desk" href="#assistant">✦ שאלו את העוזר החכם</a>
+          </aside>
+
+          <!-- C4: AI assistant (bottom sheet on mobile, side panel at >=1024px; opens via :target) -->
+          <section class="assistant" id="assistant" aria-labelledby="ai-title">
+            <div class="assistant-head">
+              <h3 id="ai-title">✦ העוזר החכם</h3>
+              <a class="close" href="#menu" aria-label="סגירת העוזר">✕</a>
+            </div>
+            <p class="assistant-intro">העוזר מציע רק מנות מהתפריט ולא משנה דבר בלי אישור שלך.</p>
+            <ol class="messages" role="log" aria-live="polite" aria-label="שיחה עם העוזר">
+              <li class="msg msg-user"><span class="who">את/ה</span>יש לנו שלושה צמחונים. משהו ירוק וקליל במקום חלק מהלחם?</li>
+              <li class="msg msg-ai"><span class="who">העוזר</span>הנה הצעה: להוסיף שני מגשי טאבולה (טבעוני) ולהוריד חלה אחת. שימו לב, בטאבולה יש גלוטן.</li>
+            </ol>
+
+            <article class="proposal" aria-labelledby="p-title">
+              <div class="proposal-head">
+                <h4 id="p-title">הוספת סלט טאבולה, הסרת חלה אחת</h4>
+                <p class="status status-pending">ממתין לאישור שלך</p>
+              </div>
+              <div class="proposal-body">
+                <table class="diff">
+                  <caption class="sr-only">השינויים המוצעים, כמות לפני ואחרי</caption>
+                  <thead><tr><th scope="col">מנה</th><th scope="col" class="num">לפני</th><th scope="col" class="num">אחרי</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row"><span class="op op-add">הוספה</span>סלט טאבולה</th><td class="num">0</td><td class="num after">2 מגשים</td></tr>
+                    <tr><th scope="row"><span class="op op-remove">הסרה</span>חלה מתוקה</th><td class="num">4</td><td class="num after">3 יחידות</td></tr>
+                  </tbody>
+                  <tfoot><tr><th scope="row">סה"כ</th><td class="num">&lrm;₪2,966</td><td class="num">&lrm;₪3,242 <span class="delta">(+&lrm;₪276)</span></td></tr></tfoot>
+                </table>
+                <p class="proposal-note">שום דבר לא משתנה בהזמנה עד שתאשרו. ההצעה תפוג אם ההזמנה תשתנה בינתיים.</p>
+                <div class="proposal-actions">
+                  <button type="button" class="btn btn-primary">אשר</button>
+                  <button type="button" class="btn btn-outline">דחה</button>
+                </div>
+              </div>
+            </article>
+
+            <form class="composer" action="/customer/#assistant" method="get">
+              <label class="field-label" for="ask">כתבו לעוזר</label>
+              <div class="composer-row">
+                <textarea class="input" id="ask" name="q" rows="1" placeholder="למשל: כמה קינוחים צריך?"></textarea>
+                <button type="submit" class="btn btn-quiet">שליחה</button>
+              </div>
+            </form>
+          </section>
+          <a class="scrim" href="#menu" tabindex="-1" aria-hidden="true">סגירה</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- C5: quote status (static) -->
+    <section class="flow-section" id="quote" aria-labelledby="quote-title">
+      <div class="section-head">
+        <p class="fine">שלב 4 מתוך 4</p>
+        <h2 id="quote-title">סטטוס הצעת המחיר</h2>
+        <p>אחרי השליחה בעל העסק עובר על הבקשה ומאשר אותה אישית. עד אז זו בקשה, לא הזמנה סגורה.</p>
+      </div>
+      <div class="quote-layout">
+        <article class="quote-card" aria-labelledby="q-title">
+          <div class="quote-head">
+            <h3 id="q-title" class="h3-size">הבקשה שלך</h3>
+            <p class="status status-pending">ממתין לאישור בעל העסק</p>
+          </div>
+          <p class="fine">יום הולדת · 17.12.2026 · 40 אורחים · משלוח לרחובות</p>
+          <dl class="totals">
+            <div><dt>סכום מנות</dt><dd>&lrm;₪2,846</dd></div>
+            <div><dt>דמי משלוח (מרכז)</dt><dd>&lrm;₪120</dd></div>
+            <div class="grand"><dt>סה"כ משוער</dt><dd>&lrm;₪2,966</dd></div>
+          </dl>
+          <p class="proposal-note">ההזמנה עדיין לא סגורה ולא בוצע חיוב. הסטטוס יתעדכן כאן כשבעל העסק יאשר או ידחה את הבקשה.</p>
+          <figure class="owner-note">
+            <blockquote><p>קיבלתי את הבקשה, תודה! אבדוק זמינות לתאריך ואחזור אליכם עד מחר בצהריים.</p></blockquote>
+            <figcaption>הערה מבעל העסק</figcaption>
+          </figure>
+        </article>
+
+        <section class="quote-card" aria-labelledby="legend-title">
+          <h3 id="legend-title" class="h3-size">מה אומר כל סטטוס</h3>
+          <ul class="legend">
+            <li><span class="status status-draft">טיוטה</span><p>הבקשה עוד לא נשלחה. אפשר לשנות הכול.</p></li>
+            <li><span class="status status-pending">ממתין לאישור</span><p>הבקשה נשלחה לבעל העסק. זו עדיין לא הזמנה סגורה.</p></li>
+            <li><span class="status status-approved">אושר</span><p>בעל העסק אישר את ההצעה. רק עכשיו ההזמנה סגורה.</p></li>
+            <li><span class="status status-rejected">נדחה</span><p>בעל העסק לא יכול לקבל את ההזמנה כפי שהיא. אפשר לשנות ולשלוח שוב.</p></li>
+          </ul>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <div class="order-bar" role="region" aria-label="סיכום הזמנה">
+    <p class="bar-total"><span>סה"כ משוער · 16 פריטים</span><strong aria-live="polite">&lrm;₪2,966</strong><a class="bar-details" href="#summary">לפירוט ההזמנה</a></p>
+    <a class="btn btn-outline btn-ai" href="#assistant" aria-label="העוזר החכם">✦ עוזר</a>
+    <a class="btn btn-primary" href="#summary">לסיכום</a>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 · קייטרינג לאירועים פרטיים</p>
+    <span class="sample-note">נתוני דוגמה · המחירים והמנות להמחשה בלבד</span>
+    <p class="server-status">מצב שרת: <span id="status" aria-live="polite">בודק…</span></p>
+    <a href="/#how">איך זה עובד</a>
+  </div>
+</footer>
   <script type="module">
     import { api } from "/js/api.js";
     const el = document.getElementById("status");
