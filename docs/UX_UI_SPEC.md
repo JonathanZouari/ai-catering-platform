@@ -10,22 +10,22 @@ Status: **Draft v0.1**. High-fidelity prototypes (Claude Artifacts) come in the 
 - Premium but calm: generous whitespace, one accent color, restrained motion, `prefers-reduced-motion` respected.
 - Never show a pending quotation as a confirmed booking — status badges use explicit text ("Awaiting business approval").
 
-## 2. Design tokens — proposal "Black & Orange" **[PROPOSAL for OPEN #20]**
+## 2. Design tokens — proposal "Charcoal & Gold" **[PROPOSAL for OPEN #20]**
 
-Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-surface-2`, `--color-border`, `--color-text`, `--color-muted`, `--color-accent`, `--color-accent-strong`, `--color-on-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radius, ring width, shadow levels, and two font stacks.
+Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-surface-2`, `--color-border`, `--color-line`, `--color-text`, `--color-muted`, `--color-accent`, `--color-accent-glow`, `--color-on-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radii, shadow levels, and two font stacks.
 
 | Token | Value | Use |
 |---|---|---|
-| `--color-bg` | `#0d0d0d` | Page background (near-black) |
-| `--color-surface` | `#1a1a1a` | Hero, cards |
-| `--color-text` | `#ffffff` | Body text (≈19:1 on bg) |
-| `--color-muted` | `#b8b2a7` | Secondary text (≈10:1 on bg) |
-| `--color-accent` | `#f7931e` | The single accent: headings, rings, buttons (≈9:1 on bg) |
-| `--color-on-accent` | `#0d0d0d` | Text on orange buttons |
-| `--font-display` | Montserrat 800, uppercase | Display titles, section headings, buttons |
-| `--font` | Heebo | Body text (covers Latin **and Hebrew**, ready for #12) |
+| `--color-bg` | `#111111` | Page background (charcoal) |
+| `--color-surface` | `#1a1a1a` | Cards, info bar |
+| `--color-text` | `#f4f1ea` | Body text, warm white (≈16:1 on bg) |
+| `--color-muted` | `#a9a49a` | Secondary text (≈7.5:1 on bg) |
+| `--color-accent` | `#d9b95c` | The single accent: gold icons, highlights, primary buttons (≈10:1 on bg) |
+| `--color-accent-glow` | gold @ 35% | Soft glow on the info bar and button hover |
+| `--font-display` | Bellefair | Elegant thin display font for headings (covers Latin **and Hebrew**) |
+| `--font` | Heebo 300/400 | Body text (covers Latin **and Hebrew**, ready for #12) |
 
-Visual motifs, inspired by catering-promo poster styles: black canvas, a large two-weight title (bold orange uppercase word + light white word), round food photos with an orange ring (`.ring-photo`), an orange-edged wave dividing the hero from the body (`.wave`), checkbox-style service lists (`.check-list`), and a circular outlined badge for offers (`.badge-circle`). The theme is dark-only; a light variant is not in scope unless requested.
+Visual motifs, inspired by elegant dark restaurant sites: large thin-serif hero title with one gold word; round food photos on the dark canvas with a subtle "flour dust" speckle (`.plate`); a glowing info bar with gold line icons (`.info-bar`); an outlined title with an offset echo (`.outline-title`); alternating photo/text dish rows (`.dish-row`); thin outlined buttons that glow gold on hover (`.btn`); a services row with gold line icons; a split feature card with a photo (`.feature-card`). The theme is dark-only; a light variant is not in scope unless requested. Food photos are Unsplash placeholders until the business supplies its own.
 
 ## 3. Customer screens
 
