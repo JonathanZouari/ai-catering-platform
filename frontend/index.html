@@ -4,15 +4,133 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Catering</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bellefair&family=Heebo:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="/css/base.css">
 </head>
 <body>
+  <!-- Food photos are Unsplash placeholders; replace with the business's own photos in frontend/assets/. -->
+  <header class="site-header">
+    <a class="brand" href="/">Catering</a>
+    <nav class="nav" aria-label="Main">
+      <a href="#menu">Menu</a>
+      <a href="#services">Services</a>
+      <a href="#events">Events</a>
+      <a href="/admin/">Business</a>
+    </nav>
+    <a class="btn btn--primary" href="/customer/">Get a quote</a>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div>
+      <h1 id="hero-title" class="hero__title">Welcome to <em>your</em> perfect event</h1>
+      <p class="lead">Build your menu, see the price instantly, and let our AI assistant help you plan every detail.</p>
+      <div class="actions">
+        <a class="btn btn--primary" href="/customer/">Plan your event</a>
+      </div>
+    </div>
+    <div class="plate">
+      <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=840&h=840&fit=crop&auto=format" alt="Fresh salad on a dark plate">
+    </div>
+  </section>
+
+  <section class="info-bar" aria-label="Quick info">
+    <div class="info-bar__inner">
+      <div class="info-item">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <div><h3>Pickup &amp; delivery</h3><p>Across the delivery zones</p></div>
+      </div>
+      <div class="info-item">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <div><h3>Order ahead</h3><p>Pick a date and time slot</p></div>
+      </div>
+      <div class="info-item">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+        <div><h3>Free quote</h3><p>Approved by the business</p></div>
+      </div>
+    </div>
+  </section>
+
   <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
+    <section id="menu" class="section split" aria-labelledby="menu-title">
+      <h2 id="menu-title">
+        <span class="eyebrow">Discover</span>
+        <span class="outline-title" data-text="Our Menu">Our Menu</span>
+      </h2>
+      <p>Every dish is priced per tray, portion or kilo, so you always know what your event will cost — before you send the request.</p>
+    </section>
+
+    <article class="dish-row">
+      <div class="plate plate--sm">
+        <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=640&h=640&fit=crop&auto=format" alt="Colorful vegetable bowl">
+      </div>
+      <div>
+        <h3>Event platters</h3>
+        <p>Generous salads and sharing platters for every size of gathering.</p>
+        <a class="btn" href="/customer/">View menu</a>
+      </div>
+    </article>
+
+    <article class="dish-row dish-row--reverse">
+      <div class="plate plate--sm">
+        <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=640&h=640&fit=crop&auto=format" alt="Grilled salmon with greens">
+      </div>
+      <div>
+        <h3>Hot dishes</h3>
+        <p>Meat, fish and vegetarian mains — options to suit every guest.</p>
+        <a class="btn" href="/customer/">View menu</a>
+      </div>
+    </article>
+
+    <article class="dish-row">
+      <div class="plate plate--sm">
+        <img src="https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=640&h=640&fit=crop&auto=format" alt="Eggs and greens on a dark plate">
+      </div>
+      <div>
+        <h3>Light &amp; fresh</h3>
+        <p>Brunch boards, fresh bites and desserts to round off the day.</p>
+        <a class="btn" href="/customer/">View menu</a>
+      </div>
+    </article>
+
+    <section id="services" class="section split" aria-labelledby="services-title">
+      <div>
+        <span class="eyebrow underline-title">What we offer</span>
+        <h2 id="services-title">Our Great Services</h2>
+        <p>Tell us about your event and the guests — we'll take care of the food.</p>
+      </div>
+      <ul class="services">
+        <li>
+          <svg class="icon icon--lg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>
+          Events
+        </li>
+        <li>
+          <svg class="icon icon--lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0zM8 8c0-2 2-2 2-4M13 8c0-2 2-2 2-4"/></svg>
+          Special menus
+        </li>
+        <li>
+          <svg class="icon icon--lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+          Delivery
+        </li>
+      </ul>
+    </section>
+
+    <section id="events" class="section" aria-labelledby="events-title">
+      <div class="card feature-card">
+        <div class="feature-card__body">
+          <span class="eyebrow">Discover</span>
+          <h2 id="events-title">Upcoming Events</h2>
+          <p>Birthdays, family celebrations, office events and weddings — choose the event type and guest count, and get a tailored menu.</p>
+          <h3>Barbecue party</h3>
+          <p>Grilled skewers, sides and salads for outdoor gatherings.</p>
+          <a class="btn btn--primary" href="/customer/">Start planning</a>
+        </div>
+        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=900&h=700&fit=crop&auto=format" alt="Barbecue skewers and sides">
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">AI Catering Platform</footer>
 </body>
 </html>
