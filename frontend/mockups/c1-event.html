@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>פרטי האירוע · המטבח של סבתא</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="css/mockups.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <div class="spread">
+    <figure class="photo-page">
+      <!-- First image on the page: not lazy-loaded. -->
+      <img src="photos/challah.jpg" width="800" height="1200" alt="לחם קלוע" fetchpriority="high">
+    </figure>
+
+    <div class="form-page">
+      <div class="form-page__inner">
+        <header class="masthead">
+          <a class="brand" href="index.html">המטבח של סבתא</a>
+          <nav aria-label="שלבי ההזמנה">
+            <ol class="index">
+              <li aria-current="step"><span class="index__n num">01</span><span class="index__t">פרטי האירוע</span></li>
+              <li><span class="index__n num">02</span><span class="index__t">בחירת מנות</span></li>
+              <li><span class="index__n num">03</span><span class="index__t">סיכום</span></li>
+              <li><span class="index__n num">04</span><span class="index__t">שליחה</span></li>
+            </ol>
+          </nav>
+        </header>
+
+        <main id="main" tabindex="-1">
+          <div class="hero">
+            <h1 class="page-title">נתחיל מהאירוע שלכם</h1>
+            <p class="page-lead">ספרו לנו על האירוע, ונתאים לכם תפריט וכמויות.</p>
+          </div>
+
+          <dl class="band" aria-label="פרטי האירוע עד כה">
+            <div class="band__cell"><dt>אורחים</dt><dd id="band-guests"></dd></div>
+            <div class="band__cell"><dt>תאריך</dt><dd id="band-date"></dd></div>
+            <div class="band__cell"><dt>שעה</dt><dd id="band-slot"></dd></div>
+            <div class="band__cell"><dt>קבלה</dt><dd id="band-fulfillment"></dd></div>
+          </dl>
+
+          <form id="event-form" novalidate>
+            <div id="error-summary" class="error-summary" role="alert" tabindex="-1" hidden>
+              <h2>יש לתקן כמה פרטים לפני שממשיכים</h2>
+              <ul id="error-list"></ul>
+            </div>
+
+            <div class="sections">
+              <fieldset class="sec" id="type-group" aria-describedby="type-error">
+                <legend>סוג האירוע</legend>
+                <div class="choice-grid" id="type-choices"></div>
+                <p class="error-text" id="type-error" hidden></p>
+              </fieldset>
+
+              <section class="sec" aria-labelledby="date-title">
+                <h2 id="date-title">תאריך האירוע</h2>
+                <p class="sec__help">ימי שבת ותאריכים תפוסים אינם זמינים.</p>
+                <div class="cal" id="calendar">
+                  <div class="cal__head">
+                    <button type="button" class="btn btn--icon" id="cal-prev" aria-label="החודש הקודם">→</button>
+                    <h3 class="cal__title" id="cal-title" aria-live="polite"></h3>
+                    <button type="button" class="btn btn--icon" id="cal-next" aria-label="החודש הבא">←</button>
+                  </div>
+                  <div class="cal__grid" id="cal-grid" role="group" aria-labelledby="cal-title"></div>
+                </div>
+                <p class="cal__status" id="date-status" aria-live="polite"></p>
+                <p class="error-text" id="date-error" hidden></p>
+              </section>
+
+              <fieldset class="sec" id="slot-group" aria-describedby="slot-error">
+                <legend>שעה מבוקשת</legend>
+                <p class="sec__help">חלון הזמן שבו תרצו לקבל או לאסוף את ההזמנה.</p>
+                <div class="choice-grid" id="slot-choices"></div>
+                <p class="error-text" id="slot-error" hidden></p>
+              </fieldset>
+
+              <section class="sec" aria-labelledby="guests-title">
+                <h2 id="guests-title">מי מגיע?</h2>
+                <p class="sec__help">צמחונים וטבעונים נספרים בתוך סך המבוגרים והילדים (הנחה זמנית, בהמתנה להחלטה עסקית).</p>
+                <div class="counters" id="counters"></div>
+                <p class="error-text" id="guests-error" hidden></p>
+                <div class="field field--notes">
+                  <label for="notes">הערות תזונתיות</label>
+                  <textarea class="textarea" id="notes" name="dietary_notes" aria-describedby="notes-hint"></textarea>
+                  <p class="hint" id="notes-hint">למשל אלרגיות, רגישות לגלוטן או בקשות מיוחדות.</p>
+                </div>
+              </section>
+
+              <fieldset class="sec" aria-describedby="fee-preview">
+                <legend>איסוף או משלוח</legend>
+                <div class="segmented">
+                  <label class="choice"><input type="radio" name="fulfillment" value="delivery"> <span>משלוח</span></label>
+                  <label class="choice"><input type="radio" name="fulfillment" value="pickup"> <span>איסוף עצמי</span></label>
+                </div>
+
+                <div id="delivery-block">
+                  <div class="field">
+                    <label for="address">כתובת למשלוח</label>
+                    <input class="input" id="address" name="address" type="text" autocomplete="street-address" spellcheck="false" aria-describedby="address-error">
+                    <p class="error-text" id="address-error" hidden></p>
+                  </div>
+                  <div class="field">
+                    <label for="zone">אזור משלוח</label>
+                    <select class="select" id="zone" name="zone" aria-describedby="zone-error"></select>
+                    <p class="error-text" id="zone-error" hidden></p>
+                  </div>
+                </div>
+
+                <div id="pickup-block" hidden>
+                  <p><strong>נקודת האיסוף:</strong> <span id="pickup-point"></span></p>
+                </div>
+
+                <p class="fee" id="fee-preview" aria-live="polite"><span id="fee-label"></span><span id="fee-amount"></span></p>
+              </fieldset>
+
+              <section class="sec" aria-labelledby="ledger-title">
+                <h2 id="ledger-title">מה ביקשתם עד כה</h2>
+                <ul class="ledger" id="ledger"></ul>
+              </section>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn">המשך לבחירת מנות</button>
+              <a class="link-back" href="index.html">חזרה</a>
+            </div>
+          </form>
+
+          <details class="demo">
+            <summary>מצבי הדגמה (למוקאפ בלבד)</summary>
+            <div class="demo__body">
+              <p>כפתורים אלה קיימים רק בהדמיה, כדי להגיע במהירות למצבים שבאפליקציה אמיתית דורשים פעולות רבות.</p>
+              <button type="button" class="btn btn--secondary btn--small" id="demo-reset">איפוס לנתוני הדוגמה</button>
+              <button type="button" class="btn btn--secondary btn--small" id="demo-errors">מילוי ערכים שגויים</button>
+            </div>
+          </details>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="js/format.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/order.js"></script>
+  <script defer src="js/pages/c1.js"></script>
+</body>
+</html>

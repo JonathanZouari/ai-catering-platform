@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>שליחת בקשה · המטבח של סבתא</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="css/mockups.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <div class="page page--narrow">
+    <header class="masthead">
+      <a class="brand" href="index.html">המטבח של סבתא</a>
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="index">
+          <li><span class="index__n num">01</span><span class="index__t">פרטי האירוע</span></li>
+          <li><span class="index__n num">02</span><span class="index__t">בחירת מנות</span></li>
+          <li><span class="index__n num">03</span><span class="index__t">סיכום</span></li>
+          <li aria-current="step"><span class="index__n num">04</span><span class="index__t">שליחה</span></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="hero">
+        <h1 class="page-title page-title--sm">בדיקה אחרונה</h1>
+        <p class="page-lead">עברו על הפרטים ושלחו בקשה להצעת מחיר. הבקשה תישלח לעסק, והוא יאשר אותה או ידחה אותה.</p>
+      </div>
+
+      <section class="sec" aria-labelledby="event-title">
+        <h2 id="event-title">פרטי האירוע</h2>
+        <ul class="ledger" id="event-ledger"></ul>
+        <p class="edit-link"><a href="c1-event.html">עריכת פרטי האירוע</a></p>
+      </section>
+
+      <section class="sec" aria-labelledby="lines-title">
+        <h2 id="lines-title">המנות</h2>
+        <ul class="lines lines--ro" id="lines"></ul>
+        <div class="empty" id="empty" hidden>
+          <p>ההזמנה ריקה, ואין מה לשלוח.</p>
+          <a class="btn btn--secondary" href="c2-catalog.html">לבחירת מנות</a>
+        </div>
+        <dl class="totals" id="totals">
+          <div class="totals__row"><dt>מחיר המנות</dt><dd id="subtotal"></dd></div>
+          <div class="totals__row"><dt id="delivery-label">דמי משלוח</dt><dd id="delivery"></dd></div>
+          <div class="totals__row totals__row--grand"><dt>סה״כ</dt><dd><span id="total" class="total"></span></dd></div>
+        </dl>
+        <p class="hint">המחירים כוללים מע״מ. המחירים ננעלים ברגע השליחה.</p>
+        <p class="edit-link"><a href="c3-summary.html">עריכת ההזמנה</a></p>
+      </section>
+
+      <form id="submit-form" novalidate>
+        <section class="sec" aria-labelledby="contact-title">
+          <h2 id="contact-title">איך ליצור קשר</h2>
+          <p class="sec__help">שיטת ההזדהות עוד לא הוחלטה, ולכן זה רק מוקאפ של פרטי קשר.</p>
+          <div class="field">
+            <label for="name">שם מלא</label>
+            <input class="input" id="name" name="full_name" type="text" autocomplete="name" spellcheck="false" aria-describedby="name-error">
+            <p class="error-text" id="name-error" hidden></p>
+          </div>
+          <div class="field">
+            <label for="phone">טלפון</label>
+            <input class="input" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" spellcheck="false" aria-describedby="phone-error">
+            <p class="error-text" id="phone-error" hidden></p>
+          </div>
+        </section>
+
+        <section class="sec" aria-labelledby="ack-title">
+          <h2 id="ack-title">לפני השליחה</h2>
+          <aside class="pending">
+            <p>זו <strong>בקשה להצעת מחיר</strong>, ולא הזמנה. אחרי השליחה היא תהיה <strong>ממתינה לאישור העסק</strong>, ורק אישור העסק הופך אותה להזמנה.</p>
+          </aside>
+          <label class="choice choice--ack"><input type="checkbox" id="ack" name="acknowledged" aria-describedby="ack-error"> <span>ידוע לי שזו בקשה להצעת מחיר, וההזמנה לא מאושרת עד שהעסק יאשר אותה</span></label>
+          <p class="error-text" id="ack-error" hidden></p>
+        </section>
+
+        <p class="error-text form-error" id="form-error" role="alert" hidden></p>
+
+        <div class="actions">
+          <button type="submit" class="btn" id="send">שליחת בקשת הצעת מחיר</button>
+          <a class="link-back" href="c3-summary.html">חזרה לסיכום</a>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script defer src="js/format.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/order.js"></script>
+  <script defer src="js/pages/c5-submit.js"></script>
+</body>
+</html>
