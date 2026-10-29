@@ -1,18 +1,171 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <title>מוגש · קייטרינג לאירועים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500;700;900&display=swap">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/landing.css">
+  <script>
+    // Decide before first paint so returning visitors never see the overlay flash.
+    try { if (sessionStorage.getItem("intro-seen")) document.documentElement.classList.add("skip-intro", "is-ready"); } catch {}
+  </script>
+  <style>.skip-intro .intro { display: none; }</style>
 </head>
-<body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
-  </main>
+<body class="landing">
+  <div class="intro" id="intro" aria-hidden="true">
+    <div class="intro-plate">
+      <svg viewBox="0 0 100 100">
+        <circle class="rim" cx="50" cy="50" r="48" pathLength="1" />
+        <circle class="well" cx="50" cy="50" r="38" pathLength="1" />
+        <circle class="dot" cx="50" cy="2" r="1.6" />
+      </svg>
+      <span class="intro-word">מוגש</span>
+    </div>
+    <span class="intro-skip">לחיצה לדילוג</span>
+  </div>
+
+  <div class="stage">
+    <div class="arc" id="arc" aria-hidden="true"></div>
+    <div class="lamp" aria-hidden="true">
+      <span class="lamp-cord"></span>
+      <svg class="lamp-shade" viewBox="0 0 60 80"><path d="M24 0h12v14c14 4 24 24 24 52H0C0 38 10 18 24 14z" fill="#1d1d1f"/><rect x="26" y="64" width="8" height="5" rx="2" fill="#f59a4a"/></svg>
+      <span class="lamp-glow"></span>
+    </div>
+
+    <header class="site-header">
+      <a class="brand" href="/" data-enter style="--d:0">מוגש</a>
+      <nav class="site-nav" aria-label="ראשי" data-enter style="--d:1">
+        <a href="/customer/">תכנון אירוע</a>
+        <a href="/admin/">לבעל העסק</a>
+      </nav>
+    </header>
+
+    <section class="hero" id="hero" aria-roledescription="קרוסלה" aria-label="מנות מהתפריט">
+      <div class="plate-wrap" data-enter style="--d:2">
+        <span class="plate-shadow"></span>
+        <div class="plate" id="plate"></div>
+      </div>
+
+      <div class="hero-copy">
+        <p class="eyebrow" id="dish-eyebrow" data-enter style="--d:3">מנת הדגל</p>
+        <h1 id="dish-title">
+          <span class="mask t-light"><span style="--d:4">חומוס</span></span>
+          <span class="mask t-bold"><span style="--d:5">ביתי</span></span>
+        </h1>
+        <div class="hero-links" data-enter style="--d:6">
+          <a href="#how" class="hero-link">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6l9 6-9 6z" fill="currentColor"/></svg>
+            איך זה עובד
+          </a>
+          <a href="/customer/" class="hero-link">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18M5 18a7 7 0 0 1 14 0M12 8V6m-2 0h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            מתכננים אירוע
+          </a>
+        </div>
+      </div>
+
+      <aside class="dish-card" data-enter style="--d:5" aria-label="פרטי המנה">
+        <div class="card-tabs" role="tablist">
+          <button role="tab" id="tab-overview" aria-selected="true" aria-controls="panel-overview">סקירה</button>
+          <button role="tab" id="tab-ingredients" aria-selected="false" aria-controls="panel-ingredients" tabindex="-1">רכיבים</button>
+        </div>
+        <div class="card-body" id="card-body">
+          <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
+            <div class="price-tile"><span id="dish-price">₪120</span><small id="dish-unit">למגש</small></div>
+            <p class="card-name" id="dish-name">חומוס ביתי</p>
+            <p class="card-serves" id="dish-serves">מגש אחד ל־10–12 אורחים</p>
+            <p class="card-desc" id="dish-desc"></p>
+            <div class="card-tags" id="dish-tags"></div>
+          </div>
+          <div role="tabpanel" id="panel-ingredients" aria-labelledby="tab-ingredients" hidden>
+            <ul class="ingredients" id="dish-ingredients"></ul>
+            <p class="allergen-note">מידע על אלרגנים יוצג לפי נתוני העסק. מנה ללא מידע אינה נחשבת נטולת אלרגנים.</p>
+          </div>
+        </div>
+        <a class="btn btn-primary card-cta" href="/customer/">להוסיף לאירוע</a>
+      </aside>
+
+      <nav class="dish-rail" data-enter style="--d:7" aria-label="בחירת מנה">
+        <button class="rail-arrow" type="button" data-step="-1" aria-label="המנה הקודמת">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="rail-items" id="rail"></div>
+        <button class="rail-arrow" type="button" data-step="1" aria-label="המנה הבאה">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+
+      <div class="dots" id="dots" aria-hidden="true"></div>
+    </section>
+  </div>
+
+  <section class="demo" aria-labelledby="demo-title">
+    <div class="demo-copy" data-reveal>
+      <p class="eyebrow">העוזר החכם</p>
+      <h2 id="demo-title"><span class="t-light">העוזר מציע.</span> <span class="t-bold">אתם מחליטים.</span></h2>
+      <p class="lede">העוזר רואה את ההזמנה שלכם ומציע שיפורים. שום דבר לא משתנה בלי לחיצה על ״אישור״. נסו בעצמכם.</p>
+    </div>
+
+    <aside class="quote" data-reveal style="--d:1" aria-label="דוגמה להצעת מחיר">
+      <div class="quote-head">
+        <div>
+          <p class="quote-title">בר מצווה · משפחת לוי</p>
+          <p class="quote-meta">80 אורחים · 12 טבעונים · משלוח</p>
+        </div>
+        <span class="badge">ממתין לאישור העסק</span>
+      </div>
+
+      <ul class="lines" id="lines">
+        <li class="line"><span class="line-name">חומוס ביתי<span class="tag">טבעוני</span></span><span class="line-qty">5 מגשים × ₪120</span><span class="line-price">₪600</span></li>
+        <li class="line"><span class="line-name">סלט ירקות קלויים</span><span class="line-qty">3 מגשים × ₪140</span><span class="line-price">₪420</span></li>
+        <li class="line"><span class="line-name">קציצות ברוטב עגבניות</span><span class="line-qty">4 מגשים × ₪220</span><span class="line-price">₪880</span></li>
+      </ul>
+
+      <div class="total">
+        <span class="total-label">סה״כ משוער</span>
+        <span class="total-value" id="total" aria-live="polite">₪1,900</span>
+      </div>
+
+      <div class="proposal" id="proposal">
+        <p class="proposal-kicker">
+          <svg class="spark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 20l-2.2-6.6L3 11l6.8-2.4z"/></svg>
+          הצעה מהעוזר
+        </p>
+        <p class="proposal-text">ל־12 אורחים טבעונים יש רק מנה אחת. להוסיף 2 מגשי מג׳דרה?</p>
+        <p class="proposal-diff">₪1,900 ← ₪2,160 <b>(+₪260)</b></p>
+        <div class="proposal-actions">
+          <button class="btn btn-reject" type="button" data-action="reject">לא תודה</button>
+          <button class="btn btn-approve" type="button" data-action="approve">אישור</button>
+        </div>
+      </div>
+      <p class="proposal-result" id="proposal-result" aria-live="polite"></p>
+    </aside>
+  </section>
+
+  <section class="steps" id="how" aria-label="איך זה עובד">
+    <article class="step" data-reveal style="--d:0">
+      <div class="step-num">01</div>
+      <h3>מספרים על האירוע</h3>
+      <p>תאריך, מספר אורחים והעדפות תזונה. רק מה שצריך, שלב אחר שלב.</p>
+    </article>
+    <article class="step" data-reveal style="--d:1">
+      <div class="step-num">02</div>
+      <h3>בוחרים מהתפריט</h3>
+      <p>הכמויות מחושבות לפי מספר האורחים, והמחיר מתעדכן מול העיניים.</p>
+    </article>
+    <article class="step" data-reveal style="--d:2">
+      <div class="step-num">03</div>
+      <h3>מאשרים ושולחים</h3>
+      <p>העוזר מציע, אתם מחליטים. בעל העסק מאשר את ההצעה הסופית.</p>
+    </article>
+  </section>
+
+  <footer class="site-footer">מוגש · הזמנות קייטרינג לאירועים פרטיים</footer>
+
+  <script type="module" src="/js/landing.js"></script>
 </body>
 </html>
