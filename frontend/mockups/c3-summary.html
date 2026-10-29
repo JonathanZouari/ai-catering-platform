@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>סיכום ההזמנה · המטבח של סבתא</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="css/mockups.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <div class="page page--narrow">
+    <header class="masthead">
+      <a class="brand" href="index.html">המטבח של סבתא</a>
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="index">
+          <li><span class="index__n num">01</span><span class="index__t">פרטי האירוע</span></li>
+          <li><span class="index__n num">02</span><span class="index__t">בחירת מנות</span></li>
+          <li aria-current="step"><span class="index__n num">03</span><span class="index__t">סיכום</span></li>
+          <li><span class="index__n num">04</span><span class="index__t">שליחה</span></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="hero">
+        <h1 class="page-title page-title--sm">סיכום ההזמנה</h1>
+        <p class="page-lead">כך נראית ההזמנה שלכם עד כה. אפשר לשנות כמויות כאן או לחזור לבחירת המנות.</p>
+      </div>
+
+      <section class="sec" aria-labelledby="event-title">
+        <h2 id="event-title">פרטי האירוע</h2>
+        <ul class="ledger" id="event-ledger"></ul>
+        <p class="edit-link"><a href="c1-event.html">עריכת פרטי האירוע</a></p>
+      </section>
+
+      <section class="sec" aria-labelledby="lines-title">
+        <h2 id="lines-title" tabindex="-1">המנות שבחרתם</h2>
+        <ul class="lines" id="lines" data-confirm-remove="true"></ul>
+        <div class="empty" id="empty" hidden>
+          <p>ההזמנה ריקה.</p>
+          <a class="btn btn--secondary" href="c2-catalog.html">לבחירת מנות</a>
+        </div>
+        <p class="note-line" id="mix-note" role="status"></p>
+        <p class="edit-link" id="edit-dishes"><a href="c2-catalog.html">הוספת מנות</a> · <a href="c4-assistant.html">שאלו את העוזר האישי</a></p>
+      </section>
+
+      <section class="sec" aria-labelledby="totals-title" id="totals-sec">
+        <h2 class="visually-hidden" id="totals-title">סכומים</h2>
+        <dl class="totals">
+          <div class="totals__row"><dt>מחיר המנות</dt><dd id="subtotal"></dd></div>
+          <div class="totals__row"><dt id="delivery-label">דמי משלוח</dt><dd id="delivery"></dd></div>
+          <div class="totals__row totals__row--grand">
+            <dt>סה״כ</dt>
+            <dd><span id="total" class="total" aria-live="polite" aria-atomic="true"></span></dd>
+          </div>
+        </dl>
+        <p class="hint">המחירים כוללים מע״מ.</p>
+      </section>
+
+      <aside class="pending" aria-labelledby="pending-title">
+        <h2 id="pending-title">סטטוס: טיוטה, טרם נשלחה</h2>
+        <p>זו עדיין לא הזמנה מאושרת. לאחר השליחה הבקשה תהיה <strong>ממתינה לאישור העסק</strong>, ורק אישור העסק הופך אותה להזמנה.</p>
+      </aside>
+
+      <div class="actions">
+        <a class="btn" id="next" href="c5-submit.html">המשך לשליחה</a>
+        <a class="link-back" href="c2-catalog.html">חזרה לבחירת מנות</a>
+      </div>
+    </main>
+  </div>
+
+  <script defer src="js/format.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/order.js"></script>
+  <script defer src="js/pages/c3.js"></script>
+</body>
+</html>

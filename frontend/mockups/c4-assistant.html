@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>העוזר האישי · המטבח של סבתא</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="css/mockups.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <div class="page">
+    <header class="masthead">
+      <a class="brand" href="index.html">המטבח של סבתא</a>
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="index">
+          <li><span class="index__n num">01</span><span class="index__t">פרטי האירוע</span></li>
+          <li><span class="index__n num">02</span><span class="index__t">בחירת מנות</span></li>
+          <li aria-current="step"><span class="index__n num">03</span><span class="index__t">סיכום</span></li>
+          <li><span class="index__n num">04</span><span class="index__t">שליחה</span></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="hero">
+        <h1 class="page-title page-title--sm">העוזר האישי</h1>
+        <p class="page-lead">שאלו על המנות וקבלו הצעות לשינוי בהזמנה. שום דבר לא משתנה בלי האישור שלכם.</p>
+      </div>
+
+      <div class="assist-layout">
+        <section class="order-col" aria-labelledby="order-title">
+          <h2 id="order-title" tabindex="-1">ההזמנה כרגע</h2>
+          <ul class="lines" id="lines" data-confirm-remove="true"></ul>
+          <dl class="totals">
+            <div class="totals__row"><dt>מחיר המנות</dt><dd id="subtotal"></dd></div>
+            <div class="totals__row"><dt id="delivery-label">דמי משלוח</dt><dd id="delivery"></dd></div>
+            <div class="totals__row totals__row--grand">
+              <dt>סה״כ</dt>
+              <dd><span id="total" class="total" aria-live="polite" aria-atomic="true"></span></dd>
+            </div>
+          </dl>
+          <p class="hint">המחירים כוללים מע״מ. זו עדיין טיוטה, לא הזמנה מאושרת.</p>
+          <p class="edit-link"><a href="c3-summary.html">לסיכום המלא</a></p>
+        </section>
+
+        <dialog class="chat" id="chat" aria-labelledby="chat-title">
+          <div class="chat__head">
+            <h2 id="chat-title">העוזר האישי</h2>
+            <button type="button" class="btn btn--icon chat__close" id="chat-close" aria-label="סגירת העוזר">✕</button>
+          </div>
+          <p class="chat__note">העוזר מציע בלבד. שינוי מתבצע רק אחרי שתאשרו אותו בכרטיס ההצעה.</p>
+
+          <ol class="chat__log" id="log" tabindex="0" role="log" aria-label="השיחה עם העוזר" aria-live="polite"></ol>
+
+          <div class="chat__suggest" id="suggest">
+            <button type="button" class="chip" data-q="מה חסר לי בתפריט?">מה חסר לי בתפריט?</button>
+            <button type="button" class="chip" data-q="יש מספיק לצמחונים?">יש מספיק לצמחונים?</button>
+            <button type="button" class="chip" data-q="מה האלרגנים בתבשיל הבקר?">מה האלרגנים בתבשיל הבקר?</button>
+          </div>
+
+          <form class="chat__form" id="chat-form">
+            <label class="visually-hidden" for="msg">הודעה לעוזר</label>
+            <input class="input" id="msg" name="message" type="text" autocomplete="off" placeholder="כתבו הודעה…">
+            <button type="submit" class="btn btn--secondary btn--small">שליחה</button>
+          </form>
+
+          <details class="demo demo--chat">
+            <summary>תצוגת דמו (למוקאפ בלבד)</summary>
+            <div class="demo__body">
+              <p>מציג את מצבי כרטיס ההצעה האחרון בלי לחכות. התצוגה בלבד: ההזמנה משתנה רק דרך הכפתור ״אישור״.</p>
+              <button type="button" class="btn btn--secondary btn--small" data-demo="pending">ממתינה</button>
+              <button type="button" class="btn btn--secondary btn--small" data-demo="applying">מתעדכנת</button>
+              <button type="button" class="btn btn--secondary btn--small" data-demo="applied">בוצעה</button>
+              <button type="button" class="btn btn--secondary btn--small" data-demo="rejected">נדחתה</button>
+              <button type="button" class="btn btn--secondary btn--small" data-demo="expired">פגה</button>
+              <button type="button" class="btn btn--secondary btn--small" data-demo="real">מצב אמיתי</button>
+              <p id="demo-status" role="status"></p>
+            </div>
+          </details>
+        </dialog>
+      </div>
+    </main>
+  </div>
+
+  <button type="button" class="fab" id="fab" aria-haspopup="dialog">העוזר האישי</button>
+  <p class="visually-hidden" id="sr" role="status" aria-live="polite"></p>
+
+  <script defer src="js/format.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/order.js"></script>
+  <script defer src="js/pages/c4.js"></script>
+</body>
+</html>

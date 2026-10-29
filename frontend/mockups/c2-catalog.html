@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>בחירת מנות · המטבח של סבתא</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="css/mockups.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <div class="page">
+    <header class="masthead">
+      <a class="brand" href="index.html">המטבח של סבתא</a>
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="index">
+          <li><span class="index__n num">01</span><span class="index__t">פרטי האירוע</span></li>
+          <li aria-current="step"><span class="index__n num">02</span><span class="index__t">בחירת מנות</span></li>
+          <li><span class="index__n num">03</span><span class="index__t">סיכום</span></li>
+          <li><span class="index__n num">04</span><span class="index__t">שליחה</span></li>
+        </ol>
+      </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="hero">
+        <h1 class="page-title page-title--sm">בחירת מנות</h1>
+        <p class="page-lead">הוסיפו מנות להזמנה ושנו כמויות. המחירים כוללים מע״מ.</p>
+      </div>
+
+      <div class="chips" role="group" aria-label="קטגוריות" id="chips"></div>
+
+      <p class="note-line" id="mix-note" role="status"></p>
+
+      <h2 class="visually-hidden" id="list-title">רשימת המנות</h2>
+      <ul class="dishes" id="dishes" aria-labelledby="list-title"></ul>
+    </main>
+  </div>
+
+  <div class="cartbar" role="region" aria-label="סיכום ההזמנה עד כה">
+    <div class="cartbar__inner">
+      <p class="cartbar__sum" id="cart-sum" aria-live="polite" aria-atomic="true"></p>
+      <a class="btn" id="cart-next" href="c3-summary.html">המשך לסיכום</a>
+    </div>
+  </div>
+
+  <script defer src="js/format.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/order.js"></script>
+  <script defer src="js/pages/c2.js"></script>
+</body>
+</html>
