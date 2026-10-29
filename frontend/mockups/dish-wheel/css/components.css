@@ -1,0 +1,100 @@
+/* Primitives: text, buttons, chips, badges, stepper, card */
+html { -webkit-text-size-adjust: 100%; }
+body { font-size: var(--fs-base); }
+img { max-width: 100%; display: block; }
+h1, h2, h3 { margin: 0; }
+p { margin: 0; }
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.display--sm { font-size: var(--fs-xl); font-weight: 600; }
+.eyebrow { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--color-muted); }
+.visually-hidden { position: absolute !important; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.link { color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
+.link-btn { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; min-block-size: 24px; }
+
+.skip-link { position: absolute; inset-inline-start: var(--space-4); inset-block-start: -100px; z-index: 100; background: var(--color-accent); color: var(--color-on-accent); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); }
+.skip-link:focus { inset-block-start: var(--space-2); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-block-size: var(--tap); padding-inline: var(--space-5);
+  border-radius: var(--radius-pill); border: 1.5px solid transparent;
+  font: inherit; font-weight: 600; font-size: var(--fs-base); text-decoration: none; cursor: pointer;
+  transition: background-color .15s, border-color .15s, transform .1s;
+}
+.btn:active { transform: scale(.98); }
+.btn--primary { background: var(--color-accent); color: var(--color-on-accent); }
+.btn--primary:hover { background: var(--color-accent-strong); }
+.btn--secondary { background: var(--color-surface); color: var(--color-accent); border-color: var(--color-accent); }
+.btn--secondary:hover { background: var(--color-accent-soft); }
+.btn--block { inline-size: 100%; }
+.btn[aria-disabled="true"] { background: var(--color-surface-2); color: var(--color-muted); border-color: var(--color-border); cursor: not-allowed; }
+.icon-btn {
+  inline-size: var(--tap); block-size: var(--tap); display: inline-grid; place-items: center;
+  border-radius: var(--radius-pill); border: 1px solid var(--color-border); background: var(--color-surface);
+  color: var(--color-text); cursor: pointer;
+}
+.icon-btn:hover { background: var(--color-surface-2); }
+
+/* Chips (toggle buttons) */
+.chip {
+  flex: none; display: inline-flex; align-items: center; gap: var(--space-2);
+  min-block-size: var(--tap); padding-inline: var(--space-4);
+  border-radius: var(--radius-pill); border: 1.5px solid var(--color-border-strong);
+  background: var(--color-surface); color: var(--color-text);
+  font: inherit; font-size: var(--fs-sm); font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.chip:hover { border-color: var(--color-accent); }
+.chip[aria-pressed="true"] { background: var(--color-text); border-color: var(--color-text); color: var(--color-surface); }
+.chip--filter[aria-pressed="true"] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
+.chip__check { display: none; }
+.chip[aria-pressed="true"] .chip__check { display: inline; }
+.chip-label { flex: none; font-size: var(--fs-xs); font-weight: 600; color: var(--color-muted); text-transform: uppercase; letter-spacing: .06em; align-self: center; }
+.chip-divider { flex: none; inline-size: 1px; block-size: 24px; background: var(--color-border-strong); align-self: center; margin-inline: var(--space-1); }
+
+/* Badges (static info) */
+.badges { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: var(--radius-pill);
+  font-size: var(--fs-xs); font-weight: 600; line-height: 1.4;
+  background: var(--color-surface-2); color: var(--color-text); border: 1px solid var(--color-border);
+}
+.badge__dot { inline-size: 8px; block-size: 8px; border-radius: 50%; background: currentColor; }
+.badge--meat .badge__dot { background: var(--dot-meat); }
+.badge--dairy .badge__dot { background: var(--dot-dairy); }
+.badge--pareve .badge__dot { background: var(--dot-pareve); }
+.badge--diet { background: var(--color-free-bg); color: var(--color-free-text); border-color: transparent; }
+.badge--unknown, .allergen--unknown {
+  background: repeating-linear-gradient(135deg, var(--color-unknown-bg) 0 8px, #ffecbf 8px 16px);
+  color: var(--color-unknown-text); border: 1.5px dashed var(--color-unknown-edge);
+}
+
+/* Allergen chips */
+.allergen { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-sm); font-size: var(--fs-sm); font-weight: 600; line-height: 1.35; }
+.allergen__icon { inline-size: 18px; block-size: 18px; flex: none; border-radius: 50%; display: inline-grid; place-items: center; font-size: 12px; font-weight: 800; color: #fff; }
+.allergen--contains { background: var(--color-contains-bg); color: var(--color-contains-text); }
+.allergen--contains .allergen__icon { background: var(--color-contains-text); }
+.allergen--free { background: var(--color-free-bg); color: var(--color-free-text); }
+.allergen--free .allergen__icon { background: var(--color-free-text); }
+.allergen--unknown .allergen__icon { background: var(--color-unknown-edge); }
+
+/* Quantity stepper */
+.stepper {
+  display: inline-flex; align-items: center; border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-pill); background: var(--color-surface); overflow: hidden;
+}
+.stepper button {
+  inline-size: var(--tap); block-size: var(--tap); border: 0; background: transparent;
+  color: var(--color-accent); font-size: 1.375rem; line-height: 1; cursor: pointer; display: grid; place-items: center;
+}
+.stepper button:hover { background: var(--color-accent-soft); }
+.stepper__value { min-inline-size: 4.5rem; text-align: center; font-weight: 700; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
