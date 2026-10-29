@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>דף בית V2 - שולחן מלא</title>
+  <!-- Google Fonts: Rubik and Rubik Doodle Shadow -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            butter: '#FDD98B',
+            greybg: '#EEEEEE',
+            ink: '#3D3B38',
+            cardwhite: '#FFFFFF',
+          },
+          fontFamily: {
+            doodle: ['"Rubik Doodle Shadow"', 'cursive'],
+            rubik: ['Rubik', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Rubik', sans-serif;
+      background-color: #3D3B38;
+      color: #3D3B38;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mobile-container {
+      width: 390px;
+      min-width: 390px;
+      max-width: 390px;
+      background-color: #FFFFFF;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    /* Polaroid tilt effects */
+    .polaroid-1 { transform: rotate(-2deg); }
+    .polaroid-2 { transform: rotate(1.5deg); }
+    .polaroid-3 { transform: rotate(-1.5deg); }
+    /* Hide scrollbar for clean horizontal carousel */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#3D3B38]">
+
+  <div class="mobile-container bg-cardwhite">
+
+    <!-- 1. Header: Wordmark right, Menu left -->
+    <header class="w-full bg-cardwhite px-5 py-4 border-b-2 border-ink flex items-center justify-between z-20">
+      <!-- Right: Brand Wordmark -->
+      <div class="flex items-center gap-2">
+        <span class="w-4 h-4 rounded-full bg-butter border-2 border-ink inline-block"></span>
+        <span class="font-black text-2xl tracking-tight text-ink font-rubik">שולחן מלא</span>
+      </div>
+
+      <!-- Left: Menu button -->
+      <button aria-label="תפריט" class="w-10 h-10 flex flex-col items-center justify-center gap-1.5 border-2 border-ink rounded-lg bg-cardwhite active:bg-greybg transition-colors">
+        <span class="w-5 h-0.5 bg-ink rounded-full"></span>
+        <span class="w-5 h-0.5 bg-ink rounded-full"></span>
+        <span class="w-5 h-0.5 bg-ink rounded-full"></span>
+      </button>
+    </header>
+
+    <!-- 2. Butter Hero Block -->
+    <section class="w-full bg-butter border-b-4 border-ink pt-7 px-5 pb-0 flex flex-col items-center text-center relative overflow-hidden">
+      
+      <!-- H1 in Rubik Doodle Shadow, 48px -->
+      <h1 class="font-doodle text-[44px] leading-[1.1] text-ink font-normal mb-3 w-full tracking-wide">
+        האירוע שלכם,<br>מוגש.
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-ink text-[16px] font-medium leading-snug max-w-[320px] mb-6">
+        קייטרינג לאירועים פרטיים — בר מצווה, יום הולדת, שבת חתן
+      </p>
+
+      <!-- Primary CTA Button (Ink with Butter text, Left Arrow) -->
+      <div class="w-full flex flex-col items-center gap-3 z-10 mb-4">
+        <a href="#order" class="w-full py-4 px-6 bg-ink text-butter font-bold text-lg rounded-xl border-2 border-ink flex items-center justify-center gap-3 active:scale-[0.98] transition-transform">
+          <span>מתכננים אירוע</span>
+          <!-- Arrow pointing LEFT (Forward in RTL) -->
+          <svg class="w-6 h-6 stroke-butter fill-none stroke-[2.5]" viewBox="0 0 24 24">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+
+        <!-- Text Link -->
+        <a href="#menu" class="text-ink font-bold text-base underline underline-offset-4 hover:opacity-80 py-1">
+          לתפריט המלא
+        </a>
+      </div>
+
+      <!-- Large line-art waiter character (~200px) in Canva style carrying a tray with wine glasses, feet standing on the bottom edge -->
+      <div class="w-full flex justify-center items-end mt-2 select-none pointer-events-none">
+        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="block">
+          <!-- Tray held high -->
+          <line x1="45" y1="65" x2="155" y2="65" stroke="#3D3B38" stroke-width="4" stroke-linecap="round"/>
+          
+          <!-- Wine glass left -->
+          <path d="M65 42 L81 42 L77 54 C76 57 74 58 73 58 L73 58 C72 58 70 57 69 54 Z" stroke="#3D3B38" stroke-width="2.5" fill="#FFFFFF"/>
+          <line x1="73" y1="58" x2="73" y2="65" stroke="#3D3B38" stroke-width="2.5"/>
+          <line x1="68" y1="65" x2="78" y2="65" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Wine glass right -->
+          <path d="M119 42 L135 42 L131 54 C130 57 128 58 127 58 L127 58 C126 58 124 57 123 54 Z" stroke="#3D3B38" stroke-width="2.5" fill="#FFFFFF"/>
+          <line x1="127" y1="58" x2="127" y2="65" stroke="#3D3B38" stroke-width="2.5"/>
+          <line x1="122" y1="65" x2="132" y2="65" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Cloche / Platter in middle -->
+          <path d="M88 65 C88 52 112 52 112 65 Z" stroke="#3D3B38" stroke-width="2.5" fill="#FFFFFF"/>
+          <circle cx="100" cy="51" r="2.5" fill="#3D3B38"/>
+
+          <!-- Head (Waitress/Waiter line-art) -->
+          <circle cx="100" cy="80" r="14" stroke="#3D3B38" stroke-width="3.5" fill="#FFFFFF"/>
+          <!-- Hair bun / topknot -->
+          <circle cx="100" cy="65" r="4.5" fill="#3D3B38"/>
+          <!-- Smile and eye dots -->
+          <circle cx="95" cy="79" r="1.5" fill="#3D3B38"/>
+          <circle cx="105" cy="79" r="1.5" fill="#3D3B38"/>
+          <path d="M96 84 Q100 87 104 84" stroke="#3D3B38" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- Neck & Bowtie -->
+          <line x1="100" y1="94" x2="100" y2="99" stroke="#3D3B38" stroke-width="3.5"/>
+          <polygon points="95,99 105,99 100,103" fill="#3D3B38"/>
+          <polygon points="95,107 105,107 100,103" fill="#3D3B38"/>
+
+          <!-- Torso / Tux vest -->
+          <path d="M86 106 L114 106 L118 145 L82 145 Z" stroke="#3D3B38" stroke-width="3.5" fill="#3D3B38"/>
+          <!-- White shirt collar v -->
+          <polygon points="95,106 105,106 100,118" fill="#FFFFFF"/>
+
+          <!-- Arms holding tray -->
+          <!-- Right arm (viewer's left) -->
+          <path d="M86 110 L68 95 L62 65" stroke="#3D3B38" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Left arm (viewer's right) -->
+          <path d="M114 110 L132 95 L138 65" stroke="#3D3B38" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Apron / Skirt / Lower body -->
+          <path d="M82 145 L118 145 L124 175 L76 175 Z" stroke="#3D3B38" stroke-width="3.5" fill="#FFFFFF"/>
+          <!-- Apron tie line -->
+          <line x1="82" y1="145" x2="118" y2="145" stroke="#3D3B38" stroke-width="3.5"/>
+
+          <!-- Legs -->
+          <line x1="91" y1="175" x2="91" y2="197" stroke="#3D3B38" stroke-width="4" stroke-linecap="round"/>
+          <line x1="109" y1="175" x2="109" y2="197" stroke="#3D3B38" stroke-width="4" stroke-linecap="round"/>
+
+          <!-- Shoes right on bottom edge (y=200) -->
+          <path d="M91 197 L81 197 C78 197 78 200 81 200 L95 200 L95 197 Z" fill="#3D3B38"/>
+          <path d="M109 197 L119 197 C122 197 122 200 119 200 L105 200 L105 197 Z" fill="#3D3B38"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 3. Grey Section: "איך זה עובד" -->
+    <!-- 4 plain numbered rows separated by ink dividers (no box per row), chef character (~160px) whisking a bowl at side -->
+    <section class="w-full bg-greybg border-b-4 border-ink py-8 px-5">
+      
+      <!-- Section Title -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-black text-2xl text-ink tracking-tight font-rubik">איך זה עובד</h2>
+        <span class="text-xs font-bold bg-butter border-2 border-ink px-2.5 py-1 rounded-md text-ink">פשוט ומדויק</span>
+      </div>
+
+      <!-- Content wrapper: Chef character + 4 plain numbered rows -->
+      <div class="flex flex-col gap-6">
+
+        <!-- 4 Plain Numbered Rows separated by ink dividers (NO box per row) -->
+        <div class="flex flex-col">
+          
+          <!-- Row 1 -->
+          <div class="flex items-start gap-4 py-3.5">
+            <span class="w-8 h-8 rounded-lg bg-butter border-2 border-ink flex items-center justify-center font-black text-base text-ink shrink-0 mt-0.5">
+              1
+            </span>
+            <div class="flex-1">
+              <h3 class="font-bold text-[17px] text-ink leading-tight">מספרים לנו על האירוע</h3>
+              <p class="text-ink/80 text-sm font-normal mt-0.5">סוג האירוע, תאריך וכמות האורחים המתוכננת</p>
+            </div>
+          </div>
+          <div class="w-full h-[2px] bg-ink/20"></div>
+
+          <!-- Row 2 -->
+          <div class="flex items-start gap-4 py-3.5">
+            <span class="w-8 h-8 rounded-lg bg-butter border-2 border-ink flex items-center justify-center font-black text-base text-ink shrink-0 mt-0.5">
+              2
+            </span>
+            <div class="flex-1">
+              <h3 class="font-bold text-[17px] text-ink leading-tight">בוחרים מנות</h3>
+              <p class="text-ink/80 text-sm font-normal mt-0.5">הכמויות מחושבות לפי האורחים באופן אוטומטי</p>
+            </div>
+          </div>
+          <div class="w-full h-[2px] bg-ink/20"></div>
+
+          <!-- Row 3 -->
+          <div class="flex items-start gap-4 py-3.5">
+            <span class="w-8 h-8 rounded-lg bg-butter border-2 border-ink flex items-center justify-center font-black text-base text-ink shrink-0 mt-0.5">
+              3
+            </span>
+            <div class="flex-1">
+              <h3 class="font-bold text-[17px] text-ink leading-tight">העוזר החכם מציע</h3>
+              <p class="text-ink/80 text-sm font-normal mt-0.5">אתם מאשרים כל שינוי והתאמה לתקציב ולהעדפות</p>
+            </div>
+          </div>
+          <div class="w-full h-[2px] bg-ink/20"></div>
+
+          <!-- Row 4 -->
+          <div class="flex items-start gap-4 py-3.5">
+            <span class="w-8 h-8 rounded-lg bg-butter border-2 border-ink flex items-center justify-center font-black text-base text-ink shrink-0 mt-0.5">
+              4
+            </span>
+            <div class="flex-1">
+              <h3 class="font-bold text-[17px] text-ink leading-tight">שולחים בקשה</h3>
+              <p class="text-ink/80 text-sm font-normal mt-0.5">בעל העסק מאשר את התאריך והתפריט ביומן</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chef character (~160px) whisking a bowl standing alongside the steps -->
+        <div class="w-full flex items-center justify-center pt-2">
+          <div class="bg-cardwhite border-2 border-ink rounded-2xl p-4 flex items-center justify-between w-full">
+            <div class="text-right pr-2">
+              <div class="text-xs font-bold text-ink/70">המטבח שלנו</div>
+              <div class="font-bold text-ink text-base">טרי, מוקפד וללא פשרות</div>
+              <div class="text-xs text-ink/80 mt-1">כל מנה מוכנה בבוקר האירוע</div>
+            </div>
+            <!-- Chef character SVG (~160px height) -->
+            <svg width="110" height="150" viewBox="0 0 110 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0">
+              <!-- Chef Hat -->
+              <path d="M42 35 C35 35 32 25 38 18 C35 10 48 5 55 10 C62 4 75 10 72 18 C78 25 75 35 68 35 Z" fill="#FFFFFF" stroke="#3D3B38" stroke-width="3"/>
+              <!-- Hat base band -->
+              <rect x="42" y="33" width="26" height="7" rx="2" fill="#FDD98B" stroke="#3D3B38" stroke-width="2.5"/>
+
+              <!-- Head -->
+              <circle cx="55" cy="50" r="11" fill="#FFFFFF" stroke="#3D3B38" stroke-width="3"/>
+              <!-- Face details -->
+              <circle cx="51" cy="49" r="1.2" fill="#3D3B38"/>
+              <circle cx="59" cy="49" r="1.2" fill="#3D3B38"/>
+              <path d="M52 54 Q55 57 58 54" stroke="#3D3B38" stroke-width="2" stroke-linecap="round"/>
+              <!-- Moustache -->
+              <path d="M50 52 Q55 54 60 52" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+
+              <!-- Neck -->
+              <line x1="55" y1="61" x2="55" y2="66" stroke="#3D3B38" stroke-width="3"/>
+
+              <!-- Chef Coat Torso -->
+              <path d="M40 66 L70 66 L74 105 L36 105 Z" fill="#FFFFFF" stroke="#3D3B38" stroke-width="3"/>
+              <!-- Double breasted buttons -->
+              <circle cx="49" cy="75" r="1.5" fill="#3D3B38"/>
+              <circle cx="57" cy="75" r="1.5" fill="#3D3B38"/>
+              <circle cx="49" cy="85" r="1.5" fill="#3D3B38"/>
+              <circle cx="57" cy="85" r="1.5" fill="#3D3B38"/>
+              <circle cx="49" cy="95" r="1.5" fill="#3D3B38"/>
+              <circle cx="57" cy="95" r="1.5" fill="#3D3B38"/>
+
+              <!-- Apron apron tie -->
+              <line x1="36" y1="105" x2="74" y2="105" stroke="#3D3B38" stroke-width="3"/>
+
+              <!-- Hands whisking a bowl -->
+              <!-- Mixing Bowl -->
+              <path d="M40 85 C40 102 70 102 70 85 Z" fill="#FDD98B" stroke="#3D3B38" stroke-width="3"/>
+              <!-- Whisk -->
+              <line x1="62" y1="72" x2="52" y2="92" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+              <ellipse cx="51" cy="93" rx="4" ry="6" transform="rotate(-30 51 93)" stroke="#3D3B38" stroke-width="2" fill="none"/>
+
+              <!-- Arms -->
+              <path d="M40 70 L30 82 L42 86" stroke="#3D3B38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M70 70 L78 78 L63 76" stroke="#3D3B38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+              <!-- Pants -->
+              <line x1="47" y1="105" x2="47" y2="135" stroke="#3D3B38" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="63" y1="105" x2="63" y2="135" stroke="#3D3B38" stroke-width="3.5" stroke-linecap="round"/>
+
+              <!-- Clogs / Shoes -->
+              <path d="M47 135 L38 135 C36 135 36 139 39 139 L51 139 Z" fill="#3D3B38"/>
+              <path d="M63 135 L72 135 C74 135 74 139 71 139 L59 139 Z" fill="#3D3B38"/>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. "מנות אהובות" Section -->
+    <!-- Horizontal row of 3 food photos with 4px ink frame and 20px corners, polaroid tilt, name + price below in plain text. Hint "גללו לצפייה" with chevron pointing LEFT -->
+    <section class="w-full bg-cardwhite border-b-4 border-ink py-8 px-5">
+      
+      <!-- Header row with title and scroll hint -->
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="font-black text-2xl text-ink tracking-tight font-rubik">מנות אהובות</h2>
+        
+        <!-- Hint "גללו לצפייה" with chevron pointing LEFT (RTL scroll direction) -->
+        <div class="flex items-center gap-1 text-ink/75 font-bold text-sm">
+          <span>גללו לצפייה</span>
+          <svg class="w-4 h-4 stroke-ink stroke-[2.5] fill-none" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Horizontal scroll container -->
+      <div class="flex items-start gap-4 overflow-x-auto no-scrollbar pb-3 pt-2 -mx-5 px-5">
+        
+        <!-- Dish 1: סלט טאבולה (Polaroid tilt -2deg) -->
+        <div class="flex flex-col shrink-0 w-[190px] polaroid-1 transition-transform">
+          <div class="w-[190px] h-[190px] rounded-[20px] border-4 border-ink overflow-hidden bg-greybg">
+            <img src="../assets/photo-7e49195e2c.jpg" alt="סלט טאבולה" class="w-full h-full object-cover">
+          </div>
+          <div class="mt-3 text-right">
+            <p class="font-black text-ink text-[17px] leading-tight">סלט טאבולה</p>
+            <p class="text-ink font-semibold text-sm mt-0.5">₪180 למגש</p>
+          </div>
+        </div>
+
+        <!-- Dish 2: פרגיות על האש (Polaroid tilt +1.5deg) -->
+        <div class="flex flex-col shrink-0 w-[190px] polaroid-2 transition-transform">
+          <div class="w-[190px] h-[190px] rounded-[20px] border-4 border-ink overflow-hidden bg-greybg">
+            <img src="../assets/photo-492a651e3f.jpg" alt="שיפודי פרגיות" class="w-full h-full object-cover">
+          </div>
+          <div class="mt-3 text-right">
+            <p class="font-black text-ink text-[17px] leading-tight">פרגיות על האש</p>
+            <p class="text-ink font-semibold text-sm mt-0.5">₪95 לק״ג</p>
+          </div>
+        </div>
+
+        <!-- Dish 3: חלה מתוקה / קיש בטטה (Polaroid tilt -1.5deg) -->
+        <div class="flex flex-col shrink-0 w-[190px] polaroid-3 transition-transform">
+          <div class="w-[190px] h-[190px] rounded-[20px] border-4 border-ink overflow-hidden bg-greybg">
+            <img src="../assets/photo-445e46faa2.jpg" alt="חלה מתוקה ומאפים" class="w-full h-full object-cover">
+          </div>
+          <div class="mt-3 text-right">
+            <p class="font-black text-ink text-[17px] leading-tight">חלה מתוקה</p>
+            <p class="text-ink font-semibold text-sm mt-0.5">₪28 ליחידה</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action below carousel -->
+      <div class="mt-4">
+        <a href="#menu" class="w-full py-3.5 px-4 bg-greybg text-ink font-bold text-base rounded-xl border-2 border-ink flex items-center justify-center gap-2 active:bg-butter transition-colors">
+          <span>לכל המנות בתפריט</span>
+          <svg class="w-5 h-5 stroke-ink fill-none stroke-[2]" viewBox="0 0 24 24">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+      </div>
+
+    </section>
+
+    <!-- 5. Butter Band with a woman character leaning on a high bar table (~180px) -->
+    <!-- Text "כשר · איסוף או משלוח · מידע על אלרגנים בכל מנה" as plain text with small icons, button "מתכננים אירוע" arrow LEFT -->
+    <section class="w-full bg-butter border-b-4 border-ink py-7 px-5 flex flex-col items-center">
+      
+      <!-- Woman character leaning on high bar table (~180px) -->
+      <div class="w-full flex justify-center mb-4">
+        <svg width="220" height="180" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- High Bar Table (Standing height table) -->
+          <!-- Table top -->
+          <rect x="120" y="90" width="80" height="8" rx="2" fill="#FFFFFF" stroke="#3D3B38" stroke-width="3"/>
+          <!-- Table center leg -->
+          <line x1="160" y1="98" x2="160" y2="168" stroke="#3D3B38" stroke-width="4"/>
+          <!-- Table base disc -->
+          <path d="M135 168 L185 168" stroke="#3D3B38" stroke-width="4" stroke-linecap="round"/>
+          
+          <!-- Drink / Cocktail glass on bar table -->
+          <path d="M152 75 L168 75 L160 85 Z" fill="#FDD98B" stroke="#3D3B38" stroke-width="2"/>
+          <line x1="160" y1="85" x2="160" y2="90" stroke="#3D3B38" stroke-width="2"/>
+          <line x1="156" y1="90" x2="164" y2="90" stroke="#3D3B38" stroke-width="2"/>
+          <!-- Straw -->
+          <line x1="165" y1="70" x2="158" y2="82" stroke="#3D3B38" stroke-width="1.5" stroke-linecap="round"/>
+
+          <!-- Woman Character leaning on the table -->
+          <!-- Head -->
+          <circle cx="95" cy="50" r="13" fill="#FFFFFF" stroke="#3D3B38" stroke-width="3"/>
+          <!-- Hair (Chic Bob/Curly line-art) -->
+          <path d="M82 52 C80 38 108 34 108 50 C110 58 106 63 103 64" fill="#3D3B38"/>
+          <!-- Face features -->
+          <circle cx="91" cy="50" r="1.3" fill="#FFFFFF"/>
+          <path d="M89 54 Q92 57 95 54" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+
+          <!-- Neck -->
+          <line x1="95" y1="63" x2="95" y2="70" stroke="#3D3B38" stroke-width="3"/>
+
+          <!-- Torso (Casual stylish blouse) -->
+          <path d="M82 70 L108 70 L112 115 L78 115 Z" fill="#FFFFFF" stroke="#3D3B38" stroke-width="3"/>
+          <path d="M92 70 L95 78 L98 70" stroke="#3D3B38" stroke-width="2"/>
+
+          <!-- Leaning Arm (Right arm resting on the table top) -->
+          <path d="M106 73 L126 84 L142 88" stroke="#3D3B38" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Hand on table surface -->
+          <circle cx="144" cy="88" r="3" fill="#3D3B38"/>
+
+          <!-- Left arm (Hand on waist) -->
+          <path d="M82 73 L70 85 L79 96" stroke="#3D3B38" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Slacks / Pants (Casual leaning posture) -->
+          <path d="M78 115 L112 115 L106 168 L72 168 Z" fill="#3D3B38"/>
+          <line x1="92" y1="125" x2="89" y2="168" stroke="#FFFFFF" stroke-width="2"/>
+
+          <!-- Shoes -->
+          <path d="M72 168 L62 168 C60 168 60 172 63 172 L77 172 Z" fill="#3D3B38"/>
+          <path d="M106 168 L116 168 C118 168 118 172 115 172 L101 172 Z" fill="#3D3B38"/>
+        </svg>
+      </div>
+
+      <!-- Text as plain text with small icons (כשר · איסוף או משלוח · מידע על אלרגנים בכל מנה) -->
+      <div class="w-full flex flex-col gap-2.5 mb-6 text-center">
+        
+        <div class="flex items-center justify-center gap-2 text-ink font-bold text-base">
+          <!-- Small kosher icon -->
+          <svg class="w-5 h-5 stroke-ink stroke-[2.5] fill-none" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <polyline points="9 12 11 14 15 10"></polyline>
+          </svg>
+          <span>כשר בהשגחה</span>
+          <span class="text-ink/40 font-black">·</span>
+          
+          <!-- Small delivery icon -->
+          <svg class="w-5 h-5 stroke-ink stroke-[2.5] fill-none" viewBox="0 0 24 24">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+          <span>איסוף או משלוח</span>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 text-ink font-semibold text-sm">
+          <!-- Small allergy icon -->
+          <svg class="w-4 h-4 stroke-ink stroke-[2.5] fill-none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>מידע על אלרגנים בכל מנה</span>
+        </div>
+
+      </div>
+
+      <!-- Button "מתכננים אירוע" arrow LEFT -->
+      <a href="#order" class="w-full py-4 px-6 bg-ink text-butter font-bold text-lg rounded-xl border-2 border-ink flex items-center justify-center gap-3 active:scale-[0.98] transition-transform">
+        <span>מתכננים אירוע</span>
+        <svg class="w-6 h-6 stroke-butter fill-none stroke-[2.5]" viewBox="0 0 24 24">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+
+    </section>
+
+    <!-- 6. Ink Footer, Butter Text: Phone, Link "כניסה לבעל העסק" -->
+    <footer class="w-full bg-ink text-butter py-8 px-6 flex flex-col items-center text-center">
+      
+      <!-- Brand Name -->
+      <div class="font-black text-xl tracking-tight mb-1">שולחן מלא</div>
+      <p class="text-butter/80 text-xs mb-5">קייטרינג בוטיק לאירועים פרטיים ומשפחתיים</p>
+
+      <!-- Phone Number Button / Contact -->
+      <a href="tel:050-1234567" class="w-full max-w-[280px] py-3 px-4 bg-[#4A4743] text-butter font-bold text-base rounded-xl border border-butter/30 flex items-center justify-center gap-2 mb-6 active:bg-butter active:text-ink transition-colors">
+        <!-- Phone icon -->
+        <svg class="w-5 h-5 stroke-butter fill-none stroke-[2]" viewBox="0 0 24 24">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        </svg>
+        <span>בירורים והזמנות: 050-1234567</span>
+      </a>
+
+      <!-- Link "כניסה לבעל העסק" -->
+      <a href="#admin" class="text-butter/90 hover:text-butter font-medium text-sm underline underline-offset-4 flex items-center gap-1.5 mb-6">
+        <!-- Lock icon -->
+        <svg class="w-4 h-4 stroke-butter fill-none stroke-[2]" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>כניסה לבעל העסק</span>
+      </a>
+
+      <!-- Copyright -->
+      <div class="text-[11px] text-butter/60 border-t border-butter/20 pt-4 w-full">
+        כל הזכויות שמורות © שולחן מלא
+      </div>
+
+    </footer>
+
+  </div>
+
+</body>
+</html>

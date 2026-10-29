@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מסך C5 V2: הבקשה נשלחה - שולחן מלא</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            doodle: ['"Rubik Doodle Shadow"', 'cursive'],
+            rubik: ['Rubik', 'sans-serif'],
+          },
+          colors: {
+            butter: '#fed269',
+            ink: '#2d2b29',
+            surface: '#f9f9f9',
+            'border-ink': '#2d2b29',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Rubik', sans-serif;
+      background-color: #f9f9f9;
+      color: #2d2b29;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .font-doodle {
+      font-family: 'Rubik Doodle Shadow', cursive;
+    }
+  </style>
+</head>
+<body class="bg-surface text-ink min-h-screen flex justify-center selection:bg-butter">
+
+  <!-- Mobile screen container (bare 390px, no phone frame, no desktop canvas) -->
+  <main class="w-[390px] min-h-screen bg-surface flex flex-col border-x border-[#ecebe8]">
+    
+    <!-- Top Bar -->
+    <header class="h-14 px-4 bg-surface flex items-center justify-between border-b border-ink/10 sticky top-0 z-20">
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-butter border border-ink inline-block"></span>
+        <span class="font-bold text-lg tracking-tight text-ink font-rubik">שולחן מלא</span>
+      </div>
+      <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-black/5 active:scale-95 transition-transform" aria-label="סגירה">
+        <span class="material-symbols-outlined text-ink text-2xl">close</span>
+      </button>
+    </header>
+
+    <!-- Butter Hero Block -->
+    <section class="bg-butter px-5 pt-4 pb-6 flex flex-col items-center text-center border-b-2 border-ink">
+      <!-- Waiter Character walking with tray and sealed envelope (~200px) -->
+      <div class="w-[200px] h-[190px] mb-3 flex items-center justify-center">
+        <svg viewBox="0 0 200 190" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Walking speed dash lines under feet -->
+          <line x1="60" y1="180" x2="140" y2="180" stroke="#2d2b29" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/>
+          <line x1="45" y1="180" x2="52" y2="180" stroke="#2d2b29" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="148" y1="180" x2="158" y2="180" stroke="#2d2b29" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Body / Apron & Legs (walking pose) -->
+          <!-- Back leg (striding back) -->
+          <path d="M92 145 L85 178" stroke="#2d2b29" stroke-width="3" stroke-linecap="round"/>
+          <path d="M85 178 L78 178" stroke="#2d2b29" stroke-width="3" stroke-linecap="round"/>
+          
+          <!-- Front leg (striding forward) -->
+          <path d="M106 145 L116 178" stroke="#2d2b29" stroke-width="3" stroke-linecap="round"/>
+          <path d="M116 178 L126 178" stroke="#2d2b29" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- Torso / Tuxedo Vest & Apron -->
+          <path d="M88 88 L112 88 L118 145 L82 145 Z" fill="#2d2b29" stroke="#2d2b29" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M93 88 L100 102 L107 88 Z" fill="#ffffff" stroke="#2d2b29" stroke-width="1.5"/>
+          <!-- Bowtie -->
+          <path d="M97 91 L103 91 L100 94 Z" fill="#2d2b29"/>
+          <path d="M97 97 L103 97 L100 94 Z" fill="#2d2b29"/>
+          <circle cx="100" cy="94" r="1.5" fill="#fed269"/>
+          <!-- Apron tie line -->
+          <line x1="82" y1="112" x2="118" y2="112" stroke="#ffffff" stroke-width="2"/>
+
+          <!-- Head & Chef / Waiter Cap -->
+          <circle cx="100" cy="62" r="15" fill="#ffffff" stroke="#2d2b29" stroke-width="2.5"/>
+          <!-- Smiling face -->
+          <circle cx="95" cy="59" r="1.8" fill="#2d2b29"/>
+          <circle cx="105" cy="59" r="1.8" fill="#2d2b29"/>
+          <path d="M95 67 Q100 72 105 67" stroke="#2d2b29" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- Waiter peaked cap -->
+          <path d="M86 52 C86 42 114 42 114 52 Z" fill="#ffffff" stroke="#2d2b29" stroke-width="2.5"/>
+          <path d="M82 52 L118 52" stroke="#2d2b29" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Right arm (holding high silver tray with cloche dome) -->
+          <!-- Arm extends up-right (facing left/forward) -->
+          <path d="M89 95 L72 105 L62 90" stroke="#2d2b29" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Tray -->
+          <line x1="42" y1="89" x2="80" y2="89" stroke="#2d2b29" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Food Cloche Cover on tray -->
+          <path d="M47 88 C47 72 75 72 75 88 Z" fill="#ffffff" stroke="#2d2b29" stroke-width="2.5"/>
+          <circle cx="61" cy="71" r="3" fill="#ffffff" stroke="#2d2b29" stroke-width="2"/>
+          <!-- Sparkles on tray -->
+          <path d="M45 68 L47 62 L49 68 L55 70 L49 72 L47 78 L45 72 L39 70 Z" fill="#2d2b29" transform="scale(0.5) translate(45, 60)"/>
+          <circle cx="78" cy="65" r="1.5" fill="#2d2b29"/>
+
+          <!-- Left arm (holding sealed priority envelope forward) -->
+          <path d="M111 96 L130 108 L142 102" stroke="#2d2b29" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Sealed Envelope in hand -->
+          <g transform="translate(136, 88) rotate(8)">
+            <!-- Envelope body -->
+            <rect x="0" y="0" width="38" height="26" rx="2" fill="#ffffff" stroke="#2d2b29" stroke-width="2.2"/>
+            <!-- Flap fold lines -->
+            <path d="M1 1 L19 15 L37 1" stroke="#2d2b29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- Bottom crease lines -->
+            <path d="M1 25 L13 14" stroke="#2d2b29" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M37 25 L25 14" stroke="#2d2b29" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Red / Wax seal in center of flap -->
+            <circle cx="19" cy="14" r="4.5" fill="#fed269" stroke="#2d2b29" stroke-width="1.8"/>
+            <circle cx="19" cy="14" r="2" fill="#2d2b29"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Rubik Doodle Shadow H1 -->
+      <h1 class="font-doodle text-3xl font-normal text-ink mb-2 tracking-wide leading-tight">
+        הבקשה נשלחה לעסק
+      </h1>
+
+      <p class="text-sm font-medium text-ink/85 max-w-[320px] leading-relaxed">
+        זו עדיין לא הזמנה מאושרת. בעל העסק יבדוק ויחזור אליכם.
+      </p>
+    </section>
+
+    <!-- White Section (Status, Timeline & Plain Summary) -->
+    <section class="bg-white px-5 py-6 border-b border-ink/10">
+      
+      <!-- Status pill & Request number header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 border-ink bg-white font-medium text-xs text-ink">
+          <span class="material-symbols-outlined text-[#d97706] text-base" style="font-variation-settings: 'FILL' 1;">schedule</span>
+          <span>ממתין לאישור העסק</span>
+        </div>
+        <span class="font-medium text-sm text-ink bg-[#f4f3f0] px-2.5 py-1 rounded-md border border-ink/20"><bdi dir="ltr">#Q-1042</bdi></span>
+      </div>
+
+      <!-- Vertical Timeline -->
+      <div class="relative pr-2 mb-6">
+        <!-- Vertical connector line -->
+        <div class="absolute right-[15px] top-3 bottom-5 w-0.5 bg-ink/20"></div>
+
+        <div class="space-y-5">
+          
+          <!-- Step 1: Draft (Done) -->
+          <div class="flex items-start gap-3.5 relative">
+            <div class="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center shrink-0 z-10">
+              <span class="material-symbols-outlined text-base">check</span>
+            </div>
+            <div class="pt-1 flex-1">
+              <div class="text-sm font-medium text-ink/75">טיוטה</div>
+            </div>
+          </div>
+
+          <!-- Step 2: Sent for approval (Current, Bold) -->
+          <div class="flex items-start gap-3.5 relative">
+            <div class="w-8 h-8 rounded-full bg-butter border-2 border-ink text-ink flex items-center justify-center shrink-0 z-10">
+              <div class="w-3 h-3 rounded-full bg-ink"></div>
+            </div>
+            <div class="pt-1 flex-1">
+              <div class="text-base font-bold text-ink leading-tight">
+                נשלחה לאישור
+              </div>
+              <div class="text-xs text-ink/70 font-medium mt-0.5"><bdi dir="ltr">10.11.2026 18:32</bdi></div>
+            </div>
+          </div>
+
+          <!-- Step 3: Owner Approval or Rejection -->
+          <div class="flex items-start gap-3.5 relative">
+            <div class="w-8 h-8 rounded-full bg-white border-2 border-ink/30 text-ink/40 flex items-center justify-center shrink-0 z-10">
+              <div class="w-2.5 h-2.5 rounded-full border border-ink/40"></div>
+            </div>
+            <div class="pt-1 flex-1">
+              <div class="text-sm font-normal text-ink">
+                אישור או דחייה של בעל העסק
+              </div>
+              <div class="text-xs text-ink/60 mt-0.5">
+                מענה צפוי תוך 48 שעות
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Final Coordination -->
+          <div class="flex items-start gap-3.5 relative">
+            <div class="w-8 h-8 rounded-full bg-white border-2 border-ink/30 text-ink/40 flex items-center justify-center shrink-0 z-10">
+              <div class="w-2.5 h-2.5 rounded-full border border-ink/40"></div>
+            </div>
+            <div class="pt-1 flex-1">
+              <div class="text-sm font-normal text-ink">
+                תיאום סופי
+              </div>
+              <div class="text-xs text-ink/60 mt-0.5">
+                פרטי איסוף או משלוח סופיים
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <hr class="border-t border-ink/15 my-5" />
+
+      <!-- Plain Summary Lines (fewer boxes, clean hierarchy) -->
+      <div class="space-y-2.5 text-ink text-sm">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-ink/60 text-lg">event</span>
+          <span class="font-medium">בר מצווה · 14.12.2026 · 12:00–14:00 · משלוח</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-ink/60 text-lg">group</span>
+          <span>78 אורחים · 4 מנות</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span class="font-bold text-base text-ink">סה״כ להצעה</span>
+          <span class="font-bold text-xl text-ink"><bdi dir="ltr">₪2,555</bdi></span>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-ink/75 pt-2 border-t border-dashed border-ink/15">
+          <span class="material-symbols-outlined text-ink/70 text-base">lock</span>
+          <span>המחירים נשמרו ולא ישתנו גם אם התפריט יתעדכן</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Grey Section: מה כל סטטוס אומר (Flat grey, plain rows, no heavy card boxes) -->
+    <section class="bg-[#f2f1ed] px-5 py-5 border-b border-ink/10">
+      <h2 class="text-xs font-bold text-ink/70 uppercase tracking-wider mb-3">
+        מה כל סטטוס אומר
+      </h2>
+
+      <div class="space-y-3">
+        
+        <!-- Row 1: Draft -->
+        <div class="flex items-center gap-3">
+          <div class="w-[128px] shrink-0">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-dashed border-ink text-xs font-medium text-ink bg-white/70">
+              <span class="material-symbols-outlined text-xs">edit</span>
+              <span>טיוטה</span>
+            </span>
+          </div>
+          <span class="text-xs text-ink/80 leading-snug">
+            הבקשה עדיין אצלכם ולא נשלחה
+          </span>
+        </div>
+
+        <!-- Row 2: Waiting for approval -->
+        <div class="flex items-center gap-3">
+          <div class="w-[128px] shrink-0">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-ink text-xs font-medium text-ink bg-white">
+              <span class="material-symbols-outlined text-xs text-[#d97706]" style="font-variation-settings: 'FILL' 1;">schedule</span>
+              <span>ממתין לאישור</span>
+            </span>
+          </div>
+          <span class="text-xs text-ink/80 leading-snug">
+            העסק בודק תאריך, זמינות ומחיר
+          </span>
+        </div>
+
+        <!-- Row 3: Approved -->
+        <div class="flex items-center gap-3">
+          <div class="w-[128px] shrink-0">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#15803d] text-white text-xs font-medium">
+              <span class="material-symbols-outlined text-xs">check</span>
+              <span>אושר</span>
+            </span>
+          </div>
+          <span class="text-xs text-ink/80 leading-snug">
+            העסק אישר את הבקשה. האירוע שמור ביומן.
+          </span>
+        </div>
+
+        <!-- Row 4: Declined -->
+        <div class="flex items-center gap-3">
+          <div class="w-[128px] shrink-0">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-[#b91c1c] text-[#b91c1c] text-xs font-medium bg-white/80">
+              <span class="material-symbols-outlined text-xs">close</span>
+              <span>נדחה</span>
+            </span>
+          </div>
+          <span class="text-xs text-ink/80 leading-snug">
+            העסק לא יכול לספק את ההזמנה בתאריך הזה
+          </span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Bottom Actions / Buttons -->
+    <footer class="p-5 bg-surface mt-auto space-y-3">
+      <!-- Secondary Action -->
+      <button class="w-full py-3.5 px-4 rounded-xl border-2 border-ink bg-white text-ink font-bold text-sm flex items-center justify-center gap-2 hover:bg-black/5 active:scale-[0.98] transition-all">
+        <span class="material-symbols-outlined text-lg">receipt_long</span>
+        <span>צפייה בפרטי הבקשה</span>
+      </button>
+
+      <!-- Back Link with Left-pointing Arrow (RTL forward/return) -->
+      <a href="#" class="w-full py-2 flex items-center justify-center gap-1.5 text-sm font-medium text-ink hover:underline active:opacity-75 transition-opacity">
+        <span>חזרה לדף הבית</span>
+        <span class="material-symbols-outlined text-lg">arrow_back</span>
+      </a>
+    </footer>
+
+  </main>
+
+</body>
+</html>
