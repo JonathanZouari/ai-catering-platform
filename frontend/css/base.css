@@ -1,42 +1,97 @@
-/* Neutral design tokens — replace when brand is decided (OPEN_DECISIONS #20). */
+/* Design tokens, reset, focus ring and motion safety.
+   Values come from the approved UX prototype (warm cream/peach, espresso, terracotta, lime CTA).
+   Component and page styles live in /css/app.css, which only consumes these tokens. */
 :root {
-  --color-bg: #faf8f5;
-  --color-surface: #ffffff;
-  --color-text: #1f1d1a;
-  --color-muted: #6b665e;
-  --color-accent: #7a4f2a;
-  --color-success: #2f6b3a;
-  --color-danger: #a12a2a;
-  --color-warning: #8a5a00;
+  /* Surfaces */
+  --color-bg: #FBF4EA;              /* page background, warm cream */
+  --color-bg-2: #F6DFC6;            /* hero gradient end, peach */
+  --color-bg-mid: #FAEBDA;          /* hero gradient middle stop */
+  --color-bg-inner-end: #F9EADB;    /* inner page gradient end */
+  --color-surface: #FFFDF9;         /* cards, panels */
+  --color-white: #FFFFFF;           /* inputs, stepper, proposal card */
+
+  /* Text */
+  --color-text: #2A1F17;            /* espresso, 14.7:1 on bg */
+  --color-muted: #6B5A4C;           /* secondary text, 6.0:1 on bg */
+
+  /* Brand */
+  --color-accent: #9A4A24;          /* terracotta: links, borders, focus ring */
+  --color-highlight: #C6F135;       /* lime: one primary CTA per view only */
+  --color-highlight-hover: #B6E21F;
+
+  /* Status (text color + tint background) */
+  --color-success: #2F6B3A;
+  --color-success-bg: #E6F2E3;
+  --color-warning: #8A5A00;
+  --color-warning-bg: #FFF3DA;
+  --color-danger: #A12A2A;
+  --color-danger-bg: #F8E3E3;
+  --color-draft-bg: #EFE6DC;
+
+  /* Tints and lines */
+  --color-accent-tint: #F5E4D6;     /* selected chip, stepper hover */
+  --color-accent-tint-2: #FBEFE4;   /* checked option card, proposal header */
+  --color-bubble-user: #EFE3D6;     /* user chat bubble */
+  --color-plate: #F3D9BF;           /* scroll-built table plate */
+  --color-line: #E8D6C3;            /* hairlines, card borders */
+  --color-input-border: #B9A493;    /* form field border (3:1 non-text contrast) */
+
+  /* Spacing (4px scale) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
-  --radius: 12px;
-  --shadow-1: 0 1px 3px rgb(0 0 0 / 0.08);
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Shape and elevation */
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+  --shadow-1: 0 1px 3px rgb(42 31 23 / 0.08);
+  --shadow-2: 0 10px 30px -12px rgb(42 31 23 / 0.28);
+
+  /* Layout */
+  --target: 44px;                   /* minimum touch target */
+  --max: 1200px;                    /* content max inline size */
+  --bar-h: 76px;                    /* mobile bottom order bar height */
+
+  /* TEMPORARY placeholder font, replace when brand is decided (OPEN_DECISIONS #20).
+     System font stacks only: no @font-face, no web fonts. */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Hebrew", Arial, sans-serif;
+
+  /* Motion */
+  --ease: cubic-bezier(.2, .7, .2, 1);
 }
 
+/* Reset */
 *, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   font-family: var(--font);
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.6;
   color: var(--color-text);
   background: var(--color-bg);
+  overflow-x: clip;
 }
 
-main {
-  max-width: 1100px;
-  margin-inline: auto;
-  padding: var(--space-6) var(--space-4);
-}
+img { display: block; max-inline-size: 100%; block-size: auto; }
 
-:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+/* Focus ring: 3px, accent */
+:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; border-radius: 6px; }
 
+/* Motion safety: no animation or transition when the user asks for reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

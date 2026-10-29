@@ -1,18 +1,149 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
-  <link rel="stylesheet" href="/css/base.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; form-action 'self'; base-uri 'none'">
+<title>קייטרינג לאירועים פרטיים</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
+<a class="skip-link" href="#main">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="wrap">
+    <!-- TEMPORARY brand name placeholder (OPEN_DECISIONS #20) -->
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>שולחן ערוך</a>
+    <nav aria-label="ניווט ראשי">
+      <ul class="nav">
+      <li class="nav-hide-sm"><a href="/" aria-current="page">ראשי</a></li>
+      <li><a href="/customer/#event">תכנון אירוע</a></li>
+      <li><a href="/customer/#menu">תפריט</a></li>
+      <li><a href="/customer/#assistant">העוזר</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <p class="eyebrow">קייטרינג לאירועים פרטיים</p>
+      <h1 class="hero-title" id="hero-title"><span class="line">כל שולחן</span> <span class="line">מספר <em>סיפור</em></span></h1>
+      <figure class="hero-figure">
+        <img src="/assets/hero-feast.jpg" width="1152" height="864" alt="קרש עץ גדול עמוס ירקות קלויים, חומוס, סלק, פיתות, טאבולה ועוף צלוי">
+      </figure>
+      <p class="hero-sub">בוחרים אירוע, בונים תפריט, ומקבלים הצעת מחיר שבעל העסק אישר אישית.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="/customer/#event">תכננו את האירוע</a>
+        <a class="link-arrow" href="#how">איך זה עובד</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="events-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="events-title">סוגי אירועים</h2>
+        <p>נקודת פתיחה לכל חגיגה. אפשר לשנות כל מנה בהמשך.</p>
+      </div>
+      <ul class="event-grid">
+      <li>
+        <a class="card-link" href="/customer/?type=bar-mitzvah#event">
+          <article class="card">
+            <div class="card-media"><img src="/assets/dish-chicken.jpg" alt="תבשיל עוף בלימון, זיתים ורוזמרין בתבנית לבנה" width="1024" height="1024" loading="lazy"></div>
+            <div class="card-body">
+              <h3>בר/בת מצווה</h3>
+              <p>מנות עיקריות חגיגיות לכל המשפחה</p>
+            </div>
+          </article>
+        </a>
+      </li>
+      <li>
+        <a class="card-link" href="/customer/?type=shabbat#event">
+          <article class="card">
+            <div class="card-media"><img src="/assets/dish-challah.jpg" alt="חלה קלועה עם שומשום על קרש עץ ליד נרות שבת דולקים" width="1024" height="1024" loading="lazy"></div>
+            <div class="card-body">
+              <h3>שבת וחג</h3>
+              <p>חלות, סלטים ותבשילים חמים</p>
+            </div>
+          </article>
+        </a>
+      </li>
+      <li>
+        <a class="card-link" href="/customer/?type=birthday#event">
+          <article class="card">
+            <div class="card-media"><img src="/assets/dish-dessert.jpg" alt="מגש טארטים קטנים עם פירות יער ופרלינים של שוקולד" width="1024" height="1024" loading="lazy"></div>
+            <div class="card-body">
+              <h3>יום הולדת</h3>
+              <p>קינוחים ומגשי אירוח קלילים</p>
+            </div>
+          </article>
+        </a>
+      </li>
+      <li>
+        <a class="card-link" href="/customer/?type=family#event">
+          <article class="card">
+            <div class="card-media"><img src="/assets/dish-mezze.jpg" alt="שולחן מזה עם חומוס, חצילים קלויים, זיתים ועשבי תיבול" width="1024" height="1024" loading="lazy"></div>
+            <div class="card-body">
+              <h3>אירוע משפחתי</h3>
+              <p>מגשי מזה ושולחן פתוח לשיתוף</p>
+            </div>
+          </article>
+        </a>
+      </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section sb" aria-labelledby="sb-title">
+    <div class="wrap section-head sb-head">
+      <h2 id="sb-title">השולחן נבנה תוך כדי גלילה</h2>
+      <p>מנה אחרי מנה, כמו שהאירוע שלכם נבנה אצלנו.</p>
+    </div>
+    <div class="sb-track">
+      <div class="sb-stage">
+        <ol class="sb-grid" aria-label="ארבע מנות על השולחן">
+          <li class="sb-item"><img src="/assets/dish-mezze.jpg" width="1024" height="1024" loading="lazy" alt="מגש מזה עם חומוס, חצילים קלויים וזיתים"><p class="sb-cap"><span class="n">1 מתוך 4</span>מזטים לפתיחה</p></li>
+          <li class="sb-item"><img src="/assets/dish-chicken.jpg" width="1024" height="1024" loading="lazy" alt="עוף צלוי עם לימון, זיתים ורוזמרין"><p class="sb-cap"><span class="n">2 מתוך 4</span>המנה העיקרית</p></li>
+          <li class="sb-item"><img src="/assets/dish-challah.jpg" width="1024" height="1024" loading="lazy" alt="חלה קלועה עם שומשום ליד נרות שבת"><p class="sb-cap"><span class="n">3 מתוך 4</span>חלה לשבת</p></li>
+          <li class="sb-item"><img src="/assets/dish-dessert.jpg" width="1024" height="1024" loading="lazy" alt="טארטים קטנים עם פירות יער ופרלינים של שוקולד"><p class="sb-cap"><span class="n">4 מתוך 4</span>ומשהו מתוק</p></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="how-title">איך זה עובד</h2>
+        <p>שלושה צעדים, בלי טלפונים ובלי הפתעות במחיר.</p>
+      </div>
+      <ol class="steps">
+        <li><h3>בחרו אירוע</h3><p>סוג האירוע, תאריך, מספר אורחים ומשלוח או איסוף.</p></li>
+        <li><h3>בנו תפריט</h3><p>בחרו מנות מהקטלוג. הכמויות והמחיר מחושבים לפי מספר האורחים, והעוזר החכם יכול להציע שינויים.</p></li>
+        <li><h3>קבלו הצעת מחיר מאושרת</h3><p>בעל העסק עובר על כל בקשה ומאשר אותה אישית. עד אז זו בקשה, לא הזמנה סגורה.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="trust" aria-label="למה אצלנו">
+    <div class="wrap">
+      <ul>
+        <li>כשר</li>
+        <li>מותאם לאלרגיות</li>
+        <li>הצעת מחיר מאושרת ע"י הבעלים</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 · קייטרינג לאירועים פרטיים</p>
+    <ul class="footer-links">
+      <li><a href="#how">איך זה עובד</a></li>
+      <li><a href="/admin/">כניסת בעל העסק</a></li>
     </ul>
-  </main>
+  </div>
+</footer>
 </body>
 </html>
