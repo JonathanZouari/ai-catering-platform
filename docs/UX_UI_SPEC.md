@@ -10,9 +10,22 @@ Status: **Draft v0.1**. High-fidelity prototypes (Claude Artifacts) come in the 
 - Premium but calm: generous whitespace, one accent color, restrained motion, `prefers-reduced-motion` respected.
 - Never show a pending quotation as a confirmed booking — status badges use explicit text ("Awaiting business approval").
 
-## 2. Design tokens (neutral placeholders)
+## 2. Design tokens — proposal "Black & Orange" **[PROPOSAL for OPEN #20]**
 
-Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, `--color-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radius, font stack (system fonts until brand fonts chosen), shadow levels. Dark mode not in scope unless requested.
+Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-surface-2`, `--color-border`, `--color-text`, `--color-muted`, `--color-accent`, `--color-accent-strong`, `--color-on-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radius, ring width, shadow levels, and two font stacks.
+
+| Token | Value | Use |
+|---|---|---|
+| `--color-bg` | `#0d0d0d` | Page background (near-black) |
+| `--color-surface` | `#1a1a1a` | Hero, cards |
+| `--color-text` | `#ffffff` | Body text (≈19:1 on bg) |
+| `--color-muted` | `#b8b2a7` | Secondary text (≈10:1 on bg) |
+| `--color-accent` | `#f7931e` | The single accent: headings, rings, buttons (≈9:1 on bg) |
+| `--color-on-accent` | `#0d0d0d` | Text on orange buttons |
+| `--font-display` | Montserrat 800, uppercase | Display titles, section headings, buttons |
+| `--font` | Heebo | Body text (covers Latin **and Hebrew**, ready for #12) |
+
+Visual motifs, inspired by catering-promo poster styles: black canvas, a large two-weight title (bold orange uppercase word + light white word), round food photos with an orange ring (`.ring-photo`), an orange-edged wave dividing the hero from the body (`.wave`), checkbox-style service lists (`.check-list`), and a circular outlined badge for offers (`.badge-circle`). The theme is dark-only; a light variant is not in scope unless requested.
 
 ## 3. Customer screens
 

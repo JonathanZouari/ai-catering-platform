@@ -4,18 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Business dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Montserrat:wght@400;700;800&display=swap">
   <link rel="stylesheet" href="/css/base.css">
 </head>
 <body>
+  <header class="site-header">
+    <a class="brand" href="/">Catering</a>
+  </header>
   <main>
-    <h1>Business dashboard</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+    <h1 class="page-title">Business <span>dashboard</span></h1>
+    <section class="card">
+      <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
+      <p>API status: <span id="status" class="status-badge status-badge--pending" aria-live="polite">checking…</span></p>
+    </section>
   </main>
   <script type="module">
     import { api } from "/js/api.js";
     const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+    const show = (text, kind) => {
+      el.textContent = text;
+      el.className = `status-badge status-badge--${kind}`;
+    };
+    api("/health").then((r) => show(r.status, "ok")).catch((e) => show(e.message, "error"));
   </script>
 </body>
 </html>
