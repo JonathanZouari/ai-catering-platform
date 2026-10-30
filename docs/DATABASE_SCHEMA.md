@@ -9,7 +9,6 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | Enum | Values | Source |
 |---|---|---|
 | `pricing_unit` | `per_guest`, `per_tray`, `per_weight`, `per_item` | Decision 6 |
-| `kashrut_class` | `meat`, `dairy`, `pareve` | Decision 9 |
 | `fulfillment_type` | `pickup`, `delivery` | Decision 8 |
 | `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
 | `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
@@ -62,7 +61,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | created_at, updated_at | timestamptz | |
 
 ### dish_dietary (1:1 with dishes)
-`dish_id` uuid PK/FK → dishes · `kashrut_class` kashrut_class **null** (null = not provided) · `is_vegetarian` bool null · `is_vegan` bool null · `verified_at` timestamptz null
+`dish_id` uuid PK/FK → dishes · `is_vegetarian` bool null · `is_vegan` bool null · `verified_at` timestamptz null
 
 Null booleans mean **unknown** and must be presented as unknown, never as "no"/"yes".
 
