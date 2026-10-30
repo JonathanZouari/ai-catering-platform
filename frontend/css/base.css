@@ -1,23 +1,43 @@
 /* Design tokens, reset, focus ring and motion safety.
-   Values come from the approved UX prototype (warm cream/peach, espresso, terracotta, lime CTA).
+   Palette: deep sea blue and sun yellow on white, so warm food photography stands out.
    Component and page styles live in /css/app.css, which only consumes these tokens. */
+@font-face {
+  font-family: "Frank Ruhl Libre"; font-weight: 300 900; font-display: swap;
+  src: url(../assets/fonts/frank-ruhl-hebrew.woff2) format("woff2");
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: "Frank Ruhl Libre"; font-weight: 300 900; font-display: swap;
+  src: url(../assets/fonts/frank-ruhl-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-2193;
+}
+@font-face {
+  font-family: "Heebo"; font-weight: 100 900; font-display: swap;
+  src: url(../assets/fonts/heebo-hebrew.woff2) format("woff2");
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: "Heebo"; font-weight: 100 900; font-display: swap;
+  src: url(../assets/fonts/heebo-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-2193;
+}
+
 :root {
   /* Surfaces */
-  --color-bg: #FBF4EA;              /* page background, warm cream */
-  --color-bg-2: #F6DFC6;            /* hero gradient end, peach */
-  --color-bg-mid: #FAEBDA;          /* hero gradient middle stop */
-  --color-bg-inner-end: #F9EADB;    /* inner page gradient end */
-  --color-surface: #FFFDF9;         /* cards, panels */
+  --color-bg: #F5F7FF;              /* page background, pale sea */
+  --color-bg-2: #DCE5FF;            /* light tint on dark surfaces */
+  --color-surface: #FFFFFF;         /* cards, panels */
   --color-white: #FFFFFF;           /* inputs, stepper, proposal card */
 
   /* Text */
-  --color-text: #2A1F17;            /* espresso, 14.7:1 on bg */
-  --color-muted: #6B5A4C;           /* secondary text, 6.0:1 on bg */
+  --color-text: #0E1A4F;            /* ink blue */
+  --color-muted: #4A5582;           /* secondary text */
 
   /* Brand */
-  --color-accent: #9A4A24;          /* terracotta: links, borders, focus ring */
-  --color-highlight: #C6F135;       /* lime: one primary CTA per view only */
-  --color-highlight-hover: #B6E21F;
+  --color-ink: #0E1A4F;             /* header, footer, order summary */
+  --color-accent: #1B3FC4;          /* sea blue: links, borders, focus ring */
+  --color-highlight: #FFC83D;       /* sun yellow: the primary action */
+  --color-highlight-hover: #FFB800;
 
   /* Status (text color + tint background) */
   --color-success: #2F6B3A;
@@ -26,15 +46,14 @@
   --color-warning-bg: #FFF3DA;
   --color-danger: #A12A2A;
   --color-danger-bg: #F8E3E3;
-  --color-draft-bg: #EFE6DC;
+  --color-draft-bg: #E8ECF8;
 
   /* Tints and lines */
-  --color-accent-tint: #F5E4D6;     /* selected chip, stepper hover */
-  --color-accent-tint-2: #FBEFE4;   /* checked option card, proposal header */
-  --color-bubble-user: #EFE3D6;     /* user chat bubble */
-  --color-plate: #F3D9BF;           /* scroll-built table plate */
-  --color-line: #E8D6C3;            /* hairlines, card borders */
-  --color-input-border: #9A8574;    /* form field border, 3.5:1 on white (WCAG 1.4.11 needs 3:1 for non-text components) */
+  --color-accent-tint: #E3E9FF;     /* selected chip, stepper hover */
+  --color-accent-tint-2: #EFF3FF;   /* checked option card, proposal header */
+  --color-bubble-user: #E3E9FF;     /* user chat bubble */
+  --color-line: #D6DEF5;            /* hairlines, card borders */
+  --color-input-border: #7482B0;    /* form field border, 3.8:1 on white */
 
   /* Spacing (4px scale) */
   --space-1: 4px;
@@ -50,18 +69,17 @@
   --radius: 20px;
   --radius-sm: 12px;
   --radius-pill: 999px;
-  --shadow-1: 0 1px 3px rgb(42 31 23 / 0.08);
-  --shadow-2: 0 10px 30px -12px rgb(42 31 23 / 0.28);
+  --shadow-1: 0 1px 3px rgb(14 26 79 / 0.1);
+  --shadow-2: 0 14px 34px -14px rgb(14 26 79 / 0.35);
 
   /* Layout */
   --target: 44px;                   /* minimum touch target */
   --max: 1200px;                    /* content max inline size */
   --bar-h: 76px;                    /* mobile bottom order bar height */
 
-  /* TEMPORARY placeholder font, replace when brand is decided (OPEN_DECISIONS #20).
-     System font stacks only: no @font-face, no web fonts. */
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Hebrew", Arial, sans-serif;
+  /* Self-hosted: the landing page CSP only allows same-origin fonts. */
+  --font-display: "Frank Ruhl Libre", "Times New Roman", serif;
+  --font: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 
   /* Motion */
   --ease: cubic-bezier(.2, .7, .2, 1);

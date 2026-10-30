@@ -26,93 +26,48 @@
 </header>
 <main id="main">
   <section class="hero" aria-labelledby="hero-title">
-    <div class="wrap">
-      <p class="eyebrow">קייטרינג לאירועים פרטיים</p>
-      <h1 class="hero-title" id="hero-title"><span class="line">כל שולחן</span> <span class="line">מספר <em>סיפור</em></span></h1>
-      <figure class="hero-figure">
-        <img src="/assets/hero-feast.jpg" width="1152" height="864" alt="קרש עץ גדול עמוס ירקות קלויים, חומוס, סלק, פיתות, טאבולה ועוף צלוי">
-      </figure>
+    <img class="hero-photo" src="/assets/hero-toast.jpg" width="2000" height="2500" fetchpriority="high" alt="חברים מרימים כוסית סביב שולחן ערוך לאור נרות">
+    <div class="wrap hero-copy">
+      <h1 class="hero-title" id="hero-title"><span class="line">השולחן ערוך.</span> <span class="line">חסרים רק האורחים.</span></h1>
       <p class="hero-sub">בוחרים אירוע, בונים תפריט, ומקבלים הצעת מחיר שבעל העסק אישר אישית.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="/customer/#event">תכננו את האירוע</a>
+        <a class="btn btn-primary btn-lg" href="/customer/#event">מתחילים לתכנן</a>
         <a class="link-arrow" href="#how">איך זה עובד</a>
       </div>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="events-title">
+  <section class="section events" aria-labelledby="events-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 id="events-title">סוגי אירועים</h2>
+        <h2 id="events-title">מה חוגגים?</h2>
         <p>נקודת פתיחה לכל חגיגה. אפשר לשנות כל מנה בהמשך.</p>
       </div>
-      <ul class="event-grid">
-      <li>
-        <a class="card-link" href="/customer/?type=bar-mitzvah#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-chicken.jpg" alt="תבשיל עוף בלימון, זיתים ורוזמרין בתבנית לבנה" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>בר/בת מצווה</h3>
-              <p>מנות עיקריות חגיגיות לכל המשפחה</p>
-            </div>
-          </article>
-        </a>
-      </li>
-      <li>
-        <a class="card-link" href="/customer/?type=shabbat#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-challah.jpg" alt="חלה קלועה עם שומשום על קרש עץ ליד נרות שבת דולקים" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>שבת וחג</h3>
-              <p>חלות, סלטים ותבשילים חמים</p>
-            </div>
-          </article>
-        </a>
-      </li>
-      <li>
-        <a class="card-link" href="/customer/?type=birthday#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-dessert.jpg" alt="מגש טארטים קטנים עם פירות יער ופרלינים של שוקולד" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>יום הולדת</h3>
-              <p>קינוחים ומגשי אירוח קלילים</p>
-            </div>
-          </article>
-        </a>
-      </li>
-      <li>
-        <a class="card-link" href="/customer/?type=family#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-mezze.jpg" alt="שולחן מזה עם חומוס, חצילים קלויים, זיתים ועשבי תיבול" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>אירוע משפחתי</h3>
-              <p>מגשי מזה ושולחן פתוח לשיתוף</p>
-            </div>
-          </article>
-        </a>
-      </li>
+      <ul class="event-rail">
+        <li><a class="event-tile" href="/customer/?type=bar-mitzvah#event"><img src="/assets/event-bar-mitzvah.jpg" width="1200" height="1812" loading="lazy" alt=""><strong>בר/בת מצווה</strong><span>מנות חגיגיות לכל המשפחה</span></a></li>
+        <li><a class="event-tile" href="/customer/?type=shabbat#event"><img src="/assets/dish-challah.jpg" width="1200" height="797" loading="lazy" alt=""><strong>שבת וחג</strong><span>חלות, סלטים ותבשילים חמים</span></a></li>
+        <li><a class="event-tile" href="/customer/?type=birthday#event"><img src="/assets/event-birthday.jpg" width="1200" height="675" loading="lazy" alt=""><strong>יום הולדת</strong><span>קינוחים ומגשי אירוח קלילים</span></a></li>
+        <li><a class="event-tile" href="/customer/?type=family#event"><img src="/assets/event-family.jpg" width="1200" height="800" loading="lazy" alt=""><strong>אירוע משפחתי</strong><span>מגשי מזה ושולחן פתוח לשיתוף</span></a></li>
       </ul>
     </div>
   </section>
 
-  <section class="section sb" aria-labelledby="sb-title">
-    <div class="wrap section-head sb-head">
-      <h2 id="sb-title">השולחן נבנה תוך כדי גלילה</h2>
-      <p>מנה אחרי מנה, כמו שהאירוע שלכם נבנה אצלנו.</p>
-    </div>
-    <div class="sb-track">
-      <div class="sb-stage">
-        <ol class="sb-grid" aria-label="ארבע מנות על השולחן">
-          <li class="sb-item"><img src="/assets/dish-mezze.jpg" width="1024" height="1024" loading="lazy" alt="מגש מזה עם חומוס, חצילים קלויים וזיתים"><p class="sb-cap"><span class="n">1 מתוך 4</span>מזטים לפתיחה</p></li>
-          <li class="sb-item"><img src="/assets/dish-chicken.jpg" width="1024" height="1024" loading="lazy" alt="עוף צלוי עם לימון, זיתים ורוזמרין"><p class="sb-cap"><span class="n">2 מתוך 4</span>המנה העיקרית</p></li>
-          <li class="sb-item"><img src="/assets/dish-challah.jpg" width="1024" height="1024" loading="lazy" alt="חלה קלועה עם שומשום ליד נרות שבת"><p class="sb-cap"><span class="n">3 מתוך 4</span>חלה לשבת</p></li>
-          <li class="sb-item"><img src="/assets/dish-dessert.jpg" width="1024" height="1024" loading="lazy" alt="טארטים קטנים עם פירות יער ופרלינים של שוקולד"><p class="sb-cap"><span class="n">4 מתוך 4</span>ומשהו מתוק</p></li>
-        </ol>
+  <section class="section promise" aria-labelledby="promise-title">
+    <div class="wrap">
+      <img src="/assets/dish-mezze.jpg" width="1200" height="1600" loading="lazy" alt="מגש כסף עם שמונה מטבלים צבעוניים על מפה לבנה">
+      <div class="promise-copy">
+        <h2 id="promise-title">בלי הפתעות בדרך לשולחן</h2>
+        <p>רואים כל מנה וכל מחיר מראש. בעל העסק עובר על הבקשה ומאשר אותה אישית.</p>
+        <ul class="promise-list">
+          <li>כשר</li>
+          <li>מותאם לאלרגיות</li>
+          <li>הצעת מחיר מאושרת ע"י הבעלים</li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <section class="section" id="how" aria-labelledby="how-title">
+  <section class="section how" id="how" aria-labelledby="how-title">
     <div class="wrap">
       <div class="section-head">
         <h2 id="how-title">איך זה עובד</h2>
@@ -126,13 +81,10 @@
     </div>
   </section>
 
-  <section class="trust" aria-label="למה אצלנו">
+  <section class="cta-band" aria-labelledby="cta-title">
     <div class="wrap">
-      <ul>
-        <li>כשר</li>
-        <li>מותאם לאלרגיות</li>
-        <li>הצעת מחיר מאושרת ע"י הבעלים</li>
-      </ul>
+      <h2 id="cta-title">נתחיל לערוך לכם שולחן?</h2>
+      <a class="btn btn-primary btn-lg" href="/customer/#event">מתחילים לתכנן</a>
     </div>
   </section>
 </main>
