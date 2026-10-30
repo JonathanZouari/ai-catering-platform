@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ההזמנה שלי · Yummai</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="landing">
+<a class="skip-link" href="#main">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>Yummai</a>
+    <nav aria-label="ניווט ראשי">
+      <ul class="nav">
+      <li class="nav-hide-sm"><a href="/">ראשי</a></li>
+      <li><a href="/customer/#event">תכנון אירוע</a></li>
+      <li><a href="/customer/menu.html">תפריט</a></li>
+      <li><a href="/customer/menu.html#assistant">העוזר</a></li>
+      <li><a href="/customer/order.html">ההזמנה שלי</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main" class="inner">
+  <div class="wrap">
+    <div class="page-head">
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="stepper">
+          <li><a href="/customer/#event"><span><span class="num">1</span> <span class="label-long">· </span>פרטי האירוע</span></a></li>
+          <li><a href="/customer/menu.html"><span><span class="num">2</span> <span class="label-long">· </span>תפריט</span></a></li>
+          <li><a href="/customer/order.html" aria-current="step"><span><span class="num">3</span> <span class="label-long">· </span>ההזמנה שלי</span></a></li>
+          <li><a href="/customer/quote.html"><span><span class="num">4</span> <span class="label-long">· </span>הצעת מחיר</span></a></li>
+        </ol>
+      </nav>
+      <h1>ההזמנה שלי</h1>
+      <p>כל פרטי האירוע וההזמנה במקום אחד. אפשר לשנות ולהוסיף עד השליחה.</p>
+    </div>
+
+    <!-- C3: my order -->
+    <div class="order-page" id="order-page">
+      <section class="order-card" aria-labelledby="event-title">
+        <div class="order-head">
+          <h2 id="event-title">פרטי האירוע</h2>
+          <a href="/customer/#event">עריכה</a>
+        </div>
+        <dl class="event-details" id="event-details"></dl>
+      </section>
+
+      <section class="order-card" aria-labelledby="food-title">
+        <div class="order-head">
+          <h2 id="food-title">המנות</h2>
+          <a href="/customer/menu.html">שינוי</a>
+        </div>
+        <ul class="lines" id="lines-food"></ul>
+        <p class="fine" id="meal-note" hidden></p>
+      </section>
+
+      <section class="order-card" aria-labelledby="drink-title">
+        <h2 id="drink-title">משקאות</h2>
+        <ul class="lines" id="lines-drink"></ul>
+      </section>
+
+      <section class="order-card" aria-labelledby="tools-title">
+        <h2 id="tools-title">כלים ואביזרים</h2>
+        <ul class="lines" id="lines-tools"></ul>
+      </section>
+
+      <nav class="cat-bar path-bar" aria-label="הוספה להזמנה">
+        <ul>
+          <li><a href="/customer/menu.html#cat-drinks"><img src="/assets/cat-drinks.jpg" width="360" height="360" alt="">הוספת משקאות</a></li>
+          <li><a href="/customer/menu.html#cat-dishes"><img src="/assets/cat-dishes.jpg" width="360" height="360" alt="">הוספת כלים</a></li>
+          <li><a href="/customer/menu.html#cat-accessories"><img src="/assets/cat-accessories.jpg" width="360" height="360" alt="">הוספת אביזרים</a></li>
+        </ul>
+      </nav>
+
+      <section class="order-card" aria-labelledby="delivery-title">
+        <h2 id="delivery-title">משלוח או איסוף</h2>
+        <div class="options">
+          <label class="option"><input type="radio" name="delivery" value="delivery"><strong>משלוח עד הבית</strong><span>דמי משלוח לפי אזור. מרכז: &lrm;₪120</span></label>
+          <label class="option"><input type="radio" name="delivery" value="pickup"><strong>איסוף עצמי</strong><span>מהמטבח שלנו, ללא עלות</span></label>
+        </div>
+        <div id="address-field">
+          <label class="field-label" for="address">כתובת למשלוח</label>
+          <input class="input" type="text" id="address" autocomplete="street-address">
+        </div>
+      </section>
+
+      <section class="order-card" aria-labelledby="price-title">
+        <h2 id="price-title">מחיר</h2>
+        <dl class="totals">
+          <div><dt>סכום מנות ותוספות</dt><dd data-total="subtotal">&lrm;₪0</dd></div>
+          <div><dt>דמי משלוח (מרכז)</dt><dd data-total="fee">&lrm;₪0</dd></div>
+          <div class="grand"><dt>סה"כ משוער</dt><dd aria-live="polite" data-total="grand">&lrm;₪0</dd></div>
+        </dl>
+        <p class="fine">המחיר מחושב אוטומטית. ההזמנה נסגרת רק אחרי אישור בעל העסק.</p>
+      </section>
+
+      <a class="btn btn-primary btn-lg btn-block" id="send-order" href="/customer/menu.html">שליחת ההזמנה</a>
+    </div>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 · קייטרינג לאירועים פרטיים</p>
+    <span class="sample-note">נתוני דוגמה · המחירים והמנות להמחשה בלבד</span>
+    <p class="server-status">מצב שרת: <span id="status" aria-live="polite">בודק…</span></p>
+  </div>
+</footer>
+  <script type="module" src="/js/meals.js"></script>
+  <script type="module">
+    import { api } from "/js/api.js";
+    const el = document.getElementById("status");
+    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+  </script>
+</body>
+</html>

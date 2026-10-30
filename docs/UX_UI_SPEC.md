@@ -19,7 +19,7 @@ Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`
 | # | Screen | Key elements |
 |---|---|---|
 | C1 | Event configuration | Stepper; event type, date (blocked dates disabled), time slot, guest composition counters with helper text (subset rule **[OPEN #4]**), dietary notes, pickup/delivery toggle, address + zone fee preview |
-| C2 | Dish catalog | Category tabs/chips, dish cards (image, name, price + unit, kashrut badge, veg/vegan badges, "allergen info" link), filters, add/quantity stepper |
+| C2 | Dish catalog | Whole-meal packages by cuisine **[OPEN #21]**, category tabs/chips, dish cards (image, name, price + unit, veg/vegan badges, "allergen info" link), filters, add/quantity stepper |
 | C3 | Order summary & pricing | Itemized lines (qty × unit price = line), recommendation hints, delivery fee, total, `version`-safe edits |
 | C4 | AI assistant | Desktop: side panel next to C2/C3. Mobile: bottom sheet opened by a persistent button. Message list, input, proposal cards inline |
 | C5 | Quote submission & status | Review, explicit "Submit quotation request", status page: Draft / Awaiting approval / Approved / Rejected + owner note |
@@ -51,7 +51,10 @@ States: pending, applying, applied, rejected, expired ("Your order changed; ask 
 
 ```
 frontend/
-  customer/index.html   # C1–C5 (single page, JS-driven steps)
+  customer/index.html   # C1 event setup
+  customer/menu.html    # C2, C4 menu and assistant
+  customer/order.html   # C3 my order: event, dishes, extras, delivery, price, send
+  customer/quote.html   # C5 quote status
   admin/index.html      # A1–A5
   css/base.css          # tokens, reset, primitives
   js/api.js             # fetch wrapper, error format handling

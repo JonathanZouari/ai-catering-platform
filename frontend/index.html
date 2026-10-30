@@ -4,132 +4,99 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; form-action 'self'; base-uri 'none'">
-<title>קייטרינג לאירועים פרטיים</title>
+<title>Yummai · קייטרינג לאירועים פרטיים</title>
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
+<body class="landing">
 <a class="skip-link" href="#main">דילוג לתוכן</a>
-<header class="site-header">
+<header class="masthead">
   <div class="wrap">
-    <!-- TEMPORARY brand name placeholder (OPEN_DECISIONS #20) -->
-    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>שולחן ערוך</a>
+    <a class="wordmark" href="/" lang="en">Yummai</a>
     <nav aria-label="ניווט ראשי">
       <ul class="nav">
-      <li class="nav-hide-sm"><a href="/" aria-current="page">ראשי</a></li>
       <li><a href="/customer/#event">תכנון אירוע</a></li>
-      <li><a href="/customer/#menu">תפריט</a></li>
-      <li><a href="/customer/#assistant">העוזר</a></li>
+      <li><a href="/customer/menu.html">תפריט</a></li>
+      <li><a href="/customer/menu.html#assistant">העוזר</a></li>
+      <li><a href="/customer/order.html">ההזמנה שלי</a></li>
       </ul>
     </nav>
   </div>
 </header>
 <main id="main">
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="wrap">
-      <p class="eyebrow">קייטרינג לאירועים פרטיים</p>
-      <h1 class="hero-title" id="hero-title"><span class="line">כל שולחן</span> <span class="line">מספר <em>סיפור</em></span></h1>
-      <figure class="hero-figure">
-        <img src="/assets/hero-feast.jpg" width="1152" height="864" alt="קרש עץ גדול עמוס ירקות קלויים, חומוס, סלק, פיתות, טאבולה ועוף צלוי">
-      </figure>
-      <p class="hero-sub">בוחרים אירוע, בונים תפריט, ומקבלים הצעת מחיר שבעל העסק אישר אישית.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="/customer/#event">תכננו את האירוע</a>
-        <a class="link-arrow" href="#how">איך זה עובד</a>
+  <section class="aerial" aria-labelledby="aerial-title">
+    <h1 class="sr-only" id="aerial-title">Yummai, קייטרינג לאירועים פרטיים</h1>
+    <ul class="aerial-grid">
+      <li><img class="focus-garnish" src="/assets/chef-garnish.jpg" width="1376" height="768" alt="יד של שף מניחה קישוט בפינצטה על צלחת אספרגוס צלוי, ושף נוסף רכון מעל שורת צלחות ברקע"></li>
+      <li><img class="focus-spoon" src="/assets/chef-spoon.jpg" width="1376" height="768" alt="מבט מלמעלה על יד שמזלפת טחינה בכף על חצילים קלויים עם רימונים ועשבי תיבול"></li>
+      <li><img src="/assets/chef-tweezers.jpg" width="1376" height="768" alt="שף במעיל לבן מניח בפינצטה עלה קטן על מנה מעוצבת בצלחת לבנה"></li>
+    </ul>
+  </section>
+
+  <nav class="cat-bar" aria-label="קטגוריות התפריט">
+    <ul>
+      <li><a href="/customer/menu.html#meals"><img src="/assets/cat-whole.jpg" width="360" height="360" alt="">ארוחה שלמה</a></li>
+      <li><a href="/customer/menu.html#cat-starters"><img src="/assets/cat-starters.jpg" width="360" height="360" alt="">ראשונות</a></li>
+      <li><a href="/customer/menu.html#cat-mains"><img src="/assets/cat-mains.jpg" width="360" height="360" alt="">עיקריות</a></li>
+      <li><a href="/customer/menu.html#cat-sides"><img src="/assets/cat-sides.jpg" width="360" height="360" alt="">תוספות</a></li>
+      <li><a href="/customer/menu.html#cat-salads"><img src="/assets/cat-salads.jpg" width="360" height="360" alt="">סלטים</a></li>
+      <li><a href="/customer/menu.html#cat-desserts"><img src="/assets/cat-desserts.jpg" width="360" height="360" alt="">קינוחים</a></li>
+      <li><a href="/customer/menu.html#cat-drinks"><img src="/assets/cat-drinks.jpg" width="360" height="360" alt="">משקאות</a></li>
+      <li><a href="/customer/menu.html#cat-wine"><img src="/assets/cat-wine.jpg" width="360" height="360" alt="">יינות</a></li>
+      <li><a href="/customer/menu.html#cat-dishes"><img src="/assets/cat-dishes.jpg" width="360" height="360" alt="">כלים</a></li>
+      <li><a href="/customer/menu.html#cat-accessories"><img src="/assets/cat-accessories.jpg" width="360" height="360" alt="">אביזרים</a></li>
+      <li><a href="/playlist.html"><img src="/assets/cat-playlist.jpg" width="360" height="360" alt="">פלייליסט</a></li>
+    </ul>
+  </nav>
+
+  <section class="about-strip" aria-labelledby="about-title">
+    <img src="/assets/hands-flour.jpg" width="1376" height="768" loading="lazy" alt="שתי ידיים מאובקות בקמח משחררות ענן קמח שקפא באוויר על רקע מטבח כהה">
+    <div class="about-panel">
+      <h2 id="about-title">האנשים שמאחורי כל מנה</h2>
+      <div>
+        <p>אצלנו כל מנה מתחילה בידיים. השף שלנו בונה כל תפריט בקפידה, טועם, מתבל ומדייק עד שהטעם יושב בדיוק במקום.</p>
+        <p>לצידו עובד צוות מקצועי ומסור, שמלווה אתכם מהשיחה הראשונה ועד הצלחת האחרונה על השולחן, כדי שאתם תוכלו פשוט ליהנות מהאירוע שלכם.</p>
       </div>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="events-title">
+  <div class="cta-row"><a class="btn btn-primary btn-lg" href="/customer/#event">תכנן אירוע</a></div>
+
+  <section class="section" aria-labelledby="stories-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 id="events-title">סוגי אירועים</h2>
-        <p>נקודת פתיחה לכל חגיגה. אפשר לשנות כל מנה בהמשך.</p>
+        <h2 id="stories-title">מאירועים שעשינו</h2>
+        <p><span class="sample-note">תמונות וטקסט לדוגמה · להחלפה בחומר אמיתי</span></p>
       </div>
-      <ul class="event-grid">
-      <li>
-        <a class="card-link" href="/customer/?type=bar-mitzvah#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-chicken.jpg" alt="תבשיל עוף בלימון, זיתים ורוזמרין בתבנית לבנה" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>בר/בת מצווה</h3>
-              <p>מנות עיקריות חגיגיות לכל המשפחה</p>
-            </div>
-          </article>
-        </a>
-      </li>
-      <li>
-        <a class="card-link" href="/customer/?type=shabbat#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-challah.jpg" alt="חלה קלועה עם שומשום על קרש עץ ליד נרות שבת דולקים" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>שבת וחג</h3>
-              <p>חלות, סלטים ותבשילים חמים</p>
-            </div>
-          </article>
-        </a>
-      </li>
-      <li>
-        <a class="card-link" href="/customer/?type=birthday#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-dessert.jpg" alt="מגש טארטים קטנים עם פירות יער ופרלינים של שוקולד" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>יום הולדת</h3>
-              <p>קינוחים ומגשי אירוח קלילים</p>
-            </div>
-          </article>
-        </a>
-      </li>
-      <li>
-        <a class="card-link" href="/customer/?type=family#event">
-          <article class="card">
-            <div class="card-media"><img src="/assets/dish-mezze.jpg" alt="שולחן מזה עם חומוס, חצילים קלויים, זיתים ועשבי תיבול" width="1024" height="1024" loading="lazy"></div>
-            <div class="card-body">
-              <h3>אירוע משפחתי</h3>
-              <p>מגשי מזה ושולחן פתוח לשיתוף</p>
-            </div>
-          </article>
-        </a>
-      </li>
+      <ul class="stories">
+        <li>
+          <figure class="story">
+            <img src="/assets/event-toast.jpg" width="800" height="447" loading="lazy" alt="כוסות מורמות בלחיים מעל שולחן ערב חגיגי עם נרות">
+            <blockquote><p>מקום למכתב ההמלצה של הלקוח: מה היה האירוע, איך הרגישו האורחים ומה הכי נשאר להם בזיכרון.</p></blockquote>
+            <figcaption>שם הלקוח · סוג האירוע</figcaption>
+          </figure>
+        </li>
+        <li>
+          <figure class="story">
+            <img src="/assets/event-garden.jpg" width="800" height="447" loading="lazy" alt="ידיים מניחות מגש על שולחן בגינה תחת שרשרות אור">
+            <blockquote><p>מקום למכתב ההמלצה של הלקוח: מה היה האירוע, איך הרגישו האורחים ומה הכי נשאר להם בזיכרון.</p></blockquote>
+            <figcaption>שם הלקוח · סוג האירוע</figcaption>
+          </figure>
+        </li>
+        <li>
+          <figure class="story">
+            <img src="/assets/event-family.jpg" width="800" height="447" loading="lazy" alt="ידיים מעבירות קערה מעל שולחן ארוחה משפחתי">
+            <blockquote><p>מקום למכתב ההמלצה של הלקוח: מה היה האירוע, איך הרגישו האורחים ומה הכי נשאר להם בזיכרון.</p></blockquote>
+            <figcaption>שם הלקוח · סוג האירוע</figcaption>
+          </figure>
+        </li>
       </ul>
-    </div>
-  </section>
-
-  <section class="section sb" aria-labelledby="sb-title">
-    <div class="wrap section-head sb-head">
-      <h2 id="sb-title">השולחן נבנה תוך כדי גלילה</h2>
-      <p>מנה אחרי מנה, כמו שהאירוע שלכם נבנה אצלנו.</p>
-    </div>
-    <div class="sb-track">
-      <div class="sb-stage">
-        <ol class="sb-grid" aria-label="ארבע מנות על השולחן">
-          <li class="sb-item"><img src="/assets/dish-mezze.jpg" width="1024" height="1024" loading="lazy" alt="מגש מזה עם חומוס, חצילים קלויים וזיתים"><p class="sb-cap"><span class="n">1 מתוך 4</span>מזטים לפתיחה</p></li>
-          <li class="sb-item"><img src="/assets/dish-chicken.jpg" width="1024" height="1024" loading="lazy" alt="עוף צלוי עם לימון, זיתים ורוזמרין"><p class="sb-cap"><span class="n">2 מתוך 4</span>המנה העיקרית</p></li>
-          <li class="sb-item"><img src="/assets/dish-challah.jpg" width="1024" height="1024" loading="lazy" alt="חלה קלועה עם שומשום ליד נרות שבת"><p class="sb-cap"><span class="n">3 מתוך 4</span>חלה לשבת</p></li>
-          <li class="sb-item"><img src="/assets/dish-dessert.jpg" width="1024" height="1024" loading="lazy" alt="טארטים קטנים עם פירות יער ופרלינים של שוקולד"><p class="sb-cap"><span class="n">4 מתוך 4</span>ומשהו מתוק</p></li>
-        </ol>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="how" aria-labelledby="how-title">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 id="how-title">איך זה עובד</h2>
-        <p>שלושה צעדים, בלי טלפונים ובלי הפתעות במחיר.</p>
-      </div>
-      <ol class="steps">
-        <li><h3>בחרו אירוע</h3><p>סוג האירוע, תאריך, מספר אורחים ומשלוח או איסוף.</p></li>
-        <li><h3>בנו תפריט</h3><p>בחרו מנות מהקטלוג. הכמויות והמחיר מחושבים לפי מספר האורחים, והעוזר החכם יכול להציע שינויים.</p></li>
-        <li><h3>קבלו הצעת מחיר מאושרת</h3><p>בעל העסק עובר על כל בקשה ומאשר אותה אישית. עד אז זו בקשה, לא הזמנה סגורה.</p></li>
-      </ol>
     </div>
   </section>
 
   <section class="trust" aria-label="למה אצלנו">
     <div class="wrap">
       <ul>
-        <li>כשר</li>
         <li>מותאם לאלרגיות</li>
         <li>הצעת מחיר מאושרת ע"י הבעלים</li>
       </ul>
@@ -139,10 +106,11 @@
 <footer class="site-footer">
   <div class="wrap">
     <p>© 2026 · קייטרינג לאירועים פרטיים</p>
-    <ul class="footer-links">
-      <li><a href="#how">איך זה עובד</a></li>
-      <li><a href="/admin/">כניסת בעל העסק</a></li>
-    </ul>
+    <address class="footer-contact">
+      <a href="mailto:hello@yummai.example">hello@yummai.example</a>
+      <a href="tel:+972500000000" dir="ltr">050-000-0000</a>
+    </address>
+    <a href="/admin/">כניסת בעל העסק</a>
   </div>
 </footer>
 </body>
