@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yummai — קונספט C (בהיר)</title>
+  <meta name="description" content="Yummai — קייטרינג כיצירה: מראה מגזיני ובהיר. אתר דמו עם תוכן לדוגמה.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Heebo:wght@200;300;400;600;800&display=swap">
+  <link rel="stylesheet" href="/css/builder.css">
+  <link rel="stylesheet" href="/yummai-catering-ux/style.css">
+</head>
+<body>
+  <a class="skip" href="#builder">דלג לבניית התפריט</a>
+
+  <main id="top">
+    <section class="hero" data-spot>
+      <div class="hero__media fx-stack" data-crossfade="8000" role="img" aria-label="צילומי אוכל מעוצבים בהחלפה איטית">
+        <img class="fx-slide is-active" data-key="h1" src="/assets/img/hero1-2400.webp" srcset="/assets/img/hero1-1200.webp 1200w, /assets/img/hero1-2400.webp 2400w" sizes="100vw" alt="" fetchpriority="high">
+        <img class="fx-slide" data-key="h2" src="/assets/img/hero2-2400.webp" srcset="/assets/img/hero2-1200.webp 1200w, /assets/img/hero2-2400.webp 2400w" sizes="100vw" alt="" loading="lazy">
+        <img class="fx-slide" data-key="h3" src="/assets/img/hero3-2400.webp" srcset="/assets/img/hero3-1200.webp 1200w, /assets/img/hero3-2400.webp 2400w" sizes="100vw" alt="" loading="lazy">
+        <img class="fx-slide" data-key="h4" src="/assets/img/hero4-2400.webp" srcset="/assets/img/hero4-1200.webp 1200w, /assets/img/hero4-2400.webp 2400w" sizes="100vw" alt="" loading="lazy">
+        <img class="fx-slide" data-key="h5" src="/assets/img/hero5-2400.webp" srcset="/assets/img/hero5-1200.webp 1200w, /assets/img/hero5-2400.webp 2400w" sizes="100vw" alt="" loading="lazy">
+        <img class="fx-slide" data-key="h6" src="/assets/img/hero6-2400.webp" srcset="/assets/img/hero6-1200.webp 1200w, /assets/img/hero6-2400.webp 2400w" sizes="100vw" alt="" loading="lazy">
+      </div>
+      <a class="logo" href="#top" dir="ltr" aria-label="Yummai">
+        <span class="logo__word">Yummai</span>
+        <span class="logo__tag">Catering &amp; Table</span>
+      </a>
+      <nav class="hero__nav" aria-label="ניווט ראשי">
+        <a href="#packages"><sup>01</sup> חבילות</a><a href="#builder"><sup>02</sup> תפריט</a><a href="#quote"><sup>03</sup> הצעה</a><span class="hero__nav-end">yummAI</span>
+      </nav>
+    </section>
+
+    <section class="intro">
+      <h1 data-reveal><b>מלאכה</b><br>על הצלחת</h1>
+      <p class="lead" data-reveal style="--d:.16s">אוכל שמתייחס לשולחן כאל קומפוזיציה: חומרים כנים, ידיים אנושיות, פרטים קטנים שמורגשים רק כשהם חסרים.</p>
+      <div class="intro__cta" data-reveal style="--d:.3s">
+        <a class="btn" href="#builder">התחילו לתכנן</a>
+        <a class="textlink" href="#packages">לחבילות ←</a>
+      </div>
+    </section>
+
+    <section id="packages" class="sec">
+      <header class="sec__head" data-reveal><span class="no">01</span><h2>שלוש קומפוזיציות</h2><p>בחירה בחבילה טוענת תפריט מוצע, ואפשר לחדד אותו בהמשך.</p></header>
+      <div data-packages></div>
+    </section>
+
+    <section id="builder" class="sec sec--linen">
+      <header class="sec__head" data-reveal><span class="no">02</span><h2>עריכת התפריט</h2><p>הקישו על מנה כדי להוסיף או להסיר אותה.</p></header>
+      <div class="builder">
+        <div class="builder__main">
+          <div data-guests></div>
+          <div data-dishes></div>
+        </div>
+        <aside class="builder__side" aria-label="סיכום הזמנה">
+          <div data-summary></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="quote" class="sec sec--quote">
+      <header class="sec__head" data-reveal><span class="no">03</span><h2>בקשת הצעת מחיר</h2>
+        <p>ההערכה הנוכחית: <strong data-total></strong> · <span data-count></span> מנות</p></header>
+      <div data-quote-form></div>
+    </section>
+  </main>
+
+  <footer class="foot"><p>Yummai — אתר דמו. התוכן והמחירים לדוגמה והערכה בלבד.</p></footer>
+  <div class="cb-bar"><div><small>הערכת מחיר</small><strong data-total></strong></div><a class="btn btn--sm" href="#quote">להצעת מחיר</a></div>
+  <p class="sr-only" role="status" data-announce></p>
+
+  <script type="module">
+    import { initBuilder } from "/js/catering-core.js";
+    import { initFx } from "/js/fx.js";
+    initBuilder();
+    initFx();
+  </script>
+</body>
+</html>
