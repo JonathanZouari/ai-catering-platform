@@ -1,21 +1,122 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business dashboard</title>
-  <link rel="stylesheet" href="/css/base.css">
+  <title>ניהול הזמנות — טעם של בית</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    main { padding-block: 28px 64px; }
+    .top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; margin-block-end: 8px; }
+    .top h1 { margin: 0; font-size: clamp(1.9rem, 4vw, 2.6rem); }
+    .stats { color: var(--muted); margin-block-end: 24px; }
+    .stats b { color: var(--ink); }
+    .tabs { display: flex; gap: 6px; overflow-x: auto; border-block-end: 1px solid var(--line); }
+    .tabs a { padding: 12px 16px; text-decoration: none; color: var(--muted); font-weight: 500; white-space: nowrap; min-height: 48px; }
+    .tabs a[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -3px 0 var(--paprika); }
+    .grid { display: grid; gap: 32px; margin-block-start: 24px; align-items: start; }
+    @media (min-width: 1000px) { .grid { grid-template-columns: minmax(0, 1fr) 380px; } }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-block-end: 16px; }
+    .tablewrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: start; font-size: .85rem; color: var(--muted); font-weight: 500; padding: 10px 12px; border-block-end: 2px solid var(--ink); white-space: nowrap; }
+    td { padding: 14px 12px; border-block-end: 1px solid var(--line); white-space: nowrap; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: var(--tint); }
+    tbody tr[aria-selected="true"] { background: #eef3ee; box-shadow: inset 4px 0 0 var(--green); }
+    td.s { text-align: end; font-weight: 700; }
+    th.s { text-align: end; }
+    .who b { display: block; }
+    .who span { font-size: .85rem; color: var(--muted); }
+
+    .detail { border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+    @media (min-width: 1000px) { .detail { position: sticky; top: 84px; } }
+    .detail h2 { font-size: 1.5rem; margin: 0; }
+    .detail dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 16px 0; }
+    .detail dt { color: var(--muted); }
+    .detail dd { margin: 0; font-weight: 500; }
+    .items { list-style: none; margin: 0 0 12px; padding: 12px 0; border-block: 1px solid var(--line); }
+    .items li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: .95rem; }
+    .tot { display: flex; justify-content: space-between; font-family: var(--font-display); font-size: 1.5rem; margin-block-end: 6px; }
+    .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-block-start: 14px; }
+    .btn--danger { background: transparent; border-color: #e3b9b4; color: var(--bad); }
+    .btn--danger:hover { background: var(--bad-bg); }
+  </style>
 </head>
 <body>
-  <main>
-    <h1>Business dashboard</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="../index.html">טעם <span>של</span> בית</a>
+      <nav class="nav" aria-label="ניווט ראשי">
+        <a href="../customer/index.html">הזמנה</a>
+        <a href="index.html" aria-current="page">ניהול</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="top"><h1>ניהול הזמנות</h1><a class="btn btn--green btn--sm" href="#">הוספת מנה לתפריט</a></div>
+    <p class="stats" id="stats"></p>
+
+    <nav class="tabs" aria-label="אזורי ניהול">
+      <a href="#" aria-current="page">הזמנות</a><a href="#">תפריט ומחירים</a><a href="#">תאריכים חסומים</a><a href="#">איסוף ומשלוחים</a>
+    </nav>
+
+    <div class="grid">
+      <section aria-labelledby="h">
+        <h2 class="sr-only" id="h">בקשות להצעת מחיר</h2>
+        <div class="filters choice" role="group" aria-label="סינון לפי סטטוס" id="filters"></div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>לקוח</th><th>תאריך</th><th>אורחים</th><th>סטטוס</th><th class="s">סכום</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <aside class="detail" id="detail" aria-live="polite"></aside>
+    </div>
   </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+
+  <script>
+    const ST = { pending: ["ממתין לאישור", "tag--warn"], approved: ["אושר", "tag--ok"], rejected: ["נדחה", "tag--bad"] };
+    const ils = (n) => n.toLocaleString("he-IL") + " ₪";
+    const orders = [
+      { id: "Q-1042", name: "נועה לוי", type: "בר מצווה", date: "17 בדצמבר", guests: 92, total: 2140, s: "pending", ful: "משלוח · רעננה", lines: [["3 × סמבוסק גבינה", 330], ["4 × שיפודי עוף וקבב", 1280], ["2 × סלט ירקות וחומוס", 170], ["4 × סלמון עם אורז וירקות", 320]] },
+      { id: "Q-1041", name: "יוסי כהן", type: "אירוע חברה", date: "12 בדצמבר", guests: 140, total: 3860, s: "pending", ful: "משלוח · תל אביב", lines: [["6 × קציצות בשר ביתיות", 1440], ["8 × סלט ירקות וחומוס", 680], ["8 × עוגת פטל ופיסטוק", 1440], ["משלוח", 120]] },
+      { id: "Q-1040", name: "מאיה ואיתן", type: "חתונה", date: "28 בדצמבר", guests: 260, total: 9750, s: "pending", ful: "משלוח · הרצליה", lines: [["12 × שיפודי עוף וקבב", 3840], ["12 × סלמון עם אורז וירקות", 4320], ["20 × סלט ירקות וחומוס", 1700]] },
+      { id: "Q-1039", name: "רות אברהם", type: "יום הולדת", date: "9 בדצמבר", guests: 35, total: 860, s: "pending", ful: "איסוף עצמי", lines: [["3 × סמבוסק גבינה", 330], ["2 × קציצות בשר ביתיות", 480]] },
+      { id: "Q-1038", name: "עמית שלו", type: "ברית", date: "6 בדצמבר", guests: 60, total: 1480, s: "approved", ful: "איסוף עצמי", lines: [["5 × סמבוסק גבינה", 550], ["4 × עוגת פטל ופיסטוק", 720], ["2 × סלט ירקות וחומוס", 170], ["סלמון עם אורז וירקות", 40]] },
+      { id: "Q-1037", name: "תמר גולן", type: "בת מצווה", date: "4 בדצמבר", guests: 110, total: 2950, s: "rejected", note: "התאריך תפוס, נשמח להציע תאריך חלופי.", ful: "משלוח · כפר סבא", lines: [["5 × שיפודי עוף וקבב", 1600], ["5 × סלמון עם אורז וירקות", 400], ["5 × עוגת פטל ופיסטוק", 900], ["משלוח", 50]] },
+    ];
+    let filter = "all", sel = orders[0].id;
+    const $ = (s) => document.querySelector(s);
+
+    function render() {
+      const c = { all: orders.length, pending: 0, approved: 0, rejected: 0 };
+      orders.forEach((o) => c[o.s]++);
+      $("#stats").innerHTML = `<b>${c.pending} בקשות</b> ממתינות לאישור · ${c.approved} אושרו החודש`;
+      $("#filters").innerHTML = [["all", "הכל"], ["pending", "ממתינות"], ["approved", "אושרו"], ["rejected", "נדחו"]]
+        .map(([k, l]) => `<button aria-pressed="${filter === k}" data-f="${k}">${l} (${c[k]})</button>`).join("");
+      $("#rows").innerHTML = orders.filter((o) => filter === "all" || o.s === filter).map((o) =>
+        `<tr data-id="${o.id}" tabindex="0" aria-selected="${o.id === sel}"><td class="who"><b>${o.name}</b><span>${o.id} · ${o.type}</span></td><td>${o.date}</td><td class="num">${o.guests}</td><td><span class="tag ${ST[o.s][1]}">${ST[o.s][0]}</span></td><td class="s num">${ils(o.total)}</td></tr>`).join("");
+      const o = orders.find((x) => x.id === sel);
+      $("#detail").innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><h2>${o.name}</h2><span class="tag ${ST[o.s][1]}">${ST[o.s][0]}</span></div>
+        <dl><dt>אירוע</dt><dd>${o.type}</dd><dt>תאריך</dt><dd>${o.date}</dd><dt>אורחים</dt><dd>${o.guests}</dd><dt>קבלה</dt><dd>${o.ful}</dd></dl>
+        <ul class="items">${o.lines.map(([l, p]) => `<li><span>${l}</span><span class="num">${p ? ils(p) : ""}</span></li>`).join("")}</ul>
+        <div class="tot"><span>סה״כ</span><span class="num">${ils(o.total)}</span></div>
+        <p class="hint">המחירים נשמרו כפי שהיו בזמן השליחה.</p>
+        ${o.s === "pending" ? `<div class="field"><label for="note">הודעה ללקוח <span class="muted">(לא חובה)</span></label><textarea id="note" class="input"></textarea></div>
+          <div class="acts"><button class="btn btn--danger" data-act="rejected">דחייה</button><button class="btn btn--green" data-act="approved">אישור</button></div>`
+          : o.note ? `<p><b>ההודעה ללקוח:</b> ${o.note}</p>` : ""}`;
+    }
+    document.addEventListener("click", (e) => {
+      const f = e.target.closest("[data-f]"); if (f) { filter = f.dataset.f; render(); }
+      const r = e.target.closest("tr[data-id]"); if (r) { sel = r.dataset.id; render(); }
+      const a = e.target.closest("[data-act]"); if (a) { const o = orders.find((x) => x.id === sel); o.note = $("#note").value; o.s = a.dataset.act; render(); }
+    });
+    document.addEventListener("keydown", (e) => { const r = e.target.closest && e.target.closest("tr[data-id]"); if (r && e.key === "Enter") { sel = r.dataset.id; render(); } });
+    render();
   </script>
 </body>
 </html>

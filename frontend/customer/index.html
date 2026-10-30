@@ -1,21 +1,267 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
-  <link rel="stylesheet" href="/css/base.css">
+  <title>הזמנה — טעם של בית</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    main { padding-block: 28px 140px; }
+    .steps { display: flex; gap: 8px; margin: 0 0 8px; padding: 0; list-style: none; }
+    .steps li { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+    .steps li.on { background: var(--paprika); }
+    .stepname { color: var(--muted); font-size: .92rem; margin-block-end: 20px; }
+    .stepname b { color: var(--ink); }
+    .page { max-width: 680px; }
+    .page.wide { max-width: none; }
+    .page h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); }
+    .form { display: grid; gap: 22px; margin-block-start: 20px; }
+    .two { display: grid; gap: 22px; }
+    @media (min-width: 560px) { .two { grid-template-columns: 1fr 1fr; } }
+    .guests { display: flex; align-items: center; gap: 16px; }
+    .guests .hint { margin: 0; }
+    .next { display: flex; gap: 12px; margin-block-start: 8px; }
+
+    .tabs { display: flex; gap: 6px; overflow-x: auto; border-block-end: 1px solid var(--line); margin-block: 16px 24px; }
+    .tabs button { background: none; border: 0; padding: 12px 16px; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap; min-height: 48px; }
+    .tabs button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -3px 0 var(--paprika); }
+    .dishes { display: grid; gap: 28px 24px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+    .dish img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); margin-block-end: 12px; }
+    .dish h3 { margin: 0 0 2px; font-size: 1.15rem; }
+    .dish .desc { margin: 0 0 10px; color: var(--muted); font-size: .94rem; }
+    .dish .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .dish .price { font-weight: 700; }
+    .dish .price small { display: block; font-weight: 400; color: var(--muted); font-size: .8rem; }
+    .dish .fit { font-size: .82rem; color: var(--ok); font-weight: 500; margin-block-start: 6px; }
+
+    .lines { width: 100%; border-collapse: collapse; margin-block: 16px; }
+    .lines td { padding: 14px 6px; border-block-end: 1px solid var(--line); vertical-align: middle; }
+    .lines td:last-child { text-align: end; font-weight: 700; white-space: nowrap; }
+    .lines tr.sum td { border: 0; padding-block: 6px; font-weight: 500; }
+    .lines tr.total td { font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; border-block-start: 2px solid var(--ink); padding-block-start: 14px; }
+    .notice { background: var(--warn-bg); color: #5c3a00; padding: 14px 16px; border-radius: var(--radius); margin-block: 20px; font-size: .95rem; }
+    .meta { color: var(--muted); }
+
+    .done { text-align: center; padding-block: 48px; max-width: 520px; margin-inline: auto; }
+    .done h1 { margin-block: 16px 8px; }
+    .done ol { text-align: start; list-style: none; padding: 0; margin: 28px auto 0; display: grid; gap: 14px; }
+    .done li { display: flex; gap: 12px; align-items: center; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); flex: none; }
+    .dot.d { background: var(--ok); border-color: var(--ok); }
+    .dot.n { border-color: var(--warn); background: var(--warn-bg); }
+
+    .bar { position: fixed; inset-inline: 0; inset-block-end: 0; z-index: 30; background: #fff; border-block-start: 1px solid var(--line); padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -6px 20px rgb(0 0 0 / .06); }
+    .bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .bar b { font-family: var(--font-display); font-size: 1.4rem; font-weight: 400; }
+    .bar[hidden] { display: none; }
+
+    .helpbtn { position: fixed; inset-inline-start: max(12px, env(safe-area-inset-left, 0px)); inset-block-end: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 31; width: 44px; height: 44px; min-height: 0; padding: 0; border-radius: 50%; box-shadow: 0 4px 12px rgb(0 0 0 / .25); }
+    .helpbtn[hidden] { display: none; }
+    .helpbtn .icon { width: 24px; height: 24px; }
+    .panel { position: fixed; z-index: 40; inset-block-end: 0; inset-inline-start: 0; width: min(100%, 400px); max-height: 80vh; background: #fff; border: 1px solid var(--line); display: flex; flex-direction: column; box-shadow: 0 10px 40px rgb(0 0 0 / .25); border-start-end-radius: 12px; }
+    @media (max-width: 460px) { .panel { border-start-start-radius: 12px; } }
+    .panel[hidden] { display: none; }
+    .panel header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: var(--green); color: #fff; }
+    .panel header button { background: none; border: 0; color: #fff; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; }
+    .msgs { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
+    .msg { padding: 10px 14px; border-radius: 10px; max-width: 90%; font-size: .95rem; }
+    .msg.bot { background: var(--tint); }
+    .msg.me { background: var(--green); color: #fff; align-self: flex-end; }
+    .prop { border: 1.5px solid var(--paprika); border-radius: var(--radius); padding: 12px 14px; font-size: .93rem; }
+    .prop .r { display: flex; justify-content: space-between; padding: 2px 0; }
+    .prop .acts { display: flex; gap: 8px; margin-block-start: 10px; justify-content: flex-end; }
+    .quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px; }
+    .quick button { border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: .85rem; }
+    .compose { display: flex; gap: 8px; padding: 12px; border-block-start: 1px solid var(--line); }
+  </style>
 </head>
 <body>
-  <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="../index.html">טעם <span>של</span> בית</a>
+      <nav class="nav" aria-label="ניווט ראשי">
+        <a href="index.html" aria-current="page">הזמנה</a>
+        <a href="../admin/index.html">ניהול</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="progress"></div>
+
+    <!-- שלב 1 -->
+    <section class="page" data-step="0">
+      <h1>מתי האירוע?</h1>
+      <p class="muted">שלוש שאלות קצרות ואז בוחרים מנות.</p>
+      <div class="form">
+        <div class="two">
+          <div class="field"><label for="type">סוג האירוע</label>
+            <select id="type" class="input"><option>בר/בת מצווה</option><option>חתונה</option><option>יום הולדת</option><option>אירוע חברה</option><option>ברית</option></select></div>
+          <div class="field"><label for="date">תאריך</label>
+            <input id="date" type="date" class="input" value="2026-12-17" min="2026-11-03"></div>
+        </div>
+        <div class="field"><span class="label">כמה אורחים?</span>
+          <div class="guests">
+            <div class="qty"><button type="button" id="g-" aria-label="פחות אורחים">−</button><output id="g" aria-live="polite">60</output><button type="button" id="g+" aria-label="יותר אורחים">+</button></div>
+            <span class="hint">הכמויות במגשים יחושבו לפי המספר הזה.</span>
+          </div></div>
+        <div class="field"><span class="label">איך מקבלים?</span>
+          <div class="choice" role="group" aria-label="איסוף או משלוח"><button type="button" aria-pressed="true" data-ful="delivery">משלוח (120 ₪)</button><button type="button" aria-pressed="false" data-ful="pickup">איסוף עצמי</button></div></div>
+        <div class="field" id="addr-field"><label for="addr">כתובת למשלוח</label><input id="addr" class="input" autocomplete="street-address" value="הרצל 12, רעננה"></div>
+        <div class="field"><label for="notes">הערות <span class="muted">(לא חובה)</span></label><textarea id="notes" class="input" placeholder="לדוגמה: שני אורחים עם אלרגיה לאגוזים"></textarea></div>
+        <div class="next"><button class="btn btn--primary" data-next>להמשיך לבחירת מנות</button></div>
+      </div>
+    </section>
+
+    <!-- שלב 2 -->
+    <section class="page wide" data-step="1" hidden>
+      <h1>בוחרים מנות</h1>
+      <p class="muted">לחיצה על "הוסף" מוסיפה את הכמות המתאימה ל-<span class="gcount"></span> אורחים. אפשר לשנות.</p>
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="dishes" id="dishes"></div>
+    </section>
+
+    <!-- שלב 3 -->
+    <section class="page" data-step="2" hidden>
+      <h1>סיכום ושליחה</h1>
+      <p class="meta" id="meta"></p>
+      <table class="lines"><tbody id="lines"></tbody></table>
+      <div class="notice">זו <b>בקשה להצעת מחיר</b> ולא הזמנה סופית. העסק יאשר או ידחה בתוך 24 שעות ותקבלו הודעה.</div>
+      <div class="form">
+        <div class="two">
+          <div class="field"><label for="name">שם מלא</label><input id="name" class="input" autocomplete="name" value="נועה לוי"></div>
+          <div class="field"><label for="phone">טלפון</label><input id="phone" class="input" type="tel" autocomplete="tel" inputmode="tel" value="050-765-4321"></div>
+        </div>
+        <div class="next"><button class="btn btn--line" data-prev>חזרה לתפריט</button><button class="btn btn--primary" id="submit">שליחת בקשה להצעת מחיר</button></div>
+      </div>
+    </section>
+
+    <section class="done" data-step="3" hidden>
+      <span class="tag tag--warn">ממתין לאישור העסק</span>
+      <h1>הבקשה נשלחה</h1>
+      <p>מספר בקשה <b>Q-1042</b>. נחזור אליכם בטלפון או בהודעה בתוך 24 שעות. האירוע <b>עדיין לא סגור</b>.</p>
+      <ol>
+        <li><span class="dot d"></span>הבקשה נשלחה</li>
+        <li><span class="dot n"></span>העסק בודק ומאשר</li>
+        <li><span class="dot"></span>האירוע סגור והתשלום מתואם</li>
+      </ol>
+    </section>
   </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+
+  <div class="bar" id="bar" hidden>
+    <div class="wrap">
+      <div><span class="muted" id="bar-count"></span><br><b class="num" id="bar-total"></b></div>
+      <button class="btn btn--primary" data-next id="bar-next">להמשך לסיכום</button>
+    </div>
+  </div>
+
+  <button class="btn btn--green helpbtn" id="help" hidden aria-label="עוזר התפריט" title="עזרה בבחירת מנות"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M10 4h4M2 13v2M22 13v2"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><path d="M9.5 16.5h5"/></svg></button>
+  <aside class="panel" id="panel" hidden aria-label="עוזר התפריט">
+    <header><b>עוזר התפריט</b><button id="close" aria-label="סגירה">×</button></header>
+    <div class="msgs" id="msgs" aria-live="polite"><div class="msg bot">שלום! אפשר לשאול אותי אם יש מספיק אוכל, או איך להוזיל. שום דבר לא ישתנה בלי אישור שלכם.</div></div>
+    <div class="quick" id="quick"><button>יש מספיק לצמחונים?</button><button>איך מוזילים?</button></div>
+    <form class="compose" id="compose"><label class="sr-only" for="ask">הודעה</label><input id="ask" class="input" placeholder="כתבו שאלה" autocomplete="off"><button class="btn btn--green btn--sm">שלח</button></form>
+  </aside>
+
+  <script>
+    const NAMES = ["פרטי האירוע", "בחירת מנות", "סיכום ושליחה"];
+    const CATS = ["הכל", "ראשונות", "עיקריות", "תוספות", "קינוחים"];
+    const DISHES = [
+      { id: 1, cat: "ראשונות", img: "sambusak", name: "סמבוסק גבינה", desc: "במילוי גבינות, עם סחוג וטחינה.", tag: "חלבי", price: 110, unit: "מגש", serves: 12 },
+      { id: 2, cat: "עיקריות", img: "grill", name: "שיפודי עוף וקבב על האש", desc: "נצלים על הגחלים, עם טחינה וצ׳ימיצ׳ורי.", tag: "בשרי", price: 320, unit: "מגש", serves: 10 },
+      { id: 3, cat: "עיקריות", img: "meatballs", name: "קציצות בשר ביתיות", desc: "קציצות עסיסיות על ירק טרי, עם רוטב לצד.", tag: "בשרי", price: 240, unit: "מגש", serves: 12 },
+      { id: 4, cat: "עיקריות", img: "grain", name: "סלמון עם אורז וירקות", desc: "פילה סלמון בתנור, אורז ושעועית ירוקה.", tag: "פרווה", price: 360, unit: "מגש", serves: 10 },
+      { id: 5, cat: "תוספות", img: "salad", name: "סלט ירקות וחומוס", desc: "חסה, עגבניות שרי, חומוס, בטטה ואבוקדו עם טחינה.", tag: "טבעוני", price: 85, unit: "מגש", serves: 15 },
+      { id: 7, cat: "קינוחים", img: "cake", name: "עוגת פטל ופיסטוק", desc: "שכבות קרם פיסטוק ופטל טרי.", tag: "חלבי", price: 180, unit: "עוגה", serves: 12 },
+    ];
+    const order = new Map([[3, 5], [5, 4]]);
+    let step = 0, cat = "הכל", guests = 60, fulfil = "delivery";
+    const $ = (s) => document.querySelector(s);
+    const ils = (n) => n.toLocaleString("he-IL") + " ₪";
+    const need = (d) => Math.max(1, Math.ceil(guests / d.serves));
+    const sub = () => [...order].reduce((s, [id, q]) => s + DISHES.find((d) => d.id === id).price * q, 0);
+    const fee = () => (fulfil === "delivery" ? 120 : 0);
+    const cnt = () => [...order.values()].reduce((a, b) => a + b, 0);
+    const tagCls = { "טבעוני": "tag--ok", "פרווה": "tag--ok" };
+
+    function progress() {
+      $("#progress").innerHTML = step > 2 ? "" :
+        `<ol class="steps" aria-hidden="true">${NAMES.map((_, i) => `<li class="${i <= step ? "on" : ""}"></li>`).join("")}</ol><div class="stepname">שלב <b>${step + 1}</b> מתוך 3 · ${NAMES[step]}</div>`;
+    }
+    function go(i) {
+      step = i;
+      document.querySelectorAll("[data-step]").forEach((s) => (s.hidden = +s.dataset.step !== i));
+      $("#bar").hidden = i !== 1; $("#help").hidden = i !== 1;
+      if (i !== 1) $("#panel").hidden = true;
+      if (i === 2) renderSummary();
+      progress(); renderBar();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    function renderTabs() {
+      $("#tabs").innerHTML = CATS.map((c) => `<button role="tab" aria-selected="${c === cat}" data-cat="${c}">${c}</button>`).join("");
+    }
+    function renderDishes() {
+      document.querySelectorAll(".gcount").forEach((e) => (e.textContent = guests));
+      $("#dishes").innerHTML = DISHES.filter((d) => cat === "הכל" || d.cat === cat).map((d) => {
+        const q = order.get(d.id) || 0;
+        const ok = q * d.serves >= guests;
+        return `<article class="dish"><img src="../assets/img/${d.img}.jpg" alt="${d.name}">
+          <h3>${d.name} <span class="tag ${tagCls[d.tag] || ""}">${d.tag}</span></h3><p class="desc">${d.desc}</p>
+          <div class="row"><span class="price num">${ils(d.price)}<small>ל${d.unit}, מספיק ל-${d.serves}</small></span>
+          ${q ? `<div class="qty"><button data-q="${d.id}" data-d="-1" aria-label="פחות ${d.name}">−</button><output>${q}</output><button data-q="${d.id}" data-d="1" aria-label="עוד ${d.name}">+</button></div>`
+              : `<button class="btn btn--line btn--sm" data-add="${d.id}">הוסף (${need(d)} ${d.unit === "עוגה" ? "עוגות" : "מגשים"})</button>`}</div>
+          ${q ? `<div class="fit">${ok ? "מספיק לכל האורחים" : `מספיק ל-${q * d.serves} אורחים`}</div>` : ""}</article>`;
+      }).join("");
+    }
+    function renderBar() {
+      $("#bar-count").textContent = cnt() ? `${cnt()} מגשים בהזמנה` : "עוד לא נבחרו מנות";
+      $("#bar-total").textContent = ils(sub() + fee());
+      $("#bar-next").disabled = !cnt();
+    }
+    function renderSummary() {
+      const dt = new Date($("#date").value).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
+      $("#meta").textContent = `${$("#type").value} · ${dt} · ${guests} אורחים · ${fulfil === "delivery" ? "משלוח" : "איסוף עצמי"}`;
+      $("#lines").innerHTML = [...order].map(([id, q]) => { const d = DISHES.find((x) => x.id === id); return `<tr><td>${d.name}</td><td class="num">${q} × ${ils(d.price)}</td><td class="num">${ils(d.price * q)}</td></tr>`; }).join("")
+        + `<tr class="sum"><td colspan="2">משלוח</td><td class="num">${fee() ? ils(fee()) : "ללא"}</td></tr><tr class="total"><td colspan="2">סה״כ לתשלום</td><td class="num">${ils(sub() + fee())}</td></tr>`;
+    }
+    function refresh() { renderDishes(); renderBar(); }
+
+    document.addEventListener("click", (e) => {
+      const t = e.target.closest("button"); if (!t) return;
+      if (t.hasAttribute("data-next")) go(step + 1);
+      if (t.hasAttribute("data-prev")) go(step - 1);
+      if (t.dataset.cat) { cat = t.dataset.cat; renderTabs(); renderDishes(); }
+      if (t.dataset.add) { const d = DISHES.find((x) => x.id === +t.dataset.add); order.set(d.id, need(d)); refresh(); }
+      if (t.dataset.q) { const id = +t.dataset.q, q = (order.get(id) || 0) + +t.dataset.d; q > 0 ? order.set(id, q) : order.delete(id); refresh(); }
+      if (t.dataset.ful) { fulfil = t.dataset.ful; t.parentElement.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b === t)); $("#addr-field").hidden = fulfil === "pickup"; renderBar(); }
+      if (t.id === "g-" || t.id === "g+") { guests = Math.max(10, guests + (t.id === "g+" ? 5 : -5)); $("#g").textContent = guests; }
+      if (t.id === "submit") go(3);
+      if (t.id === "help") $("#panel").hidden = !$("#panel").hidden;
+      if (t.id === "close") $("#panel").hidden = true;
+      if (t.closest("#quick")) ask(t.textContent);
+      if (t.dataset.prop) {
+        const box = t.closest(".prop");
+        if (t.dataset.prop === "ok") { order.set(4, (order.get(4) || 0) + 2); refresh(); box.querySelector(".acts").innerHTML = '<span class="tag tag--ok">נוסף להזמנה</span>'; }
+        else box.querySelector(".acts").innerHTML = '<span class="tag">נדחה</span>';
+      }
+    });
+    $("#compose").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#ask").value.trim(); if (v) { ask(v); $("#ask").value = ""; } });
+    function ask(text) {
+      const m = $("#msgs");
+      m.insertAdjacentHTML("beforeend", `<div class="msg me">${text.replace(/</g, "&lt;")}</div>`);
+      $("#quick").hidden = true;
+      setTimeout(() => {
+        const add = 2, cost = add * DISHES[3].price;
+        m.insertAdjacentHTML("beforeend", `<div class="msg bot">כדאי להוסיף מנת דגים לאורחים שלא אוכלים בשר. זו ההצעה שלי:</div>
+          <div class="prop"><div class="r"><span>הוספה: ${DISHES[3].name}</span><span>${add} מגשים</span></div>
+          <div class="r"><b>סה״כ</b><span class="num">${ils(sub() + fee())} ← ${ils(sub() + fee() + cost)}</span></div>
+          <div class="acts"><button class="btn btn--line btn--sm" data-prop="no">לא תודה</button><button class="btn btn--primary btn--sm" data-prop="ok">אישור והוספה</button></div></div>`);
+        m.scrollTop = m.scrollHeight;
+      }, 500);
+      m.scrollTop = m.scrollHeight;
+    }
+    $("#type").addEventListener("change", () => {});
+    progress(); renderTabs(); refresh();
   </script>
 </body>
 </html>
