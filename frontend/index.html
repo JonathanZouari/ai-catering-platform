@@ -1,18 +1,112 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
-  <link rel="stylesheet" href="/css/base.css">
+  <title>טעם של בית</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    .hero { position: relative; color: #fff; background: var(--green) url("assets/img/hero.jpg") center / cover no-repeat; }
+    .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(270deg, rgb(20 34 25 / .92) 0%, rgb(20 34 25 / .78) 42%, rgb(20 34 25 / .15) 100%); }
+    .hero .wrap { position: relative; padding-block: clamp(56px, 10vw, 128px); }
+    .hero__text { max-width: 560px; }
+    .hero h1 { margin-block-end: 18px; }
+    .hero p { font-size: 1.15rem; color: #e4e9e2; margin-block-end: 28px; max-width: 46ch; }
+    .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .hero__phone { color: #e4e9e2; font-size: .95rem; }
+    .hero__phone b { color: #fff; font-size: 1.1rem; direction: ltr; unicode-bidi: isolate; }
+
+    section { padding-block: clamp(44px, 7vw, 88px); }
+    .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; margin-block-end: 28px; }
+    .head h2 { margin: 0; }
+
+    .picks { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .pick img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); margin-block-end: 12px; }
+    .pick h3 { margin-block-end: 4px; }
+    .pick p { margin: 0; color: var(--muted); font-size: .95rem; }
+    .pick .price { color: var(--paprika); font-weight: 700; margin-block-start: 6px; }
+
+    .how { background: var(--tint); }
+    .how ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .how li { padding-inline-start: 56px; position: relative; }
+    .how li::before { counter-increment: s; content: counter(s); position: absolute; inset-inline-start: 0; top: -4px; font: 400 2.6rem/1 var(--font-display); color: var(--paprika); }
+    .how ol { counter-reset: s; }
+    .how h3 { margin-block-end: 4px; }
+    .how p { margin: 0; color: var(--muted); }
+
+    .cta { background: var(--green); color: #fff; text-align: center; }
+    .cta p { color: #d3dcd2; max-width: 46ch; margin-inline: auto; margin-block-end: 24px; }
+
+    footer { padding-block: 32px; border-block-start: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
+    footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; }
+    .ltr { direction: ltr; unicode-bidi: isolate; }
+  </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="index.html">טעם <span>של</span> בית</a>
+      <nav class="nav" aria-label="ניווט ראשי">
+        <a href="customer/index.html">הזמנה</a>
+        <a href="admin/index.html">ניהול</a>
+      </nav>
+    </div>
+  </header>
+
   <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
+    <div class="hero">
+      <div class="wrap">
+        <div class="hero__text">
+          <h1>אוכל ביתי לאירוע שלכם</h1>
+          <p>קבב על האש, קציצות ביתיות, סמבוסק וסלטים טריים. בוחרים מנות, רואים מחיר מדויק ושולחים בקשה. בלי טלפונים ובלי הפתעות.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="customer/index.html">להתחיל הזמנה</a>
+            <span class="hero__phone">או בטלפון: <b>050-123-4567</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <div class="wrap">
+        <div class="head">
+          <h2>מה מזמינים אצלנו</h2>
+          <a href="customer/index.html" class="btn btn--line btn--sm">לכל התפריט</a>
+        </div>
+        <div class="picks">
+          <article class="pick"><img src="assets/img/meatballs.jpg" alt="קציצות בשר על ירק טרי"><h3>קציצות בשר ביתיות</h3><p>עסיסיות וכמו בבית, מספיק לשנים עשר אורחים במגש.</p><div class="price">240 ₪ למגש</div></article>
+          <article class="pick"><img src="assets/img/salad.jpg" alt="קערת סלט עם חומוס, בטטה ואבוקדו"><h3>סלט ירקות וחומוס</h3><p>חסה, עגבניות שרי, חומוס, בטטה ואבוקדו עם טחינה.</p><div class="price">85 ₪ למגש</div></article>
+          <article class="pick"><img src="assets/img/cake.jpg" alt="פרוסת עוגת פטל ופיסטוק"><h3>עוגת פטל ופיסטוק</h3><p>קינוח קליל שמסיים כל ארוחה.</p><div class="price">180 ₪ לעוגה</div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="how">
+      <div class="wrap">
+        <h2>איך מזמינים</h2>
+        <ol>
+          <li><h3>מספרים על האירוע</h3><p>תאריך, כמה אורחים ואיסוף או משלוח.</p></li>
+          <li><h3>בוחרים מנות</h3><p>הכמות מחושבת לבד לפי מספר האורחים, ואפשר לשנות.</p></li>
+          <li><h3>שולחים בקשה</h3><p>העסק מאשר בתוך 24 שעות. עד אז זו בקשה בלבד ולא הזמנה סופית.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="wrap">
+        <h2>יש לכם אירוע בקרוב?</h2>
+        <p>ההזמנה לוקחת כשלוש דקות, ואין צורך להירשם.</p>
+        <a class="btn btn--light" href="customer/index.html">להתחיל הזמנה</a>
+      </div>
+    </section>
   </main>
+
+  <footer>
+    <div class="wrap">
+      <span>טעם של בית · קייטרינג ביתי לאירועים · כשר</span>
+      <span>טלפון <span class="ltr">050-123-4567</span> · א׳–ה׳ 8:00–18:00</span>
+      <span>צילומים: Unsplash</span>
+    </div>
+  </footer>
 </body>
 </html>
