@@ -1,21 +1,44 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>הזמנות | יומי לבעל העסק</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/table.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
-  <main>
-    <h1>Business dashboard</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+<body class="app admin">
+  <a class="skip-link" href="#orders">דילוג לרשימת ההזמנות</a>
+  <header class="app-bar">
+    <a class="wordmark" href="/" aria-label="יומי, לעמוד הבית"><span class="wordmark__mark" aria-hidden="true"></span>יומי</a>
+    <span class="admin-badge">ניהול</span>
+    <nav class="admin-nav" aria-label="ניהול">
+      <a href="/admin/" aria-current="page">הזמנות</a>
+      <span aria-disabled="true" title="בשלב הבא">מנות ומחירים</span>
+      <span aria-disabled="true" title="בשלב הבא">זמינות</span>
+    </nav>
+  </header>
+
+  <div class="admin-layout">
+    <section id="orders" class="orders" aria-labelledby="orders-title" tabindex="-1">
+      <header class="orders__head">
+        <h1 id="orders-title">הזמנות</h1>
+        <p data-bind="orders-summary"></p>
+      </header>
+      <div class="chips" role="group" aria-label="סינון לפי סטטוס" data-bind="filters"></div>
+      <ul class="order-list" data-bind="list" aria-label="רשימת הזמנות"></ul>
+    </section>
+    <section class="order-detail" aria-label="פרטי ההזמנה" data-bind="detail"></section>
+  </div>
+  <div class="toast" role="status" data-bind="toast"></div>
+  <script type="module" src="/js/admin.js"></script>
 </body>
 </html>
