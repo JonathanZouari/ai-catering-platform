@@ -3,6 +3,8 @@ import { fill, h, icon } from "../../lib/dom.js";
 import { announce } from "../../lib/announce.js";
 import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
 import { CATEGORIES, DISHES, priceOrder, qtyLabel, totalGuests } from "../mock-backend.js";
+import { CATEGORY_ART, illustration } from "../../lib/illustrations.js";
+import { animatedAmount } from "../../lib/motion.js";
 import { createDishCard } from "../components/dish-card.js";
 import { getState, goto, setQty, subscribe } from "../store.js";
 
@@ -38,8 +40,10 @@ export function mountMenu(root) {
   document.body.classList.add("has-bottom-bar");
 
   /* ----- filter controls ----- */
-  function chip(label, pressed, onClick) {
-    return h("button", { class: "chip", type: "button", "data-key": label, "aria-pressed": String(pressed), onclick: onClick }, label);
+  function chip(label, pressed, onClick, art) {
+    // The drawing is decorative; the label is the accessible name.
+    return h("button", { class: "chip", type: "button", "data-key": label, "aria-pressed": String(pressed), onclick: onClick },
+      art ? illustration(art, { alt: "", cls: "chip-art" }) : null, label);
   }
 
   function renderControls() {
@@ -47,7 +51,7 @@ export function mountMenu(root) {
       ? document.activeElement.dataset.key : null;
     fill(chips, 
       chip("הכל", activeCategory === "all", () => { activeCategory = "all"; renderCatalog(); renderControls(); }),
-      catalog.categories.map((c) => chip(c.name, activeCategory === c.id, () => { activeCategory = c.id; renderCatalog(); renderControls(); })),
+      catalog.categories.map((c) => chip(c.name, activeCategory === c.id, () => { activeCategory = c.id; renderCatalog(); renderControls(); }, CATEGORY_ART[c.id])),
     );
     fill(filters, 
       chip("צמחוני", diet.vegetarian, () => { diet.vegetarian = !diet.vegetarian; renderCatalog(); renderControls(); }),
@@ -93,26 +97,31 @@ export function mountMenu(root) {
     fill(catalogEl, 
       groups.map(({ c, dishes }) =>
         h("section", { class: "category", "aria-labelledby": `cat-${c.id}` },
-          h("h2", { id: `cat-${c.id}`, class: "category-title", text: c.name }),
+          h("div", { class: "category-head" },
+            CATEGORY_ART[c.id] ? illustration(CATEGORY_ART[c.id], { alt: "", cls: "category-art" }) : null,
+            h("h2", { id: `cat-${c.id}`, class: "category-title", text: c.name })),
           h("div", { class: "dish-grid" }, dishes.map(ensureCard)))),
     );
     announce(`מוצגות ${shown.length} מנות`);
   }
 
   /* ----- order sidebar + mobile bar ----- */
+  let seenLines = new Set(); // dish ids already shown in the sidebar, so only a newly added dish animates in
   function renderOrder(state) {
     const pricing = priceOrder(state.order);
     const count = pricing.lines.length;
-    fill(sidebar, 
+    const ids = new Set(pricing.lines.map((l) => l.dish.id));
+    const firstRender = lastTotal === null;
+    fill(sidebar,
       h("h2", { class: "side-title" }, icon("shopping-bag-open"), "ההזמנה שלכם"),
       count
-        ? h("ul", { class: "side-lines" }, pricing.lines.map((l) => h("li", { class: "side-line" },
+        ? h("ul", { class: "side-lines" }, pricing.lines.map((l) => h("li", { class: `side-line${!firstRender && !seenLines.has(l.dish.id) ? " is-new" : ""}` },
           h("span", { class: "side-name" }, h("span", { text: l.dish.name }), h("span", { class: "muted small", text: qtyLabel(l.dish, l.qty) })),
           h("span", { class: "num", text: fmtMoney(l.lineTotal) }))))
         : h("p", { class: "muted", text: "עדיין לא נבחרו מנות. הוסיפו מנות מהתפריט." }),
       h("div", { class: "side-total" },
         h("span", { text: "סכום ביניים" }),
-        h("strong", { class: "num", text: fmtMoney(pricing.subtotal) })),
+        animatedAmount(pricing.subtotal, lastTotal, fmtMoney)),
       h("p", { class: "muted small", text: "דמי משלוח, אם יש, יתווספו בסיכום." }),
       h("button", { class: "btn btn-primary btn-block", type: "button", disabled: !count, onclick: () => goto("summary") },
         "לסיכום ההזמנה", icon("arrow-left")),
@@ -120,11 +129,12 @@ export function mountMenu(root) {
     fill(bar, 
       h("div", { class: "bar-total" },
         h("span", { class: "muted small", text: count ? `${count} מנות בהזמנה` : "ההזמנה ריקה" }),
-        h("strong", { class: "num", text: fmtMoney(pricing.subtotal) })),
+        animatedAmount(pricing.subtotal, lastTotal, fmtMoney)),
       h("button", { class: "btn btn-primary", type: "button", disabled: !count, onclick: () => goto("summary") }, "לסיכום", icon("arrow-left")),
     );
     if (lastTotal !== null && lastTotal !== pricing.subtotal) announce(`סכום ביניים ${fmtMoney(pricing.subtotal)}`);
     lastTotal = pricing.subtotal;
+    seenLines = ids;
   }
 
   /* ----- boot ----- */

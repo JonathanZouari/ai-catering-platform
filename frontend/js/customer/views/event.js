@@ -4,6 +4,7 @@ import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
 import {
   EVENT_TYPES, ZONES, blockedDates, minEventDate, slotsFor, totalGuests, validateEvent,
 } from "../mock-backend.js";
+import { illustration, OCCASION_ART } from "../../lib/illustrations.js";
 import { counter } from "../components/counter.js";
 import { getState, goto, setEvent } from "../store.js";
 
@@ -27,10 +28,20 @@ export function mountEvent(root) {
   }
 
   /* ----- basics ----- */
-  const type = h("select", { id: "f-type", class: "input", required: true },
-    h("option", { value: "", text: "בחרו סוג אירוע" }),
-    EVENT_TYPES.map((t) => h("option", { value: t, text: t, selected: ev().type === t })));
-  type.addEventListener("change", () => update({ type: type.value }));
+  // Occasion picker: real radio inputs wrapped in illustrated cards. The art is decorative (alt="");
+  // the visible label is the accessible name, so the choice works with images disabled.
+  const typeError = h("p", { class: "error", id: "err-type", hidden: true });
+  const typeGroup = h("fieldset", { class: "occasion-grid", "aria-describedby": "err-type" },
+    h("legend", { class: "visually-hidden", text: "סוג האירוע" }),
+    EVENT_TYPES.map((t, i) => {
+      const input = h("input", { type: "radio", name: "event-type", value: t, id: `f-type-${i}`, checked: ev().type === t });
+      input.addEventListener("change", () => update({ type: t }));
+      return h("label", { class: "occasion" }, input,
+        h("span", { class: "occasion-body" },
+          illustration(OCCASION_ART[t] ?? "occasion-other", { alt: "", cls: "occasion-art" }),
+          h("strong", { text: t })));
+    }));
+  fields.type = { wrap: typeGroup, error: typeError, control: typeGroup.querySelector("input") };
 
   const date = h("input", { id: "f-date", class: "input", type: "date", min: minEventDate(), value: ev().date, required: true });
   date.addEventListener("change", () => update({ date: date.value }));
@@ -85,9 +96,13 @@ export function mountEvent(root) {
 
   const form = h("form", { class: "stack-lg", novalidate: true, onsubmit: onSubmit },
     h("section", { class: "panel stack" },
-      h("h2", { text: "על האירוע" }),
-      h("div", { class: "grid-3" },
-        field("type", "סוג האירוע", type),
+      h("h2", { text: "איזה אירוע מתכננים?" }),
+      typeGroup,
+      typeError,
+    ),
+    h("section", { class: "panel stack" },
+      h("h2", { text: "מתי?" }),
+      h("div", { class: "grid-2" },
         field("date", "תאריך", date, { hint: `תאריכים סגורים להזמנות: ${closed}`, hintId: "hint-date" }),
         field("slot", "שעת איסוף או משלוח", slot),
       ),
@@ -124,9 +139,13 @@ export function mountEvent(root) {
     h("div", { class: "form-actions" }, continueBtn),
   );
 
-  fill(root, 
-    h("h1", { class: "page-title", text: "ספרו לנו על האירוע" }),
-    h("p", { class: "page-lead muted", text: "הפרטים האלה קובעים את הכמויות המומלצות ואת המחיר." }),
+  fill(root,
+    h("div", { class: "page-head" },
+      h("div", {},
+        h("h1", { class: "page-title", text: "ספרו לנו על האירוע" }),
+        h("p", { class: "page-lead muted", text: "הפרטים האלה קובעים את הכמויות המומלצות ואת המחיר." })),
+      // The mascot greets here once and never sits over a form field; hidden on narrow screens.
+      illustration("mascot-welcome", { alt: "", cls: "page-mascot", eager: true })),
     form,
   );
 

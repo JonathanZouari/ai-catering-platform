@@ -2,6 +2,8 @@ import { fill, h, icon } from "../../lib/dom.js";
 import { announce } from "../../lib/announce.js";
 import { fmtMoney, fmtSignedMoney } from "../../lib/format.js";
 import { suggestedPrompts } from "../mock-backend.js";
+import { confetti } from "../../lib/motion.js";
+import { mascotAvatar } from "./mascot.js";
 import {
   approveProposalById, getState, proposalStatus, rejectProposal, sendChat, setChatOpen, subscribe,
 } from "../store.js";
@@ -44,14 +46,23 @@ function proposalCard(p) {
         h("button", { class: "btn btn-secondary", type: "button", "data-key": `rej-${p.id}`, onclick: () => rejectProposal(p.id) }, "דחייה"),
         h("button", { class: "btn btn-primary", type: "button", "data-key": `app-${p.id}`, onclick: () => approveProposalById(p.id) }, "אישור השינוי"),
       )
-      : h("p", { class: `badge ${note[0]}` }, status === "applied" ? icon("check") : null, note[1]),
+      : h("div", { class: "proposal-done" },
+        // Celebrating only acknowledges a change the customer approved; it is never shown on a pending proposal.
+        status === "applied" ? mascotAvatar("celebrating", { size: 32 }) : null,
+        h("p", { class: `badge ${note[0]}` }, status === "applied" ? icon("check") : null, note[1])),
   );
 }
 
-function bubble(m) {
-  return h("li", { class: `msg msg-${m.role}` },
-    h("div", { class: "msg-text", text: m.text }),
-    m.proposals.map(proposalCard),
+// Mascot state per message: a message that carries a proposal is "suggesting"; any other answer
+// (price, quantities, allergens) is "explaining". The state is chosen here from the message itself.
+function bubble(m, isNew) {
+  const fresh = isNew ? " is-new" : "";
+  if (m.role !== "assistant") return h("li", { class: `msg msg-user${fresh}` }, h("div", { class: "msg-text", text: m.text }));
+  return h("li", { class: `msg msg-assistant${fresh}` },
+    mascotAvatar(m.proposals.length ? "suggesting" : "explaining", { size: 36 }),
+    h("div", { class: "msg-main" },
+      h("div", { class: "msg-text", text: m.text }),
+      m.proposals.map(proposalCard)),
   );
 }
 
@@ -64,9 +75,12 @@ export function mountChat(root) {
 
   const panel = h("aside", { class: "chat-panel", "aria-label": "העוזר החכם", id: "chat-panel" },
     h("header", { class: "chat-head" },
-      h("div", {},
-        h("h2", { class: "chat-title" }, icon("sparkle"), "העוזר החכם"),
-        h("p", { class: "muted small", text: "ההצעות שלי מתבצעות רק אחרי שתאשרו אותן." }),
+      h("div", { class: "chat-id" },
+        mascotAvatar("welcome", { size: 52 }),
+        h("div", {},
+          h("h2", { class: "chat-title" }, "העוזר החכם"),
+          h("p", { class: "muted small", text: "ההצעות שלי מתבצעות רק אחרי שתאשרו אותן." }),
+        ),
       ),
       closeBtn,
     ),
@@ -89,7 +103,7 @@ export function mountChat(root) {
   panel.addEventListener("keydown", (e) => { if (e.key === "Escape") setChatOpen(false); });
 
   const fab = h("button", { class: "chat-fab btn btn-primary", type: "button", "aria-controls": "chat-panel", "aria-expanded": "false", onclick: () => setChatOpen(true) },
-    icon("chat-circle-text"), "שאלו את העוזר");
+    mascotAvatar("welcome", { size: 36, cls: "on-dark" }), "שאלו את העוזר");
   const backdrop = h("div", { class: "chat-backdrop", onclick: () => setChatOpen(false) });
 
   root.append(backdrop, panel, fab);
@@ -109,19 +123,28 @@ export function mountChat(root) {
     if (open && (sig.messages !== last.messages || sig.busy !== last.busy || sig.version !== last.version)) {
       const focusKey = list.contains(document.activeElement) ? document.activeElement.dataset.key : null;
       fill(list, 
-        messages.length ? null : h("li", { class: "msg msg-assistant" }, h("div", { class: "msg-text", text: "שלום! אני יכול להמליץ על מנות, לבדוק כמויות ולהסביר את המחיר. אפשר גם לשאול על אלרגנים." })),
-        messages.map(bubble),
-        busy ? h("li", { class: "msg msg-assistant" }, h("div", { class: "msg-text typing", text: "העוזר מקליד" })) : null,
+        messages.length ? null : h("li", { class: "msg msg-assistant" },
+          mascotAvatar("welcome", { size: 36 }),
+          h("div", { class: "msg-main" }, h("div", { class: "msg-text", text: "שלום! אני יכול להמליץ על מנות, לבדוק כמויות ולהסביר את המחיר. אפשר גם לשאול על אלרגנים." }))),
+        // Only messages added since the last render animate in; the rest stay put.
+        messages.map((m, i) => bubble(m, last.count !== undefined && i >= last.count)),
+        busy ? h("li", { class: "msg msg-assistant is-new" },
+          mascotAvatar("thinking", { size: 36, cls: "is-thinking" }),
+          h("div", { class: "msg-main" }, h("div", { class: "msg-text typing", text: "העוזר מקליד" }))) : null,
       );
       if (focusKey) list.querySelector(`[data-key="${focusKey}"]`)?.focus();
       list.scrollTop = list.scrollHeight;
       // role=log announces new bubbles; applied proposals change the order silently, so announce them.
       const applied = messages.flatMap((m) => m.proposals).filter((p) => p.status === "applied").length;
       if (applied !== last.applied) {
-        if (last.applied !== undefined) announce("השינוי הוחל בהזמנה");
+        if (last.applied !== undefined) {
+          announce("השינוי הוחל בהזמנה");
+          // A small celebration, only for a change the customer just approved.
+          confetti([...list.querySelectorAll(".proposal-done .mascot-avatar")].at(-1));
+        }
         last.applied = applied;
       }
-      Object.assign(last, sig);
+      Object.assign(last, sig, { count: messages.length });
     }
     fill(prompts, 
       messages.length === 0 && open

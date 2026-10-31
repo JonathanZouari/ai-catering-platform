@@ -37,7 +37,8 @@ export const DISHES = [
   { id: "d17", categoryId: "drinks", name: "שתייה קלה ומים", description: "מבחר שתייה קלה ומים מינרליים לכל אורח.", price: 14, unit: "guest", kashrut: "pareve", vegetarian: true, vegan: true, allergens: [] },
 ];
 
-export const EVENT_TYPES = ["יום הולדת", "אירוע משפחתי", "בר או בת מצווה", "ארוחת שבת", "חגיגה פרטית", "אחר"];
+// "יום נישואין" (anniversary) added for the illustrated occasion picker; the client brief lists it as an occasion.
+export const EVENT_TYPES = ["יום הולדת", "אירוע משפחתי", "בר או בת מצווה", "ארוחת שבת", "יום נישואין", "חגיגה פרטית", "אחר"];
 
 // PLACEHOLDER zones and fees (OPEN #19).
 export const ZONES = [

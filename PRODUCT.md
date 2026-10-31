@@ -38,7 +38,7 @@ Single business. Dishes carry kashrut (meat, dairy, pareve), vegetarian and vega
 
 ## Brand Commitments
 
-None confirmed. Business name, logo and colors are undecided (#20). The user has asked for glassmorphism as the surface material.
+Business name: **yumm.ai** (confirmed by the project owner, 2026-10-31); logo and final colors are still undecided (#20). The Green Eggs and Ham option adopts a whimsical illustrated storybook identity with the V3 mascot as a concept stand-in; the mascot is uncleared for commercial use.
 
 ## Evidence on Hand
 

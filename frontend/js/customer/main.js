@@ -1,7 +1,8 @@
+import { play } from "../lib/motion.js";
 import { renderStepper } from "./components/stepper.js";
 import { mountChat } from "./components/chat.js";
-import { validateEvent } from "./mock-backend.js";
-import { STEPS, canEnter, getState, goto, seedDemo, subscribe } from "./store.js";
+import { EVENT_TYPES, validateEvent } from "./mock-backend.js";
+import { STEPS, canEnter, getState, goto, seedDemo, setEvent, subscribe } from "./store.js";
 import { mountEvent } from "./views/event.js";
 import { mountMenu } from "./views/menu.js";
 import { mountStatus } from "./views/status.js";
@@ -22,6 +23,10 @@ const stepperRoot = document.getElementById("stepper");
 // page is embedded and has no query string. Never used with real data.
 const demo = new URLSearchParams(location.search).get("demo") ?? location.hash.replace(/^#demo-/, "");
 if (["pending", "approved", "rejected"].includes(demo)) seedDemo(demo);
+
+// Landing-page occasion cards link here with ?occasion=<event type> to preselect it.
+const occasion = new URLSearchParams(location.search).get("occasion");
+if (occasion && EVENT_TYPES.includes(occasion) && getState().order.status === "draft") setEvent({ type: occasion });
 
 let currentStep = null;
 let cleanup = null;
@@ -48,7 +53,8 @@ function render(state) {
   cleanup?.();
   currentStep = state.step;
   cleanup = VIEWS[currentStep](app);
-  document.title = `${TITLES[currentStep]} | הזמנת קייטרינג`;
+  play(app, "enter"); // each step arrives with a short rise; skipped for reduced motion
+  document.title = `${TITLES[currentStep]} | yumm.ai`;
 
   // Assigning the hash adds a history entry and works in sandboxed frames, where pushState can throw.
   if (location.hash !== `#${currentStep}`) location.hash = currentStep;

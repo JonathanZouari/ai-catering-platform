@@ -1,5 +1,6 @@
 import { fill, h, icon } from "../../lib/dom.js";
 import { fmtMoney, fmtNumber } from "../../lib/format.js";
+import { play } from "../../lib/motion.js";
 import { qtyLabel, recommendedQty, unitStep, totalGuests } from "../mock-backend.js";
 import { showAllergenInfo } from "./allergen-dialog.js";
 
@@ -36,11 +37,15 @@ export function createDishCard(dish, { onQty }) {
     qtyArea,
   );
 
+  let lastQty = null;
   function update(qty, event) {
     const step = unitStep(dish);
     const rec = recommendedQty(dish, event);
     const hasGuests = totalGuests(event) > 0;
     el.classList.toggle("in-order", qty > 0);
+    // Feedback when a dish is added or increased (not on the first render or on a decrease).
+    if (lastQty !== null && qty > lastQty) play(el, "bump");
+    lastQty = qty;
 
     const focusedKey = qtyArea.contains(document.activeElement) ? document.activeElement.dataset.key : null;
 

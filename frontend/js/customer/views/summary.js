@@ -2,6 +2,7 @@
 import { fill, h, icon } from "../../lib/dom.js";
 import { announce } from "../../lib/announce.js";
 import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
+import { animatedAmount } from "../../lib/motion.js";
 import {
   UNIT_LABELS, missingCategories, priceOrder, qtyLabel, totalGuests, unitStep,
 } from "../mock-backend.js";
@@ -123,7 +124,7 @@ export function mountSummary(root) {
       state.order.event.fulfillment === "delivery"
         ? totalRow(`דמי משלוח (${state.order.event.city})`, delivery == null ? "ייקבע לפי העיר" : fmtMoney(delivery))
         : totalRow("איסוף עצמי", fmtMoney(0)),
-      h("div", { class: "total-row grand", "aria-live": "polite" }, h("span", { text: "סה״כ" }), h("strong", { class: "num", text: fmtMoney(pricing.total) })),
+      h("div", { class: "total-row grand", "aria-live": "polite" }, h("span", { text: "סה״כ" }), animatedAmount(pricing.total, lastTotal, fmtMoney)),
     );
     if (lastTotal !== null && lastTotal !== pricing.total) announce(`הסכום הכולל ${fmtMoney(pricing.total)}`);
     lastTotal = pricing.total;

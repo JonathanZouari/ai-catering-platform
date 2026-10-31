@@ -1,6 +1,8 @@
 // C5: quotation status. A pending quotation is never presented as a confirmed booking.
 import { fill, h, icon } from "../../lib/dom.js";
 import { fmtDate, fmtMoney } from "../../lib/format.js";
+import { illustration } from "../../lib/illustrations.js";
+import { confetti } from "../../lib/motion.js";
 import { getState, startOver } from "../store.js";
 
 const VIEW = {
@@ -40,9 +42,14 @@ export function mountStatus(root) {
 
   fill(root, 
     h("section", { class: `status-hero is-${order.status}`, "aria-labelledby": "status-title" },
-      h("span", { class: "status-icon" }, icon(view.icon)),
+      // The celebrating mascot acknowledges that the request was SENT. The status text and badge beside it
+      // always say it is still awaiting the business's decision; it is never shown for approved or rejected.
+      order.status === "pending_approval"
+        ? illustration("mascot-celebrating", { alt: "", cls: "status-mascot" })
+        : h("span", { class: "status-icon" }, icon(view.icon)),
       h("div", { class: "stack" },
-        h("p", { class: `badge ${view.badge[0]}`, role: "status", text: view.badge[1] }),
+        h("p", { class: `badge ${view.badge[0]}`, role: "status" },
+          order.status === "pending_approval" ? icon("clock-countdown") : null, view.badge[1]),
         h("h1", { id: "status-title", class: "page-title", text: view.title }),
         h("p", { class: "page-lead", text: view.text }),
       ),
@@ -75,5 +82,12 @@ export function mountStatus(root) {
       ? h("div", { class: "form-actions" }, h("button", { class: "btn btn-primary", type: "button", onclick: startOver }, "התחלת הזמנה חדשה"))
       : null,
   );
+  // Once, as the "request sent" mascot arrives right after submitting (not on later visits to this screen).
+  if (order.status === "pending_approval" && !celebrated) {
+    celebrated = true;
+    setTimeout(() => confetti(root.querySelector(".status-mascot")), 600);
+  }
   return () => {};
 }
+
+let celebrated = false;
