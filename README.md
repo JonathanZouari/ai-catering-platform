@@ -39,7 +39,7 @@ uv run uvicorn app.main:app --reload
 ```
 
 - API health: http://127.0.0.1:8000/health
-- Customer UI: http://127.0.0.1:8000/customer/
+- Customer UI: http://127.0.0.1:8000/customer/ (Hebrew RTL prototype with fictional demo dishes and AI-generated illustrative preparation videos; see [Kitchen preview](docs/KITCHEN_PREVIEW.md))
 - Admin UI: http://127.0.0.1:8000/admin/
 
 ### Tests and lint

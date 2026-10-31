@@ -1,21 +1,173 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f6f1e8">
+  <title>אש ומלח · מטבח אירועים פרטיים (אב־טיפוס)</title>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/customer.css">
 </head>
-<body>
-  <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+<body class="customer">
+  <a class="skip-link" href="#menu">דילוג לתפריט</a>
+
+  <header class="nav">
+    <div class="nav__inner">
+      <a class="brand" href="#top" aria-label="אש ומלח, זהות מותג מוצעת, לראש העמוד">
+        <span class="brand__name">אש ומלח</span>
+        <span class="brand__sub">זהות מוצעת · אב־טיפוס</span>
+      </a>
+      <nav class="nav__links" aria-label="ניווט ראשי">
+        <a href="#menu">התפריט</a>
+        <a href="#experience">החוויה</a>
+        <a href="#selection" class="nav__selection">הבחירה שלי <span id="nav-count" class="nav__count">0</span></a>
+      </nav>
+      <button type="button" id="kitchen-sound" class="sound-switch" aria-pressed="false" aria-describedby="sound-hint">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="kp__wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="kp__mute" d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="sound-switch__label">הפעל צלילי מטבח</span>
+      </button>
+      <span id="sound-hint" class="visually-hidden">עד להפעלה, סרטוני ההכנה מתנגנים ללא קול. אפשר להשתיק בכל רגע.</span>
+      <p id="sound-status" class="sound-status" role="status" aria-live="polite"></p>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero__text">
+        <p class="kicker">מטבח אירועים פרטיים</p>
+        <h1 id="page-title">ארוחה שמתחילה במטבח, ונגמרת בשולחן שלכם.</h1>
+        <p class="hero__lead">בחרו את מנות האירוע מתפריט מוקפד, וראו את רגעי ההכנה לפני שאתם מחליטים.</p>
+        <div class="hero__actions">
+          <!-- The only places sound is switched on are explicit clicks like this one. -->
+          <button type="button" class="btn btn--primary btn--enter" id="enter-with-sound" aria-describedby="enter-hint">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            כניסה לחוויה עם צלילי המטבח
+          </button>
+          <a class="btn btn--quiet" href="#menu" id="enter-silent">לתפריט ללא קול</a>
+        </div>
+        <p class="hero__hint" id="enter-hint">הקול יושמע רק בסרטוני ההכנה של המנות, ואפשר להשתיק בכל רגע. <a href="#experience">איך זה עובד</a></p>
+      </div>
+      <!-- Muted ambient loop (never audible). Paused offscreen, on hidden tab, while
+           the dialog is open, and on request; a still frame under reduced motion. -->
+      <video class="hero__video" src="/assets/video/schnitzel-preparation.mp4" muted loop playsinline preload="metadata" tabindex="-1" aria-hidden="true"></video>
+      <div class="hero__meta">
+        <p class="hero__disclosure">שניצלונים פריכים · וידאו שנוצר ב־AI להמחשה, לא צולם במטבח של העסק</p>
+        <button type="button" class="hero__toggle" id="hero-toggle" hidden>השהיית הווידאו</button>
+      </div>
+    </section>
+
+    <p class="notice" role="note">
+      <strong>אב־טיפוס לתצוגה.</strong>
+      שם המותג מוצע בלבד; המנות והמחירים לדוגמה ואינם הצעת מחיר מחייבת. סרטוני ההכנה נוצרו ב־AI להמחשה. פרטי כשרות ואלרגנים טרם נמסרו.
+    </p>
+
+    <section id="experience" class="experience" aria-labelledby="experience-title">
+      <h2 id="experience-title" class="section-title">החוויה</h2>
+      <ol class="steps">
+        <li>
+          <span class="steps__num" aria-hidden="true">01</span>
+          <h3>בוחרים בקצב שלכם</h3>
+          <p>מנות לפי סוג האירוע ומספר האורחים, בלי לחץ ובלי טפסים ארוכים.</p>
+        </li>
+        <li>
+          <span class="steps__num" aria-hidden="true">02</span>
+          <h3>רואים את ההכנה</h3>
+          <p>מעבר עכבר על שם מנה, או נגיעה בו בנייד, חושף כמה שניות מהמטבח.</p>
+        </li>
+        <li>
+          <span class="steps__num" aria-hidden="true">03</span>
+          <h3>מקבלים הצעה מאושרת</h3>
+          <p>הבחירה הופכת לבקשה, והמחיר הסופי נקבע ומאושר על ידי העסק.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="menu" class="menu" aria-labelledby="menu-title">
+      <div class="menu-intro">
+        <span class="kicker">אש · חומרי גלם · רגעים סביב השולחן</span>
+        <p>הטעם מתחיל<br><em>בסקרנות.</em></p>
+        <span class="menu-invitation">עברו עם העכבר על שם מנה, או הקישו עליו, והציצו אל המטבח.</span>
+      </div>
+      <div class="menu__head">
+        <h2 id="menu-title" class="section-title" tabindex="-1">התפריט</h2>
+        <div id="category-chips" class="filters" role="group" aria-label="סינון לפי קטגוריה"></div>
+      </div>
+
+      <div class="menu__layout">
+        <div id="dish-grid" class="dish-grid"></div>
+
+        <aside id="selection" class="summary" aria-labelledby="selection-title">
+          <div class="summary__head">
+            <h2 id="selection-title">הבחירה שלי</h2>
+          </div>
+          <ul id="selection-lines" class="summary__lines"></ul>
+          <p class="summary__total">
+            <span>סה״כ לדוגמה</span>
+            <strong id="selection-total" aria-live="polite"></strong>
+          </p>
+          <p class="summary__note">לא מחייב. המחיר הסופי ייקבע ויאושר על ידי העסק.</p>
+        </aside>
+      </div>
+    </section>
   </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+
+  <footer class="footer">
+    <p class="footer__brand">אש ומלח</p>
+    <p>זהות מותג מוצעת לאב־טיפוס. המנות, המחירים והסרטונים לדוגמה בלבד.</p>
+  </footer>
+
+  <!-- Mobile: always-on bottom bar. Desktop: a compact sticky summary, shown once something is selected. -->
+  <div class="selection-bar" role="region" aria-label="סיכום הבחירה">
+    <span class="selection-bar__text"><span id="bar-count"></span> · <span class="selection-bar__label">סה״כ לדוגמה</span> <strong id="bar-total"></strong></span>
+    <a class="btn btn--primary btn--small" href="#selection">לסיכום</a>
+  </div>
+
+  <dialog id="kitchen-preview" class="kp" aria-labelledby="kp-title" aria-describedby="kp-disclaimer">
+    <div class="kp__panel">
+      <div class="kp__header">
+        <div>
+          <p class="kp__eyebrow"><span class="kp__eyebrow-text"></span> <span class="kp__method"></span></p>
+          <h2 id="kp-title" class="kp__title"></h2>
+        </div>
+        <button type="button" class="icon-btn" data-kp="close" aria-label="סגירת תצוגת ההכנה">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="kp__stage">
+        <video class="kp__video" playsinline muted controls preload="auto" disablepictureinpicture
+               aria-label="וידאו הכנה להמחשה שנוצר בבינה מלאכותית"></video>
+        <div class="kp__scene"></div>
+        <button type="button" class="kp__play" data-kp="play" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5v14L5 12z" fill="currentColor"/></svg>
+          הפעלת הווידאו
+        </button>
+        <span class="kp__badge"></span>
+      </div>
+      <div class="kp__progress" aria-hidden="true"><span></span></div>
+
+      <ol class="kp__steps">
+        <li><span class="kp__step-name">הכנה</span><span class="kp__step-text"></span></li>
+        <li><span class="kp__step-name">בישול</span><span class="kp__step-text"></span></li>
+        <li><span class="kp__step-name">הגשה</span><span class="kp__step-text"></span></li>
+      </ol>
+      <p class="kp__status" role="status"></p>
+
+      <div class="kp__controls">
+        <button type="button" class="btn btn--ghost kp__sound" data-kp="sound" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path class="kp__wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="kp__mute" d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="kp__sound-label">צליל כבוי</span>
+        </button>
+        <button type="button" class="btn btn--ghost" data-kp="toggle" hidden>השהיה</button>
+        <button type="button" class="btn btn--ghost" data-kp="replay">צפייה חוזרת</button>
+        <button type="button" class="btn btn--ghost" data-kp="skip">דילוג לצלחת</button>
+        <button type="button" class="btn btn--primary" data-kp="add">הוספה לבחירה</button>
+      </div>
+      <p id="kp-disclaimer" class="kp__disclaimer"></p>
+    </div>
+  </dialog>
+
+  <script type="module" src="/js/customer/catalog.js"></script>
 </body>
 </html>
