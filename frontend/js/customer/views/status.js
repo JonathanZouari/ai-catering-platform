@@ -83,11 +83,12 @@ export function mountStatus(root) {
       : null,
   );
   // Once, as the "request sent" mascot arrives right after submitting (not on later visits to this screen).
-  if (order.status === "pending_approval" && !celebrated) {
-    celebrated = true;
+  // Keyed on the submission's snapshot, so a new order submitted after "start over" celebrates again.
+  if (order.status === "pending_approval" && celebratedFor !== snap) {
+    celebratedFor = snap;
     setTimeout(() => confetti(root.querySelector(".status-mascot")), 600);
   }
   return () => {};
 }
 
-let celebrated = false;
+let celebratedFor = null;

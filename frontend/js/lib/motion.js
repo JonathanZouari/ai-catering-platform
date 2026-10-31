@@ -13,6 +13,7 @@ export function tweenNumber(el, from, to, format, ms = 450) {
   const start = performance.now();
   const ease = (t) => 1 - (1 - t) ** 3;
   const frame = (now) => {
+    if (!el.isConnected) return; // the caller re-rendered and replaced this element; stop tweening it
     const t = Math.min(1, (now - start) / ms);
     if (t < 1) {
       el.textContent = format(Math.round(from + (to - from) * ease(t)));
@@ -69,18 +70,20 @@ export function confetti(anchor) {
   setTimeout(() => box.remove(), 1200);
 }
 
-/** One-shot class animation: restarts `cls` on `el` and removes it when the animation ends. */
+/**
+ * One-shot class animation: restarts `cls` on `el` and removes it once every CSS animation it started, on `el`
+ * or on its descendants (the step "enter" animates the children), has finished.
+ */
 export function play(el, cls) {
   if (reduced()) return;
   el.classList.remove(cls);
   void el.offsetWidth; // restart the animation
   el.classList.add(cls);
-  const done = (e) => {
-    if (e.target !== el) return;
-    el.classList.remove(cls);
-    el.removeEventListener("animationend", done);
-  };
-  el.addEventListener("animationend", done);
+  const token = (el._playToken = {});
+  const running = el.getAnimations({ subtree: true }).filter((a) => a instanceof CSSAnimation && a.effect?.getComputedTiming().iterations !== Infinity);
+  Promise.allSettled(running.map((a) => a.finished)).then(() => {
+    if (el._playToken === token) el.classList.remove(cls); // a newer play() on the same element owns the class now
+  });
 }
 
 /** Reveal elements as they scroll into view (adds `.in`). Visible immediately when motion is reduced. */
