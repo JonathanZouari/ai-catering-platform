@@ -33,5 +33,5 @@ export function createDishCard(dish, qty, onQty) {
     ),
     stepper.el,
   );
-  return { el, setQty: stepper.set, pulse: stepper.pulse };
+  return { el, stepperEl: stepper.el, setQty: stepper.set, pulse: stepper.pulse };
 }

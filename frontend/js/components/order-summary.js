@@ -51,9 +51,8 @@ export function createOrderSummary() {
     }));
     // Scroll only the summary box (not the page) so the new line is in view.
     const fresh = lines.querySelector(".is-new");
-    const box = el.closest(".agent__summary");
-    if (fresh && box) {
-      box.scrollTop += fresh.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientHeight / 3;
+    if (fresh) {
+      lines.scrollTop += fresh.getBoundingClientRect().top - lines.getBoundingClientRect().top - lines.clientHeight / 3;
     }
     const total = orderTotal(order);
     roll(total);

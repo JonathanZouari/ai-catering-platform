@@ -2,8 +2,9 @@ import { h } from "../dom.js";
 
 // Signature motion: a pill flies in an arc from `from` to `to` (DOMRects), shrinks to 45% and fades.
 // Two nested elements make the arc: outer moves on X, inner on Y with a different easing.
-export function flyPill({ label, from, to, duration = 750 }) {
-  const inner = h("span", { class: "fly-pill__inner" }, label);
+// With `label` omitted it is a small accent dot (manual add): same arc, shorter flight.
+export function flyPill({ label, from, to, duration = label ? 750 : 450 }) {
+  const inner = h("span", { class: label ? "fly-pill__inner" : "fly-pill__inner fly-pill__inner--dot" }, label);
   const outer = h("div", { class: "fly-pill", "aria-hidden": "true" }, inner);
   const sx = from.left + from.width / 2;
   const sy = from.top + from.height / 2;

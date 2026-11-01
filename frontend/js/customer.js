@@ -71,13 +71,18 @@ function syncSteppers() {
   for (const [id, card] of cards) card.setQty(state.order[id] ?? 0);
 }
 
-function setQty(id, qty) {
+async function setQty(id, qty) {
   if (state.busy) return syncSteppers();
+  const added = qty > (state.order[id] ?? 0);
   if (qty > 0) state.order[id] = qty; else delete state.order[id];
   state.version++;
   for (const item of pending) expire(item);
-  summary.update(state.order);
   syncSteppers();
+  // Manual "+": a small dot flies from the card to the total, then the total rolls.
+  if (added && !reducedMotion() && cards.has(id)) {
+    await flyPill({ from: cards.get(id).stepperEl.getBoundingClientRect(), to: visibleTotal().getBoundingClientRect() });
+  }
+  summary.update(state.order);
 }
 
 function expire(item) {
