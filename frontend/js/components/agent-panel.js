@@ -13,7 +13,7 @@ export function createAgentPanel({ summaryEl, onSend }) {
       input.value = "";
       onSend(text);
     },
-  }, input, h("button", { type: "submit", class: "btn btn-primary" }, "שליחה"));
+  }, input, h("button", { type: "submit", class: "btn btn-secondary" }, "שליחה"));
   const closeBtn = h("button", { type: "button", class: "agent__close link", "aria-label": "סגירת העוזר" }, "סגירה");
   const el = h("aside", { id: "agent", class: "agent card", "aria-label": "עוזר התפריט" },
     h("header", { class: "agent__head" },
@@ -25,6 +25,11 @@ export function createAgentPanel({ summaryEl, onSend }) {
     log, form,
     h("div", { class: "agent__summary" }, summaryEl),
   );
+
+  // Keep the newest message / card state in view (a decided card shrinks, the order list may open).
+  new MutationObserver(() => { log.scrollTop = log.scrollHeight; })
+    .observe(log, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state"] });
+  new ResizeObserver(() => { log.scrollTop = log.scrollHeight; }).observe(log);
 
   let delay = 0;
   const add = (node) => {

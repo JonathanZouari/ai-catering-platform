@@ -20,7 +20,7 @@ export function createProposalCard(proposal, { onApprove, onReject }) {
       h("span", { class: "num" }, h("span", { dir: "rtl" }, `${c.from} ← ${c.to}`), ` ${unit.many}`));
   });
   const reject = h("button", { type: "button", class: "btn btn-secondary", onClick: () => onReject() }, "לא עכשיו");
-  const approve = h("button", { type: "button", class: "btn btn-primary", onClick: () => onApprove() }, "אישור");
+  const approve = h("button", { type: "button", class: "btn btn-approve", onClick: () => onApprove() }, "אישור");
   const note = h("p", { class: "proposal__note", role: "status" });
   const actions = h("div", { class: "proposal__actions" }, reject, approve);
   const el = h("section", { class: "proposal card", "data-state": "pending", "aria-label": "שינוי מוצע" },

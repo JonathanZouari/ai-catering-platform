@@ -1,0 +1,25 @@
+/* Shared chrome: skip link, header, steps indicator, footer. Logical properties only. */
+
+.skip { position: absolute; inset-inline-start: 8px; inset-block-start: -60px; background: var(--color-surface); padding: 8px 16px; border-radius: var(--radius-pill); z-index: 100; }
+.skip:focus { inset-block-start: 8px; }
+
+.site-header { background: var(--color-surface); border-block-end: 1px solid var(--color-line); }
+.site-header__inner { max-inline-size: 1280px; margin-inline: auto; padding: 0 var(--space-4); min-block-size: 64px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.wordmark { font-weight: 500; font-size: 1.25rem; color: var(--color-text); text-decoration: none; letter-spacing: -0.01em; }
+.site-header nav { display: flex; gap: var(--space-4); font-size: 0.9375rem; }
+.site-header nav a { color: var(--color-muted); text-decoration: none; min-block-size: 44px; display: inline-flex; align-items: center; }
+.site-header nav a:hover, .site-header nav a[aria-current] { color: var(--color-text); }
+.site-header nav a:nth-child(2) { display: none; }
+@media (min-width: 640px) { .site-header nav a:nth-child(2) { display: inline-flex; } .site-header nav { gap: var(--space-6); } }
+
+.steps { list-style: none; margin: 0 0 var(--space-3); padding: 0; display: flex; gap: var(--space-4); flex-wrap: wrap; font-size: 0.9375rem; color: var(--color-muted); }
+.steps a { color: inherit; text-decoration: none; }
+.steps li + li::before { content: "←"; display: inline-block; margin-inline-end: var(--space-4); color: var(--color-muted); }
+.steps [aria-current="step"] { color: var(--color-text); font-weight: 500; text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+
+.site-footer { border-block-start: 1px solid var(--color-line); margin-block-start: var(--space-8); }
+.site-footer__inner { max-inline-size: 1280px; margin-inline: auto; padding: var(--space-6) var(--space-4); display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; font-size: 0.875rem; color: var(--color-muted); }
+.site-footer a { color: var(--color-text); min-block-size: 44px; display: inline-flex; align-items: center; }
+
+/* Thin, quiet scrollbars for inner scroll areas */
+.thin-scroll { scrollbar-width: thin; scrollbar-color: var(--color-line) transparent; }

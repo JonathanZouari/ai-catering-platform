@@ -4,6 +4,7 @@ import { ils, reducedMotion, wait } from "./format.js";
 import {
   CATEGORIES, DISHES, EVENT, INITIAL_ORDER, SCRIPTED_PROPOSALS, DEMO_REPLY, dishById, orderTotal,
 } from "./mock/menu.js";
+import { loadEvent, describeEvent } from "./event-store.js";
 import { createDishCard } from "./components/dish-card.js";
 import { createOrderSummary } from "./components/order-summary.js";
 import { createProposalCard } from "./components/proposal-card.js";
@@ -42,7 +43,7 @@ function updateHint() {
   openBtn.querySelector(".btn-agent__dot").hidden = !waiting;
   if (waiting) hintBtn.textContent = waiting.hint;
 }
-summary.foot.append(h("a", { class: "btn btn-primary btn-lg summary__cta", href: "/customer/summary.html" }, "לסיכום ושליחה לאישור"));
+summary.foot.append(h("a", { class: "btn btn-secondary btn-lg summary__cta", href: "/customer/summary.html" }, "לסיכום ושליחה לאישור"));
 
 // ---- catalog
 const grid = document.getElementById("dish-grid");
@@ -158,6 +159,7 @@ async function approve(item) {
       to: visibleTotal().getBoundingClientRect(),
     });
   }
+  summary.open();
   summary.update(state.order, { highlight: ids });
   syncSteppers();
   if (!reducedMotion()) ids.forEach((id) => cards.get(id)?.pulse());
@@ -172,8 +174,7 @@ async function onSend(text) {
 }
 
 // ---- event strip + boot
-document.getElementById("event-strip").textContent =
-  `${EVENT.dateLabel} · ${EVENT.time} · ${EVENT.guests} אורחים (${EVENT.adults} מבוגרים, ${EVENT.children} ילדים) · ${EVENT.mode}`;
+document.getElementById("event-strip").textContent = describeEvent(loadEvent() ?? EVENT);
 
 renderChips();
 renderCatalog();
