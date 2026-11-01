@@ -55,7 +55,7 @@ export const orderTotal = (order) =>
 // Scripted "agent" proposals; a real agent would only propose existing dishes via the API.
 export const SCRIPTED_PROPOSALS = [
   {
-    message: "שמתי לב שיש בהזמנה רק שני סלטים, ובין האורחים 12 צמחונים ו-4 טבעונים. מציע להוסיף מהתפריט סלט חצילים קלוי, שמתאים גם לטבעונים. אני לא משנה כלום עד שתאשרו.",
+    message: "שמתי לב שיש בהזמנה רק שני סלטים, ובין האורחים 12 צמחונים ו-4 טבעונים. מציע להוסיף מהתפריט סלט חצילים קלוי, שמתאים גם לטבעונים.",
     hint: "לסוכן יש הצעה לטבעונים",
     changes: [{ dishId: "eggplant", to: 5 }],
   },

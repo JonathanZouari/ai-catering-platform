@@ -66,7 +66,7 @@ Status colours are unchanged from the original brief. Colour is never the only s
 
 ## 6. Components
 
-- **Buttons**: primary = ink pill (48–54px). Secondary = 1px ink outline pill, no fill. In the agent panel everything is outline, except the single **approve** button, which is filled `#C2410C`. Text links for tertiary actions.
+- **Buttons**: primary = ink pill (48–54px). Secondary = 1px ink outline pill, no fill. In the agent panel the secondary actions (send, "לא עכשיו") are outline, the single **approve** button is filled `#C2410C`, and the page's main CTA "לסיכום ושליחה לאישור" stays the filled ink primary. Text links for tertiary actions.
 - **Cards**: white, 1px line, radius 22px, no shadow.
 - **Steppers** (− n +): pill outline; when qty > 0 the border turns apricot with the tint background and `accent-text` number.
 - **Chips** (category / vegetarian / vegan filters): pill outline; pressed = apricot border + tint.
@@ -90,7 +90,7 @@ Status colours are unchanged from the original brief. Colour is never the only s
 - Validates only what is certain (date not in the past, time, at least one guest, address for delivery). No capacity, blocked-date, subset or fee rules (OPEN #4, #5, #19). Saves to `sessionStorage` (`js/event-store.js`) and continues to the menu, whose header shows the details.
 
 ### C2 + C4 — Menu with the agent (`/customer/`)
-- Desktop: catalog grid with category / diet chips on one side, **agent panel** (sticky) on the other. Mobile: catalog + a sticky bottom bar with the total, a **"שאלו את הסוכן"** button (with a dot while a proposal waits) and "לסיכום". A hint pill above the bar ("לסוכן יש הצעה לטבעונים") opens the agent as a bottom sheet over a blurred catalog. The sheet traps focus, closes with Escape and returns focus.
+- Desktop: catalog grid with category / diet chips on one side, **agent panel** on the other. The header is sticky and the panel is sticky below it, filling the rest of the viewport at any scroll position; the messages area takes the remaining height and scrolls to the newest item, so the latest proposal card is fully visible on load. Mobile: catalog + a sticky bottom bar with the total, a **"שאלו את הסוכן"** button (with a dot while a proposal waits) and "לסיכום". A hint pill above the bar ("לסוכן יש הצעה לטבעונים") opens the agent as a bottom sheet over a blurred catalog. The sheet traps focus, closes with Escape and returns focus.
 - Agent panel: the note "מציע רק מנות מהתפריט של העסק, ולא משנה כלום בלי אישור שלך", messages, the proposal card, input, then a collapsible order list (collapsed by default, opens on approve), delivery "לפי אזור, יחושב באישור", total, and the CTA "לסיכום ושליחה לאישור".
 - The agent is scripted (two proposals, then a demo reply), labeled "הדגמה".
 
@@ -103,7 +103,7 @@ Not built. C3 and the owner area are placeholder pages so no link is dead. Desig
 |---|---|---|
 | Home intro | Cursor blinks 450ms, three lines type (20ms/char), strike draws right to left (300ms) while the text fades to grey, final line and CTA fade up. Whole sequence ~3.2s | plays **once per session** (`sessionStorage`); a click or any key skips to the final state; reduced motion / repeat visit show the final state at once |
 | Event form | Guest count on the CTA counts to the new value | 380ms ease-out |
-| Menu: manual add (+) | A small apricot dot flies from the dish card to the order total, then the total rolls | 450ms |
+| Menu: manual add (+) | **Mobile only:** a small apricot dot flies from the dish card to the bottom-bar total. **Desktop** (side panel in view): no flight. On both: the stepper pops, the new summary line is highlighted (the order list opens briefly, then tucks away) and the total rolls | dot 450ms |
 | **Menu: approve agent proposal (signature)** | A named ink pill flies in an arc from the proposal row to the order total (two nested elements: X `cubic-bezier(.3,.6,.4,1)`, Y `cubic-bezier(.55,-0.4,.8,.6)`), shrinks to 45% and fades. Then the total rolls (700ms, ease-out, 1px blur while rolling), the order list opens and the new line is highlighted in the tint for ~1.2s, the dish stepper pulses twice | flight 750ms |
 | Agent messages | Fade-up on arrival | 450ms, 200ms stagger |
 | Bottom sheet | Slides up over the blurred catalog | 350ms |

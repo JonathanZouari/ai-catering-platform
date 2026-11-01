@@ -62,5 +62,22 @@ export function createOrderSummary() {
     live.textContent = `סה״כ ${ils(total)}`;
   }
 
-  return { el, foot, totalEl, update, open: () => { details.open = true; }, mirror: (node) => mirrors.push(node) };
+  // open({ autoClose }) shows the lines; with autoClose (ms) it closes again unless it was already open or
+  // the user toggled it meanwhile.
+  let closeTimer = 0;
+  let programmatic = false;
+  details.addEventListener("toggle", () => {
+    if (programmatic) programmatic = false;
+    else clearTimeout(closeTimer); // the user took over
+  });
+  function open({ autoClose = 0 } = {}) {
+    const wasOpen = details.open;
+    clearTimeout(closeTimer);
+    if (!wasOpen) { programmatic = true; details.open = true; }
+    if (autoClose && !wasOpen) {
+      closeTimer = setTimeout(() => { if (details.open) { programmatic = true; details.open = false; } }, autoClose);
+    }
+  }
+
+  return { el, foot, totalEl, update, open, mirror: (node) => mirrors.push(node) };
 }

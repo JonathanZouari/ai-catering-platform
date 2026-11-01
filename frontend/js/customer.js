@@ -13,6 +13,7 @@ import { bindBottomSheet } from "./components/bottom-sheet.js";
 import { flyPill } from "./components/fly-pill.js";
 
 const state = { order: { ...INITIAL_ORDER }, version: 0, busy: false, filter: { cat: "all", vegetarian: false, vegan: false } };
+const desktop = matchMedia("(min-width: 1024px)"); // side panel visible
 const cards = new Map();
 const pending = new Set(); // { proposal, card } awaiting a decision
 let scriptIndex = 0;
@@ -43,7 +44,7 @@ function updateHint() {
   openBtn.querySelector(".btn-agent__dot").hidden = !waiting;
   if (waiting) hintBtn.textContent = waiting.hint;
 }
-summary.foot.append(h("a", { class: "btn btn-secondary btn-lg summary__cta", href: "/customer/summary.html" }, "לסיכום ושליחה לאישור"));
+summary.foot.append(h("a", { class: "btn btn-primary summary__cta", href: "/customer/summary.html" }, "לסיכום ושליחה לאישור"));
 
 // ---- catalog
 const grid = document.getElementById("dish-grid");
@@ -92,11 +93,14 @@ async function setQty(id, qty) {
   state.version++;
   for (const item of pending) expire(item);
   syncSteppers();
-  // Manual "+": a small dot flies from the card to the total, then the total rolls.
-  if (added && !reducedMotion() && cards.has(id)) {
+  // Manual "+". Mobile only: a small dot flies from the card to the total (the panel is not on screen there).
+  // Desktop has the side panel in view, so no flight: stepper pop, highlighted summary line and rolling total.
+  if (added && !reducedMotion() && !desktop.matches && cards.has(id)) {
     await flyPill({ from: cards.get(id).stepperEl.getBoundingClientRect(), to: visibleTotal().getBoundingClientRect() });
   }
-  summary.update(state.order);
+  if (added) summary.open({ autoClose: 2600 }); // shows the highlighted line, then tucks away to keep the chat roomy
+  summary.update(state.order, { highlight: added ? [id] : [] });
+  if (added && !reducedMotion()) cards.get(id)?.pulse();
 }
 
 function expire(item) {
@@ -179,5 +183,5 @@ document.getElementById("event-strip").textContent = describeEvent(loadEvent() ?
 renderChips();
 renderCatalog();
 summary.update(state.order);
-agent.message("agent", "שלום! אני יכול להמליץ על מנות מהתפריט, לשפר כמויות ולהסביר את השפעת השינוי על המחיר. כל שינוי יוצג לאישורכם לפני שהוא נכנס להזמנה.");
+agent.message("agent", "שלום! אני יכול להמליץ על מנות מהתפריט, לשפר כמויות ולהסביר את השפעת השינוי על המחיר.");
 setTimeout(() => showScripted(SCRIPTED_PROPOSALS[scriptIndex++]), reducedMotion() ? 0 : 600);
