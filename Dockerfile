@@ -11,4 +11,6 @@ COPY frontend frontend
 
 WORKDIR /srv/backend
 ENV PATH="/srv/backend/.venv/bin:$PATH"
+# Strict unless told otherwise, so a server missing APP_ENV never runs in development mode.
+ENV APP_ENV=production
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

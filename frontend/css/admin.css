@@ -1,0 +1,165 @@
+/* Caterer dashboard. Logical properties only: the UI is RTL. */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+.topbar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  text-decoration: none;
+}
+.topbar a[aria-current="page"] { color: var(--color-accent); font-weight: 600; }
+.topbar button { margin-inline-start: auto; }
+
+.yummai-label { display: block; inline-size: 132px; block-size: auto; }
+.login .yummai-label { margin: 0 auto var(--space-4); }
+.topbar .yummai-label { margin-inline-end: var(--space-2); }
+
+.card {
+  margin-block: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+.login { max-width: 400px; margin: var(--space-8) auto; }
+
+.screen-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+h1, h2, h3 { margin-block: var(--space-2); line-height: 1.25; }
+h1 { font-size: 1.5rem; font-weight: 600; }
+h2 { font-size: 1.15rem; font-weight: 600; }
+h3 { font-size: 1rem; margin-block-start: var(--space-4); }
+
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+button {
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button.secondary { border-color: #b9bec9; background: var(--color-surface); color: var(--color-text); }
+button.danger { border-color: var(--color-danger); color: var(--color-danger); }
+
+.field { display: flex; flex-direction: column; gap: var(--space-1); margin-block-end: var(--space-3); }
+.field label { font-weight: 600; font-size: 0.9rem; }
+.field small, .muted { color: var(--color-muted); font-size: 0.875rem; }
+.field input:not([type="checkbox"], [type="color"], [type="file"]), .field select, .field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2);
+  border: 1px solid #9aa1b1;
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit; /* 16px+ stops iOS zooming on focus. */
+  font-size: max(1rem, 16px);
+}
+.field input[type="checkbox"] { inline-size: 24px; block-size: 24px; }
+.field input[type="color"] { inline-size: 64px; block-size: 44px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0 var(--space-3); }
+.inline-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
+.inline-form .field { margin: 0; flex: 1 1 160px; }
+.inline-form + .inline-form { margin-block-start: var(--space-4); padding-block-start: var(--space-4); border-block-start: 1px solid var(--color-border); }
+.inline-form h3 { flex-basis: 100%; margin: 0; }
+.inline-form h3 .badge { margin-inline-start: var(--space-2); }
+
+.rows { margin: 0; padding: 0; list-style: none; }
+.rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-block-start: 1px solid var(--color-border);
+}
+.rows li:first-child { border-block-start: 0; }
+.badge {
+  margin-inline-start: var(--space-2);
+  padding-inline: var(--space-2);
+  border-radius: 8px;
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.badge.pending_approval { background: #fbf1dd; color: var(--color-warning); font-weight: 600; }
+.badge.approved { background: #e3f2e6; color: var(--color-success); font-weight: 600; }
+.badge.rejected { background: #f8e4e4; color: var(--color-danger); font-weight: 600; }
+.rows li.order-row { margin-block-end: var(--space-2); padding: var(--space-3); border: 0; border-inline-start: 3px solid var(--color-border); border-radius: 6px; background: var(--color-bg); }
+.rows li.order-row.pending_approval { border-inline-start-color: var(--color-warning); }
+.rows li.order-row.approved { border-inline-start-color: var(--color-success); }
+.rows li.order-row.rejected { border-inline-start-color: var(--color-danger); }
+.order-row strong { font-size: 1.05rem; }
+.empty { color: var(--color-muted); }
+.preview { display: block; max-inline-size: 200px; max-block-size: 140px; border-radius: 8px; margin-block-end: var(--space-3); }
+
+dialog {
+  inline-size: min(640px, calc(100vw - var(--space-6)));
+  max-block-size: calc(100dvh - var(--space-6));
+  padding: var(--space-4);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+dialog .actions { justify-content: flex-end; margin-block-start: var(--space-4); }
+
+.notice {
+  position: fixed;
+  inset-block-end: var(--space-4);
+  inset-inline: var(--space-4);
+  z-index: 10;
+  max-inline-size: 480px;
+  margin-inline: auto;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-success);
+  color: #fff;
+}
+.notice.error { background: var(--color-danger); }
+.notice.error::before { content: "⚠ "; }
+
+/* The dashboard floats on the blue backdrop as one card. */
+#app:has(.topbar) { margin: var(--space-4); overflow: clip; border-radius: 14px; background: var(--color-bg); box-shadow: 0 12px 40px rgb(0 0 0 / 0.35); }
+
+/* Computers: the navigation becomes a side column. */
+@media (min-width: 900px) {
+  #app:has(.topbar) {
+    display: grid; grid-template-columns: 230px minmax(0, 1fr); align-items: start;
+    inline-size: calc(100% - 2 * var(--frame-inline)); max-inline-size: 1360px;
+    min-block-size: calc(100dvh - 2 * var(--frame-block));
+    margin: var(--frame-block) auto;
+  }
+  .topbar {
+    position: sticky; inset-block-start: var(--frame-block); flex-direction: column; flex-wrap: nowrap; align-items: stretch;
+    block-size: calc(100dvh - 2 * var(--frame-block)); padding: var(--space-8) var(--space-4) var(--space-4); box-shadow: none;
+  }
+  .topbar a { padding-inline: 0; border-radius: 0; }
+  .topbar .yummai-label { margin-block-end: var(--space-4); }
+  .topbar button { margin-block-start: auto; margin-inline-start: 0; }
+  #app:has(.topbar) main { inline-size: 100%; margin: 0; padding: var(--space-6); }
+}
