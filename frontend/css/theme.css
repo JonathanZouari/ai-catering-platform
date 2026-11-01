@@ -1,0 +1,75 @@
+/* Shared site look: tablecloth, bunting, plates and pill buttons. */
+a { color: var(--color-text); }
+a:hover { color: var(--color-accent); }
+
+.top-strip {
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-sand);
+  font-size: 14px;
+  text-align: center;
+}
+
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  font-size: 18px;
+  font-weight: 500;
+}
+.site-nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+.site-logo { font-size: 24px; letter-spacing: -0.02em; }
+
+/* Set --cloth and --check to change the gingham colour. */
+.cloth {
+  background-color: var(--cloth);
+  background-image:
+    linear-gradient(90deg, var(--check) 50%, transparent 50%),
+    linear-gradient(var(--check) 50%, transparent 50%);
+  background-size: var(--check-size, 56px) var(--check-size, 56px);
+}
+.cloth-peach { --cloth: #fff7f4; --check: rgb(240 170 160 / 0.22); }
+.cloth-butter { --cloth: #fffaec; --check: rgb(240 200 110 / 0.24); }
+.cloth-sky { --cloth: #f4f9fd; --check: rgb(150 190 225 / 0.22); }
+.cloth-sage { --cloth: #f6faf4; --check: rgb(160 205 165 / 0.24); }
+
+.bunting {
+  height: 32px;
+  border-top: 2px solid #d8cdbb;
+  background: url("/assets/bunting.svg") repeat-x top;
+}
+
+.plate {
+  display: block;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 var(--plate-inner, 6px) #fff,
+    0 0 0 calc(var(--plate-inner, 6px) + 1px) var(--color-line),
+    0 0 0 var(--plate-rim, 16px) #fdf8ef,
+    0 0 0 calc(var(--plate-rim, 16px) + 1px) var(--color-line),
+    0 12px 26px rgb(61 58 54 / 0.14);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 28px;
+  border: 1.5px solid transparent;
+  border-radius: 26px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn-primary { background: var(--color-accent); color: #fff; }
+.btn-primary:hover { background: #435c4a; color: #fff; }
+.btn-secondary { border-color: #d8cdbb; background: var(--color-surface); color: var(--color-text); }
+.btn-secondary:hover { border-color: #8ba892; }

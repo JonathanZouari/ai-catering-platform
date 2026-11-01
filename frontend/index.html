@@ -1,18 +1,54 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <title>שלא יחסר | קייטרינג לאירועים פרטיים</title>
+  <meta name="description" content="בוחרים מנות, רואים מחיר, והעוזר בודק שיש מספיק לכולם.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500&display=swap">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
-  </main>
+  <p class="top-strip">איסוף עצמי או משלוח</p>
+
+  <nav class="site-nav" aria-label="ראשי">
+    <a class="site-logo" href="/">שלא יחסר</a>
+    <a href="#menu">התפריט</a>
+  </nav>
+
+  <section class="cloth cloth-peach" aria-label="התחלת הזמנה">
+    <div class="bunting" aria-hidden="true"></div>
+    <div class="hero">
+      <img class="plate hero-plate" src="/assets/salad-hero.jpg" width="686" height="686" alt="קערת סלט צבעונית עם ירקות, אבוקדו וגבינה">
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/customer/">מתחילים הזמנה</a>
+        <a class="btn btn-secondary" href="#menu">לתפריט המלא</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="intro">
+    <img src="/assets/cheers.svg" width="96" height="84" alt="">
+    <h1>האירוע שלכם.<br>התפריט שלכם.</h1>
+    <p>בוחרים מנות, רואים מחיר, והעוזר בודק שיש מספיק לכולם.</p>
+  </section>
+
+  <section class="menu" id="menu">
+    <div class="menu-head">
+      <h2>התפריט</h2>
+      <a href="/customer/">לכל המנות</a>
+    </div>
+    <div class="menu-grid">
+      <a class="tile cloth cloth-sage" href="/customer/"><img class="plate" src="/assets/shakshuka.jpg" width="700" height="700" loading="lazy" alt="מחבת שקשוקה עם עשבי תיבול"><span>עיקריות</span></a>
+      <a class="tile cloth cloth-sky" href="/customer/"><img class="plate" src="/assets/tabbouleh.jpg" width="700" height="700" loading="lazy" alt="צלחת טבולה עם לימון"><span>סלטים</span></a>
+      <a class="tile cloth cloth-butter" href="/customer/"><img class="plate" src="/assets/berries.jpg" width="700" height="700" loading="lazy" alt="צנצנות ריבת פירות יער"><span>קינוחים</span></a>
+    </div>
+  </section>
+
+  <footer class="site-foot"><a href="/admin/">כניסת בעל העסק</a></footer>
 </body>
 </html>
