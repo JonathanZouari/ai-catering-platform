@@ -12,7 +12,7 @@ Base: same origin as the frontend. JSON only. All bodies validated with Pydantic
 { "error": { "code": "order_version_conflict", "message": "Human readable", "details": {} } }
 ```
 
-Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409), `kashrut_mixing_blocked` (409), `kashrut_warning_not_acknowledged` (409), `ai_limit_reached` (429). `message` is Hebrew; `code` stays English.
+Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `conflict` (409), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409), `kashrut_mixing_blocked` (409), `kashrut_warning_not_acknowledged` (409), `ai_limit_reached` (429). `message` is Hebrew; `code` stays English.
 
 ## System
 

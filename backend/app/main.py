@@ -3,11 +3,16 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app.api import admin, public
 from app.core.config import get_settings
+from app.core.errors import register_error_handlers
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 app = FastAPI(title="AI Catering Platform")
+register_error_handlers(app)
+app.include_router(public.router)
+app.include_router(admin.router)
 
 
 @app.get("/health")

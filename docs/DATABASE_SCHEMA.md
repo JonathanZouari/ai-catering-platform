@@ -130,12 +130,13 @@ A missing row = **unknown**.
 | decision_note | text null | Caterer's note on approve/reject |
 | created_at, updated_at | timestamptz | |
 
-### order_items *(scoped through parent)*
+### order_items
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| order_id | uuid FK not null | index |
-| dish_id | uuid FK not null | Must belong to the order's caterer |
+| caterer_id | uuid not null | Part of the composite FKs below, so the database rejects a dish from another caterer |
+| order_id | uuid not null | FK (`caterer_id`,`order_id`) → orders |
+| dish_id | uuid not null | FK (`caterer_id`,`dish_id`) → dishes |
 | quantity | numeric(10,2) not null CHECK > 0 | |
 | UNIQUE | (`order_id`, `dish_id`) | |
 | snapshot_name | text null | **Price snapshot** — filled on submission |

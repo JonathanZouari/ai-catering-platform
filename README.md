@@ -2,13 +2,13 @@
 
 Hebrew ordering and management platform for **many catering businesses**. Each caterer gets a branded link. Customers use it to plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. Each caterer manages their own catalog and approves or rejects every quotation.
 
-> Status: **Phase 2 — specs updated for many caterers**. No business features yet. See `docs/` for the specs.
+> Status: **Phase 3 — tenant foundation**. Database schema, caterer login, and tenant isolation. See `docs/` for the specs.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 3) |
+| Backend | Python 3.12+, FastAPI, Pydantic, SQLAlchemy |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
 | Data | Supabase (Postgres, Storage, Auth for caterer logins) |
 | Hosting | Railway (Dockerfile build) |
@@ -19,7 +19,7 @@ Hebrew ordering and management platform for **many catering businesses**. Each c
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 3)
+database/       migrations/ (SQL, Supabase CLI format)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -51,6 +51,12 @@ uv run ruff format --check .
 uv run pytest
 ```
 
+Database tests need a disposable Postgres in `TEST_DATABASE_URL` (see `.env.example`); they skip locally without one and fail in CI. **The suite wipes that database.**
+
+### Onboarding a caterer
+
+Create the login in Supabase, then run `uv run python -m scripts.create_caterer --help` from `backend/`.
+
 ## Dependencies and why
 
 | Package | Why |
@@ -58,11 +64,12 @@ uv run pytest
 | `fastapi` | Mandated web framework |
 | `uvicorn[standard]` | ASGI server for FastAPI |
 | `pydantic-settings` | Typed config from environment variables |
+| `sqlalchemy` | ORM and queries (ADR 0002) |
+| `psycopg[binary]` | Postgres driver |
+| `pyjwt[crypto]` | Verifies Supabase login tokens |
 | `pytest` (dev) | Mandated test runner |
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
-
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 3, when database code exists.
 
 ## Branches and environments
 
