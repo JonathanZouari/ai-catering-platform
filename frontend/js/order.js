@@ -39,11 +39,17 @@ export function normalize(p) {
   for (const k of ["type", "date", "slot", "notes", "fulfillment", "zone", "address"]) ev[k] = String(ev[k] ?? "");
   if (!EVENT_TYPES.includes(ev.type)) ev.type = b.event.type;
   if (!["delivery", "pickup"].includes(ev.fulfillment)) ev.fulfillment = "delivery";
-  const status = ["draft", "pending", "approved", "rejected"].includes(p.status) ? p.status : "draft";
+  let status = ["draft", "pending", "approved", "rejected", "countered"].includes(p.status) ? p.status : "draft";
+  let offer = null;
+  if (status === "countered") {
+    const ch = Array.isArray(p.offer?.changes) ? p.offer.changes.filter((c) => DISH_BY_ID[c?.id] && Number.isFinite(Number(c.to))).map((c) => ({ id: c.id, from: items[c.id] ?? 0, to: Math.max(0, Math.round(Number(c.to))) })).filter((c) => c.from !== c.to) : [];
+    if (ch.length) offer = { changes: ch, note: String(p.offer.note ?? "") };
+    else status = "pending";
+  }
   const manual = {};
   if (p.manual && typeof p.manual === "object") for (const id of Object.keys(p.manual)) if (items[id]) manual[id] = true;
   const balanced = status === "draft" ? balance(items, { adults: ev.adults, children: ev.children }, manual) : items;
-  return { ...b, event: ev, items: balanced, manual, proposal: null, status, ownerNote: String(p.ownerNote ?? ""), version: Number(p.version) || 1, submittedAt: p.submittedAt ?? null };
+  return { ...b, event: ev, items: balanced, manual, proposal: null, status, offer, offerDeclined: !!p.offerDeclined, ownerNote: String(p.ownerNote ?? ""), version: Number(p.version) || 1, submittedAt: p.submittedAt ?? null };
 }
 
 function load() {
@@ -75,6 +81,11 @@ export function createStore(initial = load(), { persist = true } = {}) {
 
   return {
     get: () => state,
+    // Take state written by another tab; notify without writing it back.
+    replace(next) {
+      state = next;
+      listeners.forEach((fn) => fn(state, { type: "status" }));
+    },
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
 
     setEvent(patch) {
@@ -136,12 +147,26 @@ export function createStore(initial = load(), { persist = true } = {}) {
     },
 
     submit() {
-      state = { ...state, status: "pending", submittedAt: new Date().toISOString(), proposal: null };
+      state = { ...state, status: "pending", submittedAt: new Date().toISOString(), proposal: null, offer: null, offerDeclined: false };
       emit({ type: "status" });
     },
-    setStatus(status, ownerNote = "") {
-      state = { ...state, status, ownerNote };
+    setStatus(status, ownerNote = "", offer = null, offerDeclined = false) {
+      state = { ...state, status, ownerNote, offer: status === "countered" ? offer : null, offerDeclined };
       emit({ type: "status" });
+    },
+    // The owner answered with changed quantities; the customer accepts or declines.
+    answerOffer(accept) {
+      const o = state.offer;
+      if (state.status !== "countered" || !o) return;
+      if (accept) {
+        const items = { ...state.items };
+        for (const c of o.changes) { if (c.to <= 0) delete items[c.id]; else items[c.id] = c.to; }
+        if (!Object.keys(items).length) return;
+        state = { ...state, items, status: "approved", ownerNote: o.note, offer: null, offerDeclined: false, version: state.version + 1 };
+      } else {
+        state = { ...state, status: "pending", ownerNote: "", offer: null, offerDeclined: true };
+      }
+      emit({ type: "status", offer: accept ? "accepted" : "declined" });
     },
     reset() { state = blank(); emit({ type: "reset" }); },
   };
@@ -180,5 +205,6 @@ export const STATUS_LABEL = {
   draft: "טיוטה",
   pending: "ממתינה לאישור העסק",
   approved: "אושרה על ידי העסק",
+  countered: "בעל העסק הציע שינוי",
   rejected: "לא אושרה",
 };

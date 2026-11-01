@@ -1,5 +1,5 @@
-import { CATEGORIES, DISHES, DISH_BY_ID, EVENT_TYPES, TIME_SLOTS, DELIVERY_ZONES, KASHRUT, img, money, recommendedQty } from "./data.js";
-import { createStore, totals, coverage, guestsOf, STATUS_LABEL } from "./order.js";
+import { CATEGORIES, DISHES, DISH_BY_ID, EVENT_TYPES, TIME_SLOTS, DELIVERY_ZONES, KASHRUT, img, money, recommendedQty, unitWord } from "./data.js";
+import { createStore, totals, coverage, guestsOf, STATUS_LABEL, normalize } from "./order.js";
 import { createTable } from "./table.js";
 import { enableDrag } from "./dnd.js";
 import { createAssistant } from "./assistant.js";
@@ -68,7 +68,7 @@ function removeDish(id) {
   } });
 }
 
-const unitWord = (d, n) => (d.unit === "כוס" ? (n === 1 ? "כוס" : "כוסות") : d.unit === "חלה" ? (n === 1 ? "חלה" : "חלות") : n === 1 ? "מגש" : "מגשים");
+
 
 // --- steps ------------------------------------------------------------------
 function go(next, { focus = true } = {}) {
@@ -392,18 +392,47 @@ function renderSend() {
   }
 
   const order = ["draft", "pending", s.status === "rejected" ? "rejected" : "approved"];
+  const head = {
+    pending: ["הבקשה אצל בעל העסק", s.offerDeclined ? "השארתם את ההזמנה כמו ששלחתם. בעל העסק יחזור אליכם." : "זו עדיין לא הזמנה סגורה. נעדכן כאן ובטלפון ברגע שתהיה תשובה."],
+    countered: ["בעל העסק מציע שינוי קטן", "השינויים מסומנים על השולחן באדום. אישור שלכם סוגר את ההזמנה."],
+    approved: ["האירוע שלכם מאושר", `נתראה ב${when}.`],
+    rejected: ["הבקשה לא אושרה", "אפשר לעדכן את השולחן ולשלוח שוב."],
+  }[s.status];
+  let offerHtml = "";
+  if (s.status === "countered" && s.offer) {
+    const after = { ...s.items };
+    for (const c of s.offer.changes) { if (c.to <= 0) delete after[c.id]; else after[c.id] = c.to; }
+    const next = totals(s, after).total;
+    const diff = next - t.total;
+    offerHtml = `
+      <div class="proposal proposal--owner">
+        <h3 class="proposal__title"><i class="ph ph-storefront" aria-hidden="true"></i>ההצעה של בעל העסק</h3>
+        ${s.offer.note ? `<p class="proposal__note">${escapeHtml(s.offer.note)}</p>` : ""}
+        <ul>${s.offer.changes.map((c) => {
+          const d = DISH_BY_ID[c.id];
+          const label = c.from === 0 ? `הוספה, ${c.to}` : c.to <= 0 ? "הסרה" : `מ־${c.from} ל־${c.to}`;
+          return `<li><span>${d.name}</span><b class="num">${label}</b></li>`;
+        }).join("")}</ul>
+        <div class="proposal__total"><span>סה״כ חדש <s class="num">${money(t.total)}</s> <b class="num">${money(next)}</b></span>${diff === 0 ? `<span class="pill-diff num">אותו מחיר</span>` : `<span class="pill-diff num ${diff > 0 ? "up" : "down"}">${diff > 0 ? "תוספת" : "חיסכון"} ${money(Math.abs(diff))}</span>`}</div>
+        <div class="proposal__actions">
+          <button class="btn btn--sm btn--primary" type="button" data-offer="accept">לאשר ולסגור</button>
+          <button class="btn btn--sm" type="button" data-offer="decline">להשאיר כמו ששלחתי</button>
+        </div>
+      </div>`;
+  }
   const sent = s.submittedAt ? new Date(s.submittedAt).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
   bind("send").innerHTML = `
     <div class="status-card">
       <div class="step__head">
         <span class="badge badge--${s.status}">${STATUS_LABEL[s.status]}</span>
-        <h2 tabindex="-1" style="margin-top:14px">${s.status === "pending" ? "הבקשה אצל בעל העסק" : s.status === "approved" ? "האירוע שלכם מאושר" : "הבקשה לא אושרה"}</h2>
-        <p>${s.status === "pending" ? "זו עדיין לא הזמנה סגורה. נעדכן כאן ובטלפון ברגע שתהיה תשובה." : s.status === "approved" ? `נתראה ב${when}.` : "אפשר לעדכן את השולחן ולשלוח שוב."}</p>
+        <h2 tabindex="-1" style="margin-top:14px">${head[0]}</h2>
+        <p>${head[1]}</p>
       </div>
+      ${offerHtml}
       <ol class="timeline">
         <li class="is-done"><span class="timeline__dot"><i class="ph ph-check"></i></span><div><strong>הבקשה נשלחה</strong><span class="num">${sent}</span></div></li>
         <li class="${s.status === "pending" ? "is-now" : "is-done"}"><span class="timeline__dot"><i class="ph ${s.status === "pending" ? "ph-hourglass-medium" : "ph-check"}"></i></span><div><strong>בדיקה של בעל העסק</strong><span>מחירים, כמויות ותאריך</span></div></li>
-        <li class="${s.status === "approved" ? "is-done" : s.status === "rejected" ? "is-rejected" : ""}"><span class="timeline__dot"><i class="ph ${s.status === "rejected" ? "ph-x" : "ph-confetti"}"></i></span><div><strong>${order[2] === "rejected" ? "לא אושרה" : "אישור סופי"}</strong><span>${s.status === "pending" ? "ממתין" : ""}</span></div></li>
+        <li class="${s.status === "approved" ? "is-done" : s.status === "rejected" ? "is-rejected" : s.status === "countered" ? "is-now" : ""}"><span class="timeline__dot"><i class="ph ${s.status === "rejected" ? "ph-x" : s.status === "countered" ? "ph-chat-circle-dots" : "ph-confetti"}"></i></span><div><strong>${order[2] === "rejected" ? "לא אושרה" : s.status === "countered" ? "התשובה שלכם" : "אישור סופי"}</strong><span>${s.status === "pending" ? "ממתין" : s.status === "countered" ? "לשינוי שבעל העסק הציע" : ""}</span></div></li>
       </ol>
       <dl class="review-list">
         <dt>אירוע</dt><dd>${escapeHtml(e.type)}, ${when}</dd>
@@ -416,6 +445,11 @@ function renderSend() {
       </div>
     </div>`;
   bind("send").querySelector("[data-new]")?.addEventListener("click", () => { store.reset(); go("event"); });
+  bind("send").querySelectorAll("[data-offer]").forEach((b) => b.addEventListener("click", () => {
+    store.answerOffer(b.dataset.offer === "accept");
+    announce(b.dataset.offer === "accept" ? "השינוי אושר וההזמנה סגורה" : "ההזמנה נשארה כמו ששלחתם");
+    $("[data-panel=send] h2")?.focus();
+  }));
   bind("send").querySelector("[data-edit]")?.addEventListener("click", () => { store.setStatus("draft"); go("menu"); });
 }
 
@@ -441,14 +475,16 @@ function renderStage(s) {
     return `<li class="${cls}"><i class="ph ${icon}" aria-hidden="true"></i><strong>${c.label}</strong> ${text}</li>`;
   }).join("");
 
-  table.update({ adults: e.adults, children: e.children, items: s.items, proposal: s.proposal });
+  const assistantOpen = !$("#assistant").hidden && s.status === "draft";
+  // a sent order keeps room for an owner's offer, so it lands without a reshuffle
+  table.update({ adults: e.adults, children: e.children, items: s.items, proposal: s.status === "countered" && s.offer ? { changes: s.offer.changes } : s.proposal, reserve: assistantOpen ? 3 : ["pending", "countered"].includes(s.status) ? 2 : 0 });
 
   const stage = $(".stage");
   stage.classList.toggle("is-locked", s.status !== "draft");
   const wasSet = stage.classList.contains("is-set");
   stage.classList.toggle("is-set", s.status === "approved");
   const card = bind("place-card");
-  card.hidden = !(s.status !== "draft" && s.ownerNote);
+  card.hidden = !(["approved", "rejected"].includes(s.status) && s.ownerNote);
   if (!card.hidden) card.innerHTML = `<b>מבעל העסק</b>${escapeHtml(s.ownerNote)}`;
   if (s.status === "approved" && !wasSet) stage.classList.add("is-setting");
   setTimeout(() => stage.classList.remove("is-setting"), 1600);
@@ -476,6 +512,7 @@ const assistant = createAssistant({
   onOpenChange: (open) => {
     toggle.setAttribute("aria-expanded", String(open));
     $(".workspace").classList.toggle("has-assistant", open);
+    renderStage(store.get());
   },
 });
 toggle.addEventListener("click", () => ($("#assistant").hidden ? assistant.open() : assistant.close()));
@@ -505,7 +542,10 @@ window.addEventListener("storage", (e) => {
   if (e.key !== "yumi.order.v1" || !e.newValue) return;
   try {
     const next = JSON.parse(e.newValue);
-    if (next.status !== store.get().status) store.setStatus(next.status, next.ownerNote);
+    const before = store.get().status;
+    store.replace(normalize(next));
+    if (before !== "countered" && store.get().status === "countered") announce("בעל העסק הציע שינוי בהזמנה. הפרטים בכרטיס ההצעה.");
+    if (store.get().status === "draft") renderEvent(store.get());
   } catch { /* ignore */ }
 });
 

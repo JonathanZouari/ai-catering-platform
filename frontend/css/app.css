@@ -29,6 +29,7 @@ body.app { min-height: 100dvh; }
 .steps button.is-done .steps__n { background: var(--success); color: var(--on-success); }
 
 .workspace {
+  overflow-x: clip;
   display: grid;
   grid-template-columns: minmax(380px, 440px) minmax(0, 1fr);
   grid-template-areas: "panel stage";
@@ -175,6 +176,9 @@ fieldset.field > legend { padding: 0; margin-bottom: var(--space-2); }
 .badge--approved { background: var(--success-soft); color: var(--success); }
 .badge--rejected { background: var(--accent-soft); color: var(--accent-text); }
 .badge--draft { background: var(--surface-2); color: var(--ink-2); }
+.badge--countered { background: var(--accent-soft); color: var(--accent-text); }
+.proposal--owner { margin-top: 4px; }
+.proposal__note { font-size: var(--text-sm); padding: 10px 12px; border-radius: 10px; background: var(--surface-2); }
 .timeline { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
 .timeline li { position: relative; display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding-bottom: 20px; }
 .timeline li::before { content: ""; position: absolute; inset-inline-start: 13px; top: 28px; bottom: 0; width: 2px; background: var(--line); }
@@ -214,7 +218,7 @@ fieldset.field > legend { padding: 0; margin-bottom: var(--space-2); }
 .msg--typing span:nth-child(3) { animation-delay: 0.3s; }
 @keyframes dot { 50% { translate: 0 -4px; opacity: 0.5; } }
 .proposal { align-self: stretch; display: grid; gap: 10px; padding: 14px; border-radius: 16px; border: 1.5px solid var(--accent); background: var(--surface); animation: msg-in 320ms var(--ease-out); }
-.proposal__title { font-size: var(--text-xs); font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+.proposal__title { margin: 0; font-size: var(--text-xs); font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px; }
 .proposal ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: var(--text-sm); }
 .proposal li { display: flex; justify-content: space-between; gap: 10px; }
 .proposal li b { font-weight: 600; white-space: nowrap; }

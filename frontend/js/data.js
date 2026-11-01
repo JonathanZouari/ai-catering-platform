@@ -108,6 +108,8 @@ export const DELIVERY_ZONES = [
   { id: "jlm", label: "ירושלים", fee: 220 },
 ];
 
+export const unitWord = (d, n) => (d.unit === "כוס" ? (n === 1 ? "כוס" : "כוסות") : d.unit === "חלה" ? (n === 1 ? "חלה" : "חלות") : n === 1 ? "מגש" : "מגשים");
+
 export function img(id, base = "/assets/dishes/") {
   return `${base}${DISH_BY_ID[id]?.img ?? id}.webp`;
 }

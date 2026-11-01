@@ -1,6 +1,6 @@
 // The banquet table: seats follow the guest count, platters follow the order.
 // Layout is computed in JS (positions as transforms) so every change animates.
-import { DISH_BY_ID, CATEGORIES, CHILD_FACTOR, img } from "./data.js";
+import { DISH_BY_ID, CATEGORIES, CHILD_FACTOR, img, unitWord } from "./data.js";
 
 const MAX_SEATS = 140;
 
@@ -22,7 +22,7 @@ export function createTable(root, { onActivate, interactive = true, compactBreak
   const seatsEl = root.querySelector(".banquet__seats");
   const plattersEl = root.querySelector(".banquet__platters");
 
-  let state = { adults: 0, children: 0, items: {}, proposal: null };
+  let state = { adults: 0, children: 0, items: {}, proposal: null, reserve: 0 };
   let size = { w: 0, h: 0, portrait: false };
   const platterEls = new Map();
 
@@ -186,7 +186,10 @@ export function createTable(root, { onActivate, interactive = true, compactBreak
   function renderPlatters() {
     const list = entries();
     tableEl.classList.toggle("is-empty", list.length === 0);
-    const L = platterLayout(Math.max(1, list.length));
+    // Reserved cells keep the grid unchanged when proposals add platters, so
+    // nothing already on the table moves while the user decides.
+    const committed = list.filter((e) => e.from > 0).length;
+    const L = platterLayout(Math.max(1, list.length, committed + (state.reserve || 0)));
     root.style.setProperty("--platter", `${L.s}px`);
     const seen = new Set();
 
@@ -217,7 +220,8 @@ export function createTable(root, { onActivate, interactive = true, compactBreak
       }
       const col = i % L.cols;
       const row = Math.floor(i / L.cols);
-      const rowCount = row === L.rows - 1 ? list.length - row * L.cols : L.cols;
+      const slots = Math.max(list.length, committed + (state.reserve || 0));
+      const rowCount = row === L.rows - 1 ? slots - row * L.cols : L.cols;
       const rowOffset = ((L.cols - rowCount) * L.cellW) / 2;
       const jx = (hash(e.id + "x") - 0.5) * L.cellW * 0.08;
       const jy = (hash(e.id + "y") - 0.5) * L.cellH * 0.1;
@@ -243,7 +247,7 @@ export function createTable(root, { onActivate, interactive = true, compactBreak
       el.style.setProperty("--stack", String(Math.min(2, Math.max(0, (removing ? e.from : shown) - 1))));
       const qtyEl = el.querySelector(".platter__qty");
       qtyEl.innerHTML = changing ? `${e.from}<i class="ph ph-arrow-left" aria-hidden="true"></i>${e.to}` : ghost ? `<bdi dir="ltr">+${e.to}</bdi>` : removing ? "הסרה" : `<bdi dir="ltr">×${e.qty}</bdi>`;
-      el.setAttribute("aria-label", `${dish.name}, ${shown} ${dish.unit === "מגש" ? "מגשים" : dish.unit === "כוס" ? "כוסות" : "יחידות"}${ghost ? ", הצעה שממתינה לאישור" : ""}`);
+      el.setAttribute("aria-label", changing ? `${dish.name}, מ־${e.from} ל־${e.to}, הצעה שממתינה לאישור` : removing ? `${dish.name}, הצעה להוריד` : `${dish.name}, ${shown} ${unitWord(dish, shown)}${ghost ? ", הצעה שממתינה לאישור" : ""}`);
       if (isNew) { void el.offsetWidth; el.classList.remove("platter--enter"); }
     });
 
