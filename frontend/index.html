@@ -1,18 +1,92 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <title>קייטרינג לאירועים פרטיים</title>
+  <meta name="description" content="תפריט, כמויות והצעת מחיר לאירוע פרטי, עם סוכן שעוזר בדרך.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/home.css">
+  <!-- The typed intro plays only on the first visit in a session and never with reduced motion.
+       Set before first paint so the final state does not flash. Without JS the static final state shows. -->
+  <script>
+    try {
+      if (!sessionStorage.getItem("catering.introSeen") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("intro-play");
+      }
+    } catch (e) { /* storage blocked: show the static final state */ }
+  </script>
 </head>
 <body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
+  <a class="skip" href="#main">דלגו לתוכן</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="wordmark" href="/">שם העסק</a>
+      <nav aria-label="ראשי">
+        <a href="/customer/">התפריט</a>
+        <a href="#how">איך זה עובד</a>
+        <a href="/admin/">לבעל העסק</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro__stack">
+        <s class="intro__line is-struck">כמה אוכל להזמין?</s>
+        <s class="intro__line is-struck">מה עם הטבעונים?</s>
+        <s class="intro__line is-struck">כמה זה יעלה בסוף?</s>
+        <h1 id="intro-title" class="intro__final">אתם מארחים. אנחנו נחשב.</h1>
+        <div class="intro__cta">
+          <a class="btn btn-primary btn-lg" href="/customer/event.html">לתכנון האירוע</a>
+          <p class="muted">תפריט, כמויות והצעת מחיר, עם סוכן שעוזר בדרך</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="how" aria-labelledby="how-title">
+      <h2 id="how-title">איך זה עובד</h2>
+      <ol class="how__steps">
+        <li>
+          <span class="how__n num" aria-hidden="true">1</span>
+          <h3>מספרים מתי ומי מגיע</h3>
+          <p class="muted">תאריך, שעה ומספר האורחים, כולל צמחונים וטבעונים.</p>
+        </li>
+        <li>
+          <span class="how__n num" aria-hidden="true">2</span>
+          <h3>בוחרים תפריט, והסוכן עוזר</h3>
+          <p class="muted">בוחרים מנות מהתפריט של העסק. הסוכן מציע שינויים, ואתם מאשרים כל אחד.</p>
+        </li>
+        <li>
+          <span class="how__n num" aria-hidden="true">3</span>
+          <h3>שולחים לאישור העסק</h3>
+          <p class="muted">מקבלים הצעת מחיר. ההזמנה מחייבת רק אחרי אישור העסק.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="gallery" aria-label="דוגמאות מהתפריט">
+      <ul class="gallery__row">
+        <li><figure><img src="/assets/01_hummus.jpg" alt="" width="348" height="348" loading="lazy"><figcaption class="muted">חומוס ביתי</figcaption></figure></li>
+        <li><figure><img src="/assets/06_oven_baked_salmon.jpg" alt="" width="348" height="348" loading="lazy"><figcaption class="muted">סלמון בתנור</figcaption></figure></li>
+        <li><figure><img src="/assets/04_quinoa_roasted_vegetables.jpg" alt="" width="348" height="348" loading="lazy"><figcaption class="muted">סלט קינואה וירקות קלויים</figcaption></figure></li>
+        <li><figure><img src="/assets/12_pareve_chocolate_cake.jpg" alt="" width="348" height="348" loading="lazy"><figcaption class="muted">עוגת שוקולד פרווה</figcaption></figure></li>
+      </ul>
+      <p><a class="link" href="/customer/">לצפייה בכל התפריט</a></p>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span>שם העסק · קייטרינג לאירועים פרטיים</span>
+      <a href="/admin/">כניסה לבעל העסק</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/js/home.js"></script>
 </body>
 </html>
