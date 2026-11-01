@@ -275,6 +275,7 @@ function sendToAssistant(ev) {
 function submitRequest() {
   if ($("submit-request").getAttribute("aria-disabled") === "true") return;
   submittedAt = new Date().toISOString();
+  renderStatus(); // the timeline shows the submission time
   location.hash = "#status";
 }
 
