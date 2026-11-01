@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session
 
+from app.core import rate_limit
 from app.core.db import build_engine, get_session
 from app.core.security import get_signing_key_resolver
 from app.core.storage import get_storage
@@ -81,6 +82,7 @@ def client(engine: Engine, session: Session, storage: FakeStorage) -> Iterator[T
         with Session(engine, expire_on_commit=False) as db:
             yield db
 
+    rate_limit.reset()
     app.dependency_overrides[get_session] = override_session
     app.dependency_overrides[get_signing_key_resolver] = lambda: (
         lambda _token: SIGNING_KEY.public_key()

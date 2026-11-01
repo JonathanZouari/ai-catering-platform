@@ -36,6 +36,18 @@ class CategoryOut(OutputModel):
     is_active: bool
 
 
+class QuantityRuleSet(InputModel):
+    portions_per_adult: Decimal = Field(ge=0, max_digits=5, decimal_places=2, lt=100)
+    portions_per_child: Decimal = Field(ge=0, max_digits=5, decimal_places=2, lt=100)
+
+
+class QuantityRuleOut(OutputModel):
+    category_type: CategoryType
+    portions_per_adult: Decimal
+    portions_per_child: Decimal
+    is_default: bool
+
+
 class AllergenOut(OutputModel):
     id: int
     name: str

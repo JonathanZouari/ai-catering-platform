@@ -12,7 +12,7 @@ Base: same origin as the frontend. JSON only. All bodies validated with Pydantic
 { "error": { "code": "order_version_conflict", "message": "Human readable", "details": {} } }
 ```
 
-Common codes: `validation_error` (422), `date_unavailable` (422), `slot_unavailable` (422), `delivery_unavailable` (422), `empty_order` (422), `below_minimum` (422), `slot_full` (409), `dish_unavailable` (409), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `conflict` (409), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409), `kashrut_mixing_blocked` (409), `kashrut_warning_not_acknowledged` (409), `ai_limit_reached` (429). `message` is Hebrew; `code` stays English.
+Common codes: `validation_error` (422), `date_unavailable` (422), `slot_unavailable` (422), `delivery_unavailable` (422), `empty_order` (422), `below_minimum` (422), `slot_full` (409), `dish_unavailable` (409), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `conflict` (409), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409), `kashrut_mixing_blocked` (409), `kashrut_warning_not_acknowledged` (409), `ai_limit_reached` (429), `rate_limited` (429), `internal_error` (500). `message` is Hebrew; `code` stays English.
 
 ## System
 
@@ -84,7 +84,7 @@ Proposal shape:
 | Method | Path |
 |---|---|
 | GET/PATCH | `/api/admin/profile` (name, branding, kashrut status, mixing rule) · POST `/api/admin/profile/logo` · POST `/api/admin/profile/kashrut-certificate` |
-| GET | `/api/admin/quantity-rules` · PUT `/api/admin/quantity-rules/{category_id}` · DELETE (revert to platform default) |
+| GET | `/api/admin/quantity-rules` (each with `is_default`) · PUT/DELETE `/api/admin/quantity-rules/{category_type}` (DELETE reverts to the platform default). Rules are per category type, not per category |
 | GET/POST | `/api/admin/categories` · PATCH/DELETE `/api/admin/categories/{id}` |
 | GET/POST | `/api/admin/dishes` · PATCH/DELETE `/api/admin/dishes/{id}` |
 | POST | `/api/admin/dishes/{id}/image` (multipart → Supabase Storage) |

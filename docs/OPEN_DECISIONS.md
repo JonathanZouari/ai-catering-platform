@@ -41,3 +41,9 @@ Where a working default is listed, engineering may build on it, but it stays ope
 | 2026-11-02 | 4 | Vegetarian, vegan and restricted guests count within the adult and child totals | Product owner |
 | 2026-11-02 | 14 | Catalog prices include VAT with no separate line; totals round half-up to 2 decimals (confirm with an accountant before launch) | Product owner |
 | 2026-11-02 | 21 | "אס]קה" meant אספקה, already covered by pickup and delivery | Product owner |
+| 2026-11-01 | — | Going live starts with a private test site; production waits for a pilot caterer and separate approval | Product owner |
+| 2026-11-01 | — | Design polish comes before the pilot, based on the user's examples | Product owner |
+| 2026-11-01 | — | Design follows the product owner's second example closely: three columns on computers, black main buttons, blue accents | Product owner |
+| 2026-11-01 | 20 | The platform is named Yummai, with its logo on every page; domain still open | Product owner |
+| 2026-11-01 | — | Rate limits live in server memory for the pilot, so the app runs as one instance | Engineering default |
+| 2026-11-01 | — | Migrations are applied by hand, never automatically on deploy | Engineering default |

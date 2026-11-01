@@ -1,11 +1,11 @@
 // Customer ordering, one page for every caterer. The private token stays in the URL fragment.
 import { api } from "/js/api.js";
-import { mountChat, syncChat } from "/js/customer/chat.js";
+import { chatButton, mountChat, syncChat } from "/js/customer/chat.js";
 import { attempt, field, h, notify, select, textOrNull } from "/js/ui.js";
 
 const slug = location.pathname.split("/")[2];
 const app = document.getElementById("app");
-const state = { order: null, token: null, step: "details" };
+const state = { order: null, token: null, step: "details", panelOpen: false };
 
 const EVENT_TYPES = ["יום הולדת", "בר/בת מצווה", "ברית", "שבת משפחתית", "אירוע משפחתי", "אחר"];
 const UNITS = { per_tray: "למגש", per_guest: "לסועד", per_item: "ליחידה", per_weight: "לפי משקל" };
@@ -21,6 +21,8 @@ const STATUS_HELP = {
   approved: "התשלום מתואם ישירות מול העסק.",
   rejected: "אפשר לפנות לעסק כדי לבדוק אפשרות אחרת.",
 };
+let refreshSheet = null;
+let categoryWatcher = null;
 const STEPS = [["details", "פרטי האירוע"], ["menu", "תפריט"], ["summary", "סיכום"]];
 
 const shekel = (value) => `₪${Number(value).toFixed(2)}`;
@@ -48,25 +50,58 @@ function contrastWithWhite(hex) {
   return 1.05 / (0.2126 * r + 0.7152 * g + 0.0722 * b + 0.05);
 }
 
-function header() {
-  const { caterer, config } = state;
-  return h("header", {},
-    h("div", { className: "brand" },
-      caterer.logo_path && config.storage_public_url
-        ? h("img", { src: `${config.storage_public_url}/${caterer.logo_path}`, alt: "" })
-        : null,
-      h("h1", {}, caterer.name)),
-    h("p", { className: "muted" }, `כשרות: ${caterer.kashrut_status ?? "לא צוין"}`));
-}
+const photoUrl = (path) =>
+  (path && state.config.storage_public_url ? `${state.config.storage_public_url}/${path}` : null);
+const icon = (name) => h("span", { className: `icon icon-${name}`, "aria-hidden": "true" });
+const dateText = (value) => new Date(`${value}T12:00`).toLocaleDateString("he-IL");
+const isDraft = () => !state.order || state.order.status === "draft";
 
 function steps() {
-  return h("ol", { className: "steps" }, STEPS.map(([key, label]) =>
-    h("li", key === state.step ? { "aria-current": "step" } : {}, label)));
+  return h("ol", { className: "steps" }, STEPS.map(([key, label]) => {
+    if (key === state.step) return h("li", { "aria-current": "step" }, h("span", {}, label));
+    return h("li", {}, state.order
+      ? h("button", { type: "button", onclick: () => leaveStep(key) }, label)
+      : h("span", {}, label));
+  }));
 }
 
-function show(...content) {
-  app.replaceChildren(header(), ...content.filter(Boolean));
+// Leaving the details form saves it first, so edits aren't lost.
+function leaveStep(key) {
+  const form = document.querySelector("form.card");
+  if (state.step !== "details" || !form) return go(key);
+  state.nextStep = key;
+  form.requestSubmit();
+  state.nextStep = null;
+}
+
+const yummaiLabel = () => h("img", { className: "yummai-label", src: "/img/yummai-logo.svg", alt: "Yummai" });
+
+function sideColumn(extra) {
+  const { caterer } = state;
+  const logo = photoUrl(caterer.logo_path);
+  return h("aside", { className: "side" },
+    yummaiLabel(),
+    h("div", { className: "logo" }, logo ? h("img", { src: logo, alt: "" }) : caterer.name[0]),
+    h("h1", {}, `ברוכים הבאים ל${caterer.name}`),
+    h("p", {}, `כשרות: ${caterer.kashrut_status ?? "לא צוין"}`),
+    isDraft() ? steps() : null,
+    extra,
+    h("p", { className: "side-footer" }, `© ${caterer.name}`));
+}
+
+function frame(content, { nav = null, action = null } = {}) {
+  const hasOrderColumn = isDraft();
+  app.replaceChildren(h("div", { className: hasOrderColumn ? "frame" : "frame two" },
+    sideColumn(nav),
+    h("div", { className: "middle" }, content.filter(Boolean)),
+    hasOrderColumn ? orderPanel(action) : null),
+  hasOrderColumn && state.order ? bottomBar(action) : "");
   window.scrollTo(0, 0);
+}
+
+function setPanelOpen(isOpen) {
+  state.panelOpen = isOpen;
+  document.querySelector(".order-panel")?.classList.toggle("open", isOpen);
 }
 
 function renderStep() {
@@ -78,6 +113,7 @@ function renderStep() {
 
 function render() {
   renderStep();
+  refreshSheet?.();
   syncChat(state.order?.status === "draft" && state.step !== "details");
 }
 
@@ -131,6 +167,11 @@ function renderDetails() {
     className: "card",
     onsubmit: async (event) => {
       event.preventDefault();
+      const nextStep = state.nextStep ?? "menu";
+      const guests = Number(adults.input.value) + Number(children.input.value);
+      const diets = Number(vegetarian.input.value) + Number(vegan.input.value) + Number(restricted.input.value);
+      if (guests === 0) return notify("יש להזין לפחות סועד אחד", true);
+      if (diets > guests) return notify("הצמחונים, הטבעונים וההגבלות נספרים מתוך מספר הסועדים, ולכן הם לא יכולים לעבור אותו", true);
       const delivery = type.value === "delivery";
       const details = {
         customer: { full_name: name.value.trim(), phone: phone.value.trim() },
@@ -160,8 +201,7 @@ function renderDetails() {
       } else {
         state.order = saved;
       }
-      state.step = "menu";
-      render();
+      go(nextStep);
     },
   },
   h("h2", {}, "פרטי האירוע"),
@@ -180,65 +220,132 @@ function renderDetails() {
   deliveryFields,
   h("button", { type: "submit" }, "המשך לתפריט"));
 
-  show(steps(), form);
+  frame([form]);
 }
 
-function allergenDetails(dish) {
+function allergenInfo(dish) {
   const statuses = Object.fromEntries(dish.allergens.map((a) => [a.allergen_id, a.status]));
   const named = (status) => state.allergens.filter((a) => (statuses[a.id] ?? "unknown") === status).map((a) => a.name);
   const row = (label, names) => (names.length ? h("p", {}, `${label}: ${names.join(", ")}`) : null);
-  return h("details", {},
-    h("summary", {}, "מידע על אלרגנים"),
+  return h("section", { className: "sheet-allergens" },
+    h("h3", {}, "מידע על אלרגנים"),
     row("מכיל", named("contains")),
     row("לא מכיל", named("free")),
     row("לא ידוע (לא אומת)", named("unknown")),
     h("p", { className: "muted" }, "מידע שלא אומת אינו אומר שהמנה בטוחה. באלרגיה חמורה בדקו עם העסק לפני ההזמנה."));
 }
 
-function badges(dish) {
+function dishFacts(dish) {
   const { kashrut_class: kashrut, is_vegetarian: vegetarian, is_vegan: vegan } = dish.dietary ?? {};
-  const badge = (text) => h("span", { className: "badge" }, text);
-  return h("div", { className: "badges" },
-    badge(`כשרות: ${KASHRUT[kashrut] ?? "לא צוין"}`),
-    vegan === true ? badge("טבעוני") : null,
-    vegetarian === true && vegan !== true ? badge("צמחוני") : null,
-    badge(`קלוריות: ${dish.calories_per_portion ?? "לא צוין"}`));
+  const diet = (name, label) => h("span", { className: "diet", title: label }, icon(name), h("span", { className: "visually-hidden" }, label));
+  return h("div", { className: "dish-meta" },
+    vegan === true ? diet("sprout", "טבעוני") : null,
+    vegetarian === true && vegan !== true ? diet("leaf", "צמחוני") : null,
+    h("span", {}, `כשרות: ${KASHRUT[kashrut] ?? "לא צוין"} · קלוריות: ${dish.calories_per_portion ?? "לא צוין"}`));
+}
+
+// The page re-renders after a change, so focus returns to the same control where it still exists.
+function restoreFocus(dishId, label, areaSelector) {
+  const area = areaSelector ? document.querySelector(areaSelector) : document;
+  const same = [...area.querySelectorAll("button")].find((button) => button.getAttribute("aria-label") === label && !button.disabled);
+  const target = same ?? area.querySelector(`[data-more="${dishId}"]`) ?? area.querySelector("button");
+  target?.focus({ preventScroll: true });
 }
 
 async function setQuantity(dish, quantity) {
   const path = `/items/${dish.id}`;
+  const pressed = document.activeElement;
+  const label = pressed?.getAttribute("aria-label");
+  const areaSelector = ["dialog.dish-sheet", ".order-panel"].find((selector) => pressed?.closest(selector));
   const updated = await attempt(() => (quantity > 0
     ? orderApi(path, { method: "PUT", body: JSON.stringify({ quantity: String(quantity), version: state.order.version }) })
     : orderApi(`${path}?version=${state.order.version}`, { method: "DELETE" })));
   if (updated) {
     const position = window.scrollY;
+    const panelPosition = document.querySelector(".order-panel")?.scrollTop ?? 0;
     state.order = updated;
     render();
     window.scrollTo(0, position);
+    const panel = document.querySelector(".order-panel");
+    if (panel) panel.scrollTop = panelPosition;
+    restoreFocus(dish.id, label, areaSelector);
   }
 }
 
-function stepper(dish) {
+function quantityStep(dish) {
+  return dish.pricing_unit === "per_weight" ? 0.5 : 1;
+}
+
+function stepper(dish, quantity) {
+  const step = quantityStep(dish);
+  return h("div", { className: "stepper" },
+    h("button", { type: "button", "aria-label": `פחות ${dish.name}`, disabled: quantity === 0, onclick: () => setQuantity(dish, quantity - step) }, "−"),
+    h("output", { "aria-label": `כמות ${dish.name}` }, String(quantity)),
+    h("button", { type: "button", "aria-label": `עוד ${dish.name}`, "data-more": dish.id, onclick: () => setQuantity(dish, quantity + step) }, "+"));
+}
+
+function quantityControl(dish) {
   const line = state.order.lines.find((item) => item.dish_id === dish.id);
   const quantity = Number(line?.quantity ?? 0);
-  const step = dish.pricing_unit === "per_weight" ? 0.5 : 1;
-  return h("div", { className: "stepper" },
-    h("button", { type: "button", className: "secondary", "aria-label": `פחות ${dish.name}`, disabled: quantity === 0, onclick: () => setQuantity(dish, quantity - step) }, "−"),
-    h("output", { "aria-label": `כמות ${dish.name}` }, String(quantity)),
-    h("button", { type: "button", className: "secondary", "aria-label": `עוד ${dish.name}`, onclick: () => setQuantity(dish, quantity + step) }, "+"),
-    line?.recommended_quantity ? h("span", { className: "muted" }, `מומלץ: ${Number(line.recommended_quantity)}`) : null);
+  return h("div", { className: "qty" },
+    line?.recommended_quantity ? h("span", { className: "muted" }, `מומלץ: ${Number(line.recommended_quantity)}`) : null,
+    stepper(dish, quantity),
+    quantity === 0
+      ? h("button", { type: "button", className: "bag", "aria-label": `הוספת ${dish.name}`, onclick: () => setQuantity(dish, quantityStep(dish)) }, icon("bag"))
+      : h("span", { className: "bag in-order" }, icon("bag")));
+}
+
+function price(dish) {
+  return h("div", { className: "dish-price" },
+    h("strong", {}, money(dish.unit_price)),
+    h("small", {}, `${UNITS[dish.pricing_unit]}${dish.unit_label ? ` (${dish.unit_label})` : ""}`));
+}
+
+// Quantity changes re-render the page behind the sheet, so the sheet refreshes its own control.
+function openDish(dish) {
+  const photo = photoUrl(dish.image_path);
+  const quantity = h("div", {}, quantityControl(dish));
+  const notice = document.getElementById("notice");
+  const noticeHome = notice.parentElement;
+  const dialog = h("dialog", { className: "dish-sheet", "aria-label": dish.name },
+    photo ? h("img", { className: "sheet-photo", src: photo, alt: "" }) : null,
+    h("div", { className: "sheet-body" },
+      h("h2", {}, dish.name),
+      dishFacts(dish),
+      dish.description ? h("p", { className: "muted" }, dish.description) : null,
+      price(dish),
+      quantity,
+      allergenInfo(dish),
+      h("div", { className: "actions" },
+        h("button", { type: "button", className: "secondary", onclick: () => dialog.close() }, "סגירה"))));
+  refreshSheet = () => quantity.replaceChildren(quantityControl(dish));
+  dialog.addEventListener("close", () => {
+    refreshSheet = null;
+    noticeHome.append(notice);
+    dialog.remove();
+    document.querySelector(`[data-dish="${dish.id}"]`)?.focus();
+  });
+  document.body.append(dialog);
+  // A modal dialog covers the page, so errors have to show from inside it.
+  dialog.append(notice);
+  dialog.showModal();
 }
 
 function dishCard(dish) {
-  const { storage_public_url: storage } = state.config;
+  const photo = photoUrl(dish.image_path);
   return h("article", { className: "dish" },
-    dish.image_path && storage ? h("img", { src: `${storage}/${dish.image_path}`, alt: "", loading: "lazy" }) : null,
-    h("h3", {}, dish.name),
-    dish.description ? h("p", { className: "muted" }, dish.description) : null,
-    h("p", {}, money(dish.unit_price), ` ${UNITS[dish.pricing_unit]}`, dish.unit_label ? ` (${dish.unit_label})` : ""),
-    badges(dish),
-    allergenDetails(dish),
-    stepper(dish));
+    // Pointer shortcut only: the name below is the keyboard and screen reader route.
+    h("button", { type: "button", className: "dish-media", tabIndex: -1, "aria-hidden": "true", onclick: () => openDish(dish) },
+      photo ? h("img", { src: photo, alt: "", loading: "lazy" }) : dish.name[0]),
+    h("div", { className: "dish-body" },
+      h("div", { className: "dish-top" },
+        h("h3", {}, h("button", { type: "button", className: "dish-open", "data-dish": dish.id, onclick: () => openDish(dish) }, dish.name)),
+        price(dish)),
+      dish.description ? h("p", { className: "muted dish-description" }, dish.description) : null,
+      dishFacts(dish),
+      h("div", { className: "dish-foot" },
+        h("button", { type: "button", className: "text-link", onclick: () => openDish(dish) }, "מידע על אלרגנים"),
+        quantityControl(dish))));
 }
 
 function matchesFilters(dish) {
@@ -259,28 +366,109 @@ function filterChip(label, key) {
   return h("label", {}, box, label);
 }
 
+function categorySection({ category, dishes }) {
+  const count = dishes.length === 1 ? "מנה אחת" : `${dishes.length} מנות`;
+  return h("section", { className: "menu-section", "data-category": category.id },
+    h("div", { className: "category-title" }, h("h2", {}, category.name), h("span", {}, count)),
+    dishes.map(dishCard));
+}
+
+// Scrolls by code: a link would replace the private token in the URL fragment.
+function categoryNav(sections) {
+  const scrollTo = (id) => document.querySelector(`[data-category="${id}"]`)?.scrollIntoView();
+  return h("nav", { className: "category-nav", "aria-label": "קטגוריות" },
+    sections.map(({ category }) => h("button", { type: "button", "data-for": category.id, onclick: () => scrollTo(category.id) }, category.name)));
+}
+
+function watchCategories() {
+  categoryWatcher?.disconnect();
+  categoryWatcher = new IntersectionObserver((entries) => {
+    const visible = entries.find((entry) => entry.isIntersecting);
+    if (!visible) return;
+    document.querySelectorAll(".category-nav button").forEach((button) => {
+      button.setAttribute("aria-current", String(button.dataset.for === visible.target.dataset.category));
+    });
+  }, { rootMargin: "0px 0px -70% 0px" });
+  document.querySelectorAll("[data-category]").forEach((section) => categoryWatcher.observe(section));
+}
+
+function orderLine(line) {
+  const dish = state.dishes.find((item) => item.id === line.dish_id);
+  const photo = photoUrl(dish?.image_path);
+  const quantity = Number(line.quantity);
+  return h("li", { className: "order-line" },
+    h("div", { className: "line-photo" },
+      photo ? h("img", { src: photo, alt: "", loading: "lazy" }) : null,
+      h("span", { className: "line-count" }, String(quantity))),
+    h("strong", {}, line.name),
+    h("span", { className: "price" }, money(line.line_total)),
+    dish ? stepper(dish, quantity) : h("span", {}),
+    // Offered even for a dish no longer on the menu, or the customer couldn't remove it.
+    h("button", { type: "button", className: "line-remove", "aria-label": `הסרת ${line.name}`, onclick: () => setQuantity({ id: line.dish_id }, 0) }, icon("trash")));
+}
+
+function menuPhoto() {
+  const photo = photoUrl(state.dishes.find((dish) => dish.image_path)?.image_path);
+  return photo ? h("img", { className: "panel-photo", src: photo, alt: "" }) : null;
+}
+
+function chosenDishes(order) {
+  const pictured = order.lines
+    .map((line) => ({ line, photo: photoUrl(state.dishes.find((dish) => dish.id === line.dish_id)?.image_path) }))
+    .filter(({ photo }) => photo);
+  return pictured.length
+    ? h("div", { className: "chosen" }, pictured.map(({ line, photo }) => h("figure", {},
+      h("img", { src: photo, alt: "" }), h("figcaption", {}, line.name))))
+    : null;
+}
+
+function orderPanel(action) {
+  const { order } = state;
+  return h("aside", { className: state.panelOpen ? "order-panel open" : "order-panel", "aria-label": "ההזמנה שלי" },
+    order ? h("div", { className: "panel-person" }, h("span", {}, order.customer.full_name), h("span", { className: "icon-box" }, icon("person"))) : null,
+    h("div", { className: "panel-title" },
+      h("h2", {}, "ההזמנה שלי"),
+      h("button", { type: "button", className: "secondary phone-only", onclick: () => setPanelOpen(false) }, "סגירה")),
+    order ? h("p", { className: "date-label" }, order.fulfillment_type === "delivery" ? "משלוח" : "איסוף עצמי") : null,
+    order ? h("button", { type: "button", className: "date-box", "aria-label": "שינוי פרטי האירוע", onclick: () => go("details") },
+      dateText(order.event.event_date), icon("calendar")) : null,
+    order?.lines.length ? null : menuPhoto(),
+    order?.lines.length
+      ? h("ul", { className: "order-lines" }, order.lines.map(orderLine))
+      : h("p", { className: "empty order-lines" }, "עדיין לא נבחרו מנות."),
+    order ? totals(order) : null,
+    action ? h("button", { className: "checkout", disabled: action.disabled, onclick: action.run }, action.label) : null,
+    order ? chatButton() : null);
+}
+
+function bottomBar(action) {
+  const { order } = state;
+  return h("div", { className: "total-bar" },
+    h("div", { className: "total-sum" }, "סה״כ ", h("strong", {}, money(order.total))),
+    h("button", { type: "button", className: "secondary", onclick: () => setPanelOpen(true) }, `ההזמנה שלי (${order.lines.length})`),
+    h("div", { className: "actions" },
+      chatButton(),
+      action && state.step !== "summary" ? h("button", { onclick: action.run }, action.label) : null));
+}
+
 function renderMenu() {
   const visible = state.dishes.filter(matchesFilters);
   const sections = state.categories
     .map((category) => ({ category, dishes: visible.filter((dish) => dish.category_id === category.id) }))
     .filter(({ dishes }) => dishes.length);
 
-  show(
-    steps(),
+  frame([
     h("div", { className: "chips" }, filterChip("צמחוני", "vegetarian"), filterChip("טבעוני", "vegan")),
     ...(sections.length
-      ? sections.map(({ category, dishes }) => h("section", { className: "card" }, h("h2", {}, category.name), dishes.map(dishCard)))
+      ? sections.map(categorySection)
       : [h("p", { className: "empty" }, "אין מנות שמתאימות לסינון.")]),
-    h("div", { className: "total-bar" },
-      h("div", {}, "סה״כ ", h("strong", {}, money(state.order.total))),
-      h("div", { className: "actions" },
-        h("button", { className: "secondary", onclick: () => go("details") }, "חזרה"),
-        h("button", { onclick: () => go("summary") }, "לסיכום"))),
-  );
+  ], { nav: categoryNav(sections), action: { label: "לסיכום", run: () => go("summary") } });
+  watchCategories();
 }
 
 function go(step) {
   state.step = step;
+  state.panelOpen = false;
   render();
 }
 
@@ -308,7 +496,7 @@ function linkActions() {
   const share = `https://wa.me/?text=${encodeURIComponent(link)}`;
   return h("section", { className: "card" },
     h("h2", {}, "הקישור הפרטי להזמנה"),
-    h("p", { className: "private-link" }, h("bdi", { dir: "ltr" }, link)),
+    h("p", { className: "private-link", dir: "ltr" }, link),
     h("p", { className: "muted" }, "שמרו את הקישור, ואל תשתפו אותו. כל מי שמחזיק בו יכול לראות את ההזמנה ואת הפרטים שלכם. אין דרך לשחזר אותו אם יאבד."),
     h("div", { className: "actions" },
       h("button", { className: "secondary", onclick: () => attempt(() => navigator.clipboard.writeText(link), "הקישור הועתק") }, "העתקת הקישור"),
@@ -329,9 +517,10 @@ function renderSummary() {
     }
   };
 
-  show(
-    steps(),
-    h("section", { className: "card" },
+  const canSubmit = status !== "blocked" && order.lines.length > 0;
+  frame([
+    chosenDishes(order),
+    h("section", { className: "card phone-only" },
       h("h2", {}, "סיכום ההזמנה"),
       order.lines.length ? linesTable(order) : h("p", { className: "empty" }, "עדיין לא נבחרו מנות."),
       totals(order)),
@@ -347,8 +536,8 @@ function renderSummary() {
     h("p", { className: "muted" }, "שליחת הבקשה אינה הזמנה סופית. ההזמנה תאושר רק לאחר בדיקה של העסק."),
     h("div", { className: "actions" },
       h("button", { className: "secondary", onclick: () => go("menu") }, "חזרה לתפריט"),
-      h("button", { disabled: status === "blocked" || !order.lines.length, onclick: submit }, "שליחת בקשה להצעת מחיר")),
-  );
+      h("button", { className: "phone-only", disabled: !canSubmit, onclick: submit }, "שליחת בקשה להצעת מחיר")),
+  ], { action: { label: "שליחת בקשה להצעת מחיר", run: submit, disabled: !canSubmit } });
 }
 
 async function refresh() {
@@ -362,11 +551,12 @@ async function refresh() {
 function renderStatus() {
   const { order } = state;
   const phone = state.caterer.contact_phone;
-  show(
+  frame([
     h("section", { className: "card" },
       h("h2", {}, "סטטוס ההזמנה"),
-      h("p", { className: "status" }, STATUS[order.status]),
-      h("p", { className: "muted" }, STATUS_HELP[order.status]),
+      h("div", { className: `status-banner ${order.status}` },
+        h("p", { className: "status" }, STATUS[order.status]),
+        h("p", {}, STATUS_HELP[order.status])),
       order.decision_note ? h("p", {}, h("strong", {}, "הערת העסק: "), order.decision_note) : null,
       phone ? h("p", {}, "טלפון העסק: ", h("a", { href: `tel:${phone.replace(/\s/g, "")}` }, h("bdi", {}, phone))) : null,
       h("button", { className: "secondary", onclick: refresh }, "בדיקת עדכון")),
@@ -375,11 +565,12 @@ function renderStatus() {
       linesTable(order),
       totals(order)),
     linkActions(),
-  );
+  ]);
 }
 
 function renderUnavailable() {
   app.replaceChildren(h("section", { className: "card" },
+    yummaiLabel(),
     h("h1", {}, "העמוד אינו זמין"),
     h("p", {}, "לא מצאנו את הקייטרינג שחיפשתם. בדקו את הקישור מול העסק.")));
 }

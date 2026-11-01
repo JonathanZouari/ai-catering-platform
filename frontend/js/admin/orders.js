@@ -31,15 +31,15 @@ export async function renderOrders(view) {
     h("section", { className: "card" },
       field("סינון", status),
       orders.length
-        ? h("ul", { className: "rows" }, orders.map((order) => h("li", {},
+        ? h("ul", { className: "rows" }, orders.map((order) => h("li", { className: `order-row ${order.status}` },
           h("div", {},
             h("strong", {}, order.customer_name),
-            h("span", { className: "badge" }, STATUS[order.status]),
+            h("span", { className: `badge ${order.status}` }, STATUS[order.status]),
             h("div", { className: "muted" },
               `${dateText(order.event_date)} · ${order.guests} סועדים · `, shekel(order.total))),
           h("div", { className: "actions" },
             h("button", {
-              className: "secondary",
+              className: order.status === "pending_approval" ? "" : "secondary",
               "aria-label": `פתיחת ההזמנה של ${order.customer_name}`,
               onclick: () => attempt(() => renderDetail(view, order.id)),
             }, "פתיחה")))))
@@ -78,7 +78,7 @@ async function renderDetail(view, id) {
   const sections = [
     h("button", { className: "secondary", onclick: () => attempt(() => renderOrders(view)) }, "חזרה לרשימה"),
     h("h1", {}, `הזמנה של ${customer.full_name}`),
-    h("p", {}, h("span", { className: "badge" }, STATUS[order.status])),
+    h("p", {}, h("span", { className: `badge ${order.status}` }, STATUS[order.status])),
     h("section", { className: "card" },
       h("h2", {}, "פרטי לקוח ואירוע"),
       h("p", {}, h("strong", {}, "טלפון: "), h("a", { href: `tel:${customer.phone.replace(/\s/g, "")}` }, h("bdi", {}, customer.phone))),

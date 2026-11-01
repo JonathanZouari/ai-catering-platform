@@ -2,7 +2,7 @@
 
 Hebrew ordering and management platform for **many catering businesses**. Each caterer gets a branded link. Customers use it to plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. Each caterer manages their own catalog and approves or rejects every quotation.
 
-> Status: **Phase 7 — AI assistant**. A Hebrew chat on the order page proposes changes the customer approves. It needs `ANTHROPIC_API_KEY`, and has only been tested with a scripted model so far. See `docs/` for the specs.
+> Status: **Phase 8 — ready to go live**. The code is prepared for a server, but nothing is online yet. The AI chat needs `ANTHROPIC_API_KEY` and has only been tested with a scripted model. See `docs/DEPLOYMENT.md` to put it online, and `docs/` for the specs.
 
 ## Stack
 
@@ -86,7 +86,7 @@ Create the login in Supabase, then run `uv run python -m scripts.create_caterer 
 
 ## Railway / Supabase status
 
-Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 8.
+No Railway or Supabase project is connected yet. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) is the step-by-step guide.
 
 ## Documentation
 

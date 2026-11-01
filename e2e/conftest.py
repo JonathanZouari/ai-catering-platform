@@ -61,5 +61,14 @@ def page(base_url):
         tab = context.new_page()
         tab.errors = []
         tab.on("pageerror", lambda error: tab.errors.append(str(error)))
+        # The browser reports a blocked resource as a console error.
+        tab.on(
+            "console",
+            lambda message: (
+                tab.errors.append(message.text)
+                if "Content Security Policy" in message.text
+                else None
+            ),
+        )
         yield tab
         browser.close()

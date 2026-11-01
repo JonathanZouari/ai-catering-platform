@@ -122,7 +122,7 @@ def test_customer_sees_approval_with_note_and_contact(page: Page, links):
     expect(page.get_by_text("נתראה באירוע")).to_be_visible()
     expect(page.get_by_text("התשלום מתואם ישירות מול העסק")).to_be_visible()
     expect(page.get_by_role("link", name="03-1234567")).to_be_visible()
-    expect(page.get_by_role("button", name="עוד עוף בתנור")).to_have_count(0)
+    expect(page.get_by_role("button", name="הוספת עוף בתנור")).to_have_count(0)
     page.screenshot(path=SHOTS / "customer-approved.png", full_page=True)
 
 

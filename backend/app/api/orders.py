@@ -6,12 +6,13 @@ from fastapi import APIRouter, Depends
 from app.agents.client import LLMClient, get_llm
 from app.agents.loop import run_chat
 from app.api.deps import OrderScopeDep, SessionDep
+from app.core.rate_limit import limit_chat, limit_order_writes
 from app.models.enums import ProposalStatus
 from app.schemas.ai import ChatReply, ChatRequest, ChatState, ProposalDecision, ProposalOut
 from app.schemas.orders import ItemSet, OrderOut, OrderUpdate, SubmitRequest
 from app.services import assistant, orders, proposals
 
-router = APIRouter(prefix="/api/orders")
+router = APIRouter(prefix="/api/orders", dependencies=[Depends(limit_order_writes)])
 
 LLMDep = Annotated[LLMClient | None, Depends(get_llm)]
 
@@ -62,7 +63,7 @@ def get_chat(order_id: UUID, session: SessionDep, scope: OrderScopeDep, llm: LLM
     )
 
 
-@router.post("/{order_id}/chat", response_model=ChatReply)
+@router.post("/{order_id}/chat", response_model=ChatReply, dependencies=[Depends(limit_chat)])
 def chat(order_id: UUID, data: ChatRequest, session: SessionDep, scope: OrderScopeDep, llm: LLMDep):
     return run_chat(session, scope, order_id, data.message, llm)
 

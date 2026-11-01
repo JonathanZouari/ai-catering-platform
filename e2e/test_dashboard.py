@@ -137,6 +137,21 @@ def test_delivery_zones(page: Page):
     expect(page.locator(".rows li", has_text="מרכז")).to_contain_text("תל אביב, רמת גן")
 
 
+def test_quantity_rule_can_be_changed_and_reverted(page: Page):
+    page.get_by_role("link", name="כמויות").click()
+    form = page.get_by_role("form", name="סלטים")
+    expect(form).to_contain_text("ברירת מחדל")
+    form.get_by_label("מנות למבוגר: סלטים").fill("2.5")
+    form.get_by_role("button", name="שמירה").click()
+    expect(notice(page)).to_have_text("הכמויות נשמרו")
+    form = page.get_by_role("form", name="סלטים")
+    expect(form).not_to_contain_text("ברירת מחדל")
+    expect(form.get_by_label("מנות למבוגר: סלטים")).to_have_value("2.5")
+
+    form.get_by_role("button", name="חזרה לברירת המחדל").click()
+    expect(page.get_by_role("form", name="סלטים")).to_contain_text("ברירת מחדל")
+
+
 def test_profile_saves_kashrut_settings(page: Page):
     page.get_by_role("link", name="פרופיל העסק").click()
     expect(page.get_by_text("/c/taamim/")).to_be_visible()
@@ -152,7 +167,9 @@ def test_profile_saves_kashrut_settings(page: Page):
     expect(page.get_by_label("הזמנה שמערבת בשר וחלב")).to_have_value("block")
 
 
-@pytest.mark.parametrize("screen", ["orders", "menu", "availability", "delivery", "profile"])
+@pytest.mark.parametrize(
+    "screen", ["orders", "menu", "availability", "delivery", "quantities", "profile"]
+)
 def test_no_sideways_scroll_on_phone(page: Page, screen: str):
     page.goto(f"/admin/#{screen}")
     page.wait_for_load_state("networkidle")

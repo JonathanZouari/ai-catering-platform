@@ -81,4 +81,4 @@ These are mandatory for every phase and feature:
 
 ## Phases
 
-Tracked in order: specs (2) → tenant foundation (3) → caterer dashboard (4) → customer ordering (5) → quote approval (6) → AI assistant (7) → deploy and pilot (8). Don't build features of a later phase early.
+Tracked in order: specs (2) → tenant foundation (3) → caterer dashboard (4) → customer ordering (5) → quote approval (6) → AI assistant (7) → ready to go live (8) → design polish, planned when the user's examples arrive → test site and pilot, each with its own approval. Don't build features of a later phase early.

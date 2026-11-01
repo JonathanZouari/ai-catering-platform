@@ -5,7 +5,7 @@ Status: **Draft v0.2**. High-fidelity prototypes (Claude Artifacts) come in the 
 ## 1. Principles
 
 - Hebrew RTL throughout: `<html lang="he" dir="rtl">`, Hebrew-capable fonts, prices and phone numbers isolated so they read correctly in RTL text. The sketch below is in English for this doc only.
-- Each customer page carries the caterer's logo and color. Platform branding stays minimal. A caterer color that fails contrast is not applied to text.
+- Each customer page carries the caterer's logo and color. The Yummai logo (a smiling serving dome) appears on every page, small and above the caterer's own logo. The app floats on the blue backdrop with a margin of 5% of the width and 7% of the height on computers. A caterer color that fails contrast is not applied to text.
 - Mobile-first; breakpoints 640 / 1024 px **[RECOMMENDATION]**.
 - Accessibility target WCAG 2.2 AA: 4.5:1 text contrast, visible focus, 44×44 px touch targets, labels on all inputs, `aria-live` for price totals and chat replies, full keyboard use.
 - CSS uses logical properties only (`margin-inline-start`, etc.).
@@ -15,6 +15,21 @@ Status: **Draft v0.2**. High-fidelity prototypes (Claude Artifacts) come in the 
 ## 2. Design tokens (neutral placeholders)
 
 Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, `--color-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radius, font stack (system fonts until brand fonts chosen), shadow levels. Dark mode not in scope unless requested.
+
+### Visual direction
+
+The look follows the product owner's example: one frame with three columns on computers.
+
+- The page background is deep blue with soft shapes and a dot pattern, in CSS only. The app floats on it as one rounded card.
+- Side column: logo in a circle, a welcome line, the steps, and the menu categories. Without a logo the circle shows the caterer's initial.
+- Middle column: large horizontal dish cards with the photo filling one side, price in the opposite corner, and a small quantity control with a bag icon.
+- Order column: customer name, event date (which returns to the details step), order tiles, totals, and a wide black button. On phones it opens from the bottom bar.
+- Main buttons are black. Blue `#2563eb` is only for accents, and a caterer's brand colour replaces it on customer pages if it is readable on white.
+- Icons are same-origin SVG masks in `frontend/img/`. No icon library and no third-party fonts.
+- Without a photo, dish cards show a grey block with the dish's first letter.
+- A dish card opens a detail sheet with the large photo, allergens and quantity. Allergen information stays one tap from every card.
+- No star ratings or preparation times: the app has no such data.
+- Category navigation scrolls by script, never by a `#` link, because the URL fragment holds the private token.
 
 ## 3. Customer screens
 

@@ -36,3 +36,47 @@ jobs:
       - run: uv run pytest
         env:
           TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ai_catering_test
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ai_catering_e2e_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen
+      - run: uv run --with playwright playwright install --with-deps chromium
+      - run: uv run --with playwright pytest ../e2e --rootdir=../e2e
+        env:
+          E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ai_catering_e2e_test
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ai-catering .
+      - run: docker run -d --name app -e APP_ENV=development -p 8000:8000 ai-catering
+      - name: The built image serves the app
+        run: |
+          for attempt in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/health && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8000/health
+          curl -sf http://127.0.0.1:8000/c/test/ | grep -q 'dir="rtl"'

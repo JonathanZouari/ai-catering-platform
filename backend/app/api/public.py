@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from app.api.deps import SessionDep
 from app.core.config import get_settings
 from app.core.errors import not_found
+from app.core.rate_limit import limit_order_creation
 from app.core.storage import public_storage_url
 from app.core.tenancy import CatererScope
 from app.models import Caterer
@@ -31,7 +32,7 @@ def get_client_config():
     # Only values safe for a browser. The service-role key must never appear here.
     settings = get_settings()
     return ClientConfig(
-        supabase_url=settings.supabase_url,
+        supabase_url=settings.supabase_url.rstrip("/") if settings.supabase_url else None,
         supabase_anon_key=settings.supabase_anon_key,
         storage_public_url=public_storage_url(),
     )
@@ -116,6 +117,11 @@ def list_delivery_cities(session: SessionDep, scope: ScopeDep):
     return sorted(cities, key=lambda item: item.city)
 
 
-@router.post("/c/{slug}/orders", response_model=OrderCreated, status_code=201)
+@router.post(
+    "/c/{slug}/orders",
+    response_model=OrderCreated,
+    status_code=201,
+    dependencies=[Depends(limit_order_creation)],
+)
 def create_order(data: OrderDetails, session: SessionDep, caterer: CatererDep):
     return orders.create_order(session, caterer, data)

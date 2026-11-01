@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from app.core.headers import security_headers
+
 
 class AppError(Exception):
     def __init__(self, status_code: int, code: str, message: str) -> None:
@@ -36,6 +38,13 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     def handle_app_error(_: Request, exc: AppError) -> JSONResponse:
         return JSONResponse(_body(exc.code, exc.message), status_code=exc.status_code)
+
+    @app.exception_handler(Exception)
+    def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
+        # The details stay in the server log, never in the response. This handler runs outside
+        # all middleware, so it adds the security headers itself.
+        body = _body("internal_error", "משהו השתבש. נסו שוב עוד מעט")
+        return JSONResponse(body, status_code=500, headers=security_headers())
 
     @app.exception_handler(RequestValidationError)
     def handle_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:

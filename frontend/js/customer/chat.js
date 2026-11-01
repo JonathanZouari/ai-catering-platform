@@ -11,8 +11,10 @@ const DETAILS = {
 };
 
 const panel = h("aside", { className: "chat", hidden: true, "aria-label": "עוזר להזמנה" });
-const toggle = h("button", {
-  className: "chat-toggle",
+// main.js places these in the order column and the phone's bottom bar. syncChat shows them.
+export const chatButton = () => h("button", {
+  type: "button",
+  className: "chat-toggle secondary",
   hidden: true,
   onclick: () => setOpen(panel.hidden),
 }, "שאלו את העוזר");
@@ -110,11 +112,11 @@ async function load() {
 export function mountChat(api, onOrderChanged) {
   orderApi = api;
   onOrder = onOrderChanged;
-  document.body.append(toggle, panel);
+  document.body.append(panel);
 }
 
 export function syncChat(isVisible) {
-  toggle.hidden = !isVisible;
+  document.querySelectorAll(".chat-toggle").forEach((button) => { button.hidden = !isVisible; });
   if (!isVisible) panel.hidden = true;
   else if (!chat) load();
 }
