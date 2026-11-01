@@ -291,10 +291,12 @@ def test_computers_show_three_columns_and_the_live_order(page: Page):
     expect(panel.locator(".sum.total")).to_contain_text("₪140.00")
     expect(panel.get_by_role("button", name="פחות טבולה")).to_be_focused()
     panel.get_by_role("button", name="עוד טבולה").click()
+    expect(panel.locator(".sum.total")).to_contain_text("₪230.00")
     page.set_viewport_size({"width": 1366, "height": 400})
     page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
     assert page.evaluate("window.scrollY") > 0
-    assert abs(panel.evaluate("element => element.getBoundingClientRect().top") - 24) < 1
+    frame_margin = 400 * 0.07  # --frame-block
+    assert abs(panel.evaluate("element => element.getBoundingClientRect().top") - frame_margin) < 1
     page.set_viewport_size({"width": 1366, "height": 800})
     panel.get_by_role("button", name="הסרת טבולה").click()
     expect(panel.locator(".sum.total")).to_contain_text("₪50.00")
