@@ -1,3 +1,4 @@
+import json
 import os
 import socket
 import subprocess
@@ -11,6 +12,17 @@ from playwright.sync_api import sync_playwright
 
 SHOTS = Path(os.environ.get("E2E_SCREENSHOTS", Path(__file__).parent / "screenshots"))
 PHONE = {"width": 390, "height": 844}
+
+
+def call(base_url, path, body=None, token=None, method="POST", headers=None):
+    all_headers = {"Content-Type": "application/json"} | (headers or {})
+    if token:
+        all_headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(  # noqa: S310
+        f"{base_url}{path}", data=json.dumps(body).encode(), headers=all_headers, method=method
+    )
+    with urllib.request.urlopen(request) as response:  # noqa: S310
+        return json.loads(response.read() or "null")
 
 
 @pytest.fixture(scope="module")

@@ -1,10 +1,12 @@
 import { isLoggedIn, login, logout } from "/js/admin/auth.js";
 import { renderAvailability, renderDelivery } from "/js/admin/logistics.js";
 import { renderMenu } from "/js/admin/menu.js";
+import { renderOrders } from "/js/admin/orders.js";
 import { renderProfile } from "/js/admin/profile.js";
 import { attempt, field, h } from "/js/ui.js";
 
 const SCREENS = {
+  orders: ["הזמנות", renderOrders],
   menu: ["תפריט", renderMenu],
   availability: ["זמינות", renderAvailability],
   delivery: ["משלוחים", renderDelivery],
@@ -44,7 +46,7 @@ function renderShell() {
 }
 
 async function show(view) {
-  const key = SCREENS[location.hash.slice(1)] ? location.hash.slice(1) : "menu";
+  const key = SCREENS[location.hash.slice(1)] ? location.hash.slice(1) : "orders";
   document.querySelectorAll(".topbar a").forEach((link) => {
     if (link.id === `nav-${key}`) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");

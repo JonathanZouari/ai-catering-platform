@@ -24,6 +24,8 @@ from app.repositories.orders import (
     get_quantity_rules,
 )
 from app.schemas.orders import (
+    AdminOrderOut,
+    ApproveRequest,
     CustomerOut,
     EventOut,
     ItemSet,
@@ -32,7 +34,9 @@ from app.schemas.orders import (
     OrderDetails,
     OrderLine,
     OrderOut,
+    OrderSummary,
     OrderUpdate,
+    RejectRequest,
     SubmitRequest,
 )
 from app.services import availability, kashrut, pricing, quantities
@@ -241,6 +245,65 @@ def submit_order(
     return order
 
 
+def list_orders(
+    session: Session, scope: CatererScope, status: OrderStatus | None
+) -> list[OrderSummary]:
+    return [
+        OrderSummary(
+            id=order.id,
+            status=order.status,
+            customer_name=order.customer.full_name,
+            event_date=order.event.event_date,
+            guests=order.event.adults + order.event.children,
+            total=order.total,
+            submitted_at=order.submitted_at,
+        )
+        for order in OrderRepository(session, scope).list_submitted(status)
+    ]
+
+
+def get_submitted(session: Session, scope: CatererScope, order_id: UUID) -> Order:
+    order = get_order(session, scope, order_id)
+    if order.status == OrderStatus.DRAFT:
+        raise not_found()
+    return order
+
+
+def _decide(
+    session: Session,
+    scope: CatererScope,
+    order_id: UUID,
+    version: int,
+    status: OrderStatus,
+    note: str | None,
+) -> Order:
+    order = OrderRepository(session, scope).lock(order_id)
+    if order is None:
+        raise not_found()
+    if order.status != OrderStatus.PENDING_APPROVAL:
+        raise AppError(409, "invalid_transition", "כבר התקבלה החלטה על ההזמנה הזו")
+    if order.version != version:
+        raise AppError(409, "order_version_conflict", "ההזמנה השתנתה. טענו את הדף מחדש")
+    order.status = status
+    order.decision_note = note or None
+    order.decided_at = datetime.now(UTC)
+    order.version += 1
+    session.commit()
+    return order
+
+
+def approve_order(
+    session: Session, scope: CatererScope, order_id: UUID, data: ApproveRequest
+) -> Order:
+    return _decide(session, scope, order_id, data.version, OrderStatus.APPROVED, data.note)
+
+
+def reject_order(
+    session: Session, scope: CatererScope, order_id: UUID, data: RejectRequest
+) -> Order:
+    return _decide(session, scope, order_id, data.version, OrderStatus.REJECTED, data.note)
+
+
 def _submitted_lines(order: Order) -> list[OrderLine]:
     return [
         OrderLine(
@@ -305,4 +368,13 @@ def view(session: Session, scope: CatererScope, order: Order) -> OrderOut:
         total=total,
         kashrut=check,
         decision_note=order.decision_note,
+    )
+
+
+def admin_view(session: Session, scope: CatererScope, order: Order) -> AdminOrderOut:
+    return AdminOrderOut(
+        **view(session, scope, order).model_dump(),
+        submitted_at=order.submitted_at,
+        decided_at=order.decided_at,
+        kashrut_warning_acknowledged=order.kashrut_warning_acknowledged,
     )

@@ -40,6 +40,8 @@ def test_wrong_password_shows_hebrew_error(page: Page):
 def test_login_shows_empty_menu(page: Page):
     save(page, "סיסמה", "right")
     page.get_by_role("button", name="כניסה").click()
+    expect(page.get_by_text("אין הזמנות להצגה")).to_be_visible()
+    page.get_by_role("link", name="תפריט").click()
     expect(page.get_by_text("עדיין אין קטגוריות")).to_be_visible()
 
 
@@ -150,7 +152,7 @@ def test_profile_saves_kashrut_settings(page: Page):
     expect(page.get_by_label("הזמנה שמערבת בשר וחלב")).to_have_value("block")
 
 
-@pytest.mark.parametrize("screen", ["menu", "availability", "delivery", "profile"])
+@pytest.mark.parametrize("screen", ["orders", "menu", "availability", "delivery", "profile"])
 def test_no_sideways_scroll_on_phone(page: Page, screen: str):
     page.goto(f"/admin/#{screen}")
     page.wait_for_load_state("networkidle")

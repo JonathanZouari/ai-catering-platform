@@ -91,7 +91,7 @@ Proposal shape:
 | GET/POST/PATCH/DELETE | `/api/admin/time-slots` |
 | GET/POST/DELETE | `/api/admin/blocked-dates` |
 | GET | `/api/admin/orders?status=` · GET `/api/admin/orders/{id}` |
-| POST | `/api/admin/orders/{id}/approve` · `/api/admin/orders/{id}/reject` `{note}` |
+| POST | `/api/admin/orders/{id}/approve` `{version, note?}` · `/api/admin/orders/{id}/reject` `{version, note}` (note required). Drafts aren't listed or readable here |
 
 ## Order status transitions
 

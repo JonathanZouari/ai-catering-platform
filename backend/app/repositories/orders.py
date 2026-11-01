@@ -32,6 +32,18 @@ class OrderRepository(ScopedRepository[Order]):
         )
         return self.session.scalar(query)
 
+    def list_submitted(self, status: OrderStatus | None) -> Sequence[Order]:
+        """Drafts stay the customer's own until they're submitted."""
+        query = (
+            self._select()
+            .join(Event, Event.id == Order.event_id)
+            .where(Order.status != OrderStatus.DRAFT)
+            .order_by(Event.event_date, Order.submitted_at)
+        )
+        if status is not None:
+            query = query.where(Order.status == status)
+        return self.session.scalars(query).all()
+
     def lock_slot(self, slot_id: UUID) -> None:
         """Serializes capacity checks, so two submissions can't take the last place."""
         query = select(TimeSlot.id).where(

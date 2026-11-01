@@ -43,7 +43,7 @@ States: pending, applying, applied, rejected, expired ("Your order changed; ask 
 
 | # | Screen | Key elements |
 |---|---|---|
-| A1 | Order management | Filter by status, list with event date/guests/total, detail with frozen snapshot, Approve / Reject + note |
+| A1 | Order management | First screen after login. Filter by status (waiting first), list with event date/guests/total, detail with frozen snapshot, customer phone, Approve / Reject + note (required to reject). Drafts aren't shown |
 | A2 | Dishes & categories | Table/cards, create/edit form, image upload, dietary + allergen editor with explicit Unknown option, calories per portion |
 | A3 | Pricing configuration | Pricing unit, unit price, unit label per dish; bulk view |
 | A4 | Availability | Calendar of blocked dates; capacity **[OPEN #5]** |

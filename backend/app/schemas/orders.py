@@ -3,13 +3,14 @@ from decimal import Decimal
 from typing import Annotated, Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, StringConstraints, field_validator, model_validator
 
 from app.models.enums import FulfillmentType, OrderStatus, PricingUnit
 from app.schemas.base import InputModel, OutputModel
 from app.schemas.catalog import Quantity
 
 Guests = Annotated[int, Field(ge=0, le=100_000)]
+Note = Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)]
 
 
 class CustomerIn(InputModel):
@@ -69,6 +70,23 @@ class SubmitRequest(InputModel):
     acknowledge_kashrut_warning: bool = False
 
 
+class ApproveRequest(InputModel):
+    version: int
+    note: Note | None = None
+
+
+class RejectRequest(InputModel):
+    version: int
+    note: Note
+
+    @field_validator("note")
+    @classmethod
+    def _note_is_not_blank(cls, value: str) -> str:
+        if not value:
+            raise ValueError("a rejection needs a note")
+        return value
+
+
 class CustomerOut(OutputModel):
     full_name: str
     phone: str
@@ -118,6 +136,22 @@ class OrderOut(BaseModel):
     total: Decimal
     kashrut: KashrutCheck
     decision_note: str | None
+
+
+class AdminOrderOut(OrderOut):
+    submitted_at: datetime | None
+    decided_at: datetime | None
+    kashrut_warning_acknowledged: bool
+
+
+class OrderSummary(BaseModel):
+    id: UUID
+    status: OrderStatus
+    customer_name: str
+    event_date: date
+    guests: int
+    total: Decimal
+    submitted_at: datetime | None
 
 
 class OrderCreated(BaseModel):

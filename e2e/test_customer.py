@@ -7,22 +7,10 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import Page, expect
 
-from conftest import SHOTS
+from conftest import SHOTS, call
 
 EVENT_DAY = "2031-01-07"  # A Tuesday.
 TUESDAY = 2
-
-
-def call(base_url, path, body, token=None, method="POST"):
-    request = urllib.request.Request(  # noqa: S310
-        f"{base_url}{path}",
-        data=json.dumps(body).encode(),
-        headers={"Content-Type": "application/json"}
-        | ({"Authorization": f"Bearer {token}"} if token else {}),
-        method=method,
-    )
-    with urllib.request.urlopen(request) as response:  # noqa: S310
-        return json.loads(response.read() or "null")
 
 
 @pytest.fixture(scope="module", autouse=True)

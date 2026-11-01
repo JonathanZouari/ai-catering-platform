@@ -21,10 +21,10 @@ class CatererPublic(OutputModel):
     logo_path: str | None
     brand_color: str | None
     kashrut_status: str | None
+    contact_phone: str | None
 
 
 class ProfileOut(CatererPublic):
-    contact_phone: str | None
     kashrut_certificate_path: str | None
     kashrut_mixing_rule: KashrutMixingRule
 

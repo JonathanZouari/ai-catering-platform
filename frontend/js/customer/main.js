@@ -12,8 +12,13 @@ const KASHRUT = { meat: "בשרי", dairy: "חלבי", pareve: "פרווה" };
 const STATUS = {
   draft: "טיוטה",
   pending_approval: "ממתין לאישור הקייטרינג",
-  approved: "אושר",
-  rejected: "נדחה",
+  approved: "ההזמנה אושרה",
+  rejected: "ההזמנה נדחתה",
+};
+const STATUS_HELP = {
+  pending_approval: "התשובה תופיע כאן. פתחו את הקישור הפרטי שוב כדי לבדוק.",
+  approved: "התשלום מתואם ישירות מול העסק.",
+  rejected: "אפשר לפנות לעסק כדי לבדוק אפשרות אחרת.",
 };
 const STEPS = [["details", "פרטי האירוע"], ["menu", "תפריט"], ["summary", "סיכום"]];
 
@@ -333,13 +338,27 @@ function renderSummary() {
   );
 }
 
+async function refresh() {
+  const updated = await attempt(() => orderApi(""));
+  if (updated) {
+    state.order = updated;
+    render();
+  }
+}
+
 function renderStatus() {
   const { order } = state;
+  const phone = state.caterer.contact_phone;
   show(
     h("section", { className: "card" },
       h("h2", {}, "סטטוס ההזמנה"),
       h("p", { className: "status" }, STATUS[order.status]),
-      order.decision_note ? h("p", {}, order.decision_note) : null,
+      h("p", { className: "muted" }, STATUS_HELP[order.status]),
+      order.decision_note ? h("p", {}, h("strong", {}, "הערת העסק: "), order.decision_note) : null,
+      phone ? h("p", {}, "טלפון העסק: ", h("a", { href: `tel:${phone.replace(/\s/g, "")}` }, h("bdi", {}, phone))) : null,
+      h("button", { className: "secondary", onclick: refresh }, "בדיקת עדכון")),
+    h("section", { className: "card" },
+      h("h2", {}, "פרטי ההזמנה"),
       linesTable(order),
       totals(order)),
     linkActions(),

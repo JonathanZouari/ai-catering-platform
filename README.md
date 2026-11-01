@@ -2,7 +2,7 @@
 
 Hebrew ordering and management platform for **many catering businesses**. Each caterer gets a branded link. Customers use it to plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. Each caterer manages their own catalog and approves or rejects every quotation.
 
-> Status: **Phase 5 — customer ordering**. Customers open a caterer's link, build an order, and send a quote request (no AI yet). See `docs/` for the specs.
+> Status: **Phase 6 — quote approval**. Customers send a quote request, the caterer approves or rejects it, and the customer sees the answer (no AI yet). See `docs/` for the specs.
 
 ## Stack
 
