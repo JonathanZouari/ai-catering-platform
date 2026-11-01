@@ -8,6 +8,13 @@
   --color-accent: #1f3c96;
   --color-accent-hover: #152c70;
   --color-accent-tint: #ebf0fa;
+  /* Roles split so palettes can differ: accent = highlights/borders, accent-text = text on white/tint,
+     primary = filled buttons, focus = focus ring. Defaults follow --color-accent. */
+  --color-accent-text: var(--color-accent);
+  --color-primary: var(--color-accent);
+  --color-primary-hover: var(--color-accent-hover);
+  --color-on-primary: #ffffff;
+  --color-focus: var(--color-accent);
   --color-success: #2e6b47;
   --color-success-bg: #e3f0e8;
   --color-warning: #7a5410;
@@ -25,6 +32,27 @@
   --radius-pill: 999px;
   --font: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Accent comparison: add ?accent=apricot | sea | klein to the URL (js/theme.js). Default stays blue. */
+:root[data-accent="apricot"] {
+  --color-primary: #2b2f38;
+  --color-primary-hover: #1b1e25;
+  --color-accent: #f2a86a;
+  --color-accent-hover: #e0924f;
+  --color-accent-tint: #fce6d3;
+  --color-accent-text: #b05f1e;
+  --color-focus: #2b2f38; /* #f2a86a fails 3:1 as a focus ring */
+}
+:root[data-accent="sea"] {
+  --color-accent: #0e5c73;
+  --color-accent-hover: #0a4658;
+  --color-accent-tint: #e4f1f4;
+}
+:root[data-accent="klein"] {
+  --color-accent: #1a1ae6;
+  --color-accent-hover: #1212b8;
+  --color-accent-tint: #ececfd;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -54,7 +82,7 @@ main {
   padding: var(--space-6) var(--space-4);
 }
 
-:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
@@ -69,13 +97,13 @@ main {
   font: 500 1rem/1 var(--font); cursor: pointer; text-decoration: none;
   transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
-.btn-primary { background: var(--color-accent); color: #fff; }
-.btn-primary:hover { background: var(--color-accent-hover); }
+.btn-primary { background: var(--color-primary); color: var(--color-on-primary); }
+.btn-primary:hover { background: var(--color-primary-hover); }
 .btn-secondary { background: transparent; color: var(--color-text); border-color: var(--color-text); }
 .btn-secondary:hover { background: var(--color-line); }
 .btn-lg { min-block-size: 54px; }
 .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
-.link { color: var(--color-accent); background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
+.link { color: var(--color-accent-text); background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
 
 /* Cards */
 .card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-card); }
@@ -100,7 +128,7 @@ main {
   font: 500 1.25rem/1 var(--font); color: inherit; cursor: pointer;
 }
 .stepper output { min-inline-size: 2ch; text-align: center; font-weight: 500; font-variant-numeric: tabular-nums; }
-.stepper.is-active { border-color: var(--color-accent); background: var(--color-accent-tint); color: var(--color-accent); }
+.stepper.is-active { border-color: var(--color-accent); background: var(--color-accent-tint); color: var(--color-accent-text); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
