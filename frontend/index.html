@@ -3,16 +3,275 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <title>yummai | Catering for private events</title>
+  <script>document.documentElement.classList.add("js");</script>
+  <meta name="description" content="yummai cooks for birthdays, family celebrations, Bar and Bat Mitzvahs, and holiday tables. Pick up your order or have it delivered.">
+  <meta name="theme-color" content="#f7eedd">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+  <link rel="preload" as="image" href="/assets/img/dish-centerpiece.webp" fetchpriority="high">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/landing.css">
+  <script type="module" src="/js/landing.js"></script>
 </head>
-<body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
+<body class="landing">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="wordmark" href="/" aria-label="yummai home">yummai</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+        <span class="visually-hidden">Menu</span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="#services">What we cook for</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a class="button button--small" href="#plan">Plan your event</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="landing-main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__copy">
+        <h1 id="hero-title" class="hero__title">Food for the table you're about to fill.</h1>
+        <p class="hero__lede">
+          yummai cooks for private celebrations, from a birthday lunch to a Bar Mitzvah.
+          Choose your dishes, tell us how many are coming, and pick it up or have it delivered.
+        </p>
+        <div class="hero__actions">
+          <a class="button" href="#plan">Plan your event</a>
+          <a class="text-link" href="#how">See how it works</a>
+        </div>
+
+        <!-- Centerpiece dish: layered CSS 3D that tilts toward the pointer. Decorative only. -->
+        <div class="dish" aria-hidden="true">
+          <svg width="0" height="0" class="dish__defs">
+            <symbol id="g-tomato" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="48" fill="#b8290f"/>
+              <circle cx="50" cy="50" r="43" fill="#dc3f22"/>
+              <g fill="#e85a38">
+                <path d="M50 46C38 42 34 30 40 20c6-6 14-6 20 0 6 10 2 22-10 26Z"/>
+                <path d="M50 46C38 42 34 30 40 20c6-6 14-6 20 0 6 10 2 22-10 26Z" transform="rotate(120 50 50)"/>
+                <path d="M50 46C38 42 34 30 40 20c6-6 14-6 20 0 6 10 2 22-10 26Z" transform="rotate(240 50 50)"/>
+              </g>
+              <g fill="#f3b77a" opacity="0.75">
+                <ellipse cx="46" cy="30" rx="1.8" ry="3"/><ellipse cx="54" cy="31" rx="1.8" ry="3"/>
+                <ellipse cx="46" cy="30" rx="1.8" ry="3" transform="rotate(120 50 50)"/><ellipse cx="54" cy="31" rx="1.8" ry="3" transform="rotate(120 50 50)"/>
+                <ellipse cx="46" cy="30" rx="1.8" ry="3" transform="rotate(240 50 50)"/><ellipse cx="54" cy="31" rx="1.8" ry="3" transform="rotate(240 50 50)"/>
+              </g>
+              <circle cx="50" cy="50" r="7" fill="#ef8a64"/>
+              <path d="M18 34a34 34 0 0 1 24-20" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+            </symbol>
+            <symbol id="g-basil" viewBox="0 0 100 60">
+              <path d="M4 30C22 3 72-2 96 30 72 58 22 57 4 30Z" fill="#4d6a2e"/>
+              <path d="M4 30C22 3 72-2 96 30 70 22 30 20 4 30Z" fill="#5f7d37"/>
+              <path d="M10 30C38 26 66 26 92 30" fill="none" stroke="#8fa862" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+          </svg>
+          <div class="dish__stage">
+            <div class="dish__shadow"></div>
+            <div class="dish__edge" style="--d:1"></div>
+            <div class="dish__edge" style="--d:2"></div>
+            <div class="dish__edge" style="--d:3"></div>
+            <div class="dish__edge" style="--d:4"></div>
+            <!-- Everything that turns when the plate is spun; light and the table shadow stay put. -->
+            <div class="dish__spin">
+              <div class="dish__plate"></div>
+              <div class="dish__food"><img src="/assets/img/dish-centerpiece.webp" alt="" width="640" height="640" fetchpriority="high" draggable="false"></div>
+              <span class="dish__drop" style="--x:17%;--y:20%;--s:17%;--z:56"></span>
+              <span class="dish__drop" style="--x:72%;--y:11%;--s:20%;--z:84"></span>
+              <span class="dish__drop" style="--x:79%;--y:71%;--s:12%;--z:36"></span>
+              <span class="dish__drop" style="--x:10%;--y:70%;--s:13%;--z:28"></span>
+              <svg class="dish__garnish" style="--x:17%;--y:20%;--s:17%;--z:56;--r:-12deg" viewBox="0 0 100 100"><use href="#g-tomato"/></svg>
+              <svg class="dish__garnish dish__garnish--leaf" style="--x:72%;--y:11%;--s:20%;--z:84;--r:28deg" viewBox="0 0 100 60"><use href="#g-basil"/></svg>
+              <svg class="dish__garnish" style="--x:79%;--y:71%;--s:12%;--z:36;--r:40deg" viewBox="0 0 100 100"><use href="#g-tomato"/></svg>
+              <svg class="dish__garnish dish__garnish--leaf" style="--x:10%;--y:70%;--s:13%;--z:28;--r:-38deg" viewBox="0 0 100 60"><use href="#g-basil"/></svg>
+            </div>
+            <div class="dish__light"></div>
+          </div>
+          <p class="dish__hint"><span class="dish__hint-mouse">Drag to turn the plate</span><span class="dish__hint-touch">Swipe sideways to turn the plate</span></p>
+        </div>
+      </div>
+
+      <!-- Signature moment: the cloth is laid, then each place setting arrives. Decorative only. -->
+      <div class="table" aria-hidden="true">
+        <div class="table__cloth"></div>
+        <ul class="table__settings">
+          <li class="setting" style="--i:0"><span class="setting__fork"></span><img class="setting__plate" src="/assets/img/plate-beef.webp" alt="" width="440" height="440"><span class="setting__knife"></span><span class="setting__glass"></span></li>
+          <li class="setting" style="--i:1"><span class="setting__fork"></span><img class="setting__plate" src="/assets/img/plate-salmon.webp" alt="" width="440" height="440"><span class="setting__knife"></span><span class="setting__glass"></span></li>
+          <li class="setting" style="--i:2"><span class="setting__fork"></span><img class="setting__plate" src="/assets/img/plate-brunch.webp" alt="" width="440" height="440"><span class="setting__knife"></span><span class="setting__glass"></span></li>
+          <li class="setting" style="--i:3"><span class="setting__fork"></span><img class="setting__plate" src="/assets/img/plate-pasta.webp" alt="" width="440" height="440"><span class="setting__knife"></span><span class="setting__glass"></span></li>
+          <li class="setting" style="--i:4"><span class="setting__fork"></span><img class="setting__plate" src="/assets/img/plate-salad.webp" alt="" width="440" height="440"><span class="setting__knife"></span><span class="setting__glass"></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="services" class="services" aria-labelledby="services-title">
+      <div class="services__intro">
+        <h2 id="services-title" class="section-title">What we cook for</h2>
+        <p>
+          Every order is cooked, packed, and ready to serve. Collect it from our kitchen,
+          or we deliver it to your door.
+        </p>
+        <img class="services__photo" src="/assets/img/platter-800.webp"
+             srcset="/assets/img/platter-800.webp 800w, /assets/img/platter-1400.webp 1400w"
+             sizes="(min-width: 1024px) 34vw, 100vw"
+             alt="A wooden board of grilled flatbreads, salad, and a bowl of dip"
+             width="800" height="534" loading="lazy" decoding="async">
+      </div>
+      <dl class="menu">
+        <div class="menu__item">
+          <dt>Birthdays</dt>
+          <dd>Brunch spreads, finger food for a party at home, or a full dinner for the family.</dd>
+        </div>
+        <div class="menu__item">
+          <dt>Family celebrations</dt>
+          <dd>Engagements, anniversaries, a new baby, or everyone finally in one place.</dd>
+        </div>
+        <div class="menu__item">
+          <dt>Bar and Bat Mitzvahs</dt>
+          <dd>Larger menus built around your guest list, including children and vegetarian guests.</dd>
+        </div>
+        <div class="menu__item">
+          <dt>Shabbat and holiday tables</dt>
+          <dd>The meal you'd cook yourself if the week gave you the time.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section id="gallery" class="gallery" aria-labelledby="gallery-title">
+      <h2 id="gallery-title" class="section-title">From the kitchen</h2>
+      <ul class="gallery__grid">
+        <li class="gallery__item gallery__item--wide">
+          <img src="/assets/img/mezze-800.webp" srcset="/assets/img/mezze-800.webp 800w, /assets/img/mezze-1400.webp 1400w" sizes="(min-width: 1024px) 66vw, 100vw"
+               alt="Rows of small bowls with vegetables, legumes, and fresh greens" width="800" height="533" loading="lazy" decoding="async">
+        </li>
+        <li class="gallery__item gallery__item--tall">
+          <img src="/assets/img/ribs-800.webp" srcset="/assets/img/ribs-800.webp 800w, /assets/img/ribs-1400.webp 1400w" sizes="(min-width: 1024px) 33vw, 100vw"
+               alt="Glazed ribs on a board with sliced tomatoes and pickles" width="800" height="534" loading="lazy" decoding="async">
+        </li>
+        <li class="gallery__item">
+          <img src="/assets/img/shared-plates-800.webp" srcset="/assets/img/shared-plates-800.webp 800w, /assets/img/shared-plates-1400.webp 1400w" sizes="(min-width: 1024px) 33vw, 100vw"
+               alt="Shared plates of sliced beef and fried bites with chilies and herbs" width="800" height="533" loading="lazy" decoding="async">
+        </li>
+        <li class="gallery__item">
+          <img src="/assets/img/salmon-800.webp" srcset="/assets/img/salmon-800.webp 800w, /assets/img/salmon-1400.webp 1400w" sizes="(min-width: 1024px) 33vw, 100vw"
+               alt="Seared salmon on a bed of greens on a dark plate" width="800" height="533" loading="lazy" decoding="async">
+        </li>
+        <li class="gallery__item gallery__item--wide-end">
+          <img src="/assets/img/table-spread-800.webp" srcset="/assets/img/table-spread-800.webp 800w, /assets/img/table-spread-1400.webp 1400w" sizes="(min-width: 1024px) 50vw, 100vw"
+               alt="A table set with lasagna, flatbread, and grilled vegetables" width="800" height="555" loading="lazy" decoding="async">
+        </li>
+        <li class="gallery__item">
+          <img src="/assets/img/brisket-800.webp" srcset="/assets/img/brisket-800.webp 800w, /assets/img/brisket-1400.webp 1400w" sizes="(min-width: 1024px) 33vw, 100vw"
+               alt="Slow-cooked brisket being sliced" width="800" height="533" loading="lazy" decoding="async">
+        </li>
+      </ul>
+    </section>
+
+    <section id="how" class="how" aria-labelledby="how-title">
+      <h2 id="how-title" class="section-title">How it works</h2>
+      <ol class="steps">
+        <li class="step">
+          <h3>Tell us about the event</h3>
+          <p>The date, how many guests, and any dietary needs.</p>
+        </li>
+        <li class="step">
+          <h3>Choose your dishes</h3>
+          <p>Pick from our menu. We suggest quantities for your guest count.</p>
+        </li>
+        <li class="step">
+          <h3>Send your quote request</h3>
+          <p>You see the full price before you send anything.</p>
+        </li>
+        <li class="step">
+          <h3>We confirm your order</h3>
+          <p>Your booking is set once we approve it. Then we cook.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="plan" class="plan" aria-labelledby="plan-title">
+      <div class="plan__intro">
+        <h2 id="plan-title" class="plan__title">Plan your event</h2>
+        <p>
+          Tell us the basics and we'll get back to you about menus and availability.
+          Sending an inquiry doesn't commit you to anything.
+        </p>
+      </div>
+
+      <div class="plan__panel">
+        <form class="inquiry" id="inquiry-form" novalidate>
+          <div class="field">
+            <label for="f-name">Your name</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120">
+            <p class="field__error" id="f-name-error" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" required maxlength="254">
+            <p class="field__error" id="f-email-error" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-phone">Phone <span class="field__optional">(optional)</span></label>
+            <input id="f-phone" name="phone" type="tel" autocomplete="tel" maxlength="40">
+            <p class="field__error" id="f-phone-error" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-type">Type of event</label>
+            <select id="f-type" name="event_type" required>
+              <option value="">Choose one</option>
+              <option value="birthday">Birthday</option>
+              <option value="family_celebration">Family celebration</option>
+              <option value="bar_bat_mitzvah">Bar or Bat Mitzvah</option>
+              <option value="shabbat_holiday">Shabbat or holiday meal</option>
+              <option value="other">Something else</option>
+            </select>
+            <p class="field__error" id="f-type-error" hidden></p>
+          </div>
+          <div class="field field--half">
+            <label for="f-date">Event date</label>
+            <input id="f-date" name="event_date" type="date" required>
+            <p class="field__error" id="f-date-error" hidden></p>
+          </div>
+          <div class="field field--half">
+            <label for="f-guests">Number of guests</label>
+            <input id="f-guests" name="guests" type="number" inputmode="numeric" min="1" max="2000" step="1" required>
+            <p class="field__error" id="f-guests-error" hidden></p>
+          </div>
+          <fieldset class="field choice">
+            <legend>Pickup or delivery</legend>
+            <label class="choice__option"><input type="radio" name="fulfillment" value="pickup" required> I'll pick it up</label>
+            <label class="choice__option"><input type="radio" name="fulfillment" value="delivery"> Deliver it to me</label>
+            <p class="field__error" id="f-fulfillment-error" hidden></p>
+          </fieldset>
+          <div class="field">
+            <label for="f-notes">Anything we should know? <span class="field__optional">(optional)</span></label>
+            <textarea id="f-notes" name="notes" rows="4" maxlength="2000" placeholder="Allergies, vegetarian guests, dishes you have in mind"></textarea>
+          </div>
+          <p class="inquiry__status" id="inquiry-status" role="alert" hidden></p>
+          <button class="button button--full" type="submit">Send inquiry</button>
+        </form>
+
+        <div class="inquiry-done" id="inquiry-done" tabindex="-1" hidden>
+          <h3>Inquiry sent</h3>
+          <p id="inquiry-done-text"></p>
+          <button class="text-link" type="button" id="inquiry-again">Send another inquiry</button>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <p class="wordmark wordmark--small">yummai</p>
+    <p>Catering for private events. Pickup or delivery.</p>
+    <p class="site-footer__credit">Photos from Unsplash.</p>
+  </footer>
 </body>
 </html>
