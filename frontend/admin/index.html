@@ -1,21 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business dashboard</title>
+  <title>ניהול העסק</title>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-  <main>
-    <h1>Business dashboard</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+  <div id="app"></div>
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="/js/admin/main.js"></script>
 </body>
 </html>

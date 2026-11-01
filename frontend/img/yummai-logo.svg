@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" role="img" aria-label="Yummai">
+  <rect width="200" height="60" rx="14" fill="#0a2558"/>
+  <circle cx="33" cy="14" r="3.4" fill="#ffffff"/>
+  <path d="M13 41a20 20 0 0 1 40 0z" fill="#ffffff"/>
+  <path d="M25 31c3 5.5 13 5.5 16 0" fill="none" stroke="#f59e0b" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M9 46h48" fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+  <text x="65" y="40" fill="#ffffff" font-family="'Segoe UI', Arial, Helvetica, sans-serif" font-size="29" font-weight="700" letter-spacing="0.5">Yummai</text>
+</svg>
