@@ -2,7 +2,7 @@ from datetime import date, time
 from typing import Annotated, Self
 from uuid import UUID
 
-from pydantic import Field, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from app.models.enums import FulfillmentType
 from app.schemas.base import InputModel, OutputModel, PatchModel
@@ -70,6 +70,17 @@ class SlotOut(OutputModel):
     end_time: time
     capacity: int | None
     is_active: bool
+
+
+class AvailabilityOut(BaseModel):
+    earliest_date: date
+    blocked_dates: list[date]
+    slots: list[SlotOut]
+
+
+class DeliveryCity(BaseModel):
+    city: str
+    fee: Money
 
 
 class BlockedDateCreate(InputModel):

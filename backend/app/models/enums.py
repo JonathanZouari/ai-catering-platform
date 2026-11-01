@@ -3,6 +3,22 @@ from enum import StrEnum
 from sqlalchemy import Enum
 
 
+class CategoryType(StrEnum):
+    SALAD = "salad"
+    MAIN = "main"
+    SIDE = "side"
+    DESSERT = "dessert"
+    DRINK = "drink"
+    OTHER = "other"
+
+
+class OrderStatus(StrEnum):
+    DRAFT = "draft"
+    PENDING_APPROVAL = "pending_approval"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 class PricingUnit(StrEnum):
     PER_GUEST = "per_guest"
     PER_TRAY = "per_tray"

@@ -1,6 +1,6 @@
 // A6: business profile, branding, and kashrut settings.
 import { adminApi, getConfig, patchJson, upload } from "/js/admin/auth.js";
-import { attempt, field, h, select, textOrNull } from "/js/admin/ui.js";
+import { attempt, field, h, select, textOrNull } from "/js/ui.js";
 
 const MIXING = [
   ["warn", "להציג אזהרה ולאפשר להמשיך"],

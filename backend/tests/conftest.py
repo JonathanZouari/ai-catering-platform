@@ -54,7 +54,12 @@ def session(engine: Engine) -> Iterator[Session]:
     with Session(engine, expire_on_commit=False) as db:
         yield db
     with engine.begin() as conn:
-        conn.execute(text("truncate caterers, auth.users cascade"))
+        # Not truncate: its cascade would also wipe the seeded platform quantity rules.
+        conn.execute(text("delete from orders"))
+        conn.execute(text("delete from events"))
+        conn.execute(text("delete from customers"))
+        conn.execute(text("delete from caterers"))
+        conn.execute(text("delete from auth.users"))
 
 
 class FakeStorage:

@@ -177,4 +177,4 @@ Proposals may only execute while order is `draft`.
 
 ## Business rules storage
 
-Quantity rules (Decision 5) live in `quantity_rules`. A row with `caterer_id` null is a platform default; a row with a `caterer_id` overrides it for that caterer. Default values are **[OPEN #3]**, and the final shape is settled in Phase 5.
+Quantity rules (Decision 5) live in `quantity_rules`. A row with `caterer_id` null is a platform default; a row with a `caterer_id` overrides it for that caterer. Columns: `category_type`, `portions_per_adult`, `portions_per_child`. Default values are drafted and unverified **[OPEN #3]**. Recommendations also use `dish_categories.category_type` and `dishes.servings_per_unit`; an empty value means no recommendation. `orders` also holds `time_slot_id` (composite FK) and `delivery_city`.

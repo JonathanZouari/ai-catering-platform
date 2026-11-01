@@ -12,7 +12,7 @@ Base: same origin as the frontend. JSON only. All bodies validated with Pydantic
 { "error": { "code": "order_version_conflict", "message": "Human readable", "details": {} } }
 ```
 
-Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `conflict` (409), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409), `kashrut_mixing_blocked` (409), `kashrut_warning_not_acknowledged` (409), `ai_limit_reached` (429). `message` is Hebrew; `code` stays English.
+Common codes: `validation_error` (422), `date_unavailable` (422), `slot_unavailable` (422), `delivery_unavailable` (422), `empty_order` (422), `below_minimum` (422), `slot_full` (409), `dish_unavailable` (409), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `conflict` (409), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409), `kashrut_mixing_blocked` (409), `kashrut_warning_not_acknowledged` (409), `ai_limit_reached` (429). `message` is Hebrew; `code` stays English.
 
 ## System
 
@@ -26,10 +26,12 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/c/{slug}` | Public caterer profile: name, logo, color, kashrut status |
+| GET | `/api/allergens` | Shared allergen list |
 | GET | `/api/c/{slug}/catalog/categories` | Active categories, ordered |
 | GET | `/api/c/{slug}/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info, calories (unknown fields returned as `null`) |
 | GET | `/api/c/{slug}/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
-| GET | `/api/c/{slug}/availability?from=&to=` | Blocked dates + slots |
+| GET | `/api/c/{slug}/availability` | Earliest date, upcoming blocked dates, active slots |
+| GET | `/api/c/{slug}/delivery-cities` | Served cities with their fee |
 
 ## Customer orders (private link, ADR 0006)
 
@@ -38,13 +40,10 @@ Every route except order creation requires `X-Order-Token`. The token must match
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/api/c/{slug}/orders` | Create draft from name, phone, and event config. The response includes the token, returned this one time only |
-| GET | `/api/orders/{id}` | Order with items, live pricing, `version` |
+| GET | `/api/orders/{id}` | Order with lines, recommended quantities, totals, kashrut check, `version`. Prices are live in a draft and frozen after submission |
 | PATCH | `/api/orders/{id}` | Update event/fulfillment details; requires `version` |
 | PUT | `/api/orders/{id}/items/{dish_id}` | Set quantity; requires `version` |
 | DELETE | `/api/orders/{id}/items/{dish_id}` | Remove dish; requires `version` |
-| GET | `/api/orders/{id}/pricing` | Itemized breakdown |
-| GET | `/api/orders/{id}/recommendations` | Quantity recommendations from the caterer's rules |
-| GET | `/api/orders/{id}/kashrut-check` | `{status: ok \| warn \| blocked}` per the caterer's mixing rule |
 | POST | `/api/orders/{id}/submit` | `draft → pending_approval`; freezes snapshot. Rejected if mixing is blocked, or if a warning wasn't acknowledged via `{acknowledge_kashrut_warning: true}` |
 
 Every mutation returns the full updated order (new `version`). A stale `version` → `409 order_version_conflict`.

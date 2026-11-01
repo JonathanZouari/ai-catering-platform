@@ -11,7 +11,7 @@ from app.models import DishCategory
 from app.repositories.catalog import CategoryRepository
 
 # Tables with no caterer_id, and why they're safe.
-PLATFORM_TABLES = {"allergens", "caterers"}
+PLATFORM_TABLES = {"allergens", "caterers", "quantity_rules"}
 PARENT_SCOPED_TABLES = {
     "ai_change_proposals",
     "ai_conversations",

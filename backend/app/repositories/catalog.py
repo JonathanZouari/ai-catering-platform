@@ -17,6 +17,16 @@ class DishRepository(ScopedRepository[Dish]):
     model = Dish
     default_order = (Dish.name,)
 
+    def list_orderable(self) -> Sequence[Dish]:
+        """What customers may see: available dishes in visible categories."""
+        query = (
+            self._select()
+            .join(Dish.category)
+            .where(Dish.is_available, DishCategory.is_active)
+            .order_by(Dish.name)
+        )
+        return self.session.scalars(query).all()
+
     def list_by_category(self, category_id: UUID) -> Sequence[Dish]:
         query = self._select().where(Dish.category_id == category_id).order_by(Dish.name)
         return self.session.scalars(query).all()

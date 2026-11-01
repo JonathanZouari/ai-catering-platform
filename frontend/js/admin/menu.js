@@ -2,12 +2,16 @@
 import { adminApi, getConfig, patchJson, postJson, putJson, remove, upload } from "/js/admin/auth.js";
 import {
   confirmDelete, field, h, numberOrNull, openDialog, select, textOrNull,
-} from "/js/admin/ui.js";
+} from "/js/ui.js";
 
 const UNITS = [
   ["per_tray", "למגש"], ["per_guest", "לסועד"], ["per_item", "ליחידה"], ["per_weight", "לפי משקל"],
 ];
 const UNIT_LABELS = Object.fromEntries(UNITS);
+const CATEGORY_TYPES = [
+  ["salad", "סלטים"], ["main", "מנות עיקריות"], ["side", "תוספות"],
+  ["dessert", "קינוחים"], ["drink", "משקאות"], ["other", "אחר"],
+];
 const KASHRUT = [["", "לא ידוע"], ["meat", "בשרי"], ["dairy", "חלבי"], ["pareve", "פרווה"]];
 const TRI_STATE = [["", "לא ידוע"], ["true", "כן"], ["false", "לא"]];
 const ALLERGEN = [["unknown", "לא ידוע"], ["contains", "מכיל"], ["free", "לא מכיל"]];
@@ -82,14 +86,16 @@ function dishRow(dish, context) {
 
 function openCategoryForm(category, refresh) {
   const name = h("input", { required: true, maxLength: 120, value: category?.name ?? "" });
+  const type = select(CATEGORY_TYPES, category?.category_type ?? "other");
   const order = h("input", { type: "number", value: category?.sort_order ?? 0 });
   const active = h("input", { type: "checkbox", checked: category?.is_active ?? true });
   openDialog(category ? "עריכת קטגוריה" : "קטגוריה חדשה", [
     field("שם", name),
+    field("סוג", type, "קובע את ההמלצה על כמויות ללקוחות"),
     field("סדר הצגה", order),
     field("מוצגת ללקוחות", active),
   ], async () => {
-    const data = { name: name.value.trim(), sort_order: Number(order.value) };
+    const data = { name: name.value.trim(), category_type: type.value, sort_order: Number(order.value) };
     if (category) {
       await patchJson(`/api/admin/categories/${category.id}`, { ...data, is_active: active.checked });
     } else {
@@ -110,6 +116,9 @@ async function openDishForm(dish, { categories, allergens, refresh }) {
     value: dish?.unit_price ?? "",
   });
   const unitLabel = h("input", { value: dish?.unit_label ?? "" });
+  const servings = h("input", {
+    type: "number", min: "0.01", step: "0.01", value: dish?.servings_per_unit ?? "",
+  });
   const calories = h("input", { type: "number", min: "0", value: dish?.calories_per_portion ?? "" });
   const portion = h("input", { value: dish?.portion_description ?? "" });
   const minimum = h("input", {
@@ -136,7 +145,8 @@ async function openDishForm(dish, { categories, allergens, refresh }) {
     h("div", { className: "grid" },
       field("תמחור", unit),
       field("מחיר בש״ח", price),
-      field("תיאור יחידה", unitLabel, "למשל מגש גדול, או ק״ג במחיר לפי משקל")),
+      field("תיאור יחידה", unitLabel, "למשל מגש גדול, או ק״ג במחיר לפי משקל"),
+      field("מנות ביחידה", servings, "לכמה סועדים מספיקה יחידה אחת. ריק = בלי המלצת כמות")),
     h("div", { className: "grid" },
       field("קלוריות למנה", calories, "ריק = לא ידוע"),
       field("מה נחשב מנה", portion, "למשל 100 גרם"),
@@ -159,6 +169,7 @@ async function openDishForm(dish, { categories, allergens, refresh }) {
       pricing_unit: unit.value,
       unit_price: price.value,
       unit_label: textOrNull(unitLabel.value),
+      servings_per_unit: servings.value || null,
       calories_per_portion: numberOrNull(calories.value),
       portion_description: textOrNull(portion.value),
       min_quantity: minimum.value || null,

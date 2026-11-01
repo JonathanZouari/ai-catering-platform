@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import Field, model_validator
 
-from app.models.enums import AllergenStatus, KashrutClass, PricingUnit
+from app.models.enums import AllergenStatus, CategoryType, KashrutClass, PricingUnit
 from app.schemas.base import InputModel, OutputModel, PatchModel
 
 Name = Annotated[str, Field(min_length=1, max_length=120)]
@@ -15,13 +15,15 @@ Calories = Annotated[int, Field(ge=0, le=100_000)]
 
 class CategoryCreate(InputModel):
     name: Name
+    category_type: CategoryType = CategoryType.OTHER
     sort_order: int = 0
 
 
 class CategoryUpdate(PatchModel):
-    required_fields = {"name", "sort_order", "is_active"}
+    required_fields = {"name", "category_type", "sort_order", "is_active"}
 
     name: Name | None = None
+    category_type: CategoryType | None = None
     sort_order: int | None = None
     is_active: bool | None = None
 
@@ -29,6 +31,7 @@ class CategoryUpdate(PatchModel):
 class CategoryOut(OutputModel):
     id: UUID
     name: str
+    category_type: CategoryType
     sort_order: int
     is_active: bool
 
@@ -45,6 +48,7 @@ class DishCreate(InputModel):
     pricing_unit: PricingUnit
     unit_price: Money
     unit_label: str | None = None
+    servings_per_unit: Quantity | None = None
     calories_per_portion: Calories | None = None
     portion_description: str | None = None
     min_quantity: Quantity | None = None
@@ -66,6 +70,7 @@ class DishUpdate(PatchModel):
     pricing_unit: PricingUnit | None = None
     unit_price: Money | None = None
     unit_label: str | None = None
+    servings_per_unit: Quantity | None = None
     calories_per_portion: Calories | None = None
     portion_description: str | None = None
     min_quantity: Quantity | None = None
@@ -119,6 +124,7 @@ class DishOut(OutputModel):
     pricing_unit: PricingUnit
     unit_price: Decimal
     unit_label: str | None
+    servings_per_unit: Decimal | None
     calories_per_portion: int | None
     portion_description: str | None
     min_quantity: Decimal | None

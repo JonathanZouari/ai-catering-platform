@@ -1,6 +1,6 @@
 // A4/A5: blocked dates, time slots, and delivery zones.
 import { adminApi, patchJson, postJson, remove } from "/js/admin/auth.js";
-import { attempt, confirmDelete, field, h, numberOrNull, openDialog, select, textOrNull } from "/js/admin/ui.js";
+import { attempt, confirmDelete, field, h, numberOrNull, openDialog, select, textOrNull } from "/js/ui.js";
 
 // Matches time_slots.weekday: 0 = Sunday.
 const WEEKDAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];

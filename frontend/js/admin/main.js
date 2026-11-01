@@ -2,7 +2,7 @@ import { isLoggedIn, login, logout } from "/js/admin/auth.js";
 import { renderAvailability, renderDelivery } from "/js/admin/logistics.js";
 import { renderMenu } from "/js/admin/menu.js";
 import { renderProfile } from "/js/admin/profile.js";
-import { attempt, field, h } from "/js/admin/ui.js";
+import { attempt, field, h } from "/js/ui.js";
 
 const SCREENS = {
   menu: ["תפריט", renderMenu],

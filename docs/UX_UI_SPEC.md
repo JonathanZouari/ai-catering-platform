@@ -24,7 +24,7 @@ Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`
 | C2 | Dish catalog | Category tabs/chips, dish cards (image, name, price + unit, kashrut badge, veg/vegan badges, calories or "לא צוין", "allergen info" link), filters, add/quantity stepper |
 | C3 | Order summary & pricing | Itemized lines (qty × unit price = line), recommendation hints, meat + dairy warning or block per the caterer's rule, delivery fee, total, `version`-safe edits |
 | C4 | AI assistant | Desktop: side panel next to C2/C3. Mobile: bottom sheet opened by a persistent button. Message list, input, proposal cards inline |
-| C5 | Quote submission & status | Review, explicit "Submit quotation request", status page: Draft / Awaiting approval / Approved / Rejected + caterer note. Shows the private link with a copy and WhatsApp share action and a notice to keep it private |
+| C5 | Quote submission & status | Review, explicit "Submit quotation request", status page: Draft / Awaiting approval / Approved / Rejected + caterer note. Shows the private link with a copy and WhatsApp share action and a notice to keep it private. Phase 5 shows dishes grouped by category with vegetarian and vegan filters, and a warning that must be ticked, or a block, when the order mixes meat and dairy |
 
 ### Proposal diff card (C4)
 
