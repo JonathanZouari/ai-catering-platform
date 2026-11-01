@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ההזמנה שלכם | שלא יחסר</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/event.css">
+  <link rel="stylesheet" href="/css/order.css">
+</head>
+<body>
+  <p class="top-strip" id="strip"></p>
+  <nav class="site-nav" aria-label="ראשי">
+    <a class="site-logo" href="/">שלא יחסר</a>
+    <span id="nav-total" dir="ltr"></span>
+  </nav>
+
+  <div class="cloth cloth-butter">
+    <div class="bunting" aria-hidden="true"></div>
+    <main class="order-layout">
+      <section class="napkin order-napkin" aria-labelledby="headline">
+        <div class="lace"></div>
+        <div class="napkin-body order-body">
+          <h1 id="headline"></h1>
+          <p id="subline"></p>
+
+          <div class="seats">
+            <div class="seat-plate" id="seat-plate" role="img">
+              <svg viewBox="0 0 160 160" aria-hidden="true">
+                <circle class="seat-track" cx="80" cy="80" r="69"/>
+                <circle class="seat-ring" id="ring" cx="80" cy="80" r="69"/>
+              </svg>
+              <div class="seat-label"><strong id="seated"></strong><span id="of"></span></div>
+            </div>
+            <span>אורחים מסודרים</span>
+          </div>
+
+          <div class="propose" id="propose">
+            <button type="button" class="btn btn-primary" id="add"></button>
+            <button type="button" class="btn btn-secondary" id="skip">לא עכשיו</button>
+          </div>
+          <button type="button" class="btn btn-secondary" id="back" hidden>חזרה להצעה</button>
+
+          <div class="order-total" aria-live="polite">
+            <span>סה"כ כולל משלוח</span>
+            <span id="total" dir="ltr"></span>
+          </div>
+          <p class="sample-note">מחירים לדוגמה בלבד, עד שהתפריט יחובר למערכת.</p>
+        </div>
+        <div class="lace lace-end"></div>
+      </section>
+
+      <aside class="dish-setting" aria-label="המנה המוצעת">
+        <img class="setting-glass" src="/assets/glass.svg" width="46" height="92" alt="">
+        <img src="/assets/knife.svg" width="34" height="230" alt="">
+        <img class="plate" src="/assets/tomatoes.jpg" width="700" height="700" alt="קערת עגבניות">
+        <div class="setting-napkin"><img src="/assets/fork.svg" width="34" height="210" alt=""></div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="/js/order.js"></script>
+</body>
+</html>
