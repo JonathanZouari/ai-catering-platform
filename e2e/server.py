@@ -23,6 +23,7 @@ import jwt  # noqa: E402
 import uvicorn  # noqa: E402
 from app.agents.client import get_llm  # noqa: E402
 from app.core.db import get_engine  # noqa: E402
+from app.core.email import get_mailer  # noqa: E402
 from app.core.security import get_signing_key_resolver  # noqa: E402
 from app.core.storage import get_storage  # noqa: E402
 from app.main import app  # noqa: E402
@@ -37,6 +38,7 @@ from sqlalchemy.orm import Session  # noqa: E402
 USER_ID = uuid4()
 KEY = ec.generate_private_key(ec.SECP256R1())
 FILES: dict[str, tuple[bytes, str]] = {}
+SENT: list[dict[str, str]] = []
 
 
 def reset_database() -> None:
@@ -92,6 +94,11 @@ class MemoryStorage:
         FILES[path] = (content, content_type)
 
 
+class MemoryMailer:
+    def send(self, to: str, subject: str, text_value: str) -> None:
+        SENT.append({"to": to, "subject": subject, "text": text_value})
+
+
 fake_supabase = APIRouter()
 
 
@@ -114,9 +121,15 @@ def fake_object(path: str):
     return Response(content, media_type=content_type)
 
 
+@fake_supabase.get("/test-only/sent-emails")
+def fake_outbox():
+    return SENT
+
+
 reset_database()
 app.dependency_overrides[get_signing_key_resolver] = lambda: lambda _token: KEY.public_key()
 app.dependency_overrides[get_storage] = MemoryStorage
+app.dependency_overrides[get_mailer] = MemoryMailer
 app.dependency_overrides[get_llm] = ScriptedModel
 # Before the static mount, which would otherwise swallow these paths.
 app.router.routes[:0] = fake_supabase.routes

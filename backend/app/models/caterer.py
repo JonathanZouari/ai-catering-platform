@@ -16,6 +16,7 @@ class Caterer(Base):
     logo_path: Mapped[str | None]
     brand_color: Mapped[str | None]
     contact_phone: Mapped[str | None]
+    notification_email: Mapped[str | None]
     kashrut_status: Mapped[str | None]
     kashrut_certificate_path: Mapped[str | None]
     kashrut_mixing_rule: Mapped[KashrutMixingRule] = mapped_column(

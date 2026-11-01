@@ -101,7 +101,7 @@ Details: `AI_AGENT_DESIGN.md`.
 
 Marketplace or caterer directory · self-serve caterer signup · subscription billing · platform-operator UI · caterer-facing AI agent · voice AI · alcohol · disposable serving ware · corporate customers · staff/waiter management · advanced inventory · supplier procurement · accounting/invoicing · payment gateway · customer accounts · English UI · automated dish generation · autonomous order approval · native mobile apps.
 
-Unresolved and **not** to be built until decided: notifications, cancellation/refund, caterer-proposed revisions, post-submission customer edits.
+Unresolved and **not** to be built until decided: customer notifications, cancellation/refund, caterer-proposed revisions, post-submission customer edits.
 
 ## 10. Success criteria for MVP (proposed) **[RECOMMENDATION]**
 

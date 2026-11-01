@@ -8,7 +8,7 @@ You need three accounts: [GitHub](https://github.com) (you have this), [Supabase
 
 - Keys go only in Railway's Variables screen and in your own `backend/.env`, which git ignores.
 - Never paste a key into a chat, an issue, a commit or a screenshot.
-- `SUPABASE_SERVICE_ROLE_KEY` and `ANTHROPIC_API_KEY` can read data or spend money. If one leaks, replace it in the provider's dashboard straight away, then update Railway.
+- `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY` and `RESEND_API_KEY` can read data, spend money or send mail. If one leaks, replace it in the provider's dashboard straight away, then update Railway.
 - Keep test and production keys separate.
 
 ## 1. Supabase
@@ -37,6 +37,9 @@ You need three accounts: [GitHub](https://github.com) (you have this), [Supabase
    | `SUPABASE_ANON_KEY` | from step 1 |
    | `SUPABASE_SERVICE_ROLE_KEY` | from step 1 |
    | `ANTHROPIC_API_KEY` | optional |
+   | `RESEND_API_KEY` | optional, turns on new-order emails |
+   | `EMAIL_FROM` | needed with the Resend key; a sender on a domain verified with Resend |
+   | `PUBLIC_BASE_URL` | needed with the Resend key; the site's address, for the link in emails |
 
 4. Under **Settings → Networking**, choose **Generate Domain**.
 
@@ -79,7 +82,7 @@ Run through this on the test site:
 - [ ] Rate limits count real visitors: submit 21 new orders in an hour from one connection and check that the last is refused, then check from another connection that orders still work. If everyone is refused together, or nobody is, Railway's forwarded address isn't what `core/rate_limit.py` expects, so fix that first. Also send a request with your own extra `X-Forwarded-For` header, on a separate line, and check that it doesn't reset your count.
 - [ ] Check the browser console on the customer page and dashboard for Content Security Policy errors.
 - [ ] Confirm backups on your Supabase plan, and take one by hand (below).
-- [ ] Resolve the decisions still open for launch: allergen disclaimer legal review (#8), VAT, portion defaults (#3), platform name (#20), and how caterers hear about new orders (#13).
+- [ ] Resolve the decisions still open for launch: allergen disclaimer legal review (#8), VAT, portion defaults (#3), and platform domain (#20).
 
 ## Updating the live app
 
@@ -106,4 +109,4 @@ The file holds customers' personal details, so store it somewhere private and ne
 ## Limits to know about
 
 - Rate limits are kept in the server's memory, so run **one** Railway instance. A restart resets the counts. More instances would need a shared store.
-- Nothing notifies a caterer about a new order yet (#13). They need to check the dashboard.
+- New-order emails need a Resend account and a verified domain, and have not been tested with the real provider. Until then caterers check the dashboard. A failed email is logged and not retried (#13).

@@ -18,6 +18,7 @@ export async function renderProfile(view) {
   const link = `${location.origin}/c/${profile.slug}/`;
   const name = h("input", { required: true, maxLength: 120, value: profile.name });
   const phone = h("input", { type: "tel", dir: "ltr", maxLength: 30, value: profile.contact_phone ?? "" });
+  const alertEmail = h("input", { type: "email", dir: "ltr", maxLength: 254, value: profile.notification_email ?? "" });
   const color = h("input", { type: "color", value: profile.brand_color ?? DEFAULT_COLOR });
   const kashrut = h("input", { maxLength: 200, value: profile.kashrut_status ?? "" });
   const mixing = select(MIXING, profile.kashrut_mixing_rule);
@@ -51,6 +52,7 @@ export async function renderProfile(view) {
           await patchJson("/api/admin/profile", {
             name: name.value.trim(),
             contact_phone: textOrNull(phone.value),
+            notification_email: textOrNull(alertEmail.value),
             brand_color: color.value,
             kashrut_status: textOrNull(kashrut.value),
             kashrut_mixing_rule: mixing.value,
@@ -61,6 +63,7 @@ export async function renderProfile(view) {
     h("h2", {}, "פרטי העסק"),
     field("שם העסק", name),
     field("טלפון ליצירת קשר", phone),
+    field("אימייל להתראות על הזמנות חדשות", alertEmail, "לא מוצג ללקוחות. ריק = ללא התראות"),
     field("צבע המותג", color),
     h("h2", {}, "כשרות"),
     field("סטטוס כשרות", kashrut, "מוצג ללקוחות, למשל שם הגוף המכשיר. ריק = לא צוין"),

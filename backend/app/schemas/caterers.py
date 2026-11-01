@@ -7,6 +7,7 @@ from app.models.enums import KashrutMixingRule
 from app.schemas.base import OutputModel, PatchModel
 
 BrandColor = Annotated[str, Field(pattern=r"^#[0-9a-fA-F]{6}$")]
+EmailAddress = Annotated[str, Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=254)]
 
 
 class CatererCreate(BaseModel):
@@ -25,6 +26,7 @@ class CatererPublic(OutputModel):
 
 
 class ProfileOut(CatererPublic):
+    notification_email: str | None
     kashrut_certificate_path: str | None
     kashrut_mixing_rule: KashrutMixingRule
 
@@ -35,6 +37,7 @@ class ProfileUpdate(PatchModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     brand_color: BrandColor | None = None
     contact_phone: str | None = Field(default=None, max_length=30)
+    notification_email: EmailAddress | None = None
     kashrut_status: str | None = Field(default=None, max_length=200)
     kashrut_mixing_rule: KashrutMixingRule | None = None
 

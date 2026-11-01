@@ -83,7 +83,7 @@ Proposal shape:
 
 | Method | Path |
 |---|---|
-| GET/PATCH | `/api/admin/profile` (name, branding, kashrut status, mixing rule) · POST `/api/admin/profile/logo` · POST `/api/admin/profile/kashrut-certificate` |
+| GET/PATCH | `/api/admin/profile` (name, branding, contact phone, notification email, kashrut status, mixing rule) · POST `/api/admin/profile/logo` · POST `/api/admin/profile/kashrut-certificate` |
 | GET | `/api/admin/quantity-rules` (each with `is_default`) · PUT/DELETE `/api/admin/quantity-rules/{category_type}` (DELETE reverts to the platform default). Rules are per category type, not per category |
 | GET/POST | `/api/admin/categories` · PATCH/DELETE `/api/admin/categories/{id}` |
 | GET/POST | `/api/admin/dishes` · PATCH/DELETE `/api/admin/dishes/{id}` |

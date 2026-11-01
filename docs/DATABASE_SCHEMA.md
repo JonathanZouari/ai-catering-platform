@@ -29,6 +29,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | logo_path | text null | Supabase Storage object path |
 | brand_color | text null | Hex color; validated for contrast in the UI |
 | contact_phone | text null | Shown to customers |
+| notification_email | text null | New-order emails go here. Never shown to customers. Null means none are sent |
 | kashrut_status | text null | Free text shown to customers, e.g., certifying body. Null = not provided |
 | kashrut_certificate_path | text null | Supabase Storage object path |
 | kashrut_mixing_rule | kashrut_mixing_rule not null default `warn` | Applies to meat + dairy in one order |

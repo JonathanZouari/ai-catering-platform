@@ -1,20 +1,22 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.agents.client import LLMClient, get_llm
 from app.agents.loop import run_chat
 from app.api.deps import OrderScopeDep, SessionDep
+from app.core.email import Mailer, get_mailer
 from app.core.rate_limit import limit_chat, limit_order_writes
 from app.models.enums import ProposalStatus
 from app.schemas.ai import ChatReply, ChatRequest, ChatState, ProposalDecision, ProposalOut
 from app.schemas.orders import ItemSet, OrderOut, OrderUpdate, SubmitRequest
-from app.services import assistant, orders, proposals
+from app.services import assistant, notifications, orders, proposals
 
 router = APIRouter(prefix="/api/orders", dependencies=[Depends(limit_order_writes)])
 
 LLMDep = Annotated[LLMClient | None, Depends(get_llm)]
+MailerDep = Annotated[Mailer | None, Depends(get_mailer)]
 
 
 @router.get("/{order_id}", response_model=OrderOut)
@@ -43,8 +45,19 @@ def remove_item(
 
 
 @router.post("/{order_id}/submit", response_model=OrderOut)
-def submit_order(order_id: UUID, data: SubmitRequest, session: SessionDep, scope: OrderScopeDep):
-    return orders.view(session, scope, orders.submit_order(session, scope, order_id, data))
+def submit_order(
+    order_id: UUID,
+    data: SubmitRequest,
+    session: SessionDep,
+    scope: OrderScopeDep,
+    mailer: MailerDep,
+    background: BackgroundTasks,
+):
+    order = orders.submit_order(session, scope, order_id, data)
+    email = notifications.new_order_email(session, scope, order) if mailer else None
+    if email:
+        background.add_task(notifications.deliver, mailer, email, order.id)
+    return orders.view(session, scope, order)
 
 
 def _decision(session, scope, proposal, order) -> ProposalDecision:

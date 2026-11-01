@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     ai_model: str = "claude-sonnet-5-5"
     ai_monthly_message_limit: int = 1000
+    resend_api_key: str | None = None
+    email_from: str | None = None
+    public_base_url: str | None = None
 
     @property
     def is_deployed(self) -> bool:
@@ -31,6 +34,8 @@ class Settings(BaseSettings):
             "SUPABASE_ANON_KEY": self.supabase_anon_key,
             "SUPABASE_SERVICE_ROLE_KEY": self.supabase_service_role_key,
         }
+        if self.resend_api_key:
+            required |= {"EMAIL_FROM": self.email_from, "PUBLIC_BASE_URL": self.public_base_url}
         missing = [name for name, value in required.items() if not value]
         if missing:
             raise RuntimeError(f"Missing settings: {', '.join(missing)}")
