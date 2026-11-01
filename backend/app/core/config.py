@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_anon_key: str | None = None
     supabase_service_role_key: str | None = None
+    anthropic_api_key: str | None = None
+    ai_model: str = "claude-sonnet-5-5"
+    ai_monthly_message_limit: int = 1000
 
 
 @lru_cache

@@ -1,6 +1,6 @@
 # AI Agent Design
 
-Status: **Draft v0.2** — implementation in Phase 7. LLM provider default is Claude; budget **[OPEN #16]**.
+Status: **v0.3**, built in Phase 7. Model is `claude-sonnet-5-5` as a working default (`AI_MODEL`). The pilot limit is 1,000 messages per caterer per month (`AI_MONTHLY_MESSAGE_LIMIT`); the budget stays **[OPEN #16]** until real costs are measured. Only tested with a scripted model so far: no real conversation has been run.
 
 ## 1. Scope
 
@@ -28,7 +28,7 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 |---|---|---|
 | `propose_order_change` | `changes: list[Change]`, `rationale: str` | Backend validates → computes diff and price impact → stores `ai_change_proposals` row (`pending`) → returned to UI. **No order mutation.** |
 
-`Change` is a discriminated union: `add_item{dish_id, quantity}`, `remove_item{dish_id}`, `set_quantity{dish_id, quantity}`, `update_details{fields}` (whitelisted fields only).
+`Change` is a discriminated union: `add_item{dish_id, quantity}`, `remove_item{dish_id}`, `set_quantity{dish_id, quantity}`, `update_details{fields}` (only `adults`, `children`, `vegetarian_guests`, `vegan_guests`, `restricted_guests`, `dietary_notes`; date, time and delivery stay in the form). A dish may appear once in a proposal.
 
 **Confirmation is not an AI tool.** `confirm_order_change` from the spec is implemented as the customer-only HTTP endpoint `POST /proposals/{id}/approve`, triggered by a UI button. The model cannot approve its own proposals. **[RECOMMENDATION — strengthens Decision 7]**
 
@@ -53,7 +53,7 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 | Invented price | Prices never accepted from the model; computed by `services/pricing` |
 | Invented calories | Only stored values are quoted; a null value is reported as unknown, never estimated |
 | Cross-caterer data | Caterer ID bound server-side; every tool is scoped to it |
-| Runaway AI cost | Per-caterer message limit checked before each LLM call; over the limit → `429 ai_limit_reached`, and ordering still works without chat |
+| Runaway AI cost | Each customer message counts once against the caterer's monthly limit, before the model runs, and against a cap of 100 per order. One message may use up to 8 model calls. Over a limit → `429 ai_limit_reached`, and ordering still works without chat |
 | Silent mutation | No tool mutates orders; only the approve endpoint does |
 | Double execution | `status` + `executed_at` checked under row lock; second approve → `409 proposal_not_pending` |
 | Stale proposal | `base_order_version` mismatch → proposal marked `expired`, `409 order_version_conflict` |
@@ -62,6 +62,7 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 | Unknown allergen info | Tool returns `unknown`; system prompt requires saying "not verified" and advising to contact the business; no safety guarantees |
 | Model/tool failure | Errors returned to the model as structured tool errors; no partial writes (transactional) |
 | Logging | Log tool names, IDs, error codes; never API keys; avoid personal data |
+| Personal data | Customer name, phone, email, address and the token never reach the model. Chat messages and `dietary_notes` do, because the assistant needs them; both forms tell the customer not to enter personal details |
 
 ## 5. System prompt outline
 

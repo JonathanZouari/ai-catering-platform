@@ -1,5 +1,6 @@
 // Customer ordering, one page for every caterer. The private token stays in the URL fragment.
 import { api } from "/js/api.js";
+import { mountChat, syncChat } from "/js/customer/chat.js";
 import { attempt, field, h, notify, select, textOrNull } from "/js/ui.js";
 
 const slug = location.pathname.split("/")[2];
@@ -68,11 +69,23 @@ function show(...content) {
   window.scrollTo(0, 0);
 }
 
-function render() {
+function renderStep() {
   if (state.order && state.order.status !== "draft") return renderStatus();
   if (state.step === "menu") return renderMenu();
   if (state.step === "summary") return renderSummary();
   return renderDetails();
+}
+
+function render() {
+  renderStep();
+  syncChat(state.order?.status === "draft" && state.step !== "details");
+}
+
+function applyOrder(order) {
+  const position = window.scrollY;
+  state.order = order;
+  render();
+  window.scrollTo(0, position);
 }
 
 function numberField(label, value, hint) {
@@ -159,7 +172,7 @@ function renderDetails() {
   h("div", { className: "grid" }, adults.element, children.element),
   h("p", { className: "muted" }, "מתוך הסועדים שלמעלה, כמה הם:"),
   h("div", { className: "grid" }, vegetarian.element, vegan.element, restricted.element),
-  field("הערות תזונה ואלרגיות", notes, "ההערות מגיעות לעסק, ואינן מבטיחות התאמה"),
+  field("הערות תזונה ואלרגיות", notes, "ההערות מגיעות לעסק ולעוזר ה-AI, ואינן מבטיחות התאמה. אל תכתבו כאן שמות"),
   h("h3", {}, "מתי ואיך"),
   field("איסוף או משלוח", type),
   field("תאריך", date),
@@ -404,6 +417,7 @@ async function start() {
   }
   state.filters = { vegetarian: false, vegan: false };
   useBrand(state.caterer);
+  mountChat(orderApi, applyOrder);
   await loadOrder();
   render();
 }

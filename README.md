@@ -2,7 +2,7 @@
 
 Hebrew ordering and management platform for **many catering businesses**. Each caterer gets a branded link. Customers use it to plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. Each caterer manages their own catalog and approves or rejects every quotation.
 
-> Status: **Phase 6 — quote approval**. Customers send a quote request, the caterer approves or rejects it, and the customer sees the answer (no AI yet). See `docs/` for the specs.
+> Status: **Phase 7 — AI assistant**. A Hebrew chat on the order page proposes changes the customer approves. It needs `ANTHROPIC_API_KEY`, and has only been tested with a scripted model so far. See `docs/` for the specs.
 
 ## Stack
 

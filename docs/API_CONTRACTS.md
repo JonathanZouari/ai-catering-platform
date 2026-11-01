@@ -52,10 +52,13 @@ Every mutation returns the full updated order (new `version`). A stale `version`
 
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/api/orders/{id}/chat` | `{message}` → `{reply, proposals:[...]}` |
+| GET | `/api/orders/{id}/chat` | `{available, messages, proposals}` |
+| POST | `/api/orders/{id}/chat` | `{message}` → `{reply, proposals:[...]}`. `429 ai_limit_reached`, `503 ai_unavailable`, `503 ai_failed` |
 | GET | `/api/orders/{id}/proposals?status=pending` | |
 | POST | `/api/orders/{id}/proposals/{pid}/approve` | Executes in one transaction if `base_order_version == order.version` and status `pending` |
 | POST | `/api/orders/{id}/proposals/{pid}/reject` | No mutation |
+
+Approve and reject return `{proposal, order}`. A changed price or order expires the proposal (`409 order_version_conflict`); a dish that's no longer orderable fails it. Second decision: `409 proposal_not_pending`.
 
 Proposal shape:
 

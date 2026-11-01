@@ -271,9 +271,10 @@ def test_every_order_route_requires_the_token(client, shop):
         if path.startswith("/api/orders")
         for method in operations
     ]
-    assert len(routes) == 5
+    assert len(routes) == 10
     for method, path in routes:
-        url = path.replace("{order_id}", order.data["id"]).replace("{dish_id}", str(uuid4()))
+        url = path.replace("{order_id}", order.data["id"])
+        url = url.replace("{dish_id}", str(uuid4())).replace("{proposal_id}", str(uuid4()))
         response = client.request(method.upper(), f"{url}?version=1", json={})
         assert response.status_code in (401, 422), f"{method} {path}"
         assert client.get(order.url, headers=order.headers).json()["version"] == 1

@@ -129,7 +129,7 @@ def update_order(session: Session, scope: CatererScope, order_id: UUID, data: Or
     return order
 
 
-def _require_orderable(dish: Dish | None) -> Dish:
+def require_orderable(dish: Dish | None) -> Dish:
     if dish is None:
         raise not_found()
     if not dish.is_available or not dish.category.is_active:
@@ -137,13 +137,17 @@ def _require_orderable(dish: Dish | None) -> Dish:
     return dish
 
 
+def require_valid_quantity(dish: Dish, quantity: Decimal) -> None:
+    if dish.pricing_unit != PricingUnit.PER_WEIGHT and quantity != int(quantity):
+        raise AppError(422, "validation_error", "הכמות חייבת להיות מספר שלם")
+
+
 def set_item(
     session: Session, scope: CatererScope, order_id: UUID, dish_id: UUID, data: ItemSet
 ) -> Order:
     order = _lock_draft(OrderRepository(session, scope), order_id, data.version)
-    dish = _require_orderable(DishRepository(session, scope).get(dish_id))
-    if dish.pricing_unit != PricingUnit.PER_WEIGHT and data.quantity != int(data.quantity):
-        raise AppError(422, "validation_error", "הכמות חייבת להיות מספר שלם")
+    dish = require_orderable(DishRepository(session, scope).get(dish_id))
+    require_valid_quantity(dish, data.quantity)
 
     item = next((row for row in order.items if row.dish_id == dish_id), None)
     if item is None:
@@ -172,7 +176,7 @@ def remove_item(
     return order
 
 
-def _delivery_fee(order: Order) -> Decimal:
+def delivery_fee(order: Order) -> Decimal:
     zone = order.delivery_zone
     return zone.fee if order.fulfillment_type == FulfillmentType.DELIVERY and zone else Decimal(0)
 
@@ -212,7 +216,7 @@ def submit_order(
         order.delivery_zone_id = order.delivery_zone.id
     _require_capacity(repo, order)
 
-    dishes = [_require_orderable(item.dish) for item in order.items]
+    dishes = [require_orderable(item.dish) for item in order.items]
     for item in order.items:
         minimum = item.dish.min_quantity
         if minimum is not None and item.quantity < minimum:
@@ -233,7 +237,7 @@ def submit_order(
         item.snapshot_unit_price = item.dish.unit_price
         item.snapshot_line_total = pricing.line_total(item.dish.unit_price, item.quantity)
 
-    order.delivery_fee = _delivery_fee(order)
+    order.delivery_fee = delivery_fee(order)
     order.subtotal, order.total = pricing.order_total(
         [item.snapshot_line_total for item in order.items], order.delivery_fee
     )
@@ -342,7 +346,7 @@ def view(session: Session, scope: CatererScope, order: Order) -> OrderOut:
     lines = _draft_lines(session, scope, order) if is_draft else _submitted_lines(order)
 
     if is_draft:
-        fee = _delivery_fee(order)
+        fee = delivery_fee(order)
         subtotal, total = pricing.order_total([line.line_total for line in lines], fee)
     else:
         fee, subtotal, total = order.delivery_fee, order.subtotal, order.total

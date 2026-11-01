@@ -1,9 +1,11 @@
 """Runs the real app on real Postgres, faking only Supabase Auth and Storage on the same origin."""
 
+import json
 import os
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 from uuid import uuid4
 
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
@@ -14,10 +16,12 @@ os.environ.update(
     SUPABASE_URL=f"http://127.0.0.1:{PORT}",
     SUPABASE_ANON_KEY="anon",
     SUPABASE_SERVICE_ROLE_KEY="service",
+    AI_MONTHLY_MESSAGE_LIMIT="9",
 )
 
 import jwt  # noqa: E402
 import uvicorn  # noqa: E402
+from app.agents.client import get_llm  # noqa: E402
 from app.core.db import get_engine  # noqa: E402
 from app.core.security import get_signing_key_resolver  # noqa: E402
 from app.core.storage import get_storage  # noqa: E402
@@ -51,6 +55,38 @@ def reset_database() -> None:
         create_caterer(session, data)
 
 
+class ScriptedModel:
+    """Stands in for the provider: asks for the menu, then proposes the first dish."""
+
+    @staticmethod
+    def _say(text_value: str) -> SimpleNamespace:
+        block = SimpleNamespace(type="text", text=text_value)
+        return SimpleNamespace(stop_reason="end_turn", content=[block])
+
+    @staticmethod
+    def _use(name: str, arguments: dict) -> SimpleNamespace:
+        block = SimpleNamespace(type="tool_use", id=uuid4().hex, name=name, input=arguments)
+        return SimpleNamespace(stop_reason="tool_use", content=[block])
+
+    def create(self, system, tools, messages):
+        last = messages[-1]["content"]
+        if isinstance(last, str):
+            if "הוסיפו" in last:
+                return self._use("get_available_dishes", {})
+            return self._say(f"קיבלתי: {last}")
+        result = json.loads(last[0]["content"])
+        if "dishes" in result:
+            change = {
+                "type": "add_item",
+                "dish_id": result["dishes"][0]["dish_id"],
+                "quantity": "2",
+            }
+            return self._use(
+                "propose_order_change", {"changes": [change], "rationale": "מתאים לאירוע"}
+            )
+        return self._say("הכנתי הצעה. אשרו אותה בכרטיס")
+
+
 class MemoryStorage:
     def upload(self, path: str, content: bytes, content_type: str) -> None:
         FILES[path] = (content, content_type)
@@ -81,6 +117,7 @@ def fake_object(path: str):
 reset_database()
 app.dependency_overrides[get_signing_key_resolver] = lambda: lambda _token: KEY.public_key()
 app.dependency_overrides[get_storage] = MemoryStorage
+app.dependency_overrides[get_llm] = ScriptedModel
 # Before the static mount, which would otherwise swallow these paths.
 app.router.routes[:0] = fake_supabase.routes
 uvicorn.run(app, port=PORT, log_level="warning")

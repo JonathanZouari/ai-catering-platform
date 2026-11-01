@@ -19,6 +19,14 @@ class OrderStatus(StrEnum):
     REJECTED = "rejected"
 
 
+class ProposalStatus(StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+    FAILED = "failed"
+
+
 class PricingUnit(StrEnum):
     PER_GUEST = "per_guest"
     PER_TRAY = "per_tray"

@@ -47,3 +47,26 @@ details summary { min-block-size: 44px; display: flex; align-items: center; colo
   border: 1px solid var(--color-accent); border-radius: var(--radius);
   color: var(--color-accent); text-decoration: none;
 }
+
+/* AI chat: a side panel on wide screens, a bottom sheet on phones. */
+.chat-toggle { position: fixed; inset-block-end: 88px; inset-inline-end: var(--space-4); z-index: 20; box-shadow: var(--shadow-1); }
+.chat {
+  position: fixed; z-index: 30; inset-inline: 0; inset-block-end: 0; block-size: 80dvh;
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-4); background: var(--color-surface);
+  border-start-start-radius: var(--radius); border-start-end-radius: var(--radius);
+  box-shadow: 0 -2px 12px rgb(0 0 0 / 0.2);
+}
+.chat[hidden] { display: none; }
+.chat h2, .chat p { margin: 0; }
+.chat-log { flex: 1; min-block-size: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-2); }
+.bubble { max-inline-size: 85%; padding: var(--space-2) var(--space-3); border-radius: var(--radius); overflow-wrap: anywhere; white-space: pre-wrap; }
+.bubble.user { align-self: flex-start; background: var(--color-bg); }
+.bubble.assistant { align-self: flex-end; border: 1px solid var(--color-bg); }
+.proposal { padding: var(--space-3); border: 1px solid var(--color-accent); border-radius: var(--radius); }
+.proposal ul { margin-block: var(--space-2); padding-inline-start: var(--space-4); }
+.chat-form { display: flex; gap: var(--space-2); }
+.chat-form input { flex: 1; min-inline-size: 0; }
+@media (min-width: 800px) {
+  .chat { inset-inline: auto 0; inset-block: 0; inline-size: 380px; block-size: auto; border-radius: 0; }
+}

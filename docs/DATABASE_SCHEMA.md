@@ -144,6 +144,8 @@ A missing row = **unknown**.
 | snapshot_unit_price | numeric(10,2) null | |
 | snapshot_line_total | numeric(10,2) null | |
 
+AI tables (`ai_conversations`, `ai_messages`, `ai_change_proposals`) carry `caterer_id` with composite FKs to `orders`. `ai_change_proposals.changes` stores the card's lines, and `rationale` the assistant's reason. `ai_usage (caterer_id, month, message_count)` counts AI messages per caterer per month.
+
 While `draft`, prices are read live from `dishes`; on `pending_approval` the snapshot columns become authoritative.
 
 ### ai_conversations *(scoped through parent)*
