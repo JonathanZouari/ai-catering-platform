@@ -1,21 +1,133 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
+  <title>פרטי האירוע | שלא יחסר</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500&display=swap">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/event.css">
 </head>
 <body>
-  <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+  <p class="top-strip">איסוף עצמי או משלוח</p>
+  <nav class="site-nav" aria-label="ראשי"><a class="site-logo" href="/">שלא יחסר</a></nav>
+
+  <div class="cloth cloth-butter" id="cloth">
+    <div class="bunting" aria-hidden="true"></div>
+    <main class="event-layout">
+      <section class="napkin" aria-labelledby="sentence">
+        <div class="lace"></div>
+        <div class="napkin-body">
+          <div>
+            <img class="cheers" src="/assets/cheers.svg" width="96" height="84" alt="">
+            <h1 class="sentence" id="sentence">אנחנו מארגנים <button type="button" class="field" id="field-event" data-panel="panel-event" aria-expanded="true" aria-controls="panel-event"></button> ל-<button type="button" class="field" id="field-guests" data-panel="panel-guests" aria-expanded="false" aria-controls="panel-guests"></button> אורחים ב-<button type="button" class="field" id="field-date" data-panel="panel-date" aria-expanded="false" aria-controls="panel-date"></button>, ואת האוכל <span class="keep"><button type="button" class="field" id="field-supply" data-panel="panel-supply" aria-expanded="false" aria-controls="panel-supply"></button>.</span></h1>
+          </div>
+
+          <div class="panels">
+            <div class="panel" id="panel-event">
+              <h2>מה חוגגים?</h2>
+              <div class="chips">
+                <button type="button" class="chip" data-event="0"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10v10M16 10v10M6 20h12M8 7c-1-1 0-3 0-4 0 1 1 3 0 4zM16 7c-1-1 0-3 0-4 0 1 1 3 0 4z"/></svg>שבת חתן</button>
+                <button type="button" class="chip" data-event="1"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.800 13.500H4.200zM12 21L4.200 7.500h15.600z"/></svg>בר/בת מצווה</button>
+                <button type="button" class="chip" data-event="2"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16v-7H4zM4 15c2 2 3-1 5 0s3 2 5 0 4 1 6 0M12 13V9M12 6c-1-1 0-2 0-3 0 1 1 2 0 3z"/></svg>יום הולדת</button>
+                <button type="button" class="chip" data-event="3"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l6 2-1.500 6c-1 2-3 3-5 2s-2.500-3-2-5zM6.500 15l-1.500 5M2.500 19.500l5 1.500M18 4l-6 2 1.500 6c1 2 3 3 5 2s2.500-3 2-5zM17.500 15l1.500 5M16.500 21l5-1.500"/></svg>חגיגה משפחתית</button>
+              </div>
+            </div>
+
+            <div class="panel" id="panel-guests" hidden>
+              <div class="count-row">
+                <span class="count-label"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10"/></svg>אורחים בסך הכול</span>
+                <div class="counter">
+                  <button type="button" class="step" data-step="guests" data-by="5" aria-label="הוספת 5 אורחים">+</button>
+                  <output id="count-guests" aria-live="polite"></output>
+                  <button type="button" class="step" data-step="guests" data-by="-5" aria-label="הפחתת 5 אורחים">−</button>
+                </div>
+              </div>
+              <div class="count-row">
+                <span class="count-label"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 6-6 7-3-1-6-3-6-7a6 6 0 0 1 6-6M12 16c-1 2 1 3 0 5"/></svg>מתוכם ילדים</span>
+                <div class="counter">
+                  <button type="button" class="step" data-step="kids" data-by="1" aria-label="הוספת ילד">+</button>
+                  <output id="count-kids" aria-live="polite"></output>
+                  <button type="button" class="step" data-step="kids" data-by="-1" aria-label="הפחתת ילד">−</button>
+                </div>
+              </div>
+              <div class="count-row">
+                <span class="count-label"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 14M5 19l7-7"/></svg>מתוכם צמחונים</span>
+                <div class="counter">
+                  <button type="button" class="step" data-step="vegetarians" data-by="1" aria-label="הוספת צמחוני">+</button>
+                  <output id="count-vegetarians" aria-live="polite"></output>
+                  <button type="button" class="step" data-step="vegetarians" data-by="-1" aria-label="הפחתת צמחוני">−</button>
+                </div>
+              </div>
+              <div class="count-row">
+                <span class="count-label"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-9M12 12c0-4-3-6-7-6 0 4 3 6 7 6M12 10c0-4 3-6 7-6 0 4-3 6-7 6"/></svg>מתוכם טבעונים</span>
+                <div class="counter">
+                  <button type="button" class="step" data-step="vegans" data-by="1" aria-label="הוספת טבעוני">+</button>
+                  <output id="count-vegans" aria-live="polite"></output>
+                  <button type="button" class="step" data-step="vegans" data-by="-1" aria-label="הפחתת טבעוני">−</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" id="panel-date" hidden>
+              <label for="date">באיזה תאריך?</label>
+              <input class="input input-date" id="date" type="date">
+              <p class="error" id="date-past" hidden>נבחר תאריך שכבר עבר. אפשר לבחור תאריך אחר.</p>
+            </div>
+
+            <div class="panel" id="panel-supply" hidden>
+              <h2>איך האוכל מגיע אליכם?</h2>
+              <div class="chips">
+                <button type="button" class="chip" id="pick-pickup"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l1 12H5zM9 8V6a3 3 0 0 1 6 0v2"/></svg>איסוף עצמי</button>
+                <button type="button" class="chip" id="pick-delivery"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4M17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/></svg>משלוח</button>
+              </div>
+              <label class="address" id="address-field" hidden>כתובת למשלוח
+                <input class="input" id="address" type="text" maxlength="120" autocomplete="street-address" placeholder="רחוב, מספר ועיר">
+              </label>
+            </div>
+          </div>
+
+          <a class="btn btn-primary continue" id="continue" href="/customer/order.html">ממשיכים לבחירת מנות</a>
+          <p class="missing" id="missing" hidden></p>
+        </div>
+        <div class="lace lace-end"></div>
+      </section>
+
+      <aside class="table-side" aria-label="סיכום האירוע">
+        <div class="table-setting">
+          <img class="setting-glass" src="/assets/glass.svg" width="46" height="92" alt="">
+          <img src="/assets/knife.svg" width="30" height="190" alt="">
+          <div class="guest-plate" id="plate" role="img">
+            <svg viewBox="0 0 160 160" aria-hidden="true">
+              <circle class="ring ring-adults" id="ring-adults" cx="80" cy="80" r="69"/>
+              <circle class="ring ring-kids" id="ring-kids" cx="80" cy="80" r="69"/>
+            </svg>
+            <div class="plate-label"><strong id="plate-count"></strong><span>אורחים</span></div>
+          </div>
+          <div class="setting-napkin"><img src="/assets/fork.svg" width="30" height="170" alt=""></div>
+        </div>
+        <p class="legend"><span class="adults">מבוגרים</span><span class="kids">ילדים</span></p>
+
+        <div class="menu-card">
+          <h2>הפתק שלכם</h2>
+          <dl>
+            <dt>אירוע</dt><dd id="note-event"></dd>
+            <dt>תאריך</dt><dd id="note-date"></dd>
+            <dt>מבוגרים</dt><dd id="note-adults"></dd>
+            <dt>ילדים</dt><dd id="note-kids"></dd>
+            <dt>צמחונים</dt><dd id="note-vegetarians"></dd>
+            <dt>טבעונים</dt><dd id="note-vegans"></dd>
+            <dt>אספקה</dt><dd id="note-supply"></dd>
+          </dl>
+          <p>המחיר אחרי בחירת המנות</p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="/js/event.js"></script>
 </body>
 </html>

@@ -1,12 +1,14 @@
-/* Neutral design tokens — replace when brand is decided (OPEN_DECISIONS #20). */
+/* "Shelo Yechsar" brand tokens: pastel, inspired by hosting and celebrations. */
 :root {
-  --color-bg: #faf8f5;
-  --color-surface: #ffffff;
-  --color-text: #1f1d1a;
-  --color-muted: #6b665e;
-  --color-accent: #7a4f2a;
+  --color-bg: #ffffff;
+  --color-surface: #fffdf9;
+  --color-text: #3d3a36;
+  --color-muted: #625d55;
+  --color-accent: #4f6b57;
+  --color-line: #e8d9c6;
+  --color-sand: #f6e7dd;
   --color-success: #2f6b3a;
-  --color-danger: #a12a2a;
+  --color-danger: #9a3412;
   --color-warning: #8a5a00;
   --space-1: 4px;
   --space-2: 8px;
@@ -16,7 +18,7 @@
   --space-8: 32px;
   --radius: 12px;
   --shadow-1: 0 1px 3px rgb(0 0 0 / 0.08);
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font: Heebo, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
