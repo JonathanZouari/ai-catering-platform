@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>בחירת מנות - שולחן מלא</title>
+<!-- Google Fonts: Rubik + Rubik Doodle Shadow -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&amp;family=Rubik:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary": "#002d0e",
+            "on-secondary-container": "#775d1c",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed-dim": "#cac6c1",
+            "tertiary-fixed": "#b1f2b4",
+            "inverse-primary": "#cac6c1",
+            "primary-container": "#3d3b38",
+            "secondary": "#755b19",
+            "on-tertiary-fixed": "#002108",
+            "secondary-container": "#F6D268",
+            "on-surface-variant": "#4a4640",
+            "surface-container-highest": "#e2e2e2",
+            "surface": "#f9f9f9",
+            "tertiary-fixed-dim": "#96d69a",
+            "on-tertiary-fixed-variant": "#135224",
+            "on-tertiary": "#ffffff",
+            "inverse-on-surface": "#f1f1f1",
+            "error-container": "#ffdad6",
+            "surface-container-high": "#e8e8e8",
+            "surface-bright": "#f9f9f9",
+            "secondary-fixed-dim": "#e5c277",
+            "on-surface": "#1a1c1c",
+            "on-primary-fixed-variant": "#494643",
+            "primary": "#272523",
+            "background": "#ffffff",
+            "surface-container": "#eeeeee",
+            "on-primary": "#ffffff",
+            "surface-dim": "#dadada",
+            "secondary-fixed": "#ffdf9b",
+            "primary-fixed": "#e7e2dd",
+            "inverse-surface": "#2f3131",
+            "on-primary-container": "#a9a5a1",
+            "tertiary-container": "#01461a",
+            "error": "#ba1a1a",
+            "on-secondary": "#ffffff",
+            "on-background": "#1a1c1c",
+            "on-primary-fixed": "#1d1b19",
+            "surface-variant": "#e2e2e2",
+            "on-error-container": "#93000a",
+            "outline-variant": "#ccc6bd",
+            "outline": "#7b776f",
+            "on-error": "#ffffff",
+            "on-tertiary-container": "#76b47c",
+            "on-secondary-fixed-variant": "#5a4301",
+            "surface-tint": "#615e5b",
+            "on-secondary-fixed": "#251a00",
+            "surface-container-low": "#f4f3f3"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "margin-tablet": "1.5rem",
+            "gutter-desktop": "2rem",
+            "gutter": "1rem",
+            "space-xl": "2rem",
+            "margin-desktop": "2.5rem",
+            "space-lg": "1.5rem",
+            "gutter-tablet": "1.5rem",
+            "margin": "1rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Rubik"],
+            "label-sm": ["Rubik"],
+            "headline-sm": ["Rubik"],
+            "headline-lg": ["Rubik"],
+            "display-lg": ["Rubik"],
+            "label-lg": ["Rubik"],
+            "body-lg": ["Rubik"],
+            "title-md": ["Rubik"],
+            "headline-lg-mobile": ["Rubik"],
+            "body-sm": ["Rubik"],
+            "body-md": ["Rubik"],
+            "display-sm": ["Rubik"],
+            "label-md": ["Rubik"],
+            "display-md": ["Rubik"],
+            "title-lg": ["Rubik"],
+            "doodle": ["'Rubik Doodle Shadow'", "Rubik", "sans-serif"]
+          },
+          "fontSize": {
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+            "display-lg": ["56px", { "lineHeight": "64px", "fontWeight": "700" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "500" }],
+            "headline-lg-mobile": ["26px", { "lineHeight": "34px", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-sm": ["36px", { "lineHeight": "44px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "display-md": ["44px", { "lineHeight": "52px", "fontWeight": "600" }],
+            "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "500" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* Clean scrollbar suppression for mobile horizontal category list */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-background text-primary font-body-md text-body-md antialiased min-h-screen pb-40 select-none max-w-[390px] mx-auto overflow-x-hidden">
+<!-- 1. TOP APP BAR (Sub-journey Header: Task-focused step) -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest border-b-2 border-primary">
+<div class="flex items-center justify-between px-space-md py-space-sm">
+<!-- Right edge in RTL: Back arrow (arrow_forward for RTL backward step) -->
+<button aria-label="חזרה" class="w-10 h-10 rounded-full border-2 border-primary flex items-center justify-center text-primary active:scale-95 transition-transform duration-100 hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Center Title and Subtitle -->
+<div class="text-center">
+<h1 class="font-doodle text-[24px] leading-tight text-primary font-normal tracking-wide">בחירת מנות</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-medium mt-0.5">שלב 2 מתוך 4</p>
+</div>
+<!-- Left edge in RTL: Cart action with Butter badge -->
+<div class="relative">
+<button aria-label="עגלת הזמנה" class="w-10 h-10 rounded-full border-2 border-primary flex items-center justify-center text-primary active:scale-95 transition-transform duration-100 hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</button>
+<span class="absolute -top-1.5 -left-1.5 bg-secondary-container text-primary border-2 border-primary font-bold text-[11px] w-5 h-5 rounded-full flex items-center justify-center">4</span>
+</div>
+</div>
+<!-- Event Summary Row Under Bar -->
+<div class="bg-surface-container-low px-space-md py-2 border-t border-primary flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-primary font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="event">event</span>
+<span>בר מצווה · 14.12 · 78 אורחים</span>
+</div>
+<button class="font-label-sm text-label-sm font-semibold underline decoration-2 decoration-secondary-container text-primary flex items-center gap-0.5 hover:text-secondary active:scale-95 transition-transform" type="button">
+<span>עריכה</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="edit">edit</span>
+</button>
+</div>
+</header>
+<!-- 2. CHIPS & FILTERS -->
+<section class="bg-surface-container-lowest border-b-2 border-primary py-space-sm">
+<!-- Category Chips (Horizontal Scroll) -->
+<div class="flex items-center gap-space-xs px-space-md overflow-x-auto no-scrollbar pb-1">
+<!-- Active 'סלטים' -->
+<button class="shrink-0 flex items-center gap-1 bg-secondary-container border-2 border-primary text-primary px-3 py-1.5 rounded-full font-label-md text-label-md font-bold shadow-none active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="check">check</span>
+<span>סלטים</span>
+</button>
+<!-- Other Categories -->
+<button class="shrink-0 bg-surface-container-lowest border-2 border-primary text-primary px-3 py-1.5 rounded-full font-label-md text-label-md font-medium hover:bg-surface-container active:scale-95 transition-transform" type="button">
+<span>מנות פתיחה</span>
+</button>
+<button class="shrink-0 bg-surface-container-lowest border-2 border-primary text-primary px-3 py-1.5 rounded-full font-label-md text-label-md font-medium hover:bg-surface-container active:scale-95 transition-transform" type="button">
+<span>עיקריות</span>
+</button>
+<button class="shrink-0 bg-surface-container-lowest border-2 border-primary text-primary px-3 py-1.5 rounded-full font-label-md text-label-md font-medium hover:bg-surface-container active:scale-95 transition-transform" type="button">
+<span>תוספות</span>
+</button>
+<button class="shrink-0 bg-surface-container-lowest border-2 border-primary text-primary px-3 py-1.5 rounded-full font-label-md text-label-md font-medium hover:bg-surface-container active:scale-95 transition-transform" type="button">
+<span>מאפים</span>
+</button>
+<button class="shrink-0 bg-surface-container-lowest border-2 border-primary text-primary px-3 py-1.5 rounded-full font-label-md text-label-md font-medium hover:bg-surface-container active:scale-95 transition-transform" type="button">
+<span>קינוחים</span>
+</button>
+</div>
+<!-- Dietary Filter Chips -->
+<div class="flex items-center gap-2 px-space-md pt-2">
+<span class="text-on-surface-variant font-label-sm text-label-sm">סינון:</span>
+<button class="bg-surface-container-lowest border border-primary text-primary px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium hover:bg-surface-container active:scale-95 transition-transform flex items-center gap-1" type="button">
+<span>צמחוני</span>
+</button>
+<button class="bg-surface-container-lowest border border-primary text-primary px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium hover:bg-surface-container active:scale-95 transition-transform flex items-center gap-1" type="button">
+<span>טבעוני</span>
+</button>
+<button class="bg-surface-container-lowest border border-primary text-primary px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium hover:bg-surface-container active:scale-95 transition-transform flex items-center gap-1" type="button">
+<span>ללא גלוטן</span>
+</button>
+</div>
+</section>
+<!-- 3. BUTTER RECOMMENDATION BAND -->
+<section class="bg-secondary-container border-b-2 border-primary px-space-md py-space-md">
+<div class="flex items-center gap-3">
+<!-- Waiter Line-Art Illustration -->
+<div class="shrink-0 w-24 h-28 flex items-center justify-center">
+<svg class="w-full h-full stroke-primary fill-none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 100 120">
+<!-- Chef/Waiter Hat & Face -->
+<path d="M35 34 C35 22, 65 22, 65 34 Z" fill="#ffffff"></path>
+<path d="M38 23 C38 12, 45 8, 50 8 C55 8, 62 12, 62 23" fill="#ffffff"></path>
+<rect fill="#272523" height="5" width="26" x="37" y="33"></rect>
+<!-- Face -->
+<circle cx="50" cy="45" fill="#ffffff" r="9"></circle>
+<path d="M47 46 Q50 49 53 46"></path>
+<circle cx="47" cy="43" fill="#272523" r="1"></circle>
+<circle cx="53" cy="43" fill="#272523" r="1"></circle>
+<!-- Bowtie -->
+<polygon fill="#272523" points="46,55 54,55 50,58"></polygon>
+<polygon fill="#272523" points="46,61 54,61 50,58"></polygon>
+<!-- Torso / Apron -->
+<path d="M40 58 L32 98 L68 98 L60 58 Z" fill="#ffffff"></path>
+<line x1="50" x2="50" y1="62" y2="98"></line>
+<!-- Arm holding tray -->
+<path d="M35 65 L20 60 L14 55"></path>
+<!-- Tray -->
+<line stroke-width="3.5" x1="8" x2="28" y1="53" y2="53"></line>
+<path d="M12 53 Q18 42 24 53" fill="#ffffff"></path>
+<!-- Right arm pointing -->
+<path d="M63 65 L76 68 L84 62"></path>
+<line stroke-width="2" x1="84" x2="88" y1="62" y2="60"></line>
+</svg>
+</div>
+<!-- Recommendation Message & Progress Indicator -->
+<div class="flex-1">
+<div class="inline-flex items-center gap-1 bg-surface-container-lowest px-2 py-0.5 rounded-full border border-primary text-[11px] font-bold text-primary mb-1.5">
+<span class="material-symbols-outlined text-[13px] text-tertiary-container" data-icon="lightbulb">lightbulb</span>
+<span>המלצת שף לאירוע</span>
+</div>
+<p class="font-title-md text-title-md font-bold text-primary leading-tight">
+          לפי 78 אורחים מומלץ 4 מגשי סלט. בחרתם 2.
+        </p>
+<!-- Progress Bar (2 מתוך 4) -->
+<div class="mt-2.5">
+<div class="flex justify-between items-center text-label-sm font-label-sm font-semibold text-primary mb-1">
+<span>התקדמות קטגוריה:</span>
+<span>2 מתוך 4 מגשים</span>
+</div>
+<div class="w-full h-3 bg-surface-container-lowest border-2 border-primary rounded-full overflow-hidden p-0.5">
+<div class="h-full bg-primary rounded-full w-1/2 transition-all duration-300"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. DISH LIST (Plain rows on white background separated by solid ink dividers) -->
+<main class="bg-surface-container-lowest divide-y-2 divide-primary">
+<!-- Dish 1: סלט טאבולה -->
+<article class="p-space-md flex gap-space-md items-start">
+<!-- 96x96 Image in 4px ink frame -->
+<div class="shrink-0 w-24 h-24 rounded-2xl border-4 border-primary overflow-hidden bg-surface-container-high">
+<img alt="סלט טאבולה" class="w-full h-full object-cover" src="../assets/photo-7e49195e2c.jpg"/>
+</div>
+<!-- Dish Details -->
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-1">
+<h2 class="font-headline-sm text-[18px] leading-snug font-bold text-primary">סלט טאבולה</h2>
+</div>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1 leading-snug">
+          בורגול, פטרוזיליה קצוצה דק, נענע, עגבניות ושמן זית כתית מעולה
+        </p>
+<p class="font-label-md text-label-md font-bold text-primary mt-1.5">
+          ₪180 למגש · <span class="font-normal text-on-surface-variant">10–12 מנות</span>
+</p>
+<!-- Tags -->
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-primary bg-surface-container-low text-[11px] font-medium text-primary">
+            פרווה
+          </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-primary bg-surface-container-low text-[11px] font-medium text-primary">
+            טבעוני
+          </span>
+</div>
+<!-- Allergen line -->
+<p class="text-[11px] text-on-surface-variant mt-1.5 font-normal">
+          אלרגנים: גלוטן
+        </p>
+<!-- Stepper Controls -->
+<div class="mt-3 flex items-center justify-between gap-2">
+<div class="flex items-center border-2 border-primary rounded-lg overflow-hidden bg-surface-container-lowest">
+<button aria-label="הפחתת כמות" class="w-8 h-8 flex items-center justify-center font-bold text-primary hover:bg-surface-container active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="remove">remove</span>
+</button>
+<span class="w-8 text-center font-bold text-primary font-body-md text-body-md">2</span>
+<button aria-label="הוספת כמות" class="w-8 h-8 flex items-center justify-center font-bold text-primary hover:bg-surface-container active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+</button>
+</div>
+<span class="text-[11px] font-medium text-on-surface-variant bg-surface-container-low px-2 py-1 rounded border border-outline-variant">
+            מומלץ: 3 מגשים
+          </span>
+</div>
+</div>
+</article>
+<!-- Dish 2: חציל קלוי בטחינה -->
+<article class="p-space-md flex gap-space-md items-start">
+<!-- 96x96 Image in 4px ink frame -->
+<div class="shrink-0 w-24 h-24 rounded-2xl border-4 border-primary overflow-hidden bg-surface-container-high">
+<img alt="חציל קלוי בטחינה" class="w-full h-full object-cover" src="../assets/photo-7d18a1ecb2.jpg"/>
+</div>
+<!-- Dish Details -->
+<div class="flex-1 min-w-0">
+<h2 class="font-headline-sm text-[18px] leading-snug font-bold text-primary">חציל קלוי בטחינה</h2>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1 leading-snug">
+          חציל בלאדי שרוף על גחלים, טחינה גולמית עשירה, סילאן ורימונים
+        </p>
+<p class="font-label-md text-label-md font-bold text-primary mt-1.5">
+          ₪160 למגש · <span class="font-normal text-on-surface-variant">8–10 מנות</span>
+</p>
+<!-- Tags -->
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-primary bg-surface-container-low text-[11px] font-medium text-primary">
+            פרווה
+          </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-primary bg-surface-container-low text-[11px] font-medium text-primary">
+            צמחוני
+          </span>
+</div>
+<!-- Allergen line -->
+<p class="text-[11px] text-on-surface-variant mt-1.5 font-normal">
+          אלרגנים: שומשום
+        </p>
+<!-- Add Button -->
+<div class="mt-3 flex items-center justify-end">
+<button class="border-2 border-primary bg-surface-container-lowest hover:bg-surface-container text-primary font-label-md text-label-md font-bold px-4 py-1.5 rounded-lg flex items-center gap-1 active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+<span>הוספה</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Dish 3: סלט קיסר עם פרמזן -->
+<article class="p-space-md flex gap-space-md items-start">
+<!-- 96x96 Image in 4px ink frame -->
+<div class="shrink-0 w-24 h-24 rounded-2xl border-4 border-primary overflow-hidden bg-surface-container-high">
+<img alt="סלט קיסר עם פרמזן" class="w-full h-full object-cover" src="../assets/photo-47714a7400.jpg"/>
+</div>
+<!-- Dish Details -->
+<div class="flex-1 min-w-0">
+<h2 class="font-headline-sm text-[18px] leading-snug font-bold text-primary">סלט קיסר עם פרמזן</h2>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1 leading-snug">
+          לבבות חסה קיסר, קרוטונים פריכים, שבבי פרמזן ורוטב קיסר ביתי
+        </p>
+<p class="font-label-md text-label-md font-bold text-primary mt-1.5">
+          ₪210 למגש · <span class="font-normal text-on-surface-variant">10–12 מנות</span>
+</p>
+<!-- Tags -->
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-primary bg-surface-container-low text-[11px] font-medium text-primary">
+            חלבי
+          </span>
+</div>
+<!-- Warning line for allergens -->
+<div class="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-secondary">
+<span class="material-symbols-outlined text-[14px]" data-icon="help_outline">help_outline</span>
+<span>אלרגנים: לא ידוע — כדאי לברר</span>
+</div>
+<!-- Add Button -->
+<div class="mt-3 flex items-center justify-end">
+<button class="border-2 border-primary bg-surface-container-lowest hover:bg-surface-container text-primary font-label-md text-label-md font-bold px-4 py-1.5 rounded-lg flex items-center gap-1 active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+<span>הוספה</span>
+</button>
+</div>
+</div>
+</article>
+</main>
+<!-- 5. FLOATING ASSISTANT BUTTON ("עוזר") -->
+<!-- Floating above the sticky bottom bar on inline-end (left in RTL) -->
+<aside class="fixed bottom-24 left-4 z-50">
+<button aria-label="עוזר אישי להרכבת תפריט" class="flex items-center gap-1.5 bg-primary text-on-primary px-3.5 py-2.5 rounded-full border-2 border-primary shadow-none active:scale-95 transition-transform hover:bg-primary-container" type="button">
+<span class="text-secondary-container text-base leading-none">✨</span>
+<span class="font-label-md text-label-md font-bold text-secondary-container">עוזר</span>
+</button>
+</aside>
+<!-- 6. STICKY INK BOTTOM BAR -->
+<footer class="fixed bottom-0 inset-x-0 w-full max-w-[390px] mx-auto z-40 bg-primary text-on-primary border-t-2 border-primary px-space-md py-3 flex items-center justify-between">
+<!-- Right side in RTL: Order total -->
+<div>
+<p class="font-headline-sm text-headline-sm font-bold text-secondary-container leading-tight">
+        4 מנות · ₪1,140
+      </p></div>
+<!-- Left side in RTL: Primary Action CTA Button with Left Arrow (arrow_back in RTL = forward progress) -->
+<button class="bg-secondary-container text-primary font-label-lg text-label-lg font-bold px-4 py-2.5 rounded-lg border-2 border-primary flex items-center gap-1 active:scale-95 transition-transform hover:bg-secondary-fixed" type="button">
+<span>לסיכום ההזמנה</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_back">arrow_back</span>
+</button>
+</footer>
+</body></html>

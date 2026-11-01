@@ -1,18 +1,98 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <title>שולחן מלא · קייטרינג לאירועים פרטיים</title>
+  <link rel="preload" href="/assets/fonts/rubik-doodle-shadow-hebrew.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <!-- Brand name is a placeholder (OPEN_DECISIONS #20). -->
+      <a class="wordmark" href="/">שולחן מלא</a>
+      <a class="site-header__link" href="/admin/">כניסה לבעל העסק</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero band--butter" aria-labelledby="hero-title">
+      <div class="container hero__inner">
+        <div class="hero__text">
+          <h1 id="hero-title" class="display hero__title">האירוע שלכם, מוגש.</h1>
+          <p class="hero__lead">קייטרינג לאירועים פרטיים: בוחרים מנות, מקבלים כמויות לפי מספר האורחים, ושולחים בקשה להצעת מחיר.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="/customer/">מתכננים אירוע</a>
+            <a class="hero__secondary" href="/customer/#menu">לתפריט המלא</a>
+          </div>
+        </div>
+        <img class="character hero__character" src="/assets/illustrations/waiter-tray-glasses.svg" alt="" width="240" height="240">
+      </div>
+    </section>
+
+    <section class="band" aria-labelledby="steps-title">
+      <div class="container steps">
+        <h2 id="steps-title">איך זה עובד</h2>
+        <!-- A real sequence, so it is an ordered list. -->
+        <ol class="steps__list">
+          <li><h3>מספרים על האירוע</h3><p class="muted">סוג האירוע, תאריך, ומי מגיע: מבוגרים, ילדים, צמחונים וטבעונים.</p></li>
+          <li><h3>בוחרים מנות</h3><p class="muted">הכמויות המומלצות מחושבות לפי הרכב האורחים.</p></li>
+          <li><h3>העוזר מציע, אתם מחליטים</h3><p class="muted">כל שינוי שהעוזר מציע מחכה לאישור שלכם לפני שהוא נכנס להזמנה.</p></li>
+          <li><h3>שולחים בקשה להצעת מחיר</h3><p class="muted">בעל העסק בודק ומאשר. עד אז זו בקשה, לא הזמנה סגורה.</p></li>
+        </ol>
+        <img class="character steps__character" src="/assets/illustrations/chef-whisking.svg" alt="" width="150" height="205">
+      </div>
+    </section>
+
+    <section class="band band--surface" aria-labelledby="dishes-title">
+      <div class="container">
+        <h2 id="dishes-title">מהתפריט</h2>
+        <ul class="dish-strip" id="dish-strip"></ul>
+        <p class="hint">נתוני דוגמה. התפריט המלא נטען מהעסק.</p>
+      </div>
+    </section>
+
+    <section class="closing band--butter" aria-labelledby="closing-title">
+      <div class="container closing__inner">
+        <img class="character" src="/assets/illustrations/guest-bar-table.svg" alt="" width="220" height="180">
+        <div>
+          <h2 id="closing-title">לכל מנה: כשרות, אלרגנים ומחיר ליחידה</h2>
+          <p class="muted">איסוף עצמי או משלוח. מנה שאין עליה מידע על אלרגנים מסומנת ככזו, ולא כבטוחה.</p>
+          <a class="btn btn--primary" href="/customer/">מתכננים אירוע</a>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>שולחן מלא, קייטרינג לאירועים פרטיים</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { dishes, unitLabels } from "/js/sample-data.js";
+    import { formatPrice } from "/js/format.js";
+
+    // Static markup only; dish values are set with textContent, never as HTML.
+    const strip = document.getElementById("dish-strip");
+    strip.replaceChildren(...dishes.slice(0, 4).map((dish) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <div class="photo-frame dish-strip__photo"><img alt="" loading="lazy" width="200" height="200"></div>
+        <h3></h3>
+        <p class="muted"><bdi dir="ltr"></bdi> <span></span></p>`;
+      li.className = "dish-strip__item";
+      li.querySelector("img").src = dish.photo;
+      li.querySelector("h3").textContent = dish.name;
+      li.querySelector("bdi").textContent = formatPrice(dish.price);
+      li.querySelector("span").textContent = unitLabels[dish.unit];
+      return li;
+    }));
+  </script>
 </body>
 </html>

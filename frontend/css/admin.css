@@ -1,0 +1,98 @@
+/* Owner dashboard (A1, A2). Desktop-first work tool that still reflows on a phone. */
+
+.admin { display: grid; min-block-size: 100vh; }
+.admin > main, .view-body > *, .orders > * { min-inline-size: 0; } /* let grid columns shrink below the table width */
+/* Tables scroll inside their own region on a phone, never the whole page (foundations §8). */
+.table-wrap { overflow-x: auto; position: relative; } /* positioned, so visually-hidden labels inside stay clipped */
+
+.sidebar { background: var(--color-text); color: var(--color-surface); padding: var(--space-4); display: grid; gap: var(--space-3); align-content: start; }
+.sidebar__brand { color: var(--color-highlight); font-weight: 500; font-size: var(--text-lg); text-decoration: none; }
+.sidebar__nav { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.sidebar__nav a { display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius); text-decoration: none; min-block-size: var(--target); }
+.sidebar__nav a[aria-current] { background: var(--color-highlight); color: var(--color-text); font-weight: 500; }
+.sidebar__nav a[aria-disabled="true"] { opacity: 0.7; cursor: not-allowed; text-decoration: line-through; }
+.sidebar__note, .sidebar__owner { font-size: var(--text-sm); }
+.sidebar :focus-visible { outline-color: var(--color-highlight); }
+
+/* ui-exception: the h1 is a programmatic focus target on view change, not an interactive control */
+.view h1:focus { outline: none; }
+.view-band { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); padding: var(--space-6) var(--space-4) 0; }
+.view-band > div { padding-block-end: var(--space-6); display: grid; gap: var(--space-3); justify-items: start; }
+.view-band .character { inline-size: 120px; margin-block-end: -2px; }
+.view-body { padding: var(--space-6) var(--space-4); display: grid; gap: var(--space-6); }
+
+.kpis { display: grid; margin: 0; border-block-end: var(--border); background: var(--color-bg); }
+.kpis > div { padding: var(--space-4); border-block-end: 1.5px solid var(--color-line); }
+.kpis dt { font-size: var(--text-sm); }
+.kpis dd { margin: 0; font-size: var(--text-2xl); font-weight: 500; }
+
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block-end: var(--space-4); }
+
+/* One row height per table; the header matches it (UI/UX foundations §15). */
+.table { inline-size: 100%; border-collapse: collapse; background: var(--color-surface); border: var(--border); }
+.table th, .table td { text-align: start; padding: var(--space-3); border-block-end: 1.5px solid var(--color-line); vertical-align: middle; }
+.table thead th { background: var(--color-bg); font-size: var(--text-sm); }
+.table th[aria-sort="ascending"]::after { content: " ↓"; } /* visible sort state, matches aria-sort */
+.table tbody th { font-weight: 500; }
+.table tr[aria-selected="true"] { background: var(--color-highlight); }
+.table tr[aria-selected="true"] > :first-child { border-inline-start: 6px solid var(--color-text); }
+.table tr[aria-selected="true"] th::after { content: " (נבחרה)"; font-size: var(--text-sm); } /* not colour alone */
+.table--compact th, .table--compact td { padding: var(--space-2); font-size: var(--text-sm); }
+.table tfoot th, .table tfoot td { font-weight: 500; font-size: var(--text-base); }
+.link-btn { background: none; border: 0; padding: 0; font-weight: 500; text-decoration: underline; cursor: pointer; min-block-size: var(--target); text-align: start; }
+.thumb { inline-size: 56px; block-size: 56px; border-width: 3px; border-radius: var(--radius); }
+.truncate { max-inline-size: 28ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+.empty { color: var(--color-muted); padding: var(--space-6); }
+
+.switch {
+  min-inline-size: 64px; min-block-size: 36px; border: var(--border); border-radius: var(--radius-pill);
+  background: var(--color-surface); cursor: pointer; font-weight: 500;
+}
+.switch[aria-checked="true"] { background: var(--color-success); border-color: var(--color-success); color: var(--color-surface); }
+.switch[aria-checked="true"]::before { content: "✓ "; }
+
+.panel { background: var(--color-surface); border: var(--border); border-radius: var(--radius-frame); padding: var(--space-4); display: grid; gap: var(--space-4); align-content: start; }
+.panel:focus { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.panel__head { display: flex; justify-content: space-between; align-items: start; gap: var(--space-3); flex-wrap: wrap; }
+.panel__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-3); margin: 0; }
+.facts dt { font-weight: 500; }
+.facts dd { margin: 0; }
+
+/* Dialogs */
+.drawer, .confirm { border: var(--border); padding: 0; color: var(--color-text); }
+.drawer::backdrop, .confirm::backdrop { background: rgb(61 59 56 / 0.6); }
+.drawer { inline-size: 100%; max-inline-size: 100%; block-size: 100vh; max-block-size: 100vh; margin-block: 0; margin-inline: auto 0; }
+.drawer form { display: flex; flex-direction: column; block-size: 100%; }
+.drawer__head { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-bg); border-block-end: var(--border); }
+.drawer__body { flex: 1; overflow-y: auto; padding: var(--space-4); display: grid; gap: var(--space-4); align-content: start; }
+.drawer__foot { display: flex; gap: var(--space-2); padding: var(--space-4); border-block-start: var(--border); background: var(--color-bg); }
+.drawer__delete { margin-inline-start: auto; }
+.choice { display: inline-flex; align-items: center; gap: var(--space-2); min-block-size: var(--target); padding-inline: var(--space-3); border: var(--border); border-radius: var(--radius-pill); background: var(--color-surface); cursor: pointer; }
+.choice:has(input:checked) { background: var(--color-highlight); }
+.choice input { accent-color: var(--color-text); }
+.allergen-editor { display: grid; gap: var(--space-2); }
+.allergen-row { border: 0; padding: 0; margin: 0; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.allergen-row > legend { float: inline-start; font-weight: 400; padding: 0; }
+.segmented3 { display: flex; gap: var(--space-1); }
+.segmented3 .choice { padding-inline: var(--space-2); font-size: var(--text-sm); }
+.segmented3 .choice:has(input[value="unknown"]:checked) { background: var(--color-surface); color: var(--color-warning); border-color: var(--color-warning); border-style: dashed; }
+
+.confirm { max-inline-size: 420px; border-radius: var(--radius-frame); padding: var(--space-6); display: none; gap: var(--space-4); }
+.confirm[open] { display: grid; }
+.confirm__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+
+@media (min-width: 1024px) {
+  .admin { grid-template-columns: 240px 1fr; }
+  .sidebar { position: sticky; inset-block-start: 0; block-size: 100vh; padding: var(--space-6); }
+  .sidebar__nav { flex-direction: column; }
+  .sidebar__owner { align-self: end; }
+  .view-band { padding-inline: var(--space-8); }
+  .view-band .character { inline-size: 190px; }
+  .view-body { padding-inline: var(--space-8); }
+  .kpis { grid-template-columns: repeat(3, 1fr); padding-inline: var(--space-4); }
+  .kpis > div { border-block-end: 0; border-inline-end: 1.5px solid var(--color-line); }
+  .kpis > div:last-child { border-inline-end: 0; }
+  .orders { grid-template-columns: 3fr 2fr; align-items: start; }
+  .drawer { inline-size: 460px; }
+}

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>מסך A2 (V2): ניהול מנות וקטגוריות - שולחן מלא</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&amp;family=Rubik:ital,wght@0,300..900;1,300..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Rubik', 'sans-serif'],
+            doodle: ['"Rubik Doodle Shadow"', 'Rubik', 'sans-serif'],
+          },
+          colors: {
+            ink: '#262523',
+            'ink-light': '#55534E',
+            butter: '#F6CE65',
+            'butter-tint': '#FCE8A6',
+            'butter-light': '#FDF4DC',
+            greybg: '#EEEEEE',
+          },
+          boxShadow: {
+            'none': 'none',
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    * {
+      box-shadow: none !important;
+    }
+    body {
+      font-family: 'Rubik', sans-serif;
+      background-color: #EEEEEE;
+      color: #262523;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Price and status cells stay on one line so every column fits. */
+    td .font-extrabold.text-sm, td label span { white-space: nowrap; }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EEEEEE;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262523;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="bg-[#EEEEEE] min-h-screen text-ink antialiased flex justify-center">
+<!-- Desktop Fixed Container (1440px width canvas) -->
+<div class="w-[1440px] max-w-[1440px] min-h-screen flex flex-row overflow-hidden bg-white border-x-2 border-ink relative">
+<!-- ================= 1. RIGHT SIDEBAR (280px / w-[280px], ink background) ================= -->
+<aside class="w-[280px] bg-ink text-white flex flex-col justify-between p-6 flex-shrink-0 min-h-screen border-l-2 border-ink z-30">
+<div class="space-y-6">
+<!-- Brand Header -->
+<div class="flex items-center gap-3 pb-5 border-b border-neutral-700">
+<div class="w-10 h-10 rounded-xl bg-butter text-ink flex items-center justify-center font-bold text-xl border-2 border-ink">
+            שמ
+          </div>
+<div>
+<h1 class="font-extrabold text-base tracking-tight text-white m-0">שולחן מלא</h1>
+<p class="text-xs text-neutral-400 font-medium m-0">קייטרינג בוטיק לאירועים</p>
+</div>
+</div>
+<!-- Navigation Menu -->
+<nav aria-label="תפריט ניווט ראשי" class="flex flex-col gap-1.5 text-sm font-semibold">
+<!-- 1. הזמנות (inactive with badge 3) -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-lg">receipt_long</span>
+<span>הזמנות</span>
+</div>
+<span class="bg-neutral-800 text-butter text-xs font-black px-2 py-0.5 rounded-full border border-neutral-700">3</span>
+</a>
+<!-- 2. מנות וקטגוריות (ACTIVE, filled with butter #F6CE65, text #262523) -->
+<a class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-butter text-ink font-bold border-2 border-ink transition-transform" href="#">
+<span class="material-symbols-outlined text-lg text-ink font-bold">restaurant_menu</span>
+<span>מנות וקטגוריות</span>
+</a>
+<!-- 3. תמחור -->
+<a class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">payments</span>
+<span>תמחור</span>
+</a>
+<!-- 4. זמינות ותאריכים -->
+<a class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">calendar_month</span>
+<span>זמינות ותאריכים</span>
+</a>
+<!-- 5. איסוף ומשלוחים -->
+<a class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-neutral-300 hover:text-white hover:bg-neutral-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">local_shipping</span>
+<span>איסוף ומשלוחים</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Owner Card -->
+<div class="p-3 bg-neutral-900/80 rounded-xl border border-neutral-700 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-butter text-ink flex items-center justify-center font-bold text-sm border-2 border-ink">
+            ד
+          </div>
+<div class="text-xs">
+<div class="font-bold text-white">דנה כהן</div>
+<div class="text-[11px] text-neutral-400">בעלת העסק</div>
+</div>
+</div>
+<button class="text-neutral-400 hover:text-butter transition-colors" title="התנתקות">
+<span class="material-symbols-outlined text-base">logout</span>
+</button>
+</div>
+</aside>
+<!-- ================= MAIN WORKSPACE (Butter Banner + Split Table & Drawer) ================= -->
+<div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-[#EEEEEE]">
+<!-- ================= 2. BUTTER HEADER BAND (1160px wide, solid #F6CE65, 2px ink border) ================= -->
+<header class="w-full bg-butter border-b-2 border-ink px-8 py-4 flex items-center justify-between relative overflow-hidden flex-shrink-0 z-10">
+<!-- Title and actions (right side in RTL) -->
+<div class="flex flex-col gap-2 z-10">
+<div class="flex items-center gap-3">
+<h1 class="font-doodle text-4xl text-ink font-normal tracking-wide m-0">מנות וקטגוריות</h1>
+<span class="bg-white text-ink border-2 border-ink font-bold text-xs px-3 py-1 rounded-full whitespace-nowrap">
+              24 מנות בתפריט
+            </span>
+</div>
+<div class="flex items-center gap-2.5 pt-1">
+<button class="inline-flex items-center gap-1.5 px-4 py-2 bg-ink text-white rounded-xl font-bold text-xs border-2 border-ink hover:bg-neutral-800 transition-colors">
+<span class="material-symbols-outlined text-sm font-bold text-butter">add</span>
+<span>מנה חדשה</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-ink rounded-xl font-bold text-xs border-2 border-ink hover:bg-[#FAF9F6] transition-colors">
+<span class="material-symbols-outlined text-sm">create_new_folder</span>
+<span>קטגוריה חדשה</span>
+</button>
+</div>
+</div>
+<!-- Chef Character illustration standing on the bottom edge (approx 185px tall) -->
+<div class="z-10 flex items-end pl-6" style="height: 140px;">
+<svg class="w-52 h-36" fill="none" viewbox="0 0 210 150" xmlns="http://www.w3.org/2000/svg">
+<!-- Chef Hat -->
+<ellipse cx="105" cy="36" fill="#FFFFFF" rx="34" ry="18" stroke="#262523" stroke-width="3.5"></ellipse>
+<path d="M82 36 Q70 14 92 10 Q105 4 120 12 Q138 9 130 36 Z" fill="#FFFFFF" stroke="#262523" stroke-width="3.5"></path>
+<!-- Head -->
+<circle cx="105" cy="58" fill="#FDF4DC" r="18" stroke="#262523" stroke-width="3.5"></circle>
+<!-- Eyes & Cheerful Wink/Smile -->
+<circle cx="98" cy="56" fill="#262523" r="2.5"></circle>
+<circle cx="112" cy="56" fill="#262523" r="2.5"></circle>
+<path d="M98 64 Q105 70 113 64" fill="none" stroke="#262523" stroke-linecap="round" stroke-width="3"></path>
+<!-- Cheeks blush (butter) -->
+<circle cx="94" cy="62" fill="#F6CE65" r="3"></circle>
+<circle cx="116" cy="62" fill="#F6CE65" r="3"></circle>
+<!-- Body / Apron -->
+<path d="M90 76 L84 135 L126 135 L120 76 Z" fill="#FFFFFF" stroke="#262523" stroke-width="3.5"></path>
+<!-- Red/Butter neckerchief/collar -->
+<path d="M95 76 L105 87 L115 76" fill="#F6CE65" stroke="#262523" stroke-width="3.5"></path>
+<circle cx="105" cy="98" fill="#262523" r="2.5"></circle>
+<circle cx="105" cy="114" fill="#262523" r="2.5"></circle>
+<!-- Right Arm: Chef tasting from wooden spoon / holding spoon -->
+<path d="M88 84 L64 94 L66 70" fill="none" stroke="#262523" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"></path>
+<!-- Tasting Spoon -->
+<path d="M66 65 L66 45" stroke="#262523" stroke-linecap="round" stroke-width="3"></path>
+<ellipse cx="66" cy="42" fill="#F6CE65" rx="6" ry="9" stroke="#262523" stroke-width="2.5"></ellipse>
+<!-- Left Arm: Hand on hip / leaning comfortably -->
+<path d="M120 84 L142 98 L138 122" fill="none" stroke="#262523" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"></path>
+<circle cx="138" cy="123" fill="#FDF4DC" r="5" stroke="#262523" stroke-width="3"></circle>
+<!-- Counter ledge line at bottom edge of banner -->
+<line stroke="#262523" stroke-linecap="round" stroke-width="3.5" x1="10" x2="200" y1="135" y2="135"></line>
+</svg>
+</div>
+</header>
+<!-- ================= 3. CATEGORY CHIPS BAR & SEARCH ================= -->
+<section class="w-full bg-[#EEEEEE] border-b-2 border-ink px-6 py-2.5 flex items-center justify-between gap-4 flex-shrink-0">
+<!-- Chips list -->
+<div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+<button class="px-3.5 py-1.5 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-ink text-xs font-bold whitespace-nowrap">
+            הכול (24)
+          </button>
+<button class="px-3.5 py-1.5 rounded-xl border-2 border-ink bg-butter text-ink text-xs font-extrabold whitespace-nowrap flex items-center gap-1">
+<span>סלטים</span>
+<span class="bg-ink text-butter text-[10px] px-1.5 py-0.2 rounded-full font-black">6</span>
+</button>
+<button class="px-3.5 py-1.5 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-ink text-xs font-semibold whitespace-nowrap">
+            מנות פתיחה
+          </button>
+<button class="px-3.5 py-1.5 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-ink text-xs font-semibold whitespace-nowrap">
+            עיקריות
+          </button>
+<button class="px-3.5 py-1.5 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-ink text-xs font-semibold whitespace-nowrap">
+            תוספות
+          </button>
+<button class="px-3.5 py-1.5 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-ink text-xs font-semibold whitespace-nowrap">
+            מאפים
+          </button>
+<button class="px-3.5 py-1.5 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-ink text-xs font-semibold whitespace-nowrap">
+            קינוחים
+          </button>
+</div>
+<!-- Quick search input field -->
+<div class="relative w-64 flex-shrink-0">
+<input class="w-full bg-white border-2 border-ink rounded-xl py-1.5 pr-8 pl-3 text-xs font-medium text-ink placeholder-neutral-500 focus:outline-none focus:ring-0 focus:border-ink" placeholder="חיפוש מנה, רכיב..." type="text"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-ink text-base pointer-events-none">search</span>
+</div>
+</section>
+<!-- ================= 4. CONTENT SPLIT: MAIN TABLE (CENTER) & DRAWER (LEFT) ================= -->
+<div class="flex-1 flex flex-row min-h-0 overflow-hidden">
+<!-- ================= 5. MAIN DISH TABLE (Remaining width ~720px) ================= -->
+<main class="flex-1 overflow-y-auto bg-white p-4">
+<div class="border-2 border-ink rounded-xl overflow-hidden bg-white">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-[#EEEEEE] border-b-2 border-ink text-xs font-bold text-ink">
+<th class="py-3 px-3 text-center w-16">תמונה</th>
+<th class="py-3 px-3">
+<div class="flex items-center gap-1 cursor-pointer">
+<span>שם המנה</span>
+<span class="material-symbols-outlined text-xs">arrow_downward</span>
+</div>
+</th>
+<th class="py-3 px-3">מחיר</th>
+<th class="py-3 px-3 text-center">כשרות</th>
+<th class="py-3 px-3 text-center">אלרגנים</th>
+<th class="py-3 px-3 text-center">זמינות</th>
+</tr>
+</thead>
+<tbody class="divide-y-2 divide-ink text-xs">
+<!-- Row 1: סלט טאבולה (SELECTED ROW, highlighted in butter #FCE8A6, border-2 border-ink) -->
+<tr class="bg-butter-tint relative">
+<td class="py-3 px-3 text-center">
+<div class="w-14 h-14 rounded-xl border-[3px] border-ink overflow-hidden mx-auto bg-white">
+<img alt="סלט טאבולה" class="w-full h-full object-cover" src="../assets/photo-7e49195e2c.jpg"/>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1.5 font-bold text-sm text-ink">
+<span>סלט טאבולה</span>
+<span class="bg-ink text-butter text-[10px] font-black px-1.5 py-0.5 rounded">נבחר כעת</span>
+</div>
+<div class="text-[11px] text-ink-light truncate max-w-[210px] mt-0.5">
+                      בורגול, פטרוזיליה קצוצה דק, נענע רעננה, קוביות עגבנייה ושמן זית כתית
+                    </div>
+</td>
+<td class="py-3 px-3">
+<div class="font-extrabold text-ink text-sm">₪180 · למגש</div>
+<div class="text-[10px] text-ink-light font-medium">10–12 אורחים</div>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border-2 border-ink bg-white text-ink font-bold text-[11px]">
+<span class="material-symbols-outlined text-xs">eco</span>
+<span>פרווה</span>
+</span>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-ink text-[11px] font-bold bg-white">
+                      גלוטן
+                    </span>
+</td>
+<td class="py-3 px-3 text-center">
+<label class="inline-flex items-center gap-1.5 cursor-pointer">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600 border border-ink"></span>
+<span class="font-bold text-[11px] text-ink">פעיל בתפריט</span>
+</label>
+</td>
+</tr>
+<!-- Row 2: חציל קלוי בטחינה -->
+<tr class="hover:bg-neutral-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<div class="w-14 h-14 rounded-xl border-[3px] border-ink overflow-hidden mx-auto bg-white">
+<img alt="חציל קלוי בטחינה" class="w-full h-full object-cover" src="../assets/photo-7d18a1ecb2.jpg"/>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-sm text-ink">חציל קלוי בטחינה</div>
+<div class="text-[11px] text-ink-light truncate max-w-[210px] mt-0.5">
+                      חציל בלאדי שרוף על גחלים, טחינה גולמית עשירה, סילאן ורימונים
+                    </div>
+</td>
+<td class="py-3 px-3">
+<div class="font-extrabold text-ink text-sm">₪160 · למגש</div>
+<div class="text-[10px] text-ink-light font-medium">8–10 אורחים</div>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border-2 border-ink bg-white text-ink font-bold text-[11px]">
+<span class="material-symbols-outlined text-xs">eco</span>
+<span>פרווה</span>
+</span>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-ink text-[11px] font-bold bg-white">
+                      שומשום
+                    </span>
+</td>
+<td class="py-3 px-3 text-center">
+<label class="inline-flex items-center gap-1.5 cursor-pointer">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600 border border-ink"></span>
+<span class="font-bold text-[11px] text-ink">פעיל בתפריט</span>
+</label>
+</td>
+</tr>
+<!-- Row 3: סלט קיסר עם פרמזן (Warning yellow for unknown allergen) -->
+<tr class="hover:bg-neutral-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<div class="w-14 h-14 rounded-xl border-[3px] border-ink overflow-hidden mx-auto bg-white">
+<img alt="סלט קיסר עם פרמזן" class="w-full h-full object-cover" src="../assets/photo-47714a7400.jpg"/>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-sm text-ink">סלט קיסר עם פרמזן</div>
+<div class="text-[11px] text-ink-light truncate max-w-[210px] mt-0.5">
+                      לבבות חסה קיסר, קרוטונים פריכים, שבבי פרמזן ורוטב קיסר עשיר
+                    </div>
+</td>
+<td class="py-3 px-3">
+<div class="font-extrabold text-ink text-sm">₪210 · למגש</div>
+<div class="text-[10px] text-ink-light font-medium">10–12 אורחים</div>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border-2 border-ink bg-white text-ink font-bold text-[11px]">
+<span class="material-symbols-outlined text-xs">water_drop</span>
+<span>חלבי</span>
+</span>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded border-2 border-amber-600 bg-amber-100 text-amber-900 font-extrabold text-[11px]">
+<span class="material-symbols-outlined text-xs">warning</span>
+<span>לא ידוע</span>
+</span>
+</td>
+<td class="py-3 px-3 text-center">
+<label class="inline-flex items-center gap-1.5 cursor-pointer">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600 border border-ink"></span>
+<span class="font-bold text-[11px] text-ink">פעיל בתפריט</span>
+</label>
+</td>
+</tr>
+<!-- Row 4: שיפודי פרגית -->
+<tr class="hover:bg-neutral-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<div class="w-14 h-14 rounded-xl border-[3px] border-ink overflow-hidden mx-auto bg-white">
+<img alt="שיפודי פרגית" class="w-full h-full object-cover" src="../assets/photo-492a651e3f.jpg"/>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-sm text-ink">שיפודי פרגית</div>
+<div class="text-[11px] text-ink-light truncate max-w-[210px] mt-0.5">
+                      צליות בגריל פחמים עם שאלוט ועשבי תיבול ים-תיכוניים
+                    </div>
+</td>
+<td class="py-3 px-3">
+<div class="font-extrabold text-ink text-sm">₪95 · לק״ג</div>
+<div class="text-[10px] text-ink-light font-medium">משקל מבושל נטו</div>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border-2 border-ink bg-white text-ink font-bold text-[11px]">
+<span class="material-symbols-outlined text-xs">kebab_dining</span>
+<span>בשרי</span>
+</span>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="text-[11px] text-ink-light font-medium">ללא אלרגנים</span>
+</td>
+<td class="py-3 px-3 text-center">
+<label class="inline-flex items-center gap-1.5 cursor-pointer">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600 border border-ink"></span>
+<span class="font-bold text-[11px] text-ink">פעיל בתפריט</span>
+</label>
+</td>
+</tr>
+<!-- Row 5: מיני קיש בטטה ורוזמרין -->
+<tr class="hover:bg-neutral-50 transition-colors">
+<td class="py-3 px-3 text-center">
+<div class="w-14 h-14 rounded-xl border-[3px] border-ink overflow-hidden mx-auto bg-white">
+<img alt="מיני קיש בטטה ורוזמרין" class="w-full h-full object-cover" src="../assets/photo-445e46faa2.jpg"/>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-bold text-sm text-ink">מיני קיש בטטה ורוזמרין</div>
+<div class="text-[11px] text-ink-light truncate max-w-[210px] mt-0.5">
+                      בצק חמאה פריך במילוי בטטה צלויה, גבינת עיזים ועשבי תיבול
+                    </div>
+</td>
+<td class="py-3 px-3">
+<div class="font-extrabold text-ink text-sm">₪28 · ליחידה</div>
+<div class="text-[10px] text-ink-light font-medium">מינימום 15 יח'</div>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border-2 border-ink bg-white text-ink font-bold text-[11px]">
+<span class="material-symbols-outlined text-xs">water_drop</span>
+<span>חלבי</span>
+</span>
+</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded border border-ink text-[11px] font-bold bg-white">
+                      גלוטן, חלב
+                    </span>
+</td>
+<td class="py-3 px-3 text-center">
+<label class="inline-flex items-center gap-1.5 cursor-pointer">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-600 border border-ink"></span>
+<span class="font-bold text-[11px] text-ink">פעיל בתפריט</span>
+</label>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Table Pagination Bar -->
+<div class="bg-[#EEEEEE] px-4 py-2.5 border-t-2 border-ink flex items-center justify-between text-xs font-bold text-ink">
+<div>מציג 5 מתוך 24 מנות</div>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 rounded-lg border-2 border-ink bg-white hover:bg-neutral-100">הקודם</button>
+<button class="px-3 py-1 rounded-lg border-2 border-ink bg-butter text-ink font-black">1</button>
+<button class="px-3 py-1 rounded-lg border-2 border-ink bg-white hover:bg-neutral-100">2</button>
+<button class="px-2.5 py-1 rounded-lg border-2 border-ink bg-white hover:bg-neutral-100">הבא</button>
+</div>
+</div>
+</div>
+</main>
+<!-- ================= 6. EDIT DRAWER (LEFT SIDE, 440px width, docked, solid border-r-2 border-ink) ================= -->
+<aside class="w-[400px] max-w-[400px] bg-white border-r-2 border-ink flex flex-col justify-between flex-shrink-0 h-full z-20">
+<!-- Drawer Header -->
+<div class="px-5 py-3.5 border-b-2 border-ink bg-[#EEEEEE] flex items-center justify-between flex-shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-ink text-xl font-bold">edit_note</span>
+<div>
+<h2 class="text-sm font-extrabold text-ink m-0">עריכת מנה · סלט טאבולה</h2>
+<p class="text-[11px] text-ink-light m-0 font-medium">#DISH-104 · קטגוריה: סלטים</p>
+</div>
+</div>
+<button class="w-7 h-7 rounded-full border-2 border-ink bg-white hover:bg-neutral-100 flex items-center justify-center text-ink transition-colors" title="סגירת חלונית">
+<span class="material-symbols-outlined text-sm font-bold">close</span>
+</button>
+</div>
+<!-- Drawer Scrollable Form Fields -->
+<div class="flex-1 overflow-y-auto p-5 space-y-4 text-right">
+<!-- a) שם המנה -->
+<div>
+<label class="block text-xs font-bold text-ink mb-1">שם המנה</label>
+<input class="w-full px-3 py-2 text-xs bg-white border-2 border-ink rounded-xl font-bold text-ink focus:outline-none focus:bg-butter-light" type="text" value="סלט טאבולה"/>
+</div>
+<!-- b) תיאור -->
+<div>
+<label class="block text-xs font-bold text-ink mb-1">תיאור</label>
+<textarea class="w-full px-3 py-2 text-xs bg-white border-2 border-ink rounded-xl font-medium text-ink focus:outline-none focus:bg-butter-light resize-none leading-relaxed" rows="2">בורגול, פטרוזיליה קצוצה דק, נענע רעננה, קוביות עגבנייה, שמן זית בכיבישה קרה ומיץ לימון טרי.</textarea>
+</div>
+<!-- c) קטגוריה -->
+<div>
+<label class="block text-xs font-bold text-ink mb-1">קטגוריה</label>
+<div class="relative">
+<select class="w-full px-3 py-2 text-xs bg-white border-2 border-ink rounded-xl font-bold text-ink focus:outline-none appearance-none pr-3 pl-8 cursor-pointer">
+<option selected="" value="salads">סלטים</option>
+<option value="starters">מנות פתיחה</option>
+<option value="mains">עיקריות</option>
+<option value="sides">תוספות</option>
+<option value="bakes">מאפים</option>
+</select>
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-ink pointer-events-none text-base">expand_more</span>
+</div>
+</div>
+<!-- d) תמונת המנה (4px ink frame + החלפת תמונה button) -->
+<div>
+<label class="block text-xs font-bold text-ink mb-1">תמונת המנה</label>
+<div class="flex items-center gap-3.5 p-3 bg-[#EEEEEE] border-2 border-ink rounded-xl">
+<div class="w-16 h-16 rounded-xl border-[4px] border-ink overflow-hidden bg-white flex-shrink-0">
+<img alt="סלט טאבולה" class="w-full h-full object-cover" src="../assets/photo-7e49195e2c.jpg"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-ink truncate m-0">tabbouleh_salad_2026.jpg</p>
+<p class="text-[10px] text-ink-light m-0 mt-0.5 mb-2">יחס 1:1, לפחות 600x600px</p>
+<button class="inline-flex items-center gap-1 px-3 py-1 bg-white hover:bg-neutral-100 border-2 border-ink rounded-lg text-xs font-bold text-ink transition-colors">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+<span>החלפת תמונה</span>
+</button>
+</div>
+</div>
+</div>
+<!-- e) תמחור יחידת מכירה -->
+<div class="p-3 bg-[#EEEEEE] border-2 border-ink rounded-xl space-y-2">
+<label class="block text-xs font-bold text-ink">תמחור יחידת מכירה</label>
+<!-- Segmented Control -->
+<div class="grid grid-cols-4 gap-1 p-1 bg-white border-2 border-ink rounded-xl text-center text-xs font-bold">
+<button class="py-1 rounded-lg text-ink hover:bg-neutral-100">לאורח</button>
+<button class="py-1 rounded-lg bg-butter text-ink font-black border border-ink">למגש</button>
+<button class="py-1 rounded-lg text-ink hover:bg-neutral-100">לק״ג</button>
+<button class="py-1 rounded-lg text-ink hover:bg-neutral-100">ליחידה</button>
+</div>
+<!-- Input with currency -->
+<div class="relative">
+<span class="absolute right-3.5 top-2 font-black text-ink text-sm">₪</span>
+<input class="w-full pr-8 pl-3 py-1.5 text-sm font-black bg-white border-2 border-ink rounded-xl text-ink focus:outline-none" type="number" value="180"/>
+</div>
+<!-- Helper text -->
+<p class="text-[11px] text-ink-light flex items-center gap-1 font-medium m-0">
+<span class="material-symbols-outlined text-xs">info</span>
+<span>מגש אחד מספיק ל-10–12 אורחים</span>
+</p>
+</div>
+<!-- f) הגדרת כשרות -->
+<div>
+<label class="block text-xs font-bold text-ink mb-1">הגדרת כשרות</label>
+<div class="grid grid-cols-3 gap-2">
+<button class="py-1.5 px-2 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-xs font-bold text-ink flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-xs">kebab_dining</span>
+<span>בשרי</span>
+</button>
+<button class="py-1.5 px-2 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-xs font-bold text-ink flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-xs">water_drop</span>
+<span>חלבי</span>
+</button>
+<button class="py-1.5 px-2 rounded-xl border-2 border-ink bg-butter text-ink text-xs font-black flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-xs font-black">eco</span>
+<span>פרווה ✓</span>
+</button>
+</div>
+</div>
+<!-- g) תיוג תזונתי (תכונות) -->
+<div>
+<label class="block text-xs font-bold text-ink mb-1">תיוג תזונתי</label>
+<div class="flex items-center gap-2">
+<label class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-ink bg-white text-xs font-bold text-ink cursor-pointer">
+<input checked="" class="w-3.5 h-3.5 rounded border-2 border-ink accent-ink cursor-pointer" type="checkbox"/>
+<span>צמחוני</span>
+</label>
+<label class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-ink bg-white text-xs font-bold text-ink cursor-pointer">
+<input checked="" class="w-3.5 h-3.5 rounded border-2 border-ink accent-ink cursor-pointer" type="checkbox"/>
+<span>טבעוני</span>
+</label>
+</div>
+</div>
+<!-- h) עורך אלרגנים -->
+<div class="border-2 border-ink rounded-xl p-3 bg-white space-y-2.5">
+<div class="flex items-center justify-between">
+<label class="block text-xs font-bold text-ink uppercase tracking-wider">עורך אלרגנים</label>
+<span class="text-[10px] text-ink-light font-bold">5 אלרגנים</span>
+</div>
+<!-- Banner helper -->
+<div class="flex items-center gap-1.5 p-2 rounded-lg bg-butter border-2 border-ink text-ink text-[11px] font-bold">
+<span class="material-symbols-outlined text-sm flex-shrink-0">info</span>
+<span>׳לא ידוע׳ מוצג ללקוח כאזהרה, לא כ׳ללא׳</span>
+</div>
+<!-- 5 Allergen rows -->
+<div class="space-y-1.5">
+<!-- 1. גלוטן -> מכיל (selected ink) -->
+<div class="flex items-center justify-between p-2 rounded-lg border-2 border-ink bg-[#EEEEEE] text-xs">
+<span class="font-bold text-ink flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">bakery_dining</span>
+<span>גלוטן</span>
+</span>
+<div class="flex items-center gap-0.5 bg-white p-0.5 rounded-lg border border-ink text-[10px] font-bold">
+<span class="px-2 py-0.5 rounded bg-ink text-white">מכיל</span>
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-neutral-100">לא מכיל</span>
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-neutral-100">לא ידוע</span>
+</div>
+</div>
+<!-- 2. שומשום -> לא מכיל (selected) -->
+<div class="flex items-center justify-between p-2 rounded-lg border-2 border-ink bg-white text-xs">
+<span class="font-bold text-ink flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">grain</span>
+<span>שומשום</span>
+</span>
+<div class="flex items-center gap-0.5 bg-[#EEEEEE] p-0.5 rounded-lg border border-ink text-[10px] font-bold">
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-white">מכיל</span>
+<span class="px-2 py-0.5 rounded bg-ink text-white">לא מכיל</span>
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-white">לא ידוע</span>
+</div>
+</div>
+<!-- 3. אגוזים -> לא ידוע (selected warning) -->
+<div class="flex items-center justify-between p-2 rounded-lg border-2 border-amber-600 bg-amber-50 text-xs">
+<span class="font-bold text-ink flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-amber-700">nutrition</span>
+<span>אגוזים</span>
+</span>
+<div class="flex items-center gap-0.5 bg-white p-0.5 rounded-lg border border-amber-600 text-[10px] font-bold">
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-neutral-100">מכיל</span>
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-neutral-100">לא מכיל</span>
+<span class="px-2 py-0.5 rounded bg-amber-500 text-white font-black border border-amber-600">לא ידוע</span>
+</div>
+</div>
+<!-- 4. ביצים -> לא מכיל (selected) -->
+<div class="flex items-center justify-between p-2 rounded-lg border-2 border-ink bg-white text-xs">
+<span class="font-bold text-ink flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">egg</span>
+<span>ביצים</span>
+</span>
+<div class="flex items-center gap-0.5 bg-[#EEEEEE] p-0.5 rounded-lg border border-ink text-[10px] font-bold">
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-white">מכיל</span>
+<span class="px-2 py-0.5 rounded bg-ink text-white">לא מכיל</span>
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-white">לא ידוע</span>
+</div>
+</div>
+<!-- 5. חלב -> לא מכיל (selected) -->
+<div class="flex items-center justify-between p-2 rounded-lg border-2 border-ink bg-white text-xs">
+<span class="font-bold text-ink flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">water_drop</span>
+<span>חלב</span>
+</span>
+<div class="flex items-center gap-0.5 bg-[#EEEEEE] p-0.5 rounded-lg border border-ink text-[10px] font-bold">
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-white">מכיל</span>
+<span class="px-2 py-0.5 rounded bg-ink text-white">לא מכיל</span>
+<span class="px-2 py-0.5 rounded text-ink cursor-pointer hover:bg-white">לא ידוע</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer in Drawer -->
+<div class="p-3.5 border-t-2 border-ink bg-[#EEEEEE] flex items-center justify-between gap-2 flex-shrink-0">
+<!-- Save & Cancel on the right side in RTL -->
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 rounded-xl border-2 border-ink bg-ink text-white hover:bg-neutral-800 font-bold text-xs transition-colors">
+                שמירת שינויים
+              </button>
+<button class="px-3.5 py-2 rounded-xl border-2 border-ink bg-white hover:bg-neutral-100 text-ink font-bold text-xs transition-colors">
+                ביטול
+              </button>
+</div>
+<!-- Danger Delete on the left side in RTL -->
+<button class="flex items-center gap-1 px-2.5 py-2 text-red-600 hover:bg-red-50 rounded-xl font-bold text-xs transition-colors" title="מחיקת המנה">
+<span class="material-symbols-outlined text-base">delete</span>
+<span>מחיקת המנה</span>
+</button>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</body></html>

@@ -10,9 +10,11 @@ Status: **Draft v0.1**. High-fidelity prototypes (Claude Artifacts) come in the 
 - Premium but calm: generous whitespace, one accent color, restrained motion, `prefers-reduced-motion` respected.
 - Never show a pending quotation as a confirmed booking — status badges use explicit text ("Awaiting business approval").
 
-## 2. Design tokens (neutral placeholders)
+## 2. Design tokens ("Butter & Ink" proposal)
 
-Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, `--color-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radius, font stack (system fonts until brand fonts chosen), shadow levels. Dark mode not in scope unless requested.
+Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, `--color-accent`, `--color-highlight`, `--color-success`, `--color-danger`, `--color-warning`, `--color-line`), spacing scale (4-px based, `--space-1` … `--space-16`), radii (`--radius` controls, `--radius-frame` photos and cards, `--radius-pill` chips and status), type scale (`--text-sm` … `--text-3xl`), `--target: 44px`. Measured contrast ratios are listed at the top of the file. Shadows are not used; depth comes from colour blocks and ink borders. Dark mode not in scope unless requested.
+
+Fonts are self-hosted under `frontend/assets/fonts/` (OFL): **Rubik** for all UI text and **Rubik Doodle Shadow** for large display titles only (Hebrew subset). The palette and fonts are a proposal until brand is decided **[OPEN #20]**. Design source (Stitch screens): `docs/design/butter-ink/`.
 
 ## 3. Customer screens
 
@@ -51,10 +53,16 @@ States: pending, applying, applied, rejected, expired ("Your order changed; ask 
 
 ```
 frontend/
-  customer/index.html   # C1–C5 (single page, JS-driven steps)
-  admin/index.html      # A1–A5
+  index.html            # landing page
+  customer/index.html   # C1–C5 (single page, hash-routed steps; C4 is a <dialog>)
+  admin/index.html      # A1 orders, A2 dishes (A3 pricing is part of A2); A4–A5 not built yet
   css/base.css          # tokens, reset, primitives
+  css/home.css, customer.css, admin.css   # page styles
   js/api.js             # fetch wrapper, error format handling
-  assets/
+  js/customer.js, admin.js                # page logic
+  js/dom.js             # element builder (text via textContent only)
+  js/format.js          # Intl price/date formatting, one locale setting
+  js/sample-data.js     # SAMPLE DATA until the catalog/order APIs exist
+  assets/fonts/, illustrations/, photos/
 ```
-Reusable components as small ES modules (e.g., `js/components/dish-card.js`) added in later phases.
+Until Phase 2–3, pages run on `js/sample-data.js` and compute totals for display only; the backend stays authoritative (ADR 0003). Reusable components as small ES modules (e.g., `js/components/dish-card.js`) added in later phases.

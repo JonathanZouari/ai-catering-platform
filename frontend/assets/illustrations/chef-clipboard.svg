@@ -1,0 +1,25 @@
+<svg viewBox="0 0 140 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="56" y1="124" x2="56" y2="152" stroke="#3D3B38" stroke-width="3" stroke-linecap="round"/>
+            <line x1="84" y1="124" x2="84" y2="152" stroke="#3D3B38" stroke-width="3" stroke-linecap="round"/>
+            <path d="M48 152H60" stroke="#3D3B38" stroke-width="4" stroke-linecap="round"/>
+            <path d="M76 152H88" stroke="#3D3B38" stroke-width="4" stroke-linecap="round"/>
+            <path d="M46 68H94L100 124H40L46 68Z" fill="#ffffff" stroke="#3D3B38" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M64 68L70 74L76 68" stroke="#3D3B38" stroke-width="2" stroke-linecap="round"/>
+            <line x1="70" y1="74" x2="70" y2="92" stroke="#3D3B38" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="70" cy="46" r="16" fill="#ffffff" stroke="#3D3B38" stroke-width="2.5"/>
+            <path d="M54 36H86V30C86 30 89 30 90 26C92 20 86 16 80 17C79 12 73 10 68 11C62 10 56 14 55 18C50 18 46 22 48 26C49 29 53 30 54 30V36Z" fill="#ffffff" stroke="#3D3B38" stroke-width="2.5" stroke-linejoin="round"/>
+            <line x1="54" y1="33" x2="86" y2="33" stroke="#3D3B38" stroke-width="2"/>
+            <circle cx="65" cy="45" r="1.5" fill="#3D3B38"/>
+            <circle cx="75" cy="45" r="1.5" fill="#3D3B38"/>
+            <path d="M66 52C68 54.5 72 54.5 74 52" stroke="#3D3B38" stroke-width="2" stroke-linecap="round"/>
+            <path d="M46 72L30 82L38 92" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M34 88L26 80" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="26,80 24,78 28,78" fill="#3D3B38"/>
+            <path d="M94 72L108 84L96 98" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="92" y="80" width="28" height="38" rx="2" fill="#ffffff" stroke="#3D3B38" stroke-width="2.5"/>
+            <rect x="100" y="77" width="12" height="5" rx="1.5" fill="#FDD98B" stroke="#3D3B38" stroke-width="1.5"/>
+            <line x1="97" y1="88" x2="114" y2="88" stroke="#3D3B38" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="97" y1="94" x2="111" y2="94" stroke="#3D3B38" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="97" y1="100" x2="115" y2="100" stroke="#3D3B38" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="97" y1="106" x2="106" y2="106" stroke="#3D3B38" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>

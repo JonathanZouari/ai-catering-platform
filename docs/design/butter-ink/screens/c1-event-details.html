@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>תכנון אירוע - שלב 1: פרטי האירוע</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&family=Rubik:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            butter: '#fedb71',
+            'butter-light': '#fff3c7',
+            ink: '#2c2b29',
+            'ink-light': '#5a5854',
+            'ink-muted': '#8c8a85',
+            'ink-border': '#2c2b29',
+            'cream-bg': '#fcfbfa',
+            paper: '#ffffff',
+          },
+          fontFamily: {
+            display: ['"Rubik Doodle Shadow"', 'cursive'],
+            sans: ['"Rubik"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Rubik', sans-serif;
+      background-color: #2c2b29;
+      margin: 0;
+      padding: 0;
+      color: #2c2b29;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      justify-content: center;
+    }
+    .screen-container {
+      width: 390px;
+      min-height: 100vh;
+      background-color: #ffffff;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Flat Ink border styles */
+    .border-ink-1 {
+      border: 1px solid #2c2b29;
+    }
+    .border-ink-2 {
+      border: 2px solid #2c2b29;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <div class="screen-container">
+    
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-40 bg-white border-b border-ink-1 px-4 pt-3 pb-2.5">
+      <div class="flex items-center justify-between mb-2.5">
+        <!-- Back button: right edge, chevron pointing RIGHT -->
+        <button type="button" aria-label="חזרה" class="w-9 h-9 flex items-center justify-center rounded-lg border-ink-1 hover:bg-neutral-100 active:bg-neutral-200 transition-colors">
+          <svg class="w-5 h-5 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="text-center">
+          <h2 class="text-base font-bold text-ink leading-tight">תכנון אירוע</h2>
+          <span class="text-xs font-medium text-ink-muted">שלב 1 מתוך 4</span>
+        </div>
+
+        <!-- Spacer for center alignment -->
+        <div class="w-9"></div>
+      </div>
+
+      <!-- 4-segment progress bar: current = butter, first from the right (RTL: right to left) -->
+      <div class="grid grid-cols-4 gap-1.5 h-1.5 w-full">
+        <!-- Step 1: Active (Butter) -->
+        <div class="bg-butter border border-ink-1 rounded-full h-full"></div>
+        <!-- Step 2 -->
+        <div class="bg-neutral-200 border border-neutral-300 rounded-full h-full"></div>
+        <!-- Step 3 -->
+        <div class="bg-neutral-200 border border-neutral-300 rounded-full h-full"></div>
+        <!-- Step 4 -->
+        <div class="bg-neutral-200 border border-neutral-300 rounded-full h-full"></div>
+      </div>
+    </header>
+
+    <!-- Butter Header Band with Chef Character -->
+    <section class="bg-butter border-b border-ink-1 relative px-5 pt-5 pb-5 overflow-visible">
+      <div class="flex items-start justify-between">
+        <div class="max-w-[210px] z-10">
+          <h1 class="font-display text-[26px] leading-[1.15] text-ink font-bold mb-1.5 tracking-wide">פרטי האירוע</h1>
+          <p class="text-[13px] leading-snug font-medium text-ink">
+            ספרו לנו על האירוע ונחשב כמויות ומחיר
+          </p>
+        </div>
+
+        <!-- Chef Character (~170px) holding clipboard & pencil standing on bottom edge -->
+        <div class="w-[125px] h-[140px] relative flex items-end justify-center self-end -mb-5 mr-auto">
+          <svg class="w-full h-full" viewBox="0 0 140 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Legs -->
+            <line x1="56" y1="124" x2="56" y2="152" stroke="#2c2b29" stroke-width="3" stroke-linecap="round"/>
+            <line x1="84" y1="124" x2="84" y2="152" stroke="#2c2b29" stroke-width="3" stroke-linecap="round"/>
+            <!-- Shoes -->
+            <path d="M48 152H60" stroke="#2c2b29" stroke-width="4" stroke-linecap="round"/>
+            <path d="M76 152H88" stroke="#2c2b29" stroke-width="4" stroke-linecap="round"/>
+            <!-- Apron / Torso -->
+            <path d="M46 68H94L100 124H40L46 68Z" fill="#ffffff" stroke="#2c2b29" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- Neck tie / bow -->
+            <path d="M64 68L70 74L76 68" stroke="#2c2b29" stroke-width="2" stroke-linecap="round"/>
+            <line x1="70" y1="74" x2="70" y2="92" stroke="#2c2b29" stroke-width="2" stroke-linecap="round"/>
+            <!-- Head -->
+            <circle cx="70" cy="46" r="16" fill="#ffffff" stroke="#2c2b29" stroke-width="2.5"/>
+            <!-- Chef Hat -->
+            <path d="M54 36H86V30C86 30 89 30 90 26C92 20 86 16 80 17C79 12 73 10 68 11C62 10 56 14 55 18C50 18 46 22 48 26C49 29 53 30 54 30V36Z" fill="#ffffff" stroke="#2c2b29" stroke-width="2.5" stroke-linejoin="round"/>
+            <line x1="54" y1="33" x2="86" y2="33" stroke="#2c2b29" stroke-width="2"/>
+            <!-- Face details -->
+            <circle cx="65" cy="45" r="1.5" fill="#2c2b29"/>
+            <circle cx="75" cy="45" r="1.5" fill="#2c2b29"/>
+            <!-- Friendly smile -->
+            <path d="M66 52C68 54.5 72 54.5 74 52" stroke="#2c2b29" stroke-width="2" stroke-linecap="round"/>
+            <!-- Arms & Clipboard (Right side of chef / viewer's left) -->
+            <!-- Left Arm holding pencil -->
+            <path d="M46 72L30 82L38 92" stroke="#2c2b29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Pencil -->
+            <path d="M34 88L26 80" stroke="#2c2b29" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="26,80 24,78 28,78" fill="#2c2b29"/>
+            <!-- Right Arm holding Clipboard -->
+            <path d="M94 72L108 84L96 98" stroke="#2c2b29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Clipboard -->
+            <rect x="92" y="80" width="28" height="38" rx="2" fill="#ffffff" stroke="#2c2b29" stroke-width="2.5"/>
+            <rect x="100" y="77" width="12" height="5" rx="1.5" fill="#fedb71" stroke="#2c2b29" stroke-width="1.5"/>
+            <!-- Paper lines on clipboard -->
+            <line x1="97" y1="88" x2="114" y2="88" stroke="#2c2b29" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="97" y1="94" x2="111" y2="94" stroke="#2c2b29" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="97" y1="100" x2="115" y2="100" stroke="#2c2b29" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="97" y1="106" x2="106" y2="106" stroke="#2c2b29" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONE Continuous White Sheet with 1px Ink Dividers (No nested boxes) -->
+    <main class="bg-white flex-1 pb-32">
+
+      <!-- Section: סוג האירוע -->
+      <section class="p-4">
+        <label class="block text-sm font-bold text-ink mb-2.5">סוג האירוע</label>
+        <div class="flex flex-wrap gap-2">
+          <!-- Selected: butter + check -->
+          <button type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-butter border-ink-1 text-sm font-bold text-ink">
+            <svg class="w-4 h-4 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>בר/בת מצווה</span>
+          </button>
+
+          <button type="button" class="px-3 py-2 rounded-lg bg-white border-ink-1 text-sm font-medium text-ink hover:bg-neutral-50 active:bg-neutral-100 transition-colors">
+            יום הולדת
+          </button>
+
+          <button type="button" class="px-3 py-2 rounded-lg bg-white border-ink-1 text-sm font-medium text-ink hover:bg-neutral-50 active:bg-neutral-100 transition-colors">
+            שבת חתן
+          </button>
+
+          <button type="button" class="px-3 py-2 rounded-lg bg-white border-ink-1 text-sm font-medium text-ink hover:bg-neutral-50 active:bg-neutral-100 transition-colors">
+            ברית
+          </button>
+
+          <button type="button" class="px-3 py-2 rounded-lg bg-white border-ink-1 text-sm font-medium text-ink hover:bg-neutral-50 active:bg-neutral-100 transition-colors">
+            ארוחה משפחתית
+          </button>
+
+          <button type="button" class="px-3 py-2 rounded-lg bg-white border-ink-1 text-sm font-medium text-ink hover:bg-neutral-50 active:bg-neutral-100 transition-colors">
+            אחר
+          </button>
+        </div>
+      </section>
+
+      <!-- 1px Ink Divider -->
+      <div class="border-t border-ink-1 mx-4"></div>
+
+      <!-- Section: תאריך האירוע -->
+      <section class="p-4">
+        <label for="event-date" class="block text-sm font-bold text-ink mb-1.5">תאריך האירוע</label>
+        <div class="relative">
+          <input id="event-date" type="text" value="14.12.2026" readonly class="w-full bg-white border-ink-1 rounded-lg py-2.5 px-3 pl-10 text-sm font-medium text-ink focus:outline-none focus:ring-1 focus:ring-ink">
+          <!-- Calendar Icon at left in RTL (pl-10) -->
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+        </div>
+        <p class="mt-1.5 text-xs text-ink-muted font-normal flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 inline-block shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>תאריכים תפוסים לא ניתנים לבחירה</span>
+        </p>
+      </section>
+
+      <!-- 1px Ink Divider -->
+      <div class="border-t border-ink-1 mx-4"></div>
+
+      <!-- Section: איסוף או משלוח -->
+      <section class="p-4">
+        <label class="block text-sm font-bold text-ink mb-2">איסוף או משלוח</label>
+        <div class="grid grid-cols-2 rounded-lg border-ink-1 overflow-hidden p-0.5 bg-white">
+          <!-- משלוח (selected, ink fill) -->
+          <button type="button" class="py-2.5 px-3 rounded-md bg-ink text-white text-sm font-bold flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+            <span>משלוח</span>
+          </button>
+
+          <!-- איסוף עצמי -->
+          <button type="button" class="py-2.5 px-3 rounded-md bg-white text-ink text-sm font-medium hover:bg-neutral-50 flex items-center justify-center gap-2 transition-colors">
+            <svg class="w-4 h-4 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>איסוף עצמי</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 1px Ink Divider -->
+      <div class="border-t border-ink-1 mx-4"></div>
+
+      <!-- Section: כתובת למשלוח -->
+      <section class="p-4">
+        <label for="delivery-address" class="block text-sm font-bold text-ink mb-1.5">כתובת למשלוח</label>
+        <div class="relative">
+          <input id="delivery-address" type="text" value="הרצל 12, רעננה" class="w-full bg-white border-ink-1 rounded-lg py-2.5 px-3 pl-10 text-sm font-medium text-ink focus:outline-none focus:ring-1 focus:ring-ink">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </div>
+        </div>
+        <!-- Plain text below with truck icon (no nested tint box) -->
+        <div class="mt-2 flex items-center gap-1.5 text-xs text-ink font-medium">
+          <svg class="w-4 h-4 text-ink shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+          <span>אזור שרון · דמי משלוח ₪120</span>
+        </div>
+      </section>
+
+      <!-- 1px Ink Divider -->
+      <div class="border-t border-ink-1 mx-4"></div>
+
+      <!-- Section: חלון זמן -->
+      <section class="p-4">
+        <label class="block text-sm font-bold text-ink mb-2">חלון זמן</label>
+        <div class="grid grid-cols-3 gap-2">
+          <!-- 10:00–12:00 -->
+          <button type="button" class="py-2 px-2 text-center rounded-lg bg-white border-ink-1 text-xs font-medium text-ink hover:bg-neutral-50 transition-colors">
+            10:00–12:00
+          </button>
+
+          <!-- 12:00–14:00 (selected: butter) -->
+          <button type="button" class="py-2 px-2 text-center rounded-lg bg-butter border-ink-1 text-xs font-bold text-ink relative">
+            <span>12:00–14:00</span>
+          </button>
+
+          <!-- 16:00–18:00 (disabled with word "מלא") -->
+          <div class="py-2 px-2 text-center rounded-lg bg-neutral-100 border border-neutral-300 text-xs text-neutral-400 font-medium cursor-not-allowed">
+            <span class="line-through block text-[11px] leading-tight">16:00–18:00</span>
+            <span class="text-[10px] text-red-600 font-bold block leading-tight">מלא</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1px Ink Divider -->
+      <div class="border-t border-ink-1 mx-4"></div>
+
+      <!-- Section: הרכב האורחים -->
+      <section class="p-4">
+        <div class="mb-3">
+          <h3 class="text-sm font-bold text-ink">הרכב האורחים</h3>
+          <p class="text-xs text-ink-muted">סה״כ אורחים מתוכננים לאירוע</p>
+        </div>
+
+        <div class="space-y-3">
+          <!-- Row 1: מבוגרים 60 -->
+          <div class="flex items-center justify-between py-1">
+            <div>
+              <span class="text-sm font-semibold text-ink block">מבוגרים</span>
+              <span class="text-xs text-ink-muted block">מעל גיל 12</span>
+            </div>
+            <!-- 44px Stepper -->
+            <div class="flex items-center gap-2">
+              <button type="button" aria-label="הפחת מבוגרים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                −
+              </button>
+              <span class="w-10 text-center text-base font-bold text-ink">60</span>
+              <button type="button" aria-label="הוסף מבוגרים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                +
+              </button>
+            </div>
+          </div>
+
+          <!-- Row 2: ילדים 18 -->
+          <div class="flex items-center justify-between py-1">
+            <div>
+              <span class="text-sm font-semibold text-ink block">ילדים</span>
+              <span class="text-xs text-ink-muted block">גילאי 3 עד 12</span>
+            </div>
+            <!-- 44px Stepper -->
+            <div class="flex items-center gap-2">
+              <button type="button" aria-label="הפחת ילדים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                −
+              </button>
+              <span class="w-10 text-center text-base font-bold text-ink">18</span>
+              <button type="button" aria-label="הוסף ילדים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                +
+              </button>
+            </div>
+          </div>
+
+          <!-- Sub-breakdown: מתוכם -->
+          <div class="pt-2 border-t border-dashed border-neutral-300">
+            <span class="text-xs font-bold text-ink-muted uppercase tracking-wider block mb-2">מתוכם:</span>
+
+            <!-- צמחונים 6 -->
+            <div class="flex items-center justify-between py-1 mb-2">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                <span class="text-sm font-medium text-ink">צמחונים</span>
+              </div>
+              <!-- 44px Stepper -->
+              <div class="flex items-center gap-2">
+                <button type="button" aria-label="הפחת צמחונים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                  −
+                </button>
+                <span class="w-8 text-center text-sm font-bold text-ink">6</span>
+                <button type="button" aria-label="הוסף צמחונים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                  +
+                </button>
+              </div>
+            </div>
+
+            <!-- טבעונים 2 -->
+            <div class="flex items-center justify-between py-1">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-sm font-medium text-ink">טבעונים</span>
+              </div>
+              <!-- 44px Stepper -->
+              <div class="flex items-center gap-2">
+                <button type="button" aria-label="הפחת טבעונים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                  −
+                </button>
+                <span class="w-8 text-center text-sm font-bold text-ink">2</span>
+                <button type="button" aria-label="הוסף טבעונים" class="w-11 h-11 rounded-lg border-ink-1 bg-white text-ink text-lg font-bold flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100">
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Helper text -->
+        <p class="mt-3 text-xs text-ink-muted font-normal flex items-start gap-1">
+          <svg class="w-3.5 h-3.5 inline-block shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>צמחונים וטבעונים נספרים מתוך המבוגרים והילדים</span>
+        </p>
+      </section>
+
+      <!-- 1px Ink Divider -->
+      <div class="border-t border-ink-1 mx-4"></div>
+
+      <!-- Section: הגבלות תזונה נוספות -->
+      <section class="p-4">
+        <label for="diet-restrictions" class="block text-sm font-bold text-ink mb-1.5">הגבלות תזונה נוספות</label>
+        <textarea id="diet-restrictions" rows="3" placeholder="למשל: אלרגיה לאגוזים אצל 2 אורחים" class="w-full bg-white border-ink-1 rounded-lg p-3 text-sm font-normal text-ink placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-ink resize-none"></textarea>
+      </section>
+
+    </main>
+
+    <!-- Sticky Butter Bottom Bar -->
+    <footer class="fixed bottom-0 inset-x-0 w-[390px] mx-auto bg-butter border-t border-ink-1 px-4 py-3 z-50 flex items-center justify-between gap-3">
+      <!-- Summary text -->
+      <div class="flex flex-col">
+        <span class="text-sm font-bold text-ink leading-tight">78 אורחים</span>
+        <span class="text-xs font-medium text-ink-light">משלוח לרעננה</span>
+      </div>
+
+      <!-- Primary Ink Button: "המשך לבחירת מנות" arrow LEFT -->
+      <button type="button" class="h-12 px-5 rounded-lg bg-ink text-white font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 active:scale-[0.98] transition-all">
+        <span>המשך לבחירת מנות</span>
+        <!-- Arrow pointing LEFT (forward in RTL) -->
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+    </footer>
+
+  </div>
+
+</body>
+</html>

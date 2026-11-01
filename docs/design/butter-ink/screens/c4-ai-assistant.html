@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>C4: העוזר החכם V2 - שולחן מלא</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            butter: '#fed668',
+            'butter-light': '#fff3cd',
+            ink: '#2b2927',
+            cream: '#fbf9f4',
+            surface: '#ffffff',
+            danger: '#dc2626',
+            success: '#15803d',
+            'border-ink': '#2b2927',
+            'neutral-light': '#EEEEEE',
+          },
+          fontFamily: {
+            doodle: ['"Rubik Doodle Shadow"', 'cursive', 'sans-serif'],
+            sans: ['Rubik', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #2b2927;
+      font-family: 'Rubik', sans-serif;
+      color: #2b2927;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .mobile-frame {
+      width: 390px;
+      height: 844px;
+      max-width: 390px;
+      max-height: 844px;
+      position: relative;
+      background: #fbf9f4;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 550, 'GRAD' 0, 'opsz' 22;
+      vertical-align: middle;
+    }
+    .icon-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 22;
+    }
+    /* Hide scrollbar for cleanly clamped mobile view */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-stone-900 flex items-center justify-center p-0">
+
+  <!-- Mobile screen container (390 x 844 strictly) -->
+  <div class="mobile-frame text-ink select-none">
+
+    <!-- 1. Background Catalog Screen (Simulated behind scrim) -->
+    <div class="absolute inset-0 w-full h-full bg-cream overflow-hidden pointer-events-none z-0">
+      <!-- Simulated Top Bar -->
+      <div class="h-14 border-b border-ink/20 flex items-center justify-between px-4 bg-white">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-ink text-xl">arrow_forward</span>
+          <span class="font-bold text-sm">בחירת מנות</span>
+        </div>
+        <div class="w-8 h-8 rounded-full border border-ink flex items-center justify-center text-xs font-bold">2</div>
+      </div>
+      <!-- Simulated Catalog Items -->
+      <div class="p-4 space-y-3 opacity-60">
+        <div class="h-8 bg-butter rounded-full w-2/3 border border-ink"></div>
+        <div class="h-28 bg-white rounded-2xl border border-ink p-3 flex gap-3">
+          <div class="w-20 h-20 bg-stone-200 rounded-xl"></div>
+          <div class="flex-1 space-y-2 py-1">
+            <div class="h-4 bg-stone-300 rounded w-3/4"></div>
+            <div class="h-3 bg-stone-200 rounded w-1/2"></div>
+            <div class="h-5 bg-stone-100 rounded w-1/3"></div>
+          </div>
+        </div>
+        <div class="h-28 bg-white rounded-2xl border border-ink p-3 flex gap-3">
+          <div class="w-20 h-20 bg-stone-200 rounded-xl"></div>
+          <div class="flex-1 space-y-2 py-1">
+            <div class="h-4 bg-stone-300 rounded w-3/4"></div>
+            <div class="h-3 bg-stone-200 rounded w-1/2"></div>
+            <div class="h-5 bg-stone-100 rounded w-1/3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Flat Solid Ink Scrim at 60% opacity (NO blur, NO shadow) -->
+    <div class="absolute inset-0 bg-[#2b2927] bg-opacity-60 z-10 transition-opacity"></div>
+
+    <!-- 3. Bottom Sheet (88% height = ~743px, White, 20px top corners, Ink Border) -->
+    <div class="absolute bottom-0 inset-x-0 h-[88%] bg-white rounded-t-[20px] border-t-2 border-x-2 border-ink z-20 flex flex-col justify-between overflow-hidden">
+      
+      <!-- Drag handle & Header wrapper -->
+      <div class="flex-shrink-0 bg-butter border-b-2 border-ink relative pt-2">
+        <!-- Drag Handle pill -->
+        <div class="w-10 h-1.5 bg-ink rounded-full mx-auto mb-1"></div>
+
+        <!-- Header Content on Butter Band -->
+        <div class="px-4 pb-2.5 pt-0.5 flex items-end justify-between relative min-h-[66px]">
+          
+          <!-- Right side: Title & Subtitle in Hebrew RTL -->
+          <div class="flex flex-col justify-center text-right z-10 pr-1">
+            <div class="flex items-center gap-1.5">
+              <h1 class="font-doodle text-[23px] text-ink leading-tight tracking-normal font-bold">העוזר החכם</h1>
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-ink text-butter text-[10px] font-bold">AI מלווה</span>
+            </div>
+            <p class="text-[12px] font-medium text-ink/85 mt-0.5">מציע — אתם מחליטים</p>
+          </div>
+
+          <!-- Left side: Waiter character peeking over band edge (~110px) + Close Button -->
+          <div class="flex items-center gap-1 relative z-10">
+            <!-- Waiter Character Graphic (~110px height, standing peeking) -->
+            <div class="w-[82px] h-[72px] relative flex items-end justify-center overflow-visible select-none">
+              <svg class="w-24 h-24 overflow-visible -mb-1" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Waiter Head & Hat -->
+                <ellipse cx="50" cy="30" rx="13" ry="12" fill="#ffffff" stroke="#2b2927" stroke-width="2.5"/>
+                <!-- Chef/Waiter Hat Brim & Crown -->
+                <path d="M34 23 C34 10, 66 10, 66 23 Z" fill="#ffffff" stroke="#2b2927" stroke-width="2.5"/>
+                <path d="M31 23 L69 23" stroke="#2b2927" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Eyes & Friendly Smile -->
+                <circle cx="45" cy="30" r="1.5" fill="#2b2927"/>
+                <circle cx="55" cy="30" r="1.5" fill="#2b2927"/>
+                <path d="M46 35 Q50 38 54 35" stroke="#2b2927" stroke-width="2" stroke-linecap="round"/>
+                <!-- Body / Suit -->
+                <path d="M37 42 L63 42 L67 76 L33 76 Z" fill="#2b2927" stroke="#2b2927" stroke-width="2.5"/>
+                <!-- White Shirt / Apron Center -->
+                <path d="M45 42 L55 42 L53 76 L47 76 Z" fill="#ffffff"/>
+                <path d="M50 44 L50 48" stroke="#2b2927" stroke-width="1.5"/>
+                <!-- Arms holding cloche tray -->
+                <path d="M36 47 L22 55 L22 59" stroke="#2b2927" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M64 47 L78 55 L78 59" stroke="#2b2927" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Tray & Cloche (Covered Dish) -->
+                <path d="M12 59 L88 59" stroke="#2b2927" stroke-width="3" stroke-linecap="round"/>
+                <!-- Cloche Dome -->
+                <path d="M32 59 C32 46, 68 46, 68 59 Z" fill="#ffffff" stroke="#2b2927" stroke-width="2.5"/>
+                <!-- Cloche Handle -->
+                <circle cx="50" cy="45" r="2.5" fill="#fed668" stroke="#2b2927" stroke-width="2"/>
+                <!-- Tiny Sparkles -->
+                <path d="M82 42 L84 46 L88 48 L84 50 L82 54 L80 50 L76 48 L80 46 Z" fill="#fed668" stroke="#2b2927" stroke-width="1"/>
+              </svg>
+            </div>
+
+            <!-- Close Button (X at the left top corner) -->
+            <button aria-label="סגירה" class="w-8 h-8 rounded-full border-2 border-ink bg-white flex items-center justify-center text-ink hover:bg-neutral-100 active:scale-95 transition-transform ml-1">
+              <span class="material-symbols-outlined text-lg leading-none font-bold">close</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Scrollable / Fitted Content Area -->
+      <div class="flex-1 overflow-y-auto no-scrollbar px-3.5 py-2.5 space-y-2.5 flex flex-col justify-between">
+        
+        <!-- Conversation Section -->
+        <div class="space-y-2.5">
+          <!-- 1. User Message: grey #EEEEEE bubble at the right -->
+          <div class="flex justify-start">
+            <div class="bg-[#EEEEEE] border border-ink/20 text-ink rounded-2xl rounded-tr-sm px-3.5 py-2 text-[13px] font-medium max-w-[85%] leading-snug">
+              יש לנו 6 צמחונים ו-2 טבעונים. חסר משהו?
+              <div class="text-[10px] text-ink/60 text-left mt-0.5 font-normal">14:24</div>
+            </div>
+          </div>
+
+          <!-- 2. Assistant Message: white with 1px ink border at the left -->
+          <div class="flex justify-end">
+            <div class="bg-white border border-ink text-ink rounded-2xl rounded-tl-sm px-3.5 py-2 text-[13px] font-normal max-w-[90%] leading-snug">
+              <div class="flex items-center gap-1 font-semibold text-[11px] text-ink mb-0.5">
+                <span class="material-symbols-outlined text-xs text-ink">auto_awesome</span>
+                המלצת העוזר
+              </div>
+              אין מנה עיקרית טבעונית, וחסרים סלטים. הנה הצעה:
+            </div>
+          </div>
+
+          <!-- 3. PROPOSAL CARD: white, 2px ink border, 20px corners (NO shadows, flat solid colors) -->
+          <div class="bg-white border-2 border-ink rounded-[20px] p-3 text-ink">
+            
+            <!-- Card Header: 'הצעה לשינוי' + status pill with clock icon 'ממתין לאישורכם' -->
+            <div class="flex items-center justify-between pb-2 border-b border-ink/15">
+              <div class="flex items-center gap-1.5 font-bold text-[13.5px]">
+                <span class="material-symbols-outlined text-base">format_list_bulleted</span>
+                <span>הצעה לשינוי</span>
+              </div>
+              <!-- Status Pill with Clock Icon -->
+              <div class="flex items-center gap-1 bg-butter-light border border-ink px-2 py-0.5 rounded-full text-[11px] font-bold text-ink">
+                <span class="material-symbols-outlined text-[13px]">schedule</span>
+                <span>ממתין לאישורכם</span>
+              </div>
+            </div>
+
+            <!-- Proposal Rows separated by dividers -->
+            <div class="divide-y divide-ink/10 text-[12.5px]">
+              
+              <!-- Row 1: Plus icon + 'הוספה': 'מג׳דרה עם בצל מטוגן · טבעוני · 2 מגשים' — '₪300' -->
+              <div class="py-2 flex items-center justify-between gap-2">
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-xs font-bold leading-none">add</span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold text-[12px] text-ink">הוספה</span>
+                      <span class="text-[10.5px] bg-[#dcfce7] border border-ink/40 text-success font-semibold px-1 rounded">טבעוני</span>
+                    </div>
+                    <div class="text-[12px] font-medium text-ink leading-tight mt-0.5">
+                      מג׳דרה עם בצל מטוגן <span class="text-ink/70">· 2 מגשים</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="font-bold text-[13.5px] whitespace-nowrap text-ink">
+                  ₪300
+                </div>
+              </div>
+
+              <!-- Row 2: Arrows icon + 'שינוי כמות': 'סלט טאבולה 2 ← 4 מגשים' — '+₪360' -->
+              <div class="py-2 flex items-center justify-between gap-2">
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-white border border-ink text-ink flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-xs font-bold leading-none">sync_alt</span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold text-[12px] text-ink">שינוי כמות</span>
+                      <span class="text-[10px] text-ink/70 font-normal">(חישוב אורחים מעודכן)</span>
+                    </div>
+                    <div class="text-[12px] font-medium text-ink leading-tight mt-0.5">
+                      סלט טאבולה: <span class="line-through text-ink/50 text-[11px]">2</span> <span class="font-bold text-ink">← 4 מגשים</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="font-bold text-[13.5px] whitespace-nowrap text-ink">
+                  +₪360
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Total row: 'סה״כ ₪1,140 ← ₪1,800' and a butter pill '+₪660' -->
+            <div class="pt-2 border-t border-ink/20 flex items-center justify-between bg-neutral-50 -mx-3 -mb-3 px-3 py-2 rounded-b-[18px]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11.5px] font-bold text-ink/80">סה״כ:</span>
+                <span class="line-through text-ink/50 text-[11.5px]">₪1,140</span>
+                <span class="text-ink font-bold text-[14px]">← ₪1,800</span>
+              </div>
+              <div class="bg-butter border border-ink text-ink font-bold text-[11px] px-2 py-0.5 rounded-full">
+                +₪660
+              </div>
+            </div>
+
+            <!-- Note: 'המחירים מחושבים במערכת, לא על ידי העוזר.' -->
+            <div class="mt-2 text-[10.5px] text-ink/75 flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-ink/70">info</span>
+              <span>המחירים מחושבים במערכת, לא על ידי העוזר.</span>
+            </div>
+
+            <!-- Two buttons side by side, fully visible: secondary 'לא, תודה' and primary ink 'אישור השינוי' with check icon -->
+            <div class="grid grid-cols-2 gap-2 mt-2.5">
+              <!-- Secondary button: 'לא, תודה' -->
+              <button class="h-9 px-3 rounded-xl border-2 border-ink bg-white hover:bg-stone-100 text-ink font-bold text-[12.5px] flex items-center justify-center transition-colors active:scale-95">
+                לא, תודה
+              </button>
+              <!-- Primary Ink button: 'אישור השינוי' with check icon -->
+              <button class="h-9 px-3 rounded-xl border-2 border-ink bg-ink text-butter hover:bg-stone-800 font-bold text-[12.5px] flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+                <span class="material-symbols-outlined text-base font-bold">check</span>
+                <span>אישור השינוי</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Suggestion chips & Input Bar Area (Compact, perfectly fitting 844px height) -->
+        <div class="space-y-2 pt-1">
+          <!-- Suggestion chips: 'מה מתאים לילדים?', 'כמה קינוחים צריך?' -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <button class="flex-shrink-0 bg-butter-light border border-ink rounded-full px-2.5 py-1 text-[11px] font-medium text-ink hover:bg-butter transition-colors active:scale-95 flex items-center gap-1">
+              <span>מה מתאים לילדים?</span>
+            </button>
+            <button class="flex-shrink-0 bg-butter-light border border-ink rounded-full px-2.5 py-1 text-[11px] font-medium text-ink hover:bg-butter transition-colors active:scale-95 flex items-center gap-1">
+              <span>כמה קינוחים צריך?</span>
+            </button>
+          </div>
+
+          <!-- Input bar: field 'כתבו לעוזר…' and ink send button with arrow pointing LEFT -->
+          <div class="flex items-center gap-2 pb-1">
+            <div class="flex-1 relative flex items-center">
+              <input 
+                type="text" 
+                placeholder="כתבו לעוזר…" 
+                class="w-full h-10 bg-white border-2 border-ink rounded-xl px-3.5 text-[12.5px] text-ink placeholder-ink/50 focus:outline-none focus:bg-white"
+              />
+            </div>
+            <!-- Ink Send Button with arrow pointing LEFT (forward in RTL) -->
+            <button aria-label="שלח" class="w-10 h-10 rounded-xl bg-ink border-2 border-ink text-butter flex items-center justify-center hover:bg-stone-800 active:scale-95 transition-transform flex-shrink-0">
+              <span class="material-symbols-outlined text-lg font-bold">arrow_back</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

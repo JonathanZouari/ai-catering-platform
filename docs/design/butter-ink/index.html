@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>שולחן מלא · הצעת עיצוב Butter &amp; Ink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Doodle+Shadow&family=Rubik:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --butter: #FDD98B; --ink: #3D3B38; --grey: #EEEEEE; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--grey); color: var(--ink); font-family: 'Rubik', sans-serif; }
+    header { background: var(--butter); border-block-end: 3px solid var(--ink); padding: 32px 40px; }
+    h1 { font-family: 'Rubik Doodle Shadow', 'Rubik', sans-serif; font-weight: 400; font-size: 48px; margin: 0 0 8px; }
+    header p { margin: 0; font-size: 18px; max-width: 760px; line-height: 1.5; }
+    h2 { font-size: 22px; font-weight: 500; margin: 40px 40px 16px; }
+    .row { display: flex; flex-wrap: wrap; gap: 32px; padding: 0 40px; }
+    figure { margin: 0; }
+    figcaption { font-weight: 500; margin-block-end: 8px; }
+    .phone { width: 390px; height: 844px; border: 3px solid var(--ink); border-radius: 28px; overflow: hidden; background: #fff; }
+    .desk { width: 720px; height: 500px; border: 3px solid var(--ink); border-radius: 16px; overflow: hidden; background: #fff; }
+    .desk iframe { width: 1440px; height: 1000px; transform: scale(0.5); transform-origin: top right; }
+    iframe { border: 0; width: 100%; height: 100%; display: block; }
+    footer { padding: 40px; font-size: 14px; }
+    /* Single-screen mode (?only=<screen>&h=<height>) renders one frame for screenshots. */
+    body.only header, body.only h2, body.only footer, body.only figcaption { display: none; }
+    body.only .row { padding: 60px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>שולחן מלא</h1>
+    <p>הצעת עיצוב לאפליקציית הקייטרינג: מסע הלקוח מהזמנה ועד בקשת הצעת מחיר, והמסכים של בעל העסק. עברית, RTL, נבנה ב-Stitch בהשראת לוח ההשראה Butter &amp; Ink.</p>
+  </header>
+
+  <h2>מסע הלקוח (מובייל)</h2>
+  <div class="row" id="customer">
+    <figure data-screen="c0-home"><figcaption>דף הבית</figcaption><div class="phone"><iframe src="screens/c0-home.html" title="דף הבית"></iframe></div></figure>
+    <figure data-screen="c1-event-details"><figcaption>C1 · פרטי האירוע</figcaption><div class="phone"><iframe src="screens/c1-event-details.html" title="פרטי האירוע"></iframe></div></figure>
+    <figure data-screen="c2-menu"><figcaption>C2 · בחירת מנות</figcaption><div class="phone"><iframe src="screens/c2-menu.html" title="בחירת מנות"></iframe></div></figure>
+    <figure data-screen="c3-order-summary"><figcaption>C3 · סיכום ההזמנה</figcaption><div class="phone"><iframe src="screens/c3-order-summary.html" title="סיכום ההזמנה"></iframe></div></figure>
+    <figure data-screen="c4-ai-assistant"><figcaption>C4 · העוזר החכם</figcaption><div class="phone"><iframe src="screens/c4-ai-assistant.html" title="העוזר החכם"></iframe></div></figure>
+    <figure data-screen="c5-request-status"><figcaption>C5 · סטטוס הבקשה</figcaption><div class="phone"><iframe src="screens/c5-request-status.html" title="סטטוס הבקשה"></iframe></div></figure>
+  </div>
+
+  <h2>בעל העסק (דסקטופ)</h2>
+  <div class="row" id="admin">
+    <figure data-screen="a1-orders"><figcaption>A1 · ניהול הזמנות ואישור הצעות</figcaption><div class="desk"><iframe src="screens/a1-orders.html" title="ניהול הזמנות"></iframe></div></figure>
+    <figure data-screen="a2-dishes"><figcaption>A2 · מנות, תמחור ואלרגנים</figcaption><div class="desk"><iframe src="screens/a2-dishes.html" title="ניהול מנות"></iframe></div></figure>
+  </div>
+
+  <footer>כל הנתונים, השמות והמחירים הם נתוני דוגמה. שם המותג «שולחן מלא» הוא שם זמני.</footer>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const only = params.get('only');
+    if (only) {
+      document.body.classList.add('only');
+      document.querySelectorAll('figure').forEach(f => { if (f.dataset.screen !== only) f.remove(); });
+      document.querySelectorAll('.row').forEach(r => { if (!r.children.length) r.remove(); });
+      const frame = document.querySelector('.phone, .desk');
+      const h = params.get('h');
+      if (frame && h) frame.style.height = h + 'px';
+    }
+  </script>
+</body>
+</html>
