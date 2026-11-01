@@ -20,8 +20,15 @@ export function createDishCard(dish, qty, onQty) {
     max: dish.step ? 400 : 99,
     onChange: onQty,
   });
+  // The photo covers the placeholder; if it fails to load it is removed and the placeholder shows.
+  const photo = h("div", { class: "dish-card__photo", role: "img", "aria-label": dish.image ? dish.name : "אין תמונה" }, h("span", { class: "plate" }));
+  if (dish.image) {
+    const img = h("img", { src: dish.image, alt: "", loading: "lazy", width: 348, height: 348 });
+    img.addEventListener("error", () => { img.remove(); photo.setAttribute("aria-label", "אין תמונה"); });
+    photo.append(img);
+  }
   const el = h("article", { class: "dish-card card", "data-dish": dish.id },
-    h("div", { class: "dish-card__photo", role: "img", "aria-label": "אין תמונה" }, h("span", { class: "plate" })),
+    photo,
     h("div", { class: "dish-card__row" },
       h("h3", {}, dish.name),
       h("span", { class: "dish-card__price num" }, ils(dish.price)),

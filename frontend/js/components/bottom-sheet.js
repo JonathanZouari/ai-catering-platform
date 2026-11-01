@@ -1,5 +1,5 @@
 // Mobile: agent panel becomes a bottom sheet over a blurred catalog. On desktop the toggle is hidden by CSS.
-export function bindBottomSheet({ panel, openBtn, closeBtn, backdrop }) {
+export function bindBottomSheet({ panel, openBtn, closeBtn, backdrop, onChange }) {
   let opener = null;
   const set = (open) => {
     document.body.classList.toggle("sheet-open", open);
@@ -14,6 +14,7 @@ export function bindBottomSheet({ panel, openBtn, closeBtn, backdrop }) {
       panel.removeAttribute("role");
       opener?.focus?.();
     }
+    onChange?.(open);
   };
   openBtn.addEventListener("click", () => set(true));
   closeBtn.addEventListener("click", () => set(false));

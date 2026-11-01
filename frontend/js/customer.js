@@ -23,12 +23,25 @@ summary.mirror(barTotal);
 
 const agent = createAgentPanel({ summaryEl: summary.el, onSend });
 document.getElementById("menu-layout").append(agent.el);
+const openBtn = document.getElementById("open-agent");
+const hintBtn = document.getElementById("agent-hint");
 const sheet = bindBottomSheet({
   panel: agent.el,
-  openBtn: document.getElementById("open-agent"),
+  openBtn,
   closeBtn: agent.closeBtn,
   backdrop: document.getElementById("backdrop"),
+  onChange: () => updateHint(),
 });
+hintBtn.addEventListener("click", () => sheet.open());
+
+// Mobile only (CSS): while a proposal awaits a decision and the sheet is closed, say so above the bar.
+function updateHint() {
+  const waiting = [...pending].at(-1);
+  const show = Boolean(waiting) && !document.body.classList.contains("sheet-open");
+  hintBtn.hidden = !show;
+  openBtn.querySelector(".btn-agent__dot").hidden = !waiting;
+  if (waiting) hintBtn.textContent = waiting.hint;
+}
 summary.foot.append(h("a", { class: "btn btn-primary btn-lg summary__cta", href: "/customer/summary.html" }, "לסיכום ושליחה לאישור"));
 
 // ---- catalog
@@ -88,6 +101,7 @@ async function setQty(id, qty) {
 function expire(item) {
   pending.delete(item);
   item.card.setState("expired");
+  updateHint();
 }
 
 // ---- agent proposals (mock backend: totals computed deterministically, not by the "model")
@@ -103,11 +117,12 @@ function showScripted(script) {
   const proposal = buildProposal(script);
   const card = createProposalCard(proposal, {
     onApprove: () => approve(item),
-    onReject: () => { pending.delete(item); card.setState("rejected"); },
+    onReject: () => { pending.delete(item); card.setState("rejected"); updateHint(); },
   });
-  const item = { proposal, card };
+  const item = { proposal, card, hint: script.hint };
   pending.add(item);
   agent.card(card.el);
+  updateHint();
 }
 
 function visibleTotal() {
@@ -124,6 +139,7 @@ async function approve(item) {
   if (proposal.baseVersion !== state.version) return expire(item);
   state.busy = true;
   pending.delete(item);
+  updateHint();
   card.setState("applying");
   await wait(reducedMotion() ? 0 : 450);
 
@@ -158,7 +174,6 @@ async function onSend(text) {
 // ---- event strip + boot
 document.getElementById("event-strip").textContent =
   `${EVENT.dateLabel} · ${EVENT.time} · ${EVENT.guests} אורחים (${EVENT.adults} מבוגרים, ${EVENT.children} ילדים) · ${EVENT.mode}`;
-document.getElementById("bar-agent-label").textContent = "העוזר";
 
 renderChips();
 renderCatalog();

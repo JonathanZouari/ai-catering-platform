@@ -43,11 +43,12 @@
   </main>
 
   <div class="mobile-bar">
+    <button id="agent-hint" type="button" class="agent-hint" aria-controls="agent" hidden></button>
     <div class="mobile-bar__total">
       <span class="muted">סה״כ</span>
       <strong id="bar-total" class="num" aria-hidden="true">₪0</strong>
     </div>
-    <button id="open-agent" type="button" class="btn btn-secondary" aria-controls="agent" aria-expanded="false"><span id="bar-agent-label">העוזר</span></button>
+    <button id="open-agent" type="button" class="btn btn-secondary btn-agent" aria-controls="agent" aria-expanded="false">שאלו את הסוכן<span class="btn-agent__dot" hidden></span></button>
     <a class="btn btn-primary" href="/customer/summary.html">לסיכום</a>
   </div>
   <div id="backdrop" class="backdrop" hidden></div>

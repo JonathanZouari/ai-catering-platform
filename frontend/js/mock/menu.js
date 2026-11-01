@@ -30,6 +30,15 @@ export const DISHES = [
   { id: "chocolate", cat: "desserts", name: "עוגת שוקולד פרווה", price: 220, unit: "tray", kind: "pareve", vegetarian: true, vegan: false, allergens: null },
 ];
 
+// Photos live in frontend/assets (origin and rights: assets/README.md). Missing file → no-photo placeholder.
+const PHOTOS = {
+  hummus: "01_hummus.jpg", eggplant: "02_roasted_eggplant_salad.jpg", chopped: "03_chopped_vegetable_salad.jpg",
+  quinoa: "04_quinoa_roasted_vegetables.jpg", schnitzel: "05_crispy_schnitzel.jpg", salmon: "06_oven_baked_salmon.jpg",
+  meatballs: "07_herbed_meatballs.jpg", pasta: "08_creamy_pasta.jpg", rice: "09_almond_rice.jpg",
+  potatoes: "10_roasted_potatoes.jpg", tart: "11_mini_lemon_tarts.jpg", chocolate: "12_pareve_chocolate_cake.jpg",
+};
+for (const dish of DISHES) dish.image = `/assets/${PHOTOS[dish.id]}`;
+
 export const KIND_LABEL = { meat: "בשרי", dairy: "חלבי", pareve: "פרווה" };
 
 export const EVENT = { dateLabel: "יום חמישי, 19 בנובמבר", time: "19:00", guests: 80, adults: 68, children: 12, vegetarians: 12, vegans: 4, mode: "משלוח" };
@@ -47,10 +56,12 @@ export const orderTotal = (order) =>
 export const SCRIPTED_PROPOSALS = [
   {
     message: "שמתי לב שיש בהזמנה רק שני סלטים, ובין האורחים 12 צמחונים ו-4 טבעונים. מציע להוסיף מהתפריט סלט חצילים קלוי, שמתאים גם לטבעונים. אני לא משנה כלום עד שתאשרו.",
+    hint: "לסוכן יש הצעה לטבעונים",
     changes: [{ dishId: "eggplant", to: 5 }],
   },
   {
     message: "אפשר גם להגדיל את החומוס: כרגע הוא המטבל היחיד בהזמנה, והוא מתאים לצמחונים ולטבעונים.",
+    hint: "לסוכן יש הצעה להגדלת החומוס",
     changes: [{ dishId: "hummus", to: 9 }],
   },
 ];

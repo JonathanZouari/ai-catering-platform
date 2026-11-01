@@ -18,7 +18,7 @@ export function createAgentPanel({ summaryEl, onSend }) {
   const el = h("aside", { id: "agent", class: "agent card", "aria-label": "עוזר התפריט" },
     h("header", { class: "agent__head" },
       h("div", {},
-        h("h2", {}, "העוזר"),
+        h("h2", {}, "הסוכן"),
         h("p", { class: "muted" }, "מציע רק מנות מהתפריט של העסק, ולא משנה כלום בלי אישור שלך")),
       h("span", { class: "pill pill-draft" }, "הדגמה"),
       closeBtn),
