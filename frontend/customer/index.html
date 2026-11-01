@@ -1,21 +1,163 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
+  <title>תכנון אירוע · שולחן מלא</title>
+  <link rel="preload" href="/assets/fonts/rubik-doodle-shadow-hebrew.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/customer.css">
 </head>
 <body>
-  <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <header class="flow-header">
+    <div class="container flow-header__inner">
+      <a class="wordmark" href="/">שולחן מלא</a>
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="progress" id="progress">
+          <li><a href="#event">פרטי האירוע</a></li>
+          <li><a href="#menu">מנות</a></li>
+          <li><a href="#summary">סיכום</a></li>
+          <li><a href="#status">שליחה</a></li>
+        </ol>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- C1 Event details -->
+    <section class="step" id="event" data-title="פרטי האירוע" hidden>
+      <div class="step-band band--butter">
+        <div class="container step-band__inner">
+          <div>
+            <h1 class="display" tabindex="-1">פרטי האירוע</h1>
+            <p>ספרו לנו על האירוע, ונחשב כמויות ומחיר.</p>
+          </div>
+          <img class="character" src="/assets/illustrations/chef-clipboard.svg" alt="" width="140" height="160">
+        </div>
+      </div>
+      <form class="container sheet" id="event-form" novalidate>
+        <fieldset class="field">
+          <legend>סוג האירוע</legend>
+          <div class="chips" id="event-types" role="radiogroup" aria-label="סוג האירוע"></div>
+        </fieldset>
+        <div class="field">
+          <label for="date">תאריך האירוע</label>
+          <input class="input" id="date" name="date" type="date" aria-describedby="date-hint date-error">
+          <p class="hint" id="date-hint">תאריכים תפוסים אי אפשר לבחור.</p>
+          <p class="error" id="date-error" hidden></p>
+        </div>
+        <fieldset class="field">
+          <legend>איסוף או משלוח</legend>
+          <div class="segmented" role="radiogroup" aria-label="איסוף או משלוח">
+            <button type="button" class="chip" role="radio" data-delivery="true">משלוח</button>
+            <button type="button" class="chip" role="radio" data-delivery="false">איסוף עצמי</button>
+          </div>
+        </fieldset>
+        <div class="field" id="address-field">
+          <label for="address">כתובת למשלוח</label>
+          <input class="input" id="address" name="address" autocomplete="street-address" dir="auto" aria-describedby="zone address-error">
+          <p class="hint" id="zone"></p>
+          <p class="error" id="address-error" hidden></p>
+        </div>
+        <fieldset class="field">
+          <legend>חלון זמן</legend>
+          <div class="chips" id="slots" role="radiogroup" aria-label="חלון זמן"></div>
+        </fieldset>
+        <fieldset class="field">
+          <legend>הרכב האורחים</legend>
+          <div class="guest-rows" id="guests"></div>
+          <p class="hint">צמחונים וטבעונים נספרים מתוך המבוגרים והילדים.</p>
+          <p class="error" id="guests-error" hidden></p>
+        </fieldset>
+        <div class="field">
+          <label for="notes">הגבלות תזונה נוספות</label>
+          <textarea class="input" id="notes" rows="3" dir="auto" placeholder="למשל: אלרגיה לאגוזים אצל 2 אורחים"></textarea>
+        </div>
+        <div class="action-bar">
+          <p id="event-summary"></p>
+          <button class="btn btn--primary" type="submit">המשך לבחירת מנות</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- C2 Dish catalog -->
+    <section class="step" id="menu" data-title="בחירת מנות" hidden>
+      <div class="container sheet">
+        <h1 class="display" tabindex="-1">בחירת מנות</h1>
+        <div class="chips chips--scroll" id="categories" role="group" aria-label="קטגוריות"></div>
+      </div>
+      <div class="recommend band--butter">
+        <div class="container recommend__inner">
+          <img class="character" src="/assets/illustrations/waiter-pointing.svg" alt="" width="110" height="132">
+          <p id="recommendation" aria-live="polite"></p>
+        </div>
+      </div>
+      <ul class="container dish-list" id="dish-list"></ul>
+      <div class="action-bar action-bar--ink">
+        <p aria-live="polite"><span id="menu-count"></span>, <bdi dir="ltr" id="menu-total"></bdi></p>
+        <a class="btn" href="#summary">לסיכום ההזמנה</a>
+      </div>
+    </section>
+
+    <!-- C3 Order summary -->
+    <section class="step" id="summary" data-title="סיכום ההזמנה" hidden>
+      <div class="step-band band--butter">
+        <div class="container step-band__inner">
+          <div>
+            <h1 class="display" tabindex="-1">סיכום ההזמנה</h1>
+            <dl class="facts" id="summary-event"></dl>
+            <a href="#event">עריכת פרטי האירוע</a>
+          </div>
+          <img class="character" src="/assets/illustrations/waiter-cart.svg" alt="" width="140" height="170">
+        </div>
+      </div>
+      <div class="container sheet">
+        <ul class="lines" id="lines"></ul>
+        <p class="notice" id="kashrut-notice" hidden>יש בהזמנה מנות חלביות ומנות בשריות. כדאי לבדוק עם העסק.</p>
+        <dl class="totals" id="totals" aria-live="polite"></dl>
+        <p class="hint">המחיר הסופי נקבע באישור העסק.</p>
+        <div class="action-bar">
+          <button class="btn" type="button" data-open-assistant>שאלו את העוזר</button>
+          <button class="btn btn--primary" type="button" id="submit-request">שליחת הבקשה</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- C5 Request status -->
+    <section class="step" id="status" data-title="סטטוס הבקשה" hidden>
+      <div class="step-band band--butter">
+        <div class="container step-band__inner step-band__inner--center">
+          <img class="character" src="/assets/illustrations/waiter-envelope.svg" alt="" width="200" height="190">
+          <h1 class="display" tabindex="-1">הבקשה נשלחה לעסק</h1>
+          <p>זו עדיין לא הזמנה מאושרת. בעל העסק יבדוק ויחזור אליכם.</p>
+        </div>
+      </div>
+      <div class="container sheet" id="status-body"></div>
+    </section>
   </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+
+  <button class="assistant-fab btn btn--primary" type="button" data-open-assistant hidden>העוזר</button>
+
+  <!-- C4 Assistant: a modal dialog; bottom sheet on mobile, side panel from 1024px. -->
+  <dialog class="assistant" id="assistant" aria-labelledby="assistant-title">
+    <div class="assistant__head band--butter">
+      <img class="character" src="/assets/illustrations/waiter-cloche.svg" alt="" width="80" height="80">
+      <div>
+        <h2 id="assistant-title" class="display">העוזר החכם</h2>
+        <p>מציע, ואתם מחליטים.</p>
+      </div>
+      <button class="icon-btn" type="button" id="close-assistant" aria-label="סגירת העוזר">✕</button>
+    </div>
+    <div class="assistant__log" id="assistant-log" role="log" aria-live="polite"></div>
+    <form class="assistant__input" id="assistant-form">
+      <label class="visually-hidden" for="assistant-text">הודעה לעוזר</label>
+      <input class="input" id="assistant-text" dir="auto" placeholder="כתבו לעוזר">
+      <button class="btn btn--primary" type="submit">שליחה</button>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/customer.js"></script>
 </body>
 </html>

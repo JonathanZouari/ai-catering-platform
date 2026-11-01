@@ -1,0 +1,42 @@
+<svg viewBox="0 0 200 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="60" y1="180" x2="140" y2="180" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6"/>
+          <line x1="45" y1="180" x2="52" y2="180" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="148" y1="180" x2="158" y2="180" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+
+          <path d="M92 145 L85 178" stroke="#3D3B38" stroke-width="3" stroke-linecap="round"/>
+          <path d="M85 178 L78 178" stroke="#3D3B38" stroke-width="3" stroke-linecap="round"/>
+          
+          <path d="M106 145 L116 178" stroke="#3D3B38" stroke-width="3" stroke-linecap="round"/>
+          <path d="M116 178 L126 178" stroke="#3D3B38" stroke-width="3" stroke-linecap="round"/>
+
+          <path d="M88 88 L112 88 L118 145 L82 145 Z" fill="#3D3B38" stroke="#3D3B38" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M93 88 L100 102 L107 88 Z" fill="#ffffff" stroke="#3D3B38" stroke-width="1.5"/>
+          <path d="M97 91 L103 91 L100 94 Z" fill="#3D3B38"/>
+          <path d="M97 97 L103 97 L100 94 Z" fill="#3D3B38"/>
+          <circle cx="100" cy="94" r="1.5" fill="#FDD98B"/>
+          <line x1="82" y1="112" x2="118" y2="112" stroke="#ffffff" stroke-width="2"/>
+
+          <circle cx="100" cy="62" r="15" fill="#ffffff" stroke="#3D3B38" stroke-width="2.5"/>
+          <circle cx="95" cy="59" r="1.8" fill="#3D3B38"/>
+          <circle cx="105" cy="59" r="1.8" fill="#3D3B38"/>
+          <path d="M95 67 Q100 72 105 67" stroke="#3D3B38" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M86 52 C86 42 114 42 114 52 Z" fill="#ffffff" stroke="#3D3B38" stroke-width="2.5"/>
+          <path d="M82 52 L118 52" stroke="#3D3B38" stroke-width="2.5" stroke-linecap="round"/>
+
+          <path d="M89 95 L72 105 L62 90" stroke="#3D3B38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="42" y1="89" x2="80" y2="89" stroke="#3D3B38" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M47 88 C47 72 75 72 75 88 Z" fill="#ffffff" stroke="#3D3B38" stroke-width="2.5"/>
+          <circle cx="61" cy="71" r="3" fill="#ffffff" stroke="#3D3B38" stroke-width="2"/>
+          <path d="M45 68 L47 62 L49 68 L55 70 L49 72 L47 78 L45 72 L39 70 Z" fill="#3D3B38" transform="scale(0.5) translate(45, 60)"/>
+          <circle cx="78" cy="65" r="1.5" fill="#3D3B38"/>
+
+          <path d="M111 96 L130 108 L142 102" stroke="#3D3B38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <g transform="translate(136, 88) rotate(8)">
+            <rect x="0" y="0" width="38" height="26" rx="2" fill="#ffffff" stroke="#3D3B38" stroke-width="2.2"/>
+            <path d="M1 1 L19 15 L37 1" stroke="#3D3B38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M1 25 L13 14" stroke="#3D3B38" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M37 25 L25 14" stroke="#3D3B38" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="19" cy="14" r="4.5" fill="#FDD98B" stroke="#3D3B38" stroke-width="1.8"/>
+            <circle cx="19" cy="14" r="2" fill="#3D3B38"/>
+          </g>
+        </svg>

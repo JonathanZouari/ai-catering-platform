@@ -1,21 +1,107 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business dashboard</title>
+  <title>הזמנות · ניהול שולחן מלא</title>
+  <link rel="preload" href="/assets/fonts/rubik-doodle-shadow-hebrew.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-  <main>
-    <h1>Business dashboard</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <div class="admin">
+    <nav class="sidebar" aria-label="ניהול העסק">
+      <a class="sidebar__brand" href="/">שולחן מלא</a>
+      <ul class="sidebar__nav" id="nav">
+        <li><a href="#orders">הזמנות <span class="count" id="pending-count"></span></a></li>
+        <li><a href="#dishes">מנות ומחירים</a></li>
+        <!-- A3–A5 are in UX_UI_SPEC but not designed yet. -->
+        <li><a role="link" tabindex="0" aria-disabled="true" aria-describedby="soon">זמינות ותאריכים</a></li>
+        <li><a role="link" tabindex="0" aria-disabled="true" aria-describedby="soon">איסוף ומשלוחים</a></li>
+      </ul>
+      <p class="sidebar__note" id="soon">זמינות, איסוף ומשלוחים: עוד לא נבנו.</p>
+      <p class="sidebar__owner">דנה כהן, בעלת העסק</p>
+    </nav>
+
+    <main id="main">
+      <!-- A1 Orders -->
+      <section class="view" id="orders" data-title="הזמנות" hidden>
+        <header class="view-band band--butter">
+          <div>
+            <h1 class="display" tabindex="-1">הזמנות</h1>
+            <p id="orders-lead"></p>
+          </div>
+          <img class="character" src="/assets/illustrations/chef-clipboard-leaning.svg" alt="" width="200" height="160">
+        </header>
+        <dl class="kpis" id="kpis"></dl>
+        <div class="view-body orders">
+          <div>
+            <div class="chips" id="order-filters" role="group" aria-label="סינון לפי סטטוס"></div>
+            <div class="table-wrap" tabindex="0" role="region" aria-label="טבלת בקשות">
+              <table class="table" id="orders-table">
+                <caption class="visually-hidden">בקשות להצעת מחיר</caption>
+                <thead><tr><th scope="col">לקוח</th><th scope="col">אירוע</th><th scope="col" aria-sort="ascending">תאריך</th><th scope="col">אורחים</th><th scope="col">סה״כ</th><th scope="col">סטטוס</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <article class="panel" id="order-detail" aria-live="polite"></article>
+        </div>
+      </section>
+
+      <!-- A2 Dishes -->
+      <section class="view" id="dishes" data-title="מנות ומחירים" hidden>
+        <header class="view-band band--butter">
+          <div>
+            <h1 class="display" tabindex="-1">מנות ומחירים</h1>
+            <p id="dishes-lead"></p>
+            <button class="btn btn--primary" type="button" id="new-dish">מנה חדשה</button>
+          </div>
+          <img class="character" src="/assets/illustrations/chef-tasting.svg" alt="" width="210" height="150">
+        </header>
+        <div class="view-body">
+          <div class="chips" id="dish-filters" role="group" aria-label="סינון לפי קטגוריה"></div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="טבלת מנות">
+            <table class="table" id="dishes-table">
+              <caption class="visually-hidden">מנות בתפריט</caption>
+              <thead><tr><th scope="col"><span class="visually-hidden">תמונה</span></th><th scope="col" aria-sort="ascending">מנה</th><th scope="col">מחיר</th><th scope="col">כשרות</th><th scope="col">אלרגנים</th><th scope="col">זמינה</th><th scope="col"><span class="visually-hidden">פעולות</span></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <p class="visually-hidden" id="announcer" role="status"></p>
+    </main>
+  </div>
+
+  <!-- Dish editor (A2/A3): side panel -->
+  <dialog class="drawer" id="dish-editor" aria-labelledby="editor-title">
+    <form id="dish-form" novalidate>
+      <header class="drawer__head">
+        <h2 id="editor-title"></h2>
+        <button class="icon-btn" type="button" data-close aria-label="סגירה בלי לשמור">✕</button>
+      </header>
+      <div class="drawer__body" id="dish-fields"></div>
+      <footer class="drawer__foot">
+        <button class="btn btn--primary" type="submit">שמירת המנה</button>
+        <button class="btn" type="button" data-close>ביטול</button>
+        <button class="btn btn--danger drawer__delete" type="button" id="delete-dish">מחיקת המנה</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Confirmation for actions the owner cannot undo -->
+  <dialog class="confirm" id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-text"></p>
+    <div class="confirm__actions">
+      <button class="btn" type="button" id="confirm-cancel" autofocus>ביטול</button>
+      <button class="btn btn--danger" type="button" id="confirm-ok"></button>
+    </div>
+  </dialog>
+
+  <script type="module" src="/js/admin.js"></script>
 </body>
 </html>
