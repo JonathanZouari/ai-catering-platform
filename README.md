@@ -1,16 +1,16 @@
 # AI Catering Platform
 
-Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
+Hebrew ordering and management platform for **many catering businesses**. Each caterer gets a branded link. Customers use it to plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. Each caterer manages their own catalog and approves or rejects every quotation.
 
-> Status: **Phase 1 — scaffolding**. No business features yet. See `docs/` for the specs.
+> Status: **Phase 2 — specs updated for many caterers**. No business features yet. See `docs/` for the specs.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
+| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 3) |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Data | Supabase (Postgres, Storage, Auth for caterer logins) |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -19,7 +19,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 3)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -62,7 +62,7 @@ uv run pytest
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 2, when database code exists.
+`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 3, when database code exists.
 
 ## Branches and environments
 
@@ -78,7 +78,7 @@ uv run pytest
 
 ## Railway / Supabase status
 
-Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 6.
+Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 8.
 
 ## Documentation
 
