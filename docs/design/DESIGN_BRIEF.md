@@ -91,7 +91,7 @@ Status colours are unchanged from the original brief. Colour is never the only s
 
 ### C2 + C4 — Menu with the agent (`/customer/`)
 - Desktop: catalog grid with category / diet chips on one side, **agent panel** on the other. The header is sticky and the panel is sticky below it, filling the rest of the viewport at any scroll position; the messages area takes the remaining height and scrolls to the newest item, so the latest proposal card is fully visible on load. Mobile: catalog + a sticky bottom bar with the total, a **"שאלו את הסוכן"** button (with a dot while a proposal waits) and "לסיכום". A hint pill above the bar ("לסוכן יש הצעה לטבעונים") opens the agent as a bottom sheet over a blurred catalog. The sheet traps focus, closes with Escape and returns focus.
-- Agent panel: the note "מציע רק מנות מהתפריט של העסק, ולא משנה כלום בלי אישור שלך", messages, the proposal card, input, then a collapsible order list (collapsed by default, opens on approve), delivery "לפי אזור, יחושב באישור", total, and the CTA "לסיכום ושליחה לאישור".
+- Agent panel: the note "מציע רק מנות מהתפריט של העסק, ולא משנה כלום בלי אישור שלך", messages, the proposal card, input, then a collapsible order list (collapsed by default, opens on approve), a delivery row "לפי אזור, יחושב באישור" (for pickup: "קבלה · איסוף עצמי" and no delivery wording anywhere), total, and the CTA "לסיכום ושליחה לאישור". The foot (delivery/pickup row, total, CTA) is always visible: only the order lines scroll, and the chat gives way when space runs short.
 - The agent is scripted (two proposals, then a demo reply), labeled "הדגמה".
 
 ### C3 — Summary & quote (`/customer/summary.html`)
@@ -99,6 +99,8 @@ Status colours are unchanged from the original brief. Colour is never the only s
 - One white card: event facts (date, time, guests with the adults/children split, delivery address or pickup) from `event-store`, then itemised lines (name, qty × unit price, line total in tabular numbers), a delivery row "לפי אזור, יחושב באישור" (delivery only), a big total, and "ההזמנה מחייבת רק אחרי אישור העסק."
 - A second card: delivery address (delivery only, required) and optional notes. CTA "שליחה לאישור העסק" (ink primary) and a text link "חזרה לתפריט".
 - On send: a calm confirmation on the same page ("ההזמנה נשלחה לבעל העסק"), the pill changes to "ממתין לאישור" (never shown as confirmed), the form is replaced, and the page returns to the top. The quote lines shown afterwards are the **price snapshot** taken at sending (also stored in `sessionStorage`).
+- Pickup: "איסוף עצמי" instead of an address, no delivery row, no address field and a plain "סה״כ".
+- A sent quote is shown only while it still matches the current event and order; a new event or a changed order starts a new draft.
 - Empty order: "עוד לא נבחרו מנות" with a link back to the menu.
 - Deliberately **not** in it: payment (OPEN #2), VAT (OPEN #14), a "enough food for everyone" coverage block (needs the business quantity rules, OPEN #3), editing after sending (OPEN #7).
 - The menu now keeps the draft order in `sessionStorage` so this page can read it.

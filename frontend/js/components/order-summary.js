@@ -2,26 +2,30 @@ import { h } from "../dom.js";
 import { ils, reducedMotion } from "../format.js";
 import { UNITS, dishById, orderTotal } from "../mock/menu.js";
 
-// Running order: collapsible lines (qty × unit = line) and a rolling total. The visible total is aria-hidden
-// while it rolls; a separate polite live region announces only the final value.
-export function createOrderSummary() {
+// Running order: a collapsible list of lines (qty × unit = line), then a foot that is always visible
+// (delivery / pickup note, rolling total, CTA). Only the lines scroll. The visible total is aria-hidden while it
+// rolls; a separate polite live region announces only the final value.
+export function createOrderSummary({ isDelivery = true } = {}) {
   // Scrollbar hidden (one visible scrollbar in the panel); focusable so the list scrolls with the keyboard.
-  const lines = h("ul", { class: "summary__lines", tabindex: "0", "aria-label": "מנות בהזמנה" });
+  const lines = h("ul", { class: "summary__lines", id: "order-lines", tabindex: "0", "aria-label": "מנות בהזמנה", hidden: true });
   const count = h("span", { class: "summary__count num" });
-  const details = h("details", { class: "summary__details" },
-    h("summary", {}, h("span", {}, "ההזמנה שלכם"), count),
-    lines);
+  const toggle = h("button", { type: "button", class: "summary__toggle", "aria-expanded": "false", "aria-controls": "order-lines", onClick: () => { clearTimeout(closeTimer); setOpen(lines.hidden); } },
+    h("span", {}, "ההזמנה שלכם"), count);
   const totalEl = h("strong", { class: "summary__total num", "aria-hidden": "true" }, ils(0));
   const live = h("span", { class: "visually-hidden", "aria-live": "polite" });
   const foot = h("div", { class: "summary__foot" },
-    h("p", { class: "summary__delivery muted" }, h("span", {}, "משלוח"), h("span", {}, "לפי אזור, יחושב באישור")),
-    h("p", { class: "summary__sum" }, h("span", {}, "סה״כ (ללא משלוח)"), totalEl, live),
+    isDelivery
+      ? h("p", { class: "summary__delivery muted" }, h("span", {}, "משלוח"), h("span", {}, "לפי אזור, יחושב באישור"))
+      : h("p", { class: "summary__delivery muted" }, h("span", {}, "קבלה"), h("span", {}, "איסוף עצמי")),
+    h("p", { class: "summary__sum" }, h("span", {}, isDelivery ? "סה״כ (ללא משלוח)" : "סה״כ"), totalEl, live),
   );
-  const el = h("section", { class: "summary", "aria-label": "סיכום ההזמנה" }, details, foot);
+  const el = h("section", { class: "summary", "aria-label": "סיכום ההזמנה" }, toggle, lines, foot);
   const mirrors = []; // other elements that show the same total (mobile bar)
   let shown = null;
   let frame = 0;
+  let closeTimer = 0;
 
+  const setOpen = (open) => { lines.hidden = !open; toggle.setAttribute("aria-expanded", String(open)); };
   const paintTotal = (value) => { for (const t of [totalEl, ...mirrors]) t.textContent = ils(value); };
 
   function roll(to, ms = 700) {
@@ -54,7 +58,7 @@ export function createOrderSummary() {
     }));
     // Scroll only the lines list (not the page) so the new line is in view.
     const fresh = lines.querySelector(".is-new");
-    if (fresh && details.open) {
+    if (fresh && !lines.hidden) {
       lines.scrollTop += fresh.getBoundingClientRect().top - lines.getBoundingClientRect().top - lines.clientHeight / 3;
     }
     const total = orderTotal(order);
@@ -64,19 +68,11 @@ export function createOrderSummary() {
 
   // open({ autoClose }) shows the lines; with autoClose (ms) it closes again unless it was already open or
   // the user toggled it meanwhile.
-  let closeTimer = 0;
-  let programmatic = false;
-  details.addEventListener("toggle", () => {
-    if (programmatic) programmatic = false;
-    else clearTimeout(closeTimer); // the user took over
-  });
   function open({ autoClose = 0 } = {}) {
-    const wasOpen = details.open;
+    const wasOpen = !lines.hidden;
     clearTimeout(closeTimer);
-    if (!wasOpen) { programmatic = true; details.open = true; }
-    if (autoClose && !wasOpen) {
-      closeTimer = setTimeout(() => { if (details.open) { programmatic = true; details.open = false; } }, autoClose);
-    }
+    if (!wasOpen) setOpen(true);
+    if (autoClose && !wasOpen) closeTimer = setTimeout(() => setOpen(false), autoClose);
   }
 
   return { el, foot, totalEl, update, open, mirror: (node) => mirrors.push(node) };

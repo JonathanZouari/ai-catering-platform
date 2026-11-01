@@ -7,12 +7,19 @@ import { loadEvent, loadOrder, loadSubmission, saveSubmission, eventFacts } from
 import { statusPill } from "./components/status-pill.js";
 
 const $ = (id) => document.getElementById(id);
-const submission = loadSubmission();
-const event = submission?.event ?? loadEvent() ?? EVENT; // the menu falls back to the same demo event
+const event = loadEvent() ?? EVENT; // the menu falls back to the same demo event
+const currentOrder = loadOrder() ?? {};
+const quantities = (entries) => JSON.stringify(entries.filter(([, q]) => q > 0).sort(([a], [b]) => (a < b ? -1 : 1)));
+
+// A sent quote is only shown while it still matches the current event and order. After a new event or a changed
+// order this is a new draft, not the old quote with old (e.g. delivery) details.
+const stored = loadSubmission();
+const submission = stored && JSON.stringify(stored.event) === JSON.stringify(event)
+  && quantities(stored.lines.map((l) => [l.id, l.qty])) === quantities(Object.entries(currentOrder)) ? stored : null;
 const facts = eventFacts(event);
 
 // Lines: from the sent snapshot if there is one, otherwise from the current order at current mock prices.
-const lines = submission?.lines ?? Object.entries(loadOrder() ?? {})
+const lines = submission?.lines ?? Object.entries(currentOrder)
   .filter(([id, qty]) => qty > 0 && dishById(id))
   .map(([id, qty]) => { const d = dishById(id); return { id, name: d.name, qty, unit: d.unit, price: d.price }; });
 const total = lines.reduce((sum, l) => sum + l.price * l.qty, 0);
@@ -37,6 +44,7 @@ function renderLines() {
   }));
   $("total").textContent = ils(total);
   $("delivery-row").hidden = !facts.isDelivery;
+  $("sum-label").textContent = facts.isDelivery ? "סה״כ (ללא משלוח)" : "סה״כ"; // pickup has no delivery wording
 }
 
 function showSent(sent) {

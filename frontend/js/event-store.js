@@ -19,11 +19,12 @@ export const loadSubmission = () => read(KEYS.submission);
 export function eventFacts(event) {
   const guests = event.guests ?? event.adults + event.children;
   const date = event.dateLabel ?? new Date(`${event.date}T00:00`).toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
-  const mode = event.mode === "delivery" ? "משלוח" : event.mode === "pickup" ? "איסוף" : event.mode;
+  const isDelivery = event.mode === "delivery" || event.mode === "משלוח"; // the mock EVENT carries the Hebrew word
+  const mode = isDelivery ? "משלוח" : "איסוף עצמי";
   const adults = event.adults === 1 ? "מבוגר אחד" : `${event.adults} מבוגרים`;
   const children = event.children === 1 ? "ילד אחד" : `${event.children} ילדים`;
   return {
-    date, time: event.time, mode, isDelivery: mode === "משלוח", address: event.address ?? "",
+    date, time: event.time, mode, isDelivery, address: event.address ?? "",
     guests: guests === 1 ? "אורח אחד" : `${guests} אורחים`, guestsDetail: `${adults}, ${children}`,
   };
 }

@@ -4,7 +4,7 @@ import { ils, reducedMotion, wait } from "./format.js";
 import {
   CATEGORIES, DISHES, EVENT, INITIAL_ORDER, SCRIPTED_PROPOSALS, DEMO_REPLY, dishById, orderTotal,
 } from "./mock/menu.js";
-import { loadEvent, describeEvent, loadOrder, saveOrder } from "./event-store.js";
+import { loadEvent, describeEvent, eventFacts, loadOrder, saveOrder } from "./event-store.js";
 import { createDishCard } from "./components/dish-card.js";
 import { createOrderSummary } from "./components/order-summary.js";
 import { createProposalCard } from "./components/proposal-card.js";
@@ -20,7 +20,7 @@ const pending = new Set(); // { proposal, card } awaiting a decision
 let scriptIndex = 0;
 
 // ---- summary + agent
-const summary = createOrderSummary();
+const summary = createOrderSummary({ isDelivery: eventFacts(loadEvent() ?? EVENT).isDelivery }); // pickup: no delivery wording
 const barTotal = document.getElementById("bar-total");
 summary.mirror(barTotal);
 

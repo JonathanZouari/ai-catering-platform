@@ -28,6 +28,7 @@ main > .steps { margin-block-end: var(--space-3); }
 .quote__line { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
 
 .quote__delivery, .quote__sum { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); margin: 0; }
+.quote__delivery[hidden] { display: none; } /* display:flex below would otherwise override [hidden] (pickup) */
 .quote__delivery { padding-block: var(--space-3); border-block-start: 1px solid var(--color-line); }
 .quote__sum { margin-block-start: var(--space-2); padding-block-start: var(--space-4); border-block-start: 1px solid var(--color-text); }
 .quote__sum strong { font-size: clamp(2rem, 6vw, 2.75rem); font-weight: 400; letter-spacing: -0.01em; }
