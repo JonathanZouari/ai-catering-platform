@@ -1,21 +1,57 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
+  <title>התפריט</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/customer.css">
 </head>
 <body>
+  <a class="skip" href="#catalog">דלגו לתפריט</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="wordmark" href="/">שם העסק</a>
+      <nav aria-label="ראשי">
+        <a href="/customer/" aria-current="page">התפריט</a>
+        <a href="/#how">איך זה עובד</a>
+        <a href="/admin/">לבעל העסק</a>
+      </nav>
+    </div>
+  </header>
+
   <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+    <div id="menu-layout" class="menu-layout">
+      <section id="catalog" aria-label="קטלוג מנות">
+        <div class="menu-head">
+          <ol class="steps" aria-label="שלבי ההזמנה">
+            <li><a href="/">מתי ומי מגיע</a></li>
+            <li aria-current="step">תפריט</li>
+            <li>סיכום ושליחה</li>
+          </ol>
+          <h1>התפריט</h1>
+          <p id="event-strip" class="muted"></p>
+        </div>
+        <div id="chips" class="chips" role="group" aria-label="סינון מנות"></div>
+        <div id="dish-grid" class="dish-grid"></div>
+        <p class="muted catalog-note">נתוני הדגמה: המנות, המחירים והמידע התזונתי כאן אינם אמיתיים.</p>
+      </section>
+    </div>
   </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+
+  <div class="mobile-bar">
+    <div class="mobile-bar__total">
+      <span class="muted">סה״כ</span>
+      <strong id="bar-total" class="num" aria-hidden="true">₪0</strong>
+    </div>
+    <button id="open-agent" type="button" class="btn btn-secondary" aria-controls="agent" aria-expanded="false"><span id="bar-agent-label">העוזר</span></button>
+    <a class="btn btn-primary" href="/customer/summary.html">לסיכום</a>
+  </div>
+  <div id="backdrop" class="backdrop" hidden></div>
+
+  <script type="module" src="/js/customer.js"></script>
 </body>
 </html>
