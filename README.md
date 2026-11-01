@@ -4,6 +4,18 @@ Hebrew ordering and management platform for **many catering businesses**. Each c
 
 > Status: **built, not online**. All building phases are finished, and the test site is skipped for now. The AI chat needs `ANTHROPIC_API_KEY` and has only been tested with a scripted model. New-order emails need a Resend account and domain, and haven't been tested with the real provider. See `docs/DEPLOYMENT.md` to put it online, and `docs/` for the specs.
 
+## Screenshots
+
+Sample menu and made-up names.
+
+| Customer menu | Order summary |
+|---|---|
+| ![Customer menu on a computer](docs/screenshots/computer-menu.png) | ![Order summary on a computer](docs/screenshots/computer-summary.png) |
+
+| Caterer dashboard | Phone |
+|---|---|
+| ![Caterer dashboard](docs/screenshots/admin-orders.png) | <img src="docs/screenshots/phone-menu.png" alt="Customer menu on a phone" width="280"> |
+
 ## Phases
 
 | Phase | What | Status |
