@@ -17,7 +17,7 @@ Format: **Question** · *Why it matters* · **Blocks**
 | 9 | Kashrut certification | Which certification(s)? Shown per dish or business-wide? Mixing meat & dairy dishes in one order allowed? | Affects data model and validation | Phase 2 dish fields, Phase 3 conflict checks |
 | 10 | Disposable serving equipment | Are utensils/disposables orderable? Priced how? | Could be catalog items or separate | Out of MVP until decided |
 | 11 | Alcohol | Offered at all? Age verification? | Legal implications | Out of MVP until decided |
-| 12 | Interface languages | Hebrew only, English only, or both? RTL required? | Layout, copy, and AI response language | Phase 3 UI build (design tokens can be direction-agnostic now) |
+| 12 | Interface languages | ~~Hebrew only, English only, or both? RTL required?~~ **Decided 2026-11-01: Hebrew, RTL** (chosen with the "Table Journal" design). English is not planned. | Layout, copy, and AI response language | Resolved (AI response language follows: Hebrew) |
 | 13 | Notification channels | Email, SMS, WhatsApp, none? For which events (submitted, approved, rejected)? | Third-party providers and cost | Out of MVP until decided |
 | 14 | VAT & rounding | Are catalog prices VAT-inclusive? VAT rate handling? Rounding rules for totals and weight-based prices? | Deterministic pricing correctness | Phase 3 pricing engine final rules |
 | 15 | Minimum order quantities | Minimum per dish, per order, or minimum guests? Minimum for delivery? | Validation rules | Phase 2/3 validation |
@@ -25,7 +25,7 @@ Format: **Question** · *Why it matters* · **Blocks**
 | 17 | Currency | Single currency (e.g., ILS)? Display format? | Money formatting and storage | Phase 2 pricing fields (stored as numeric + currency code until decided) |
 | 18 | Weight unit | kg, 100 g, or configurable per dish? | Per-weight pricing math | Phase 2 pricing units |
 | 19 | Delivery zone definition | Zones by city list, postal code, or radius/polygon? | Address → zone lookup method | Phase 2 delivery zones |
-| 20 | Brand | Business name, logo, colors, fonts | Visual identity | Phase 3 UI polish (neutral tokens until then) |
+| 20 | Brand | Business name, logo, colors, fonts. **Decided 2026-11-01: name "Yummai", colors and fonts per the "Table Journal" direction (UX_UI_SPEC §2).** Still open: logo, real food photography | Visual identity | Logo and photos only (Unsplash placeholders until then) |
 
 ## Decision log
 
