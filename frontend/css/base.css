@@ -16,10 +16,11 @@
   --color-primary: #2b2f38;
   --color-primary-hover: #1b1e25;
   --color-on-primary: #ffffff;
-  --color-approve: #b05f1e;
-  --color-approve-hover: #8a4a12;
+  --color-approve: #c2410c; /* white text 5.18:1; hover #9a3412 7.31:1 */
+  --color-approve-hover: #9a3412;
   --color-focus: #2b2f38;
-  --color-faint: #a8adb6;
+  --color-glow: #f97316; /* typed-intro cursor and strike only (decorative) */
+  --color-faint: #858b96; /* struck intro lines: large text, 3.19:1 (needs 3:1) */
   --color-success: #2e6b47;
   --color-success-bg: #e3f0e8;
   --color-warning: #7a5410;

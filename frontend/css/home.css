@@ -11,10 +11,11 @@ main { padding-block: 0 var(--space-6); }
   color: var(--color-text); text-decoration: none;
 }
 .intro__line.is-struck { color: var(--color-faint); }
-/* Thin apricot strike, drawn from the right (the start of an RTL line). */
+/* Thin glowing orange strike, drawn from the right (the start of an RTL line). */
 .intro__line::after {
   content: ""; position: absolute; inset-inline: -0.06em; inset-block-start: 58%; block-size: 2px;
-  background: var(--color-accent); transform: scaleX(0); transform-origin: right;
+  background: var(--color-glow); box-shadow: 0 0 8px 1px rgb(249 115 22 / 0.55);
+  transform: scaleX(0); transform-origin: right;
 }
 .intro__line.is-struck::after { transform: scaleX(1); }
 .intro--running .intro__line { transition: color 0.5s ease 0.1s; }
@@ -34,7 +35,8 @@ main { padding-block: 0 var(--space-6); }
 .intro--instant, .intro--instant * , .intro--instant *::after { transition: none !important; }
 
 .caret {
-  display: inline-block; inline-size: 3px; block-size: 0.95em; background: var(--color-accent);
+  display: inline-block; inline-size: 3px; block-size: 0.95em; background: var(--color-glow);
+  box-shadow: 0 0 10px 1px rgb(249 115 22 / 0.6);
   vertical-align: -0.1em; margin-inline-start: 4px; animation: blink 1s steps(1) infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
