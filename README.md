@@ -2,7 +2,25 @@
 
 Hebrew ordering and management platform for **many catering businesses**. Each caterer gets a branded link. Customers use it to plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. Each caterer manages their own catalog and approves or rejects every quotation.
 
-> Status: **Phase 8 — ready to go live**. The code is prepared for a server, but nothing is online yet. The AI chat needs `ANTHROPIC_API_KEY` and has only been tested with a scripted model. See `docs/DEPLOYMENT.md` to put it online, and `docs/` for the specs.
+> Status: **built, not online**. All building phases are finished, and the test site is skipped for now. The AI chat needs `ANTHROPIC_API_KEY` and has only been tested with a scripted model. New-order emails need a Resend account and domain, and haven't been tested with the real provider. See `docs/DEPLOYMENT.md` to put it online, and `docs/` for the specs.
+
+## Phases
+
+| Phase | What | Status |
+|---|---|---|
+| 0 | Project docs | Done |
+| 1 | Project scaffolding | Done |
+| 2 | Multi-caterer Hebrew specs | Done |
+| 3 | Tenant foundation: separate data per caterer, caterer login | Done |
+| 4 | Hebrew caterer dashboard: menu, availability, delivery, profile | Done |
+| 5 | Customer ordering: event details, menu, prices, quote request | Done |
+| 6 | Quote approval: the caterer approves or rejects, the customer sees the answer | Done |
+| 7 | AI assistant: suggests changes that apply only when the customer approves | Done |
+| 8 | Ready to go live: rate limits, security headers, Docker, deployment guide | Done |
+| Design | New look with food photos, and the Yummai logo on every page | Done |
+| Emails | Email to the caterer on a new order, with no customer details | Done |
+| Test site | Online test version on Supabase and Railway | Skipped for now |
+| Pilot | First real caterer | Not started |
 
 ## Stack
 
@@ -39,7 +57,7 @@ uv run uvicorn app.main:app --reload
 ```
 
 - API health: http://127.0.0.1:8000/health
-- Customer UI: http://127.0.0.1:8000/customer/
+- Customer UI: http://127.0.0.1:8000/c/{slug}/
 - Admin UI: http://127.0.0.1:8000/admin/
 
 ### Tests and lint
@@ -67,7 +85,8 @@ Create the login in Supabase, then run `uv run python -m scripts.create_caterer 
 | `sqlalchemy` | ORM and queries (ADR 0002) |
 | `psycopg[binary]` | Postgres driver |
 | `pyjwt[crypto]` | Verifies Supabase login tokens |
-| `httpx` | Calls Supabase Storage; also used by the test client |
+| `httpx` | Calls Supabase Storage and Resend; also used by the test client |
+| `anthropic` | Calls the model behind the AI assistant |
 | `python-multipart` | Parses file uploads |
 | `pytest` (dev) | Mandated test runner |
 | `ruff` (dev) | Mandated linter/formatter |

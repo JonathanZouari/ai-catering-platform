@@ -81,4 +81,22 @@ These are mandatory for every phase and feature:
 
 ## Phases
 
-Tracked in order: specs (2) → tenant foundation (3) → caterer dashboard (4) → customer ordering (5) → quote approval (6) → AI assistant (7) → ready to go live (8) → design polish, planned when the user's examples arrive → test site and pilot, each with its own approval. Don't build features of a later phase early.
+Worked in order. Don't build features of a later phase early.
+
+| Phase | What | Status |
+|---|---|---|
+| 0 | Project docs | Done |
+| 1 | Project scaffolding | Done |
+| 2 | Multi-caterer Hebrew specs | Done |
+| 3 | Tenant foundation: schema, caterer login, isolation | Done |
+| 4 | Hebrew caterer dashboard | Done |
+| 5 | Customer ordering | Done |
+| 6 | Quote approval | Done |
+| 7 | AI assistant, not yet run against the real model | Done |
+| 8 | Ready to go live: rate limits, security headers, Docker, deployment guide | Done |
+| Design | Redesign and Yummai logo | Done |
+| Emails | New-order email to caterers, not yet tested with the real provider | Done |
+| Test site | Supabase and Railway, needs the user's accounts and approval | Skipped for now |
+| Pilot | First real caterer, needs its own approval | Not started |
+
+The code is on `feat/phase-8-deploy-pilot`. PR #1 into `dev` on `origin` is open with CI passing. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.
