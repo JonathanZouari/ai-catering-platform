@@ -1,4 +1,4 @@
-"""Tenant lookups. These run before a scope exists, so they aren't scoped repositories."""
+"""Tenant lookups. Most run before a scope exists, so they aren't scoped repositories."""
 
 from uuid import UUID
 
@@ -23,3 +23,7 @@ def get_scope_for_user(session: Session, auth_user_id: UUID) -> CatererScope | N
     )
     caterer_id = session.scalar(query)
     return CatererScope(caterer_id) if caterer_id else None
+
+
+def get_own_caterer(session: Session, scope: CatererScope) -> Caterer:
+    return session.get_one(Caterer, scope.caterer_id)

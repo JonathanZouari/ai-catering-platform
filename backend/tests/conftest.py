@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import build_engine, get_session
 from app.core.security import get_signing_key_resolver
+from app.core.storage import get_storage
 from app.main import app
 from app.schemas.caterers import CatererCreate
 from app.services.caterers import create_caterer
@@ -53,11 +54,24 @@ def session(engine: Engine) -> Iterator[Session]:
     with Session(engine, expire_on_commit=False) as db:
         yield db
     with engine.begin() as conn:
-        conn.execute(text("truncate caterers, allergens, auth.users cascade"))
+        conn.execute(text("truncate caterers, auth.users cascade"))
+
+
+class FakeStorage:
+    def __init__(self) -> None:
+        self.uploads: dict[str, tuple[bytes, str]] = {}
+
+    def upload(self, path: str, content: bytes, content_type: str) -> None:
+        self.uploads[path] = (content, content_type)
 
 
 @pytest.fixture
-def client(engine: Engine, session: Session) -> Iterator[TestClient]:
+def storage() -> FakeStorage:
+    return FakeStorage()
+
+
+@pytest.fixture
+def client(engine: Engine, session: Session, storage: FakeStorage) -> Iterator[TestClient]:
     def override_session() -> Iterator[Session]:
         with Session(engine, expire_on_commit=False) as db:
             yield db
@@ -66,6 +80,7 @@ def client(engine: Engine, session: Session) -> Iterator[TestClient]:
     app.dependency_overrides[get_signing_key_resolver] = lambda: (
         lambda _token: SIGNING_KEY.public_key()
     )
+    app.dependency_overrides[get_storage] = lambda: storage
     yield TestClient(app)
     app.dependency_overrides.clear()
 

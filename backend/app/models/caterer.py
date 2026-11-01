@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
+from app.models.enums import KashrutMixingRule, pg_enum
 
 
 class Caterer(Base):
@@ -14,7 +15,12 @@ class Caterer(Base):
     name: Mapped[str]
     logo_path: Mapped[str | None]
     brand_color: Mapped[str | None]
+    contact_phone: Mapped[str | None]
     kashrut_status: Mapped[str | None]
+    kashrut_certificate_path: Mapped[str | None]
+    kashrut_mixing_rule: Mapped[KashrutMixingRule] = mapped_column(
+        pg_enum(KashrutMixingRule, "kashrut_mixing_rule"), server_default=text("'warn'")
+    )
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
 
 

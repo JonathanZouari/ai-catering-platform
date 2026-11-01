@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_session
 from app.core.errors import forbidden, unauthenticated
 from app.core.security import SigningKeyResolver, get_signing_key_resolver, verify_access_token
+from app.core.storage import Storage, get_storage
 from app.core.tenancy import CatererScope
 from app.repositories.caterers import get_scope_for_user
 
@@ -30,3 +31,4 @@ def get_caterer_scope(
 
 
 ScopeDep = Annotated[CatererScope, Depends(get_caterer_scope)]
+StorageDep = Annotated[Storage, Depends(get_storage)]

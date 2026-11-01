@@ -1,0 +1,62 @@
+import { isLoggedIn, login, logout } from "/js/admin/auth.js";
+import { renderAvailability, renderDelivery } from "/js/admin/logistics.js";
+import { renderMenu } from "/js/admin/menu.js";
+import { renderProfile } from "/js/admin/profile.js";
+import { attempt, field, h } from "/js/admin/ui.js";
+
+const SCREENS = {
+  menu: ["תפריט", renderMenu],
+  availability: ["זמינות", renderAvailability],
+  delivery: ["משלוחים", renderDelivery],
+  profile: ["פרופיל העסק", renderProfile],
+};
+
+const app = document.getElementById("app");
+
+function renderLogin() {
+  const email = h("input", { type: "email", required: true, autocomplete: "username", dir: "ltr" });
+  const password = h("input", {
+    type: "password", required: true, autocomplete: "current-password", dir: "ltr",
+  });
+  app.replaceChildren(h("form", {
+    className: "card login",
+    onsubmit: async (event) => {
+      event.preventDefault();
+      if (await attempt(() => login(email.value, password.value))) start();
+    },
+  },
+  h("h1", {}, "כניסה לניהול העסק"),
+  field("אימייל", email),
+  field("סיסמה", password),
+  h("button", { type: "submit" }, "כניסה")));
+}
+
+function renderShell() {
+  const view = h("main", { id: "view", tabIndex: -1 });
+  const links = Object.entries(SCREENS).map(([key, [label]]) => h("a", { href: `#${key}`, id: `nav-${key}` }, label));
+  app.replaceChildren(
+    h("nav", { className: "topbar", "aria-label": "ניווט ראשי" },
+      links,
+      h("button", { className: "secondary", onclick: logout }, "יציאה")),
+    view,
+  );
+  return view;
+}
+
+async function show(view) {
+  const key = SCREENS[location.hash.slice(1)] ? location.hash.slice(1) : "menu";
+  document.querySelectorAll(".topbar a").forEach((link) => {
+    if (link.id === `nav-${key}`) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
+  await attempt(() => SCREENS[key][1](view));
+}
+
+function start() {
+  const view = renderShell();
+  window.onhashchange = () => show(view);
+  show(view);
+}
+
+if (isLoggedIn()) start();
+else renderLogin();

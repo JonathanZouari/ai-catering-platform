@@ -35,6 +35,91 @@ def test_every_admin_route_requires_login(client):
         assert response.status_code == 401, f"{method} {path}"
 
 
+def _own_resources(client, tenant):
+    """One of each tenant resource, as {collection URL: resource ID}."""
+    headers = tenant.headers
+    category = client.post("/api/admin/categories", json={"name": "סלטים"}, headers=headers).json()
+    dish_body = {
+        "category_id": category["id"],
+        "name": "טבולה",
+        "pricing_unit": "per_tray",
+        "unit_price": "10",
+    }
+    bodies = {
+        "/api/admin/dishes": dish_body,
+        "/api/admin/delivery-zones": {"name": "מרכז", "fee": "1", "cities": ["חיפה"]},
+        "/api/admin/time-slots": {
+            "fulfillment_type": "pickup",
+            "start_time": "09:00",
+            "end_time": "10:00",
+        },
+        "/api/admin/blocked-dates": {"date": "2027-01-01"},
+    }
+    ids = {url: client.post(url, json=b, headers=headers).json()["id"] for url, b in bodies.items()}
+    return {"/api/admin/categories": category["id"]} | ids
+
+
+PATCH_BODIES = {
+    "/api/admin/categories": {"name": "נפרץ"},
+    "/api/admin/dishes": {"name": "נפרץ"},
+    "/api/admin/delivery-zones": {"name": "נפרץ"},
+    "/api/admin/time-slots": {"capacity": 1},
+}
+
+
+def test_no_resource_can_be_changed_across_caterers(client, make_tenant):
+    a, b = make_tenant("caterer-a"), make_tenant("caterer-b")
+    resources = _own_resources(client, a)
+
+    for collection, resource_id in resources.items():
+        url = f"{collection}/{resource_id}"
+        assert client.delete(url, headers=b.headers).status_code == 404, url
+        if collection in PATCH_BODIES:
+            response = client.patch(url, json=PATCH_BODIES[collection], headers=b.headers)
+            assert response.status_code == 404, url
+        assert client.get(collection, headers=b.headers).json() == [], collection
+        assert len(client.get(collection, headers=a.headers).json()) == 1, collection
+
+
+def test_dish_routes_reject_another_caterers_dish(client, make_tenant):
+    a, b = make_tenant("caterer-a"), make_tenant("caterer-b")
+    dish_id = _own_resources(client, a)["/api/admin/dishes"]
+    base = f"/api/admin/dishes/{dish_id}"
+
+    assert client.get(base, headers=b.headers).status_code == 404
+    response = client.put(f"{base}/dietary", json={"is_vegan": True}, headers=b.headers)
+    assert response.status_code == 404
+    files = {"file": ("x.png", b"\x89PNG\r\n\x1a\n" + b"0" * 8)}
+    assert client.post(f"{base}/image", files=files, headers=b.headers).status_code == 404
+    assert client.get(base, headers=a.headers).json()["dietary"] is None
+
+
+def test_dish_cannot_use_another_caterers_category(client, make_tenant):
+    a, b = make_tenant("caterer-a"), make_tenant("caterer-b")
+    resources_a = _own_resources(client, a)
+    resources_b = _own_resources(client, b)
+    category_of_a = resources_a["/api/admin/categories"]
+
+    body = {
+        "category_id": category_of_a,
+        "name": "x",
+        "pricing_unit": "per_item",
+        "unit_price": "1",
+    }
+    assert client.post("/api/admin/dishes", json=body, headers=b.headers).status_code == 404
+
+    dish_of_b = f"/api/admin/dishes/{resources_b['/api/admin/dishes']}"
+    patch = {"category_id": category_of_a}
+    assert client.patch(dish_of_b, json=patch, headers=b.headers).status_code == 404
+
+
+def test_profile_only_touches_own_caterer(client, make_tenant):
+    a, b = make_tenant("caterer-a"), make_tenant("caterer-b")
+    client.patch("/api/admin/profile", json={"name": "חדש"}, headers=a.headers)
+    assert client.get("/api/admin/profile", headers=a.headers).json()["name"] == "חדש"
+    assert client.get("/api/admin/profile", headers=b.headers).json()["name"] != "חדש"
+
+
 def test_caterer_lists_only_own_categories(client, make_tenant):
     a, b = make_tenant("caterer-a"), make_tenant("caterer-b")
     client.post("/api/admin/categories", json={"name": "סלטים"}, headers=a.headers)

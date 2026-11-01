@@ -1,6 +1,6 @@
 # API Contracts (preliminary)
 
-Status: **Draft v0.2**. Only `GET /health` is implemented (Phase 1). Everything else is a design target and may change.
+Status: **Draft v0.3**. System, public caterer profile, and `/api/admin/*` catalog, logistics, and profile routes are implemented. Everything else is a design target and may change.
 
 Base: same origin as the frontend. JSON only. All bodies validated with Pydantic.
 
@@ -19,6 +19,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | Method | Path | Response | Phase |
 |---|---|---|---|
 | GET | `/health` | `{"status":"ok","env":"development"}` | **1 (implemented)** |
+| GET | `/api/config` | Browser-safe values: Supabase URL, anon key, public storage URL | **4 (implemented)** |
 
 ## Catalog (public read)
 
@@ -85,7 +86,8 @@ Proposal shape:
 | GET/POST | `/api/admin/categories` · PATCH/DELETE `/api/admin/categories/{id}` |
 | GET/POST | `/api/admin/dishes` · PATCH/DELETE `/api/admin/dishes/{id}` |
 | POST | `/api/admin/dishes/{id}/image` (multipart → Supabase Storage) |
-| PUT | `/api/admin/dishes/{id}/dietary` |
+| PUT | `/api/admin/dishes/{id}/dietary` (full replacement, including allergens; an allergen left out is unknown) |
+| GET | `/api/admin/allergens` (shared platform list) |
 | GET/POST/PATCH/DELETE | `/api/admin/delivery-zones` |
 | GET/POST/PATCH/DELETE | `/api/admin/time-slots` |
 | GET/POST/DELETE | `/api/admin/blocked-dates` |

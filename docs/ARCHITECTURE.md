@@ -62,7 +62,7 @@ Status: **Draft v0.2** · Updated in Phase 2 for many caterers
 ## 4. Data access **[RECOMMENDATION]**
 
 - Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
-- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Object paths are prefixed by caterer ID. Public read for dish images and logos via a public bucket.
+- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Object paths are prefixed by caterer ID. Public read for dish images, logos, and kashrut certificates via the public `caterer-assets` bucket, which must allow no anonymous write or listing.
 - Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
 - RLS: enabled on all tables with no anonymous access. The backend uses a privileged connection, so RLS is defense-in-depth and **tenant isolation is enforced in the backend** (ADR 0005).
 

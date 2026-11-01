@@ -25,3 +25,4 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+e2e/screenshots/

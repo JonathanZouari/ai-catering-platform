@@ -2,7 +2,7 @@
 
 Hebrew ordering and management platform for **many catering businesses**. Each caterer gets a branded link. Customers use it to plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. Each caterer manages their own catalog and approves or rejects every quotation.
 
-> Status: **Phase 3 — tenant foundation**. Database schema, caterer login, and tenant isolation. See `docs/` for the specs.
+> Status: **Phase 4 — caterer dashboard**. Hebrew dashboard for menu, availability, delivery, and business profile. See `docs/` for the specs.
 
 ## Stack
 
@@ -67,8 +67,9 @@ Create the login in Supabase, then run `uv run python -m scripts.create_caterer 
 | `sqlalchemy` | ORM and queries (ADR 0002) |
 | `psycopg[binary]` | Postgres driver |
 | `pyjwt[crypto]` | Verifies Supabase login tokens |
+| `httpx` | Calls Supabase Storage; also used by the test client |
+| `python-multipart` | Parses file uploads |
 | `pytest` (dev) | Mandated test runner |
-| `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
 ## Branches and environments

@@ -105,7 +105,7 @@ A missing row = **unknown**.
 `id` uuid PK · `caterer_id` FK · `name` text not null · `fee` numeric(10,2) not null ≥ 0 · `definition` jsonb not null (shape depends on **[OPEN #19]**) · `is_active` bool
 
 ### time_slots
-`id` uuid PK · `caterer_id` FK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 null · `start_time` time · `end_time` time · `capacity` int null **[OPEN #5]** · `is_active` bool · CHECK `end_time > start_time`
+`id` uuid PK · `caterer_id` FK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 (0 = Sunday), null = every day · `start_time` time · `end_time` time · `capacity` int null **[OPEN #5]** · `is_active` bool · CHECK `end_time > start_time`
 
 ### blocked_dates
 `id` uuid PK · `caterer_id` FK · `date` date · `reason` text null · UNIQUE(`caterer_id`,`date`)
