@@ -1,12 +1,17 @@
-/* Neutral design tokens — replace when brand is decided (OPEN_DECISIONS #20). */
+/* Design tokens. A caterer's brand colour replaces the blue accent on customer pages. */
 :root {
-  --color-bg: #faf8f5;
+  /* Blue margin around the app on computers. */
+  --frame-inline: 5vw;
+  --frame-block: 7dvh;
+  --color-bg: #f4f6fb;
   --color-surface: #ffffff;
-  --color-text: #1f1d1a;
-  --color-muted: #6b665e;
-  --color-accent: #7a4f2a;
+  --color-text: #17171c;
+  --color-muted: #6a7080;
+  --color-border: #e2e5ec;
+  --color-primary: #17171c;
+  --color-accent: #2563eb;
   --color-success: #2f6b3a;
-  --color-danger: #a12a2a;
+  --color-danger: #a4221c;
   --color-warning: #8a5a00;
   --space-1: 4px;
   --space-2: 8px;
@@ -14,9 +19,9 @@
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
-  --radius: 12px;
-  --shadow-1: 0 1px 3px rgb(0 0 0 / 0.08);
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --radius: 8px;
+  --shadow-1: 0 1px 6px rgb(23 23 28 / 0.09);
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -26,7 +31,23 @@ body {
   font-family: var(--font);
   line-height: 1.5;
   color: var(--color-text);
-  background: var(--color-bg);
+  /* Deep blue backdrop with soft shapes. The app floats on it as one card. */
+  background:
+    radial-gradient(circle at 96% 4%, #1a4a9c 0 170px, transparent 171px),
+    radial-gradient(circle at 2% 62%, #123a82 0 230px, transparent 231px),
+    #0a2558;
+  background-attachment: fixed;
+}
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inline-size: 300px;
+  block-size: 220px;
+  background: radial-gradient(#2c5fb8 3px, transparent 3.5px) 0 0 / 26px 26px;
+  pointer-events: none;
 }
 
 main {
@@ -36,6 +57,28 @@ main {
 }
 
 :focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+
+/* Icons are same-origin SVG masks: no icon library, and the security policy stays strict. */
+.icon {
+  display: inline-block;
+  inline-size: 20px;
+  block-size: 20px;
+  flex: none;
+  background: currentcolor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+.icon-person { --icon: url("/img/person.svg"); }
+.icon-bag { --icon: url("/img/bag.svg"); }
+.icon-trash { --icon: url("/img/trash.svg"); }
+.icon-calendar { --icon: url("/img/calendar.svg"); }
+.icon-leaf { --icon: url("/img/leaf.svg"); }
+.icon-sprout { --icon: url("/img/sprout.svg"); }
+
+.visually-hidden {
+  position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }

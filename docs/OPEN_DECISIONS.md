@@ -2,35 +2,48 @@
 
 These must be answered by the business before the dependent features are built. Engineering will not invent answers. Unrelated infrastructure work continues meanwhile.
 
-Format: **Question** · *Why it matters* · **Blocks**
+Where a working default is listed, engineering may build on it, but it stays open until confirmed.
 
-| # | Topic | Question | Why it matters | Blocks |
-|---|---|---|---|---|
-| 1 | Customer authentication / guest checkout | Must customers create an account? Email magic link, OTP by phone, password, or guest checkout with a tokenized link? | Determines ownership model, RLS policies, and how a customer returns to a draft/quote | Phase 3 order ownership, Phase 4 chat history |
-| 2 | Payment & deposit | Is any deposit or payment collected in-app? | Payments are out of scope unless approved | Nothing in MVP unless approved |
-| 3 | Serving & quantity formulas | Per category/dish, how much per adult / child? Rounding (e.g., whole trays)? Different for vegetarian/vegan guests? | Quantity recommendation must use business rules, not AI guesses | Phase 3 quantity engine (schema can hold rules; values unknown) |
-| 4 | Overlapping guest dietary categories | Are vegetarian/vegan/restricted guests counted *within* adults/children (subsets) or separately? Is vegan a subset of vegetarian? | Prevents double-counting | Phase 3 guest composition validation |
-| 5 | Availability & capacity | Max orders/guests per day or per slot? Lead time? Same-day orders? | Defines date/slot validation | Phase 2 availability rules, Phase 3 date picker |
-| 6 | Quote modification & negotiation | Can the owner edit or counter-propose a quote, or only approve/reject? | Adds states and UI | Out of MVP until decided |
-| 7 | Cancellation & revision | Can a customer cancel or edit after submission or approval? Deadlines? | Adds states and rules | Out of MVP until decided |
-| 8 | Allergen verification & cross-contamination | What disclaimer text is shown? Is there a "may contain" level? Who verifies allergen data? | Safety and liability wording | Phase 2 allergen fields' semantics, Phase 4 agent wording |
-| 9 | Kashrut certification | Which certification(s)? Shown per dish or business-wide? Mixing meat & dairy dishes in one order allowed? | Affects data model and validation | Phase 2 dish fields, Phase 3 conflict checks |
-| 10 | Disposable serving equipment | Are utensils/disposables orderable? Priced how? | Could be catalog items or separate | Out of MVP until decided |
-| 11 | Alcohol | Offered at all? Age verification? | Legal implications | Out of MVP until decided |
-| 12 | Interface languages | Hebrew only, English only, or both? RTL required? | Layout, copy, and AI response language | Phase 3 UI build (design tokens can be direction-agnostic now) |
-| 13 | Notification channels | Email, SMS, WhatsApp, none? For which events (submitted, approved, rejected)? | Third-party providers and cost | Out of MVP until decided |
-| 14 | VAT & rounding | Are catalog prices VAT-inclusive? VAT rate handling? Rounding rules for totals and weight-based prices? | Deterministic pricing correctness | Phase 3 pricing engine final rules |
-| 15 | Minimum order quantities | Minimum per dish, per order, or minimum guests? Minimum for delivery? | Validation rules | Phase 2/3 validation |
-| 16 | LLM provider | Which model provider (e.g., Anthropic Claude) and budget? | API keys, tool-calling format, cost | Phase 4 |
-| 17 | Currency | Single currency (e.g., ILS)? Display format? | Money formatting and storage | Phase 2 pricing fields (stored as numeric + currency code until decided) |
-| 18 | Weight unit | kg, 100 g, or configurable per dish? | Per-weight pricing math | Phase 2 pricing units |
-| 19 | Delivery zone definition | Zones by city list, postal code, or radius/polygon? | Address → zone lookup method | Phase 2 delivery zones |
-| 20 | Brand | Business name, logo, colors, fonts | Visual identity | Phase 3 UI polish (neutral tokens until then) |
+| # | Topic | Question | Why it matters | Working default | Blocks |
+|---|---|---|---|---|---|
+| 3 | Default quantity values | What are the platform default portions per category, per adult and child? Rounding (e.g., whole trays)? Different for vegetarian/vegan guests? | Decided that defaults exist and caterers can edit them; the values themselves are still needed | Drafted by engineering, flagged as unvalidated until a pilot caterer reviews them | Phase 5 quantity engine |
+| 5 | Availability & capacity | Max orders/guests per day or per slot? Lead time? Same-day orders? | Defines date/slot validation | Set per caterer | Phase 4 availability rules, Phase 5 date picker |
+| 6 | Quote modification & negotiation | Can the caterer edit or counter-propose a quote, or only approve/reject? | Adds states and UI | Approve/reject only | Out of MVP until decided |
+| 7 | Cancellation & revision | Can a customer cancel or edit after submission or approval? Deadlines? | Adds states and rules | Not supported | Out of MVP until decided |
+| 8 | Allergen verification & cross-contamination | What disclaimer text is shown? Is there a "may contain" level? Who verifies allergen data, the caterer or the platform? | Safety and liability wording, now also between platform and caterers | Contains / free / unknown, with a draft disclaimer pending legal review | Phase 4 allergen fields' semantics, Phase 7 agent wording |
+| 13 | Notification channels | Decided: email to the caterer on a new order, through Resend, with no customer details. Still open: customer messages, other channels, and how a customer gets a lost private link back | Third-party providers and cost | Customers use the link shown on screen | Caterer email built; customer messages out of MVP until decided |
+| 15 | Minimum order quantities | Minimum per dish, per order, or minimum guests? Minimum for delivery? | Validation rules | Set per caterer | Phase 4/5 validation |
+| 16 | LLM budget | What monthly AI cost per caterer is acceptable? | Sets usage limits and model choice | Claude Sonnet 5.5; 1,000 messages per caterer per month; at the limit chat stops and hand ordering continues. Review once costs are measured | Nothing; revisit in the pilot |
+| 18 | Weight unit | kg, 100 g, or configurable per dish? | Per-weight pricing math | Configurable per dish | Phase 4 pricing units |
+| 19 | Delivery zone definition | Zones by city list, postal code, or radius/polygon? | Address → zone lookup method | City list per caterer | Phase 4 delivery zones |
+| 20 | Platform brand | Product name, domain, logo | Platform identity; caterer branding is per caterer | "Yummai" as placeholder | Phase 8 |
+| 22 | Pilot caterer | Which real caterer is the first pilot? | Validates the defaults and the Phase 8 success criterion | None | Phase 8 |
+| 23 | Platform revenue model | How will caterers pay for the platform after the pilot? | No MVP work, but pricing may shape limits and analytics | Free during pilot | Nothing in MVP |
 
 ## Decision log
 
-When a decision is made, record it here and move the row out of the table above.
-
 | Date | # | Decision | Decided by |
 |---|---|---|---|
-| — | — | — | — |
+| 2026-11-01 | — | Product is for many caterers, overturning the single-business assumption | Product owner |
+| 2026-11-01 | — | Customers enter through a branded link per caterer; no marketplace | Product owner |
+| 2026-11-01 | — | Multi-tenant from day one; pilot caterers onboarded by hand; no self-serve signup or billing | Product owner |
+| 2026-11-01 | — | Calories per dish are in the MVP | Product owner |
+| 2026-11-01 | — | Voice AI deferred; text chat only in the MVP | Product owner |
+| 2026-11-01 | 1 | No customer account: name, phone, and a private link | Product owner |
+| 2026-11-01 | 2 | No payments or deposits in the app | Product owner |
+| 2026-11-01 | 3 | Platform default quantity rules, editable per caterer (default values remain open) | Product owner |
+| 2026-11-01 | 9 | Kashrut per caterer: status and certificate on the caterer, meat/dairy/pareve per dish, mixing rule block or warn per caterer | Product owner |
+| 2026-11-01 | 10 | Disposable serving ware deferred until after the MVP | Product owner |
+| 2026-11-01 | 11 | Alcohol deferred until after the MVP | Product owner |
+| 2026-11-01 | 12 | Product is Hebrew only with RTL; code and technical docs stay in English | Product owner |
+| 2026-11-01 | 16 | Provider default is Anthropic Claude (budget remains open) | Engineering default |
+| 2026-11-01 | 17 | Currency is ILS | Engineering default, confirm with pilot |
+| 2026-11-02 | 4 | Vegetarian, vegan and restricted guests count within the adult and child totals | Product owner |
+| 2026-11-02 | 14 | Catalog prices include VAT with no separate line; totals round half-up to 2 decimals (confirm with an accountant before launch) | Product owner |
+| 2026-11-02 | 21 | "אס]קה" meant אספקה, already covered by pickup and delivery | Product owner |
+| 2026-11-01 | — | Going live starts with a private test site; production waits for a pilot caterer and separate approval | Product owner |
+| 2026-11-01 | — | Design polish comes before the pilot, based on the user's examples | Product owner |
+| 2026-11-01 | — | Design follows the product owner's second example closely: three columns on computers, black main buttons, blue accents | Product owner |
+| 2026-11-01 | 20 | The platform is named Yummai, with its logo on every page; domain still open | Product owner |
+| 2026-11-01 | — | Rate limits live in server memory for the pilot, so the app runs as one instance | Engineering default |
+| 2026-11-01 | — | Migrations are applied by hand, never automatically on deploy | Engineering default |
