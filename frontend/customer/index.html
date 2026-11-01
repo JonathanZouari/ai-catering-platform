@@ -1,21 +1,194 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מרכיבים את השולחן | יומי</title>
+  <meta name="description" content="בונים הזמנת קייטרינג לאירוע על שולחן חי: מספר האורחים, המנות, והמחיר מתעדכנים מול העיניים.">
+  <meta name="theme-color" content="#f1f2f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111416" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+  <link rel="preload" as="image" href="/assets/dishes/hummus.webp">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/table.css">
+  <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
-  <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+<body class="app">
+  <a class="skip-link" href="#panel">דילוג לתוכן</a>
+
+  <header class="app-bar">
+    <a class="wordmark" href="/" aria-label="יומי, לעמוד הבית"><span class="wordmark__mark" aria-hidden="true"></span>יומי</a>
+    <nav class="steps" aria-label="שלבי ההזמנה">
+      <ol>
+        <li><button type="button" data-step="event"><span class="steps__n num">1</span>האירוע</button></li>
+        <li><button type="button" data-step="menu"><span class="steps__n num">2</span>התפריט</button></li>
+        <li><button type="button" data-step="summary"><span class="steps__n num">3</span>סיכום</button></li>
+        <li><button type="button" data-step="send"><span class="steps__n num">4</span>שליחה</button></li>
+      </ol>
+    </nav>
+    <button class="btn btn--sm assistant-toggle" type="button" aria-controls="assistant" aria-expanded="false" aria-label="עוזר ההזמנה">
+      <i class="ph ph-chats-circle" aria-hidden="true"></i><span>עוזר ההזמנה</span>
+    </button>
+  </header>
+
+  <div class="workspace">
+    <section class="stage" aria-labelledby="stage-title">
+      <div class="stage__head">
+        <div>
+          <h1 id="stage-title" class="stage__title">השולחן של <span class="num" data-bind="guests-total">64</span> אורחים</h1>
+          <p class="stage__meta" data-bind="guests-split"></p>
+        </div>
+        <div class="stage__total">
+          <span class="stage__total-label">הערכת מחיר</span>
+          <strong class="num" data-bind="total">₪0</strong>
+        </div>
+      </div>
+      <div class="stage__tablewrap"><div id="table" class="stage__table"></div><p class="place-card" data-bind="place-card" hidden></p></div>
+      <ul class="coverage" data-bind="coverage" aria-label="כמה כל מנה מכסה"></ul>
+      <ul class="legend" aria-label="מקרא">
+        <li><span class="legend__seat" aria-hidden="true"></span>מבוגר</li>
+        <li><span class="legend__seat legend__seat--kid" aria-hidden="true"></span>ילד</li>
+        <li><i class="ph ph-cursor-click" aria-hidden="true"></i>לחיצה על מגש פותחת פרטים</li>
+        <li><i class="ph ph-arrow-square-out" aria-hidden="true"></i>גרירה אל מחוץ לשולחן מורידה אותו</li>
+      </ul>
+    </section>
+
+    <main id="panel" class="panel" tabindex="-1">
+      <!-- step 1: the event -->
+      <section class="step" data-panel="event" aria-labelledby="h-event">
+        <header class="step__head">
+          <h2 id="h-event">ספרו לנו על האירוע</h2>
+          <p>כל מה שתבחרו כאן מופיע מיד על השולחן.</p>
+        </header>
+
+        <fieldset class="group">
+          <legend class="group__label">סוג האירוע</legend>
+          <div class="chips" role="radiogroup" aria-label="סוג האירוע" data-bind="event-types"></div>
+        </fieldset>
+
+        <div class="group counters">
+          <div class="counter">
+            <span class="counter__label" id="l-adults">מבוגרים</span>
+            <div class="counter__ctl">
+              <button class="icon-btn" type="button" data-count="adults" data-delta="-1" aria-label="פחות מבוגרים"><i class="ph ph-minus"></i></button>
+              <input class="counter__value num" type="number" inputmode="numeric" min="0" max="120" id="adults" aria-labelledby="l-adults" data-field="adults">
+              <button class="icon-btn" type="button" data-count="adults" data-delta="1" aria-label="עוד מבוגרים"><i class="ph ph-plus"></i></button>
+            </div>
+          </div>
+          <div class="counter">
+            <span class="counter__label" id="l-children">ילדים <small>עד גיל 12</small></span>
+            <div class="counter__ctl">
+              <button class="icon-btn" type="button" data-count="children" data-delta="-1" aria-label="פחות ילדים"><i class="ph ph-minus"></i></button>
+              <input class="counter__value num" type="number" inputmode="numeric" min="0" max="80" id="children" aria-labelledby="l-children" data-field="children">
+              <button class="icon-btn" type="button" data-count="children" data-delta="1" aria-label="עוד ילדים"><i class="ph ph-plus"></i></button>
+            </div>
+          </div>
+          <p class="field__help counters__help">ילד נספר כחצי מנה בחישוב הכמויות.</p>
+        </div>
+
+        <div class="group grid-2">
+          <div class="field">
+            <label for="date">תאריך</label>
+            <input class="input" type="date" id="date" data-field="date" aria-describedby="date-help">
+            <span class="field__help" id="date-help">אפשר להזמין עד 3 ימים מראש.</span>
+          </div>
+          <fieldset class="field">
+            <legend class="field__label">שעת הגעה</legend>
+            <select class="input" id="slot" data-field="slot" aria-label="שעת הגעה"></select>
+          </fieldset>
+        </div>
+
+        <fieldset class="group">
+          <legend class="group__label">איך האוכל מגיע אליכם</legend>
+          <div class="segmented" role="radiogroup" aria-label="משלוח או איסוף">
+            <button type="button" role="radio" data-fulfillment="delivery"><i class="ph ph-truck" aria-hidden="true"></i>משלוח</button>
+            <button type="button" role="radio" data-fulfillment="pickup"><i class="ph ph-storefront" aria-hidden="true"></i>איסוף עצמי</button>
+          </div>
+          <div class="delivery-fields grid-2" data-show="delivery">
+            <div class="field">
+              <label for="zone">אזור</label>
+              <select class="input" id="zone" data-field="zone"></select>
+            </div>
+            <div class="field">
+              <label for="address">כתובת</label>
+              <input class="input" id="address" data-field="address" autocomplete="street-address" placeholder="הרצל 12, רחובות">
+            </div>
+          </div>
+          <p class="field__help" data-show="pickup">איסוף מהמטבח ברחוב הנגרים 8, תל אביב. בלי דמי משלוח.</p>
+        </fieldset>
+
+        <div class="field group">
+          <label for="notes">הערות תזונתיות</label>
+          <textarea class="input" id="notes" data-field="notes" placeholder="שני אורחים טבעונים, ילד אחד אלרגי לשומשום"></textarea>
+          <span class="field__help">בעל העסק רואה את ההערות לפני האישור.</span>
+        </div>
+
+        <div class="step__foot">
+          <button class="btn btn--primary" type="button" data-go="menu">לבחירת המנות<i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+        </div>
+      </section>
+
+      <!-- step 2: the menu -->
+      <section class="step" data-panel="menu" aria-labelledby="h-menu" hidden>
+        <header class="step__head">
+          <h2 id="h-menu">מה מגישים</h2>
+          <p>גררו מנה אל השולחן, או לחצו על הפלוס. הכמות הראשונה מחושבת לפי מספר האורחים.</p>
+        </header>
+        <nav class="menu-tabs chips" aria-label="קטגוריות" data-bind="menu-tabs"></nav>
+        <ul class="menu" data-bind="menu" aria-label="מנות"></ul>
+        <div class="step__foot">
+          <button class="btn btn--ghost" type="button" data-go="event"><i class="ph ph-arrow-right" aria-hidden="true"></i>חזרה</button>
+          <button class="btn btn--primary" type="button" data-go="summary">לסיכום<i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+        </div>
+      </section>
+
+      <!-- step 3: summary -->
+      <section class="step" data-panel="summary" aria-labelledby="h-summary" hidden>
+        <header class="step__head">
+          <h2 id="h-summary">סיכום ההזמנה</h2>
+          <p>כל שורה מחושבת לפי כמות כפול מחיר. אפשר לשנות כאן או על השולחן.</p>
+        </header>
+        <div data-bind="notices"></div>
+        <div class="receipt" data-bind="receipt"></div>
+        <div class="step__foot">
+          <button class="btn btn--ghost" type="button" data-go="menu"><i class="ph ph-arrow-right" aria-hidden="true"></i>חזרה לתפריט</button>
+          <button class="btn btn--primary" type="button" data-go="send">להמשך<i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+        </div>
+      </section>
+
+      <!-- step 4: send and status -->
+      <section class="step" data-panel="send" aria-labelledby="h-send" hidden>
+        <div data-bind="send"></div>
+      </section>
+    </main>
+
+    <aside id="assistant" class="assistant" aria-labelledby="h-assistant" hidden>
+      <header class="assistant__head">
+        <div>
+          <h2 id="h-assistant">עוזר ההזמנה</h2>
+          <p>מציע שינויים. השולחן משתנה רק אחרי שתאשרו.</p>
+        </div>
+        <button class="icon-btn" type="button" data-close-assistant aria-label="סגירת העוזר"><i class="ph ph-x"></i></button>
+      </header>
+      <ol class="chat" data-bind="chat" aria-live="polite"></ol>
+      <div class="chat__suggest" data-bind="suggest"></div>
+      <form class="chat__form" data-bind="chat-form">
+        <label class="sr-only" for="chat-input">הודעה לעוזר</label>
+        <input class="input" id="chat-input" autocomplete="off" placeholder="יש לנו הרבה ילדים, מה להוסיף?">
+        <button class="icon-btn icon-btn--send" type="submit" aria-label="שליחה"><i class="ph ph-paper-plane-tilt"></i></button>
+      </form>
+    </aside>
+  </div>
+
+  <dialog class="dish-sheet" data-bind="dish-sheet" aria-labelledby="dish-sheet-title"></dialog>
+  <p class="sr-only" aria-live="polite" data-bind="announce"></p>
+  <div class="toast" data-bind="toast"></div>
+
+  <script type="module" src="/js/customer.js"></script>
 </body>
 </html>

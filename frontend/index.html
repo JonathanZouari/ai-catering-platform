@@ -1,18 +1,153 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>יומי | קייטרינג לאירועים שמרכיבים על השולחן</title>
+  <meta name="description" content="קייטרינג לאירועים של 30 עד 120 אורחים. מרכיבים את השולחן מול העיניים, רואים כמויות ומחיר בזמן אמת, ובעל העסק מאשר כל הזמנה.">
+  <meta property="og:title" content="יומי | מרכיבים את השולחן לאירוע">
+  <meta property="og:description" content="מספרים כמה באים, גוררים מנות לשולחן, ומקבלים הצעת מחיר שבעל העסק מאשר.">
+  <meta property="og:image" content="/assets/hero-table.webp">
+  <meta name="theme-color" content="#f1f2f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111416" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/table.css">
+  <link rel="stylesheet" href="/css/landing.css">
 </head>
-<body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
+<body class="landing">
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+
+  <header class="site-bar">
+    <a class="wordmark" href="/" aria-label="יומי, עמוד הבית"><span class="wordmark__mark" aria-hidden="true"></span>יומי</a>
+    <nav aria-label="ניווט ראשי">
+      <a href="#how">איך זה עובד</a>
+      <a href="#kitchen">התפריט</a>
+      <a href="/admin/">לבעל העסק</a>
+    </nav>
+    <a class="btn btn--accent btn--sm" href="/customer/">מרכיבים שולחן</a>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__copy">
+        <h1 id="hero-title">תגידו כמה אורחים.<br>השולחן יסתדר.</h1>
+        <p class="hero__lede">בוחרים מנות ורואים את השולחן מתמלא. הכמויות והמחיר מתעדכנים מול העיניים, ובעל העסק מאשר כל הזמנה.</p>
+        <div class="hero__dial">
+          <label for="hero-guests" class="hero__dial-label">כמה אורחים באים?</label>
+          <div class="hero__dial-row">
+            <input type="range" id="hero-guests" min="20" max="120" step="1" value="64" aria-describedby="hero-guests-out">
+            <output id="hero-guests-out" for="hero-guests" class="num">64</output>
+          </div>
+        </div>
+        <div class="hero__cta">
+          <a class="btn btn--accent" href="/customer/" data-cta>מרכיבים שולחן<i class="ph ph-arrow-left" aria-hidden="true"></i></a>
+          <a class="btn btn--ghost" href="#how">איך זה עובד</a>
+        </div>
+      </div>
+      <figure class="hero__stage" aria-label="הדגמה: שולחן שמתמלא לפי מספר האורחים">
+        <div id="hero-table"></div>
+        <figcaption class="hero__receipt" aria-live="polite">
+          <span><b class="num" data-hero="trays">0</b> מגשים</span>
+          <span><b class="num" data-hero="total">₪0</b> הערכת מחיר</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="how" class="story" aria-labelledby="story-title">
+      <h2 id="story-title" class="story__title">ארבע החלטות, שולחן אחד</h2>
+      <div class="story__grid">
+        <div class="story__sticky">
+          <div id="story-table"></div>
+          <div class="story__overlay" data-overlay aria-hidden="true">
+            <div class="mini-proposal">
+              <span class="mini-proposal__t"><i class="ph ph-sparkle"></i>הצעה מהעוזר</span>
+              <span>שניצלונים לילדים, 2 מגשים</span>
+              <span class="mini-proposal__a"><b>לאשר</b><span>לא עכשיו</span></span>
+            </div>
+            <div class="mini-status"><i class="ph ph-check-circle"></i>אושר על ידי בעל העסק</div>
+          </div>
+        </div>
+        <ol class="story__steps">
+          <li data-story="0">
+            <span class="story__n num">1</span>
+            <h3>מספרים מי בא</h3>
+            <p>מבוגרים וילדים בנפרד. כל אורח מקבל מקום ליד השולחן, והילדים יושבים יחד בקצה.</p>
+          </li>
+          <li data-story="1">
+            <span class="story__n num">2</span>
+            <h3>גוררים מנות לשולחן</h3>
+            <p>כל מנה נוחתת בכמות שמתאימה למספר האורחים. רוצים יותר? עוד לחיצה. פחות? גוררים החוצה.</p>
+          </li>
+          <li data-story="2">
+            <span class="story__n num">3</span>
+            <h3>העוזר מציע, אתם מחליטים</h3>
+            <p>שואלים אותו מה חסר או איך לחסוך. ההצעה מופיעה על השולחן בקו מקווקו, ומשתנה רק אחרי אישור שלכם.</p>
+          </li>
+          <li data-story="3">
+            <span class="story__n num">4</span>
+            <h3>בעל העסק מאשר</h3>
+            <p>שולחים בקשה להצעת מחיר. ההזמנה נסגרת רק כשבעל העסק עובר עליה ומאשר, ואתם רואים את הסטטוס מתעדכן.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="kitchen" class="kitchen" aria-labelledby="kitchen-title">
+      <div class="kitchen__head">
+        <h2 id="kitchen-title">מה יוצא מהמטבח השבוע</h2>
+        <div class="kitchen__nav">
+          <button class="icon-btn" type="button" data-rail="1" aria-label="מנות קודמות"><i class="ph ph-arrow-right"></i></button>
+          <button class="icon-btn" type="button" data-rail="-1" aria-label="מנות הבאות"><i class="ph ph-arrow-left"></i></button>
+        </div>
+      </div>
+      <ul class="rail" data-bind="rail" aria-label="מנות"></ul>
+    </section>
+
+    <section class="facts" aria-labelledby="facts-title">
+      <h2 id="facts-title" class="sr-only">מה מקבלים</h2>
+      <div class="bento">
+        <article class="bento__cell bento__cell--table">
+          <div id="bento-table" aria-hidden="true"></div>
+          <div class="bento__caption">
+            <h3>לאירועים של 30 עד 120 אורחים</h3>
+            <p>ימי הולדת, בריתות, בר ובת מצווה, שבת משפחתית. משלוח לפי אזור או איסוף מהמטבח.</p>
+          </div>
+        </article>
+        <article class="bento__cell bento__cell--math">
+          <div class="math" aria-hidden="true"><span class="num">24</span><i>+</i><span class="num">16</span><i>×</i><span class="num">½</span><i>=</i><b class="num">32</b></div>
+          <h3>כמויות לפי מבוגרים וילדים</h3>
+          <p>24 מבוגרים ו־16 ילדים אוכלים כמו 32. כל מנה מתחלקת עם המנות האחרות באותה קטגוריה, אז לא קונים יותר מדי ואף אחד לא נשאר רעב.</p>
+        </article>
+        <article class="bento__cell bento__cell--info">
+          <dl class="nutri" aria-label="דוגמה: ערכים תזונתיים לחומוס">
+            <div><dt>קלוריות</dt><dd class="num">170</dd></div>
+            <div><dt>חלבון</dt><dd class="num">7 ג׳</dd></div>
+            <div><dt>שומן</dt><dd class="num">9 ג׳</dd></div>
+          </dl>
+          <h3>מידע תזונתי לכל מנה</h3>
+          <p>ערכים ואלרגנים לכל מנה, לידיעה בלבד. בלי המלצות תזונה.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <h2 id="closing-title">השולחן שלכם מחכה</h2>
+      <p>עשר דקות, בלי טלפונים ובלי טבלאות. אפשר לשמור ולחזור מתי שרוצים.</p>
+      <a class="btn btn--accent" href="/customer/">מרכיבים שולחן<i class="ph ph-arrow-left" aria-hidden="true"></i></a>
+    </section>
   </main>
+
+  <footer class="site-foot">
+    <span class="wordmark wordmark--sm"><span class="wordmark__mark" aria-hidden="true"></span>יומי</span>
+    <span>רחוב הנגרים 8, תל אביב</span>
+    <a href="/admin/">כניסה לבעל העסק</a>
+  </footer>
+
+  <script type="module" src="/js/landing.js"></script>
 </body>
 </html>
