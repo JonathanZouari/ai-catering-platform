@@ -4,7 +4,7 @@ import { ils, reducedMotion, wait } from "./format.js";
 import {
   CATEGORIES, DISHES, EVENT, INITIAL_ORDER, SCRIPTED_PROPOSALS, DEMO_REPLY, dishById, orderTotal,
 } from "./mock/menu.js";
-import { loadEvent, describeEvent } from "./event-store.js";
+import { loadEvent, describeEvent, loadOrder, saveOrder } from "./event-store.js";
 import { createDishCard } from "./components/dish-card.js";
 import { createOrderSummary } from "./components/order-summary.js";
 import { createProposalCard } from "./components/proposal-card.js";
@@ -12,7 +12,8 @@ import { createAgentPanel } from "./components/agent-panel.js";
 import { bindBottomSheet } from "./components/bottom-sheet.js";
 import { flyPill } from "./components/fly-pill.js";
 
-const state = { order: { ...INITIAL_ORDER }, version: 0, busy: false, filter: { cat: "all", vegetarian: false, vegan: false } };
+// The order survives page changes (the summary page reads it). The demo starts from INITIAL_ORDER.
+const state = { order: { ...(loadOrder() ?? INITIAL_ORDER) }, version: 0, busy: false, filter: { cat: "all", vegetarian: false, vegan: false } };
 const desktop = matchMedia("(min-width: 1024px)"); // side panel visible
 const cards = new Map();
 const pending = new Set(); // { proposal, card } awaiting a decision
@@ -91,6 +92,7 @@ async function setQty(id, qty) {
   const added = qty > (state.order[id] ?? 0);
   if (qty > 0) state.order[id] = qty; else delete state.order[id];
   state.version++;
+  saveOrder(state.order);
   for (const item of pending) expire(item);
   syncSteppers();
   // Manual "+". Mobile only: a small dot flies from the card to the total (the panel is not on screen there).
@@ -152,6 +154,7 @@ async function approve(item) {
   const ids = proposal.changes.map((c) => c.dishId);
   for (const c of proposal.changes) state.order[c.dishId] = c.to;
   state.version++;
+  saveOrder(state.order);
   for (const other of [...pending]) expire(other);
   card.setState("applied");
 
@@ -180,6 +183,7 @@ async function onSend(text) {
 // ---- event strip + boot
 document.getElementById("event-strip").textContent = describeEvent(loadEvent() ?? EVENT);
 
+saveOrder(state.order);
 renderChips();
 renderCatalog();
 summary.update(state.order);

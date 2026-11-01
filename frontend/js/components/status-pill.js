@@ -7,7 +7,8 @@ const STATUS = {
   rejected: ["לא אושרה", "pill-rejected"],
 };
 
-export function statusPill(status) {
+// `label` overrides the default text (the colour still follows the status).
+export function statusPill(status, label) {
   const [text, cls] = STATUS[status];
-  return h("span", { class: `pill ${cls}` }, text);
+  return h("span", { class: `pill ${cls}` }, label ?? text);
 }

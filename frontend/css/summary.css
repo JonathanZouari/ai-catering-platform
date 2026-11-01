@@ -1,0 +1,64 @@
+/* Summary & quote (C3). Same tokens and primitives as the menu. Mobile-first; breakpoints 640 / 1024. Logical properties only. */
+
+main { max-inline-size: 760px; padding-block: var(--space-6) var(--space-8); }
+main > * + * { margin-block-start: var(--space-4); }
+main > .steps { margin-block-end: var(--space-3); }
+
+.summary-head { display: grid; gap: var(--space-3); justify-items: start; }
+.summary-head h1 { font-size: clamp(2.25rem, 6vw, 3.5rem); }
+
+.card[hidden] { display: none; }
+.quote, .send, .confirm, .empty { padding: var(--space-4); }
+@media (min-width: 640px) { .quote, .send, .confirm, .empty { padding: var(--space-8); } }
+
+/* Event facts */
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin: 0 0 var(--space-6); padding-block-end: var(--space-6); border-block-end: 1px solid var(--color-line); }
+@media (min-width: 640px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+.facts div { display: grid; gap: 2px; align-content: start; }
+.facts dt { font-size: 0.8125rem; color: var(--color-muted); }
+.facts dd { margin: 0; font-weight: 500; }
+.facts dd small { display: block; font-weight: 400; font-size: 0.8125rem; color: var(--color-muted); }
+
+/* Itemised lines: name, qty × unit price, line total */
+.quote__lines { list-style: none; margin: 0; padding: 0; }
+.quote__lines li { display: grid; grid-template-columns: 1fr auto; column-gap: var(--space-4); padding-block: var(--space-3); }
+.quote__lines li + li { border-block-start: 1px solid var(--color-line); }
+.quote__name { font-weight: 500; }
+.quote__calc { grid-row: 2; font-size: 0.875rem; color: var(--color-muted); }
+.quote__line { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
+
+.quote__delivery, .quote__sum { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); margin: 0; }
+.quote__delivery { padding-block: var(--space-3); border-block-start: 1px solid var(--color-line); }
+.quote__sum { margin-block-start: var(--space-2); padding-block-start: var(--space-4); border-block-start: 1px solid var(--color-text); }
+.quote__sum strong { font-size: clamp(2rem, 6vw, 2.75rem); font-weight: 400; letter-spacing: -0.01em; }
+.quote__note { margin: var(--space-4) 0 0; font-size: 0.9375rem; color: var(--color-muted); }
+
+/* Address + notes + actions */
+.send { display: grid; gap: var(--space-4); }
+.field { display: grid; gap: var(--space-2); min-inline-size: 0; }
+.field[hidden] { display: none; }
+.field label { font-weight: 500; font-size: 0.9375rem; }
+.field input[type="text"], .field textarea {
+  padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius);
+  font: inherit; background: var(--color-surface); color: var(--color-text); inline-size: 100%; min-block-size: 48px;
+}
+.field textarea { resize: vertical; }
+.field input:focus-visible, .field textarea:focus-visible { outline-offset: 0; border-color: var(--color-text); }
+.field [aria-invalid="true"] { border-color: var(--color-danger); }
+.form-error { margin: 0; color: var(--color-danger); font-weight: 500; }
+.form-error:empty { display: none; }
+.send__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6); }
+.send__actions .btn { inline-size: 100%; }
+@media (min-width: 640px) { .send__actions .btn { inline-size: auto; } }
+.link { min-block-size: 44px; display: inline-flex; align-items: center; }
+
+/* Confirmation (same page) and empty state */
+.confirm, .empty { display: grid; gap: var(--space-3); justify-items: start; }
+.confirm h2, .empty h2 { font-size: clamp(1.5rem, 4vw, 2rem); }
+.confirm p, .empty p { margin: 0; }
+.confirm:focus { outline: none; }
+.confirm { scroll-margin-block-start: 88px; } /* clears the sticky desktop header when focus moves here */
+.confirm:not([hidden]) { animation: fade-up 0.5s var(--ease-out) both; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.demo-note { font-size: 0.8125rem; }

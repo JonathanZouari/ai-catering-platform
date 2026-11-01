@@ -16,7 +16,7 @@ A calm, airy, light site where **the guests come first**: the visitor says *when
 | Home (entry to C1) | `frontend/index.html` | Built. Typed intro, how it works, photo row. |
 | C1 Event details | `frontend/customer/event.html` | Built. Form saved to `sessionStorage`. |
 | C2 + C4 Menu with the agent | `frontend/customer/index.html` | Built, **mock data and a scripted agent**. |
-| C3 Summary & quote | `frontend/customer/summary.html` | **Placeholder page only.** |
+| C3 Summary & quote | `frontend/customer/summary.html` | Built, **mock data**. Sending only records a local price snapshot. |
 | C5 Status | not created | Not built. |
 | A1–A5 Owner dashboard | `frontend/admin/index.html` | **Placeholder page only.** |
 
@@ -94,8 +94,17 @@ Status colours are unchanged from the original brief. Colour is never the only s
 - Agent panel: the note "מציע רק מנות מהתפריט של העסק, ולא משנה כלום בלי אישור שלך", messages, the proposal card, input, then a collapsible order list (collapsed by default, opens on approve), delivery "לפי אזור, יחושב באישור", total, and the CTA "לסיכום ושליחה לאישור".
 - The agent is scripted (two proposals, then a demo reply), labeled "הדגמה".
 
-### C3, C5, A1–A5
-Not built. C3 and the owner area are placeholder pages so no link is dead. Design intent from the original brief is kept for later: C3 shows itemised lines, a "יש מספיק לכולם?" coverage block with mock data labeled as such (OPEN #3), and "ההזמנה מחייבת רק אחרי אישור העסק"; C5 shows a 3-step timeline and no payment (OPEN #2); A1 is the owner's order list with frozen-price lines and approve/reject.
+### C3 — Summary & quote (`/customer/summary.html`)
+- Steps indicator with step 3 current, status pill "טיוטה · עוד לא נשלחה", H1 "הצעת המחיר שלך".
+- One white card: event facts (date, time, guests with the adults/children split, delivery address or pickup) from `event-store`, then itemised lines (name, qty × unit price, line total in tabular numbers), a delivery row "לפי אזור, יחושב באישור" (delivery only), a big total, and "ההזמנה מחייבת רק אחרי אישור העסק."
+- A second card: delivery address (delivery only, required) and optional notes. CTA "שליחה לאישור העסק" (ink primary) and a text link "חזרה לתפריט".
+- On send: a calm confirmation on the same page ("ההזמנה נשלחה לבעל העסק"), the pill changes to "ממתין לאישור" (never shown as confirmed), the form is replaced, and the page returns to the top. The quote lines shown afterwards are the **price snapshot** taken at sending (also stored in `sessionStorage`).
+- Empty order: "עוד לא נבחרו מנות" with a link back to the menu.
+- Deliberately **not** in it: payment (OPEN #2), VAT (OPEN #14), a "enough food for everyone" coverage block (needs the business quantity rules, OPEN #3), editing after sending (OPEN #7).
+- The menu now keeps the draft order in `sessionStorage` so this page can read it.
+
+### C5, A1–A5
+Not built. The owner area is a placeholder page so no link is dead. Design intent from the original brief is kept for later: C5 shows a 3-step timeline and no payment (OPEN #2); A1 is the owner's order list with frozen-price lines and approve/reject.
 
 ## 8. Motion (subtle, purposeful; `prefers-reduced-motion` turns all of it off)
 
@@ -128,6 +137,6 @@ Avoid: rustic wooden boards, candles, crowded tables, heavy dark backgrounds.
 ## 11. Engineering constraints
 
 - Static frontend served by FastAPI (ADR 0001): plain HTML, CSS, ES modules. No frameworks, no build step.
-- Structure per `UX_UI_SPEC.md` §5, plus `css/site.css` (shared chrome), `css/home.css`, `css/event.css`, `css/customer.css`, `js/components/*` (stepper, dish card, proposal card, order summary, agent panel, bottom sheet, fly pill, status pill), `js/mock/menu.js`, `js/event-store.js`.
+- Structure per `UX_UI_SPEC.md` §5, plus `css/site.css` (shared chrome), `css/home.css`, `css/event.css`, `css/customer.css`, `css/summary.css`, `js/summary.js`, `js/components/*` (stepper, dish card, proposal card, order summary, agent panel, bottom sheet, fly pill, status pill), `js/mock/menu.js`, `js/event-store.js`.
 - RTL: `<html lang="he" dir="rtl">`. Mobile-first, breakpoints 640 / 1024.
 - Mock data is clearly marked until the API exists.
