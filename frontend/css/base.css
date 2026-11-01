@@ -208,7 +208,7 @@ legend { padding: 0; margin-block-end: 10px; }
 .timeline li.done::before { background: var(--fg); border-color: var(--fg); }
 .timeline li.now { color: var(--fg); font-weight: 700; }
 .timeline li.now::before { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
-.owner-note { margin: 0; padding: 14px 18px; border-inline-start: 3px solid var(--accent); background: var(--surface); max-width: 62ch; }
+.owner-note { margin: 0; padding-block: 14px; border-block: 1px solid var(--fg); max-width: 62ch; }
 .owner-note footer { font-size: .85rem; color: var(--muted); margin-block-start: 6px; }
 
 /* admin (A1) */
