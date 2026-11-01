@@ -99,4 +99,4 @@ Worked in order. Don't build features of a later phase early.
 | Test site | Supabase and Railway, needs the user's accounts and approval | Skipped for now |
 | Pilot | First real caterer, needs its own approval | Not started |
 
-The code is on `feat/phase-8-deploy-pilot`. PR #1 into `dev` on `origin` is open with CI passing. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.
+All of this is merged into `dev` and `main` on `origin`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.
