@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>הצעת המחיר שלך</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/summary.css">
+</head>
+<body>
+  <a class="skip" href="#main">דלגו לתוכן</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="wordmark" href="/">שם העסק</a>
+      <nav aria-label="ראשי">
+        <a href="/customer/">התפריט</a>
+        <a href="/#how">איך זה עובד</a>
+        <a href="/admin/">לבעל העסק</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <ol class="steps" aria-label="שלבי ההזמנה">
+      <li><a href="/customer/event.html">מתי ומי מגיע</a></li>
+      <li><a href="/customer/">תפריט</a></li>
+      <li aria-current="step">סיכום ושליחה</li>
+    </ol>
+
+    <div class="summary-head">
+      <div id="status-slot"></div>
+      <h1>הצעת המחיר שלך</h1>
+    </div>
+
+    <section id="confirmation" class="confirm card" tabindex="-1" role="status" hidden>
+      <h2>ההזמנה נשלחה לבעל העסק</h2>
+      <p>ההצעה ממתינה לאישור העסק. היא עדיין אינה הזמנה מאושרת.</p>
+      <a class="btn btn-secondary" href="/">חזרה לדף הבית</a>
+    </section>
+
+    <section id="empty" class="empty card" hidden>
+      <h2>עוד לא נבחרו מנות</h2>
+      <p class="muted">בחרו מנות מהתפריט כדי לקבל הצעת מחיר.</p>
+      <a class="btn btn-primary" href="/customer/">חזרה לתפריט</a>
+    </section>
+
+    <section id="quote" class="quote card" aria-label="פרטי ההצעה">
+      <dl id="facts" class="facts"></dl>
+      <ul id="lines" class="quote__lines" aria-label="מנות בהזמנה"></ul>
+      <p id="delivery-row" class="quote__delivery muted" hidden><span>משלוח</span><span>לפי אזור, יחושב באישור</span></p>
+      <p class="quote__sum"><span id="sum-label">סה״כ (ללא משלוח)</span><strong id="total" class="num"></strong></p>
+      <p class="quote__note">ההזמנה מחייבת רק אחרי אישור העסק.</p>
+    </section>
+
+    <form id="send-form" class="send card" novalidate>
+      <div id="address-field" class="field" hidden>
+        <label for="address">כתובת למשלוח</label>
+        <input id="address" name="address" type="text" autocomplete="street-address">
+      </div>
+      <div class="field">
+        <label for="notes">הערות להזמנה (לא חובה)</label>
+        <textarea id="notes" name="notes" rows="3"></textarea>
+      </div>
+      <p id="form-error" class="form-error" role="alert"></p>
+      <div class="send__actions">
+        <button type="submit" class="btn btn-primary btn-lg">שליחה לאישור העסק</button>
+        <a class="link" href="/customer/">חזרה לתפריט</a>
+      </div>
+    </form>
+
+    <p class="muted demo-note">נתוני הדגמה: המנות והמחירים אינם אמיתיים.</p>
+  </main>
+
+  <script type="module" src="/js/summary.js"></script>
+</body>
+</html>

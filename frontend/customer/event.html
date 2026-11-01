@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מתי ומי מגיע</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/event.css">
+</head>
+<body>
+  <a class="skip" href="#main">דלגו לטופס</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="wordmark" href="/">שם העסק</a>
+      <nav aria-label="ראשי">
+        <a href="/customer/">התפריט</a>
+        <a href="/#how">איך זה עובד</a>
+        <a href="/admin/">לבעל העסק</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <ol class="steps" aria-label="שלבי ההזמנה">
+      <li aria-current="step">מתי ומי מגיע</li>
+      <li>תפריט</li>
+      <li>סיכום ושליחה</li>
+    </ol>
+    <h1>כמה אורחים מגיעים?</h1>
+    <p class="event__sub muted">ספרו לנו מתי האירוע ומי מגיע, ונמשיך לבניית התפריט.</p>
+
+    <form id="event-form" class="planner card" novalidate>
+      <div class="planner__grid">
+        <div class="field">
+          <label for="date">תאריך האירוע</label>
+          <input id="date" name="date" type="date" required>
+        </div>
+        <div class="field">
+          <label for="time">שעת הגעה או איסוף</label>
+          <input id="time" name="time" type="time" required>
+        </div>
+      </div>
+
+      <div id="counters" class="counters"></div>
+
+      <fieldset class="field mode">
+        <legend>איך מקבלים?</legend>
+        <div class="segmented">
+          <label><input type="radio" name="mode" value="delivery" checked><span>משלוח</span></label>
+          <label><input type="radio" name="mode" value="pickup"><span>איסוף</span></label>
+        </div>
+      </fieldset>
+
+      <div id="address-field" class="field">
+        <label for="address">כתובת למשלוח</label>
+        <input id="address" name="address" type="text" autocomplete="street-address">
+        <p class="hint muted">דמי משלוח לפי אזור, יחושבו באישור העסק.</p>
+      </div>
+
+      <div class="field">
+        <label for="type">סוג האירוע (לא חובה)</label>
+        <select id="type" name="type">
+          <option value="">ללא בחירה</option>
+          <option>יום הולדת</option>
+          <option>אירוע משפחתי</option>
+          <option>בר/בת מצווה</option>
+          <option>ארוחת שבת</option>
+          <option>אחר</option>
+        </select>
+      </div>
+
+      <p id="form-error" class="form-error" role="alert"></p>
+      <button id="submit" type="submit" class="btn btn-primary btn-lg">לבניית התפריט · <span id="guest-count" class="num">0</span>&nbsp;<span id="guest-word">אורחים</span></button>
+    </form>
+  </main>
+
+  <script type="module" src="/js/event.js"></script>
+</body>
+</html>

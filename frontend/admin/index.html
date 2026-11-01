@@ -1,21 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business dashboard</title>
+  <title>ניהול ההזמנות</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/site.css">
 </head>
 <body>
-  <main>
-    <h1>Business dashboard</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+  <a class="skip" href="#main">דלגו לתוכן</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="wordmark" href="/">שם העסק</a>
+      <nav aria-label="ראשי">
+        <a href="/customer/">התפריט</a>
+        <a href="/#how">איך זה עובד</a>
+        <a href="/admin/" aria-current="page">לבעל העסק</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="placeholder">
+      <h1>ניהול ההזמנות</h1>
+      <p class="muted">לוח הבקרה של בעל העסק (הזמנות, מנות, מחירים, זמינות ומשלוחים) ייבנה בשלב הבא.</p>
+      <a class="btn btn-secondary" href="/">חזרה לדף הבית</a>
+    </section>
   </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
 </body>
 </html>

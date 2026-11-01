@@ -1,0 +1,59 @@
+/* Home (C1 entry): typed intro, how it works, calm photo row. Mobile-first; breakpoints 640 / 1024. */
+
+main { padding-block: 0 var(--space-6); }
+
+/* ---- Intro. The markup is the complete final state; the script only replays it on the first visit. ---- */
+.intro { min-block-size: min(720px, calc(100dvh - 64px)); display: grid; align-content: center; padding-block: var(--space-8); }
+.intro__stack { max-inline-size: 980px; }
+.intro__line {
+  display: block; inline-size: fit-content; position: relative; min-block-size: 1.25em;
+  font-size: clamp(1.75rem, 4.4vw, 2.75rem); font-weight: 300; line-height: 1.25; letter-spacing: -0.01em;
+  color: var(--color-text); text-decoration: none;
+}
+.intro__line.is-struck { color: var(--color-faint); }
+/* Thin glowing orange strike, drawn from the right (the start of an RTL line). */
+.intro__line::after {
+  content: ""; position: absolute; inset-inline: -0.06em; inset-block-start: 58%; block-size: 2px;
+  background: var(--color-glow); box-shadow: 0 0 8px 1px rgb(249 115 22 / 0.55);
+  transform: scaleX(0); transform-origin: right;
+}
+.intro__line.is-struck::after { transform: scaleX(1); }
+.intro--running .intro__line { transition: color 0.5s ease 0.1s; }
+.intro--running .intro__line::after { transition: transform 0.3s var(--ease-out); }
+
+.intro__final {
+  margin-block-start: var(--space-6); font-size: clamp(2.5rem, 7.2vw, 5.25rem); text-wrap: balance;
+}
+.intro__cta { margin-block-start: var(--space-8); display: grid; gap: var(--space-4); justify-items: start; }
+.intro__cta p { font-size: 1rem; }
+
+/* Hidden only while the intro is about to play or running; revealed step by step by home.js. */
+.intro-play .intro:not(.intro--running) .intro__line { opacity: 0; }
+.intro-play .intro:not(.intro--show-final) .intro__final,
+.intro-play .intro:not(.intro--show-cta) .intro__cta { opacity: 0; transform: translateY(12px); }
+.intro--running .intro__final, .intro--running .intro__cta { transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
+.intro--instant, .intro--instant * , .intro--instant *::after { transition: none !important; }
+
+.caret {
+  display: inline-block; inline-size: 3px; block-size: 0.95em; background: var(--color-glow);
+  box-shadow: 0 0 10px 1px rgb(249 115 22 / 0.6);
+  vertical-align: -0.1em; margin-inline-start: 4px; animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ---- How it works ---- */
+.how { padding-block: var(--space-8); border-block-start: 1px solid var(--color-line); scroll-margin-block-start: 80px; /* clears the sticky desktop header */ }
+.how h2 { margin-block-end: var(--space-6); }
+.how__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-6); }
+.how__steps li { display: grid; gap: var(--space-2); align-content: start; }
+.how__n { font-size: 0.9375rem; font-weight: 500; color: var(--color-accent-text); }
+.how__steps h3 { font-size: 1.25rem; font-weight: 500; }
+@media (min-width: 1024px) { .how__steps { grid-template-columns: repeat(3, 1fr); gap: var(--space-8); } }
+
+/* ---- Photo row ---- */
+.gallery { padding-block: var(--space-4) var(--space-6); display: grid; gap: var(--space-4); }
+.gallery__row { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 640px) { .gallery__row { grid-template-columns: repeat(4, 1fr); } }
+.gallery figure { margin: 0; display: grid; gap: var(--space-2); }
+.gallery img { inline-size: 100%; block-size: auto; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-card); background: #eceeef; }
+.gallery figcaption { font-size: 0.8125rem; }
