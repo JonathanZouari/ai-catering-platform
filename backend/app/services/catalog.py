@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import AppError
 from app.models.catalog import Allergen, Dish, DishAllergen, DishCategory, DishDietary
 from app.repositories import catalog as repo
+from app.repositories import orders as orders_repo
 from app.schemas import catalog as s
 
 
@@ -107,7 +108,10 @@ def update_dish(db: Session, dish_id: uuid.UUID, data: s.DishUpdate) -> Dish:
 
 
 def delete_dish(db: Session, dish_id: uuid.UUID) -> None:
-    db.delete(_get(db, Dish, dish_id, "Dish"))
+    dish = _get(db, Dish, dish_id, "Dish")
+    if orders_repo.dish_in_orders(db, dish_id):
+        raise AppError(409, "dish_in_orders", "Dish appears in orders; mark it unavailable instead")
+    db.delete(dish)
     db.commit()
 
 

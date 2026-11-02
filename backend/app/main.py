@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api import availability, catalog
 from app.api.admin import availability as admin_availability
 from app.api.admin import catalog as admin_catalog
+from app.api.admin import orders as admin_orders
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
 
@@ -17,6 +18,7 @@ app.include_router(catalog.router)
 app.include_router(admin_catalog.router)
 app.include_router(availability.router)
 app.include_router(admin_availability.router)
+app.include_router(admin_orders.router)
 
 
 @app.get("/health")

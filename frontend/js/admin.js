@@ -7,6 +7,7 @@ const KASHRUT = { meat: ["בשרי", "k-meat"], dairy: ["חלבי", "k-dairy"], 
 const ERRORS = {
   conflict: "השם הזה כבר קיים",
   category_not_empty: "יש מנות בקטגוריה. העבירו או מחקו אותן קודם",
+  dish_in_orders: "המנה מופיעה בהזמנות ולא ניתן למחוק אותה. אפשר לסמן אותה כלא זמינה",
 };
 
 const state = { categories: [], dishes: [], allergens: [], editing: null };

@@ -19,6 +19,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base
 
 FULFILLMENT_TYPES = ("pickup", "delivery")
+# One shared type: orders.fulfillment_type uses the same Postgres enum.
+FulfillmentType = Enum(*FULFILLMENT_TYPES, name="fulfillment_type")
 
 
 class TimeSlot(Base):
@@ -28,7 +30,7 @@ class TimeSlot(Base):
         CheckConstraint("weekday between 0 and 6", name="time_slots_weekday"),
     )
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    fulfillment_type: Mapped[str] = mapped_column(Enum(*FULFILLMENT_TYPES, name="fulfillment_type"))
+    fulfillment_type: Mapped[str] = mapped_column(FulfillmentType)
     # 0 = Sunday ... 6 = Saturday (same as JS Date.getDay); null = every day.
     weekday: Mapped[int | None] = mapped_column(SmallInteger)
     start_time: Mapped[time] = mapped_column(Time)

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-route="admin">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>הזמנות · Yummai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/">Yummai<small>לוח העסק</small></a>
+    <nav class="site-nav" aria-label="ניווט ראשי">
+      <a href="/admin/orders/" aria-current="page">הזמנות</a><a href="/admin/">מנות ותמחור</a><a href="/admin/availability/">זמינות</a><a href="/customer/">צד הלקוח</a>
+    </nav>
+  </div>
+</header>
+
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/chef.jpg" alt="" width="900" height="1350"><span class="band-note hand"><i data-ill="basket"></i>ההזמנות שמחכות לכם</span></div>
+<div class="app wrap">
+  <main id="screen">
+    <div class="screen-head">
+      <p class="eyebrow">ניהול</p>
+      <h2>הזמנות</h2>
+      <p class="lede">הזמנות שלקוחות שלחו. המחירים קפואים מרגע השליחה. מאשרים, או דוחים עם הסבר ללקוח.</p>
+    </div>
+
+    <form id="login" class="event-form" hidden>
+      <div class="field">
+        <label for="token">קוד גישה לבעלים</label>
+        <input id="token" type="password" autocomplete="current-password" required>
+        <span class="help">זמני, עד שתיבחר שיטת התחברות. נשמר רק בלשונית הזו.</span>
+      </div>
+      <div class="actions"><button class="btn primary" type="submit">כניסה</button></div>
+    </form>
+
+    <div id="orders" class="admin" hidden>
+      <section aria-labelledby="list-h">
+        <h3 id="list-h" class="sr-only">רשימת הזמנות</h3>
+        <div class="chips" role="group" aria-label="סינון לפי סטטוס" id="filters"></div>
+        <ul class="order-list" id="order-list"></ul>
+        <p class="empty" id="no-orders" hidden>אין הזמנות בסטטוס הזה.</p>
+      </section>
+
+      <section class="order-detail" id="detail" aria-labelledby="detail-h" hidden>
+        <div class="detail-head">
+          <h3 id="detail-h"></h3>
+          <span id="d-status" class="pill"></span>
+        </div>
+        <dl class="totals" id="d-facts"></dl>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">מנה</th><th scope="col">כמות</th><th scope="col">מחיר ליחידה</th><th scope="col">סה"כ</th></tr></thead>
+            <tbody id="d-items"></tbody>
+          </table>
+        </div>
+        <dl class="totals" id="d-totals"></dl>
+        <p class="owner-note" id="d-note" hidden></p>
+
+        <form id="decision" hidden>
+          <div class="field">
+            <label for="note">הערה ללקוח</label>
+            <textarea id="note" rows="3" maxlength="1000" aria-describedby="note-help"></textarea>
+            <span class="help" id="note-help">חובה בדחייה. באישור אפשר להשאיר ריק.</span>
+          </div>
+          <p class="help error" id="decision-error" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn danger" type="button" id="reject">דחייה</button>
+            <button class="btn primary" type="button" id="approve">אישור ההזמנה</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="site-footer wrap"><span>Yummai · לוח העסק</span></footer>
+<script type="module">
+  import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initOrders } from "/js/admin-orders.js";
+  initMotion();
+  initRouteBand();
+  initOrders();
+</script>
+</body>
+</html>
