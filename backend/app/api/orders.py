@@ -9,8 +9,9 @@ from app.core import mailer
 from app.core.customer_auth import CustomerIdentity, require_customer
 from app.core.db import get_db
 from app.schemas import customer_orders as s
+from app.schemas import proposals as ps
 from app.services import customer_orders as svc
-from app.services import notifications
+from app.services import notifications, proposals
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
@@ -105,3 +106,41 @@ def withdraw(
     db: Session = Depends(get_db),
 ):
     return svc.withdraw(db, who, order_id, data.version)
+
+
+@router.get("/{order_id}/proposals", response_model=list[ps.ProposalOut])
+def list_proposals(
+    order_id: uuid.UUID,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    return proposals.list_for_customer(db, who, order_id)
+
+
+@router.post("/{order_id}/proposals/{proposal_id}/accept", response_model=ps.ProposalOut)
+def accept_proposal(
+    order_id: uuid.UUID,
+    proposal_id: uuid.UUID,
+    background: BackgroundTasks,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    proposal = proposals.accept(db, who, order_id, proposal_id)
+    if email := notifications.proposal_answered(db, proposal_id):
+        background.add_task(mailer.send, email)
+    return proposal
+
+
+@router.post("/{order_id}/proposals/{proposal_id}/decline", response_model=ps.ProposalOut)
+def decline_proposal(
+    order_id: uuid.UUID,
+    proposal_id: uuid.UUID,
+    data: ps.DeclineIn,
+    background: BackgroundTasks,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    proposal = proposals.decline(db, who, order_id, proposal_id, data)
+    if email := notifications.proposal_answered(db, proposal_id):
+        background.add_task(mailer.send, email)
+    return proposal

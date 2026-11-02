@@ -68,8 +68,35 @@
           </div>
           <p class="help error" id="decision-error" role="alert" hidden></p>
           <div class="actions">
+            <button class="btn ghost" type="button" id="open-proposal">הצעת שינוי ללקוח</button>
             <button class="btn danger" type="button" id="reject">דחייה</button>
             <button class="btn primary" type="button" id="approve">אישור ההזמנה</button>
+          </div>
+        </form>
+
+        <div id="proposal-area"></div>
+
+        <form id="proposal-form" class="proposal" aria-labelledby="proposal-h" novalidate hidden>
+          <h4 id="proposal-h">הצעת שינוי</h4>
+          <p class="help">שנו כמויות, הסירו מנות (כמות 0) או הוסיפו מנות. המחירים נלקחים מההזמנה ומהתפריט, והלקוח יראה את ההפרש לפני שיאשר. אם יאשר, ההזמנה מאושרת מיד.</p>
+          <div class="table-scroll">
+            <table class="lines">
+              <thead><tr><th scope="col">מנה</th><th scope="col">כמות</th></tr></thead>
+              <tbody id="proposal-rows"></tbody>
+            </table>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="add-dish">הוספת מנה</label><select id="add-dish"></select></div>
+            <div class="field"><span class="help" aria-hidden="true">&nbsp;</span><button class="btn ghost" type="button" id="add-dish-btn">הוספה</button></div>
+          </div>
+          <div class="field">
+            <label for="proposal-note">הסבר ללקוח</label>
+            <textarea id="proposal-note" rows="2" maxlength="1000"></textarea>
+          </div>
+          <p class="help error" id="proposal-error" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn ghost" type="button" id="close-proposal">ביטול</button>
+            <button class="btn primary" type="submit">שליחת ההצעה ללקוח</button>
           </div>
         </form>
       </section>

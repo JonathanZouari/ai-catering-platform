@@ -75,13 +75,34 @@ Implemented so far (Phase 3, slice 2): `POST`, `GET` and `PATCH /api/orders/{id}
 - Someone else's order → `404`.
 - A non-draft → `409 invalid_transition`.
 
+## Change proposals (OPEN #6)
+
+Owner, on an order awaiting approval:
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/admin/orders/{id}/proposals` | Newest first |
+| POST | `/api/admin/orders/{id}/proposals` | `{items: [{dish_id, quantity}], note}` is the full wanted item list; the server derives the changes. Dishes and quantities only (no custom prices). `409 proposal_pending` if one is open; `422 no_changes`, `dish_unavailable`, `below_minimum` |
+| POST | `/api/admin/orders/{id}/proposals/{pid}/cancel` | |
+
+While a proposal is open, owner approve or reject returns `409 proposal_pending`.
+
+Customer (owner of the order):
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/orders/{id}/proposals` | Newest first |
+| POST | `/api/orders/{id}/proposals/{pid}/accept` | Applies the frozen lines and approves the order in one transaction, only if `order.version == base_order_version`; otherwise the proposal expires (`409 proposal_expired`) |
+| POST | `/api/orders/{id}/proposals/{pid}/decline` | `{note}`. The order stays awaiting the owner's decision |
+
+A closed proposal returns `409 proposal_not_pending`. Withdrawing the order expires an open proposal.
+
 ## AI assistant (Phase 4)
 
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/api/orders/{id}/chat` | `{message}` → `{reply, proposals:[...]}` |
-| GET | `/api/orders/{id}/proposals?status=pending` | |
-| POST | `/api/orders/{id}/proposals/{pid}/approve` | Executes in one transaction if `base_order_version == order.version` and status `pending` |
+| POST | `/api/orders/{id}/proposals/{pid}/accept` | Same endpoint as owner proposals (above); assistant proposals use `proposed_by = assistant` |
 | POST | `/api/orders/{id}/proposals/{pid}/reject` | No mutation |
 
 Proposal shape:

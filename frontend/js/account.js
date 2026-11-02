@@ -115,6 +115,9 @@ async function showAccount() {
     const pill = Object.assign(document.createElement("span"), { className: `pill s-${o.status}`, textContent: STATUS[o.status] ?? o.status });
     const status = document.createElement("td");
     status.append(pill);
+    if (o.has_pending_proposal) {
+      status.append(" ", Object.assign(document.createElement("span"), { className: "pill s-pending_approval", textContent: "הצעת שינוי ממתינה לך" }));
+    }
     const total = Object.assign(document.createElement("td"), { className: "num", textContent: money(o.total) });
     tr.append(event, status, total);
     return tr;

@@ -1,5 +1,6 @@
 // Screen C5: where the customer's order stands, its frozen prices, and the one action the customer
-// has while it awaits approval: take it back to draft (OPEN_DECISIONS #7). Text via textContent.
+// has while it awaits approval: take it back to draft (OPEN_DECISIONS #7), and the answer to an
+// owner change proposal (OPEN_DECISIONS #6). Text via textContent.
 import { call, session } from "/js/customer-session.js";
 
 const TZ = "Asia/Jerusalem";
@@ -12,6 +13,11 @@ const LEDE = {
   pending_approval: "ההזמנה נשלחה ומחכה לאישור בעל העסק. נעדכן אתכם במייל.",
   approved: "ההזמנה אושרה. לשינויים מעכשיו דברו עם בעל העסק.",
   rejected: "ההזמנה לא אושרה. ההסבר של בעל העסק מופיע למטה.",
+};
+const OP = { add_item: ["נוספה", "add"], set_quantity: ["שינוי", "chg"], remove_item: ["הוסרה", "chg"] };
+const PROPOSAL_ERRORS = {
+  proposal_expired: "ההזמנה השתנתה מאז ההצעה, ולכן היא כבר לא בתוקף.",
+  proposal_not_pending: "ההצעה כבר לא פתוחה.",
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -65,6 +71,47 @@ function actions() {
   $("actions").replaceChildren(...out);
 }
 
+function proposalCard(p) {
+  const delta = Number(p.price_after) - Number(p.price_before);
+  const list = el("ul", { className: "diff" }, ...p.changes.map((c) => {
+    const [label, cls] = OP[c.op];
+    const amounts = c.op === "set_quantity" ? ` ${num(c.from_quantity)} → ${num(c.to_quantity)}`
+      : c.op === "add_item" ? ` × ${num(c.to_quantity)}` : "";
+    return el("li", {}, el("span", { className: `op ${cls}`, textContent: label }), `${c.name}${amounts}`);
+  }));
+  const card = el("div", { className: "proposal" },
+    el("h4", { textContent: "בעל העסק הציע שינוי בהזמנה" }), list,
+    el("p", { className: "diff-total" }, `סה"כ ${money(p.price_before)} → ${money(p.price_after)} `,
+      el("span", { textContent: `(${delta >= 0 ? "+" : ""}${money(delta)})` })));
+  if (p.note) card.append(el("p", { className: "why", textContent: p.note }));
+  card.append(el("p", { className: "fine", textContent: "אם תאשרו, ההזמנה מאושרת מיד עם השינויים. אם תדחו, ההזמנה נשארת כמו שהייתה ובעל העסק יחליט." }));
+
+  const reason = el("textarea", { id: "decline-note", rows: 2, maxLength: 1000 });
+  const reasonField = el("div", { className: "field" }, el("label", { htmlFor: "decline-note", textContent: "סיבה לדחייה (לא חובה)" }), reason);
+  reasonField.hidden = true;
+  const decline = el("button", { type: "button", className: "btn ghost", textContent: "דחיית ההצעה" });
+  const accept = el("button", { type: "button", className: "btn primary", textContent: "אישור ההצעה" });
+  const answer = async (action, body) => {
+    accept.disabled = decline.disabled = true;
+    $("action-error").hidden = true;
+    try {
+      await call(`/api/orders/${order.id}/proposals/${p.id}/${action}`, { method: "POST", body: body ? JSON.stringify(body) : undefined });
+    } catch (err) {
+      if (err.status === 401) { location.href = "/customer/"; return; }
+      $("action-error").textContent = PROPOSAL_ERRORS[err.code] ?? "לא הצלחנו לשלוח את התשובה. נסו שוב.";
+      $("action-error").hidden = false;
+    }
+    await load();
+  };
+  accept.addEventListener("click", () => answer("accept"));
+  decline.addEventListener("click", () => {
+    if (reasonField.hidden) { reasonField.hidden = false; decline.textContent = "שליחת הדחייה"; reason.focus(); return; }
+    answer("decline", { note: reason.value.trim() || null });
+  });
+  card.append(reasonField, el("div", { className: "proposal-actions" }, decline, accept));
+  return card;
+}
+
 async function withdraw(e) {
   const button = e.currentTarget;
   button.disabled = true;
@@ -86,10 +133,14 @@ const fact = (term, value, cls = "") => el("div", { className: cls }, el("dt", {
 
 async function load() {
   order = await call(`/api/orders/${order?.id ?? new URLSearchParams(location.search).get("order")}`);
-  const pricing = await call(`/api/orders/${order.id}/pricing`);
+  const [pricing, proposals] = await Promise.all([
+    call(`/api/orders/${order.id}/pricing`), call(`/api/orders/${order.id}/proposals`),
+  ]);
+  const pending = proposals.find((p) => p.status === "pending");
+  $("proposal-area").replaceChildren(...(pending ? [proposalCard(pending)] : []));
   const e = order.event;
   $("title").textContent = `${e.event_type}, ${day(e.event_date)}`;
-  $("lede").textContent = LEDE[order.status];
+  $("lede").textContent = pending ? "בעל העסק הציע שינוי. עיינו בהצעה ואשרו או דחו אותה." : LEDE[order.status];
   timeline();
   actions();
 
