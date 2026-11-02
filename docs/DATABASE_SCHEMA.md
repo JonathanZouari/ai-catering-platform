@@ -4,6 +4,145 @@ Status: **Draft v0.2, proposal.** Replaces the v0.1 Postgres draft. Source of tr
 
 Derived from the chosen UI (PR #24): `mock-backend.js`, `store.js`, `views/*`, plus `API_CONTRACTS.md`.
 
+## ERD
+
+Key columns only; the full column lists are in the tables below.
+
+```mermaid
+erDiagram
+  event_types ||--o{ orders : "event_type_id"
+  time_slots ||--o{ orders : "slot_id"
+  delivery_zones |o--o{ orders : "delivery_zone_id"
+  admin_users |o--o{ orders : "decided_by"
+  orders ||--o{ order_items : "order_id"
+  dishes ||--o{ order_items : "dish_id"
+  orders ||--o{ order_status_events : "order_id"
+  admin_users |o--o{ order_status_events : "admin_user_id"
+  orders ||--o{ ai_messages : "order_id"
+  orders ||--o{ ai_proposals : "order_id"
+  ai_messages |o--o{ ai_proposals : "message_id"
+  dish_categories ||--o{ dishes : "category_id"
+  dishes ||--o{ dish_allergens : "dish_id"
+  allergens ||--o{ dish_allergens : "allergen_id"
+  admin_users ||--o{ admin_sessions : "admin_user_id"
+
+  orders {
+    text id PK
+    text access_token_hash UK
+    text status
+    int version
+    text contact_name
+    text contact_phone
+    int event_type_id FK
+    text event_date
+    int adults
+    int children
+    int vegetarian_guests
+    int vegan_guests
+    int restricted_guests
+    text fulfillment
+    int slot_id FK
+    int delivery_zone_id FK
+    text city
+    text address
+    int subtotal
+    int delivery_fee
+    int total
+    int decided_by FK
+  }
+  order_items {
+    int id PK
+    text order_id FK
+    text dish_id FK
+    real quantity
+    int snapshot_unit_price
+    int snapshot_line_total
+  }
+  order_status_events {
+    int id PK
+    text order_id FK
+    text from_status
+    text to_status
+    text actor
+    int admin_user_id FK
+  }
+  ai_messages {
+    int id PK
+    text order_id FK
+    text role
+    text content
+  }
+  ai_proposals {
+    text id PK
+    text order_id FK
+    int message_id FK
+    int base_order_version
+    text changes
+    int price_before
+    int price_after
+    text status
+  }
+  dishes {
+    text id PK
+    int category_id FK
+    text name
+    text pricing_unit
+    int unit_price
+    int is_vegetarian
+    int is_vegan
+    text allergens_verified_at
+    int is_available
+  }
+  dish_categories {
+    int id PK
+    text slug UK
+    text name
+  }
+  dish_allergens {
+    text dish_id PK, FK
+    int allergen_id PK, FK
+  }
+  allergens {
+    int id PK
+    text name UK
+  }
+  event_types {
+    int id PK
+    text name UK
+  }
+  time_slots {
+    int id PK
+    text fulfillment
+    text start_time
+    text end_time
+  }
+  delivery_zones {
+    int id PK
+    text city UK
+    int fee
+  }
+  blocked_dates {
+    text date PK
+    text reason
+  }
+  business_settings {
+    int id PK
+    int lead_days
+  }
+  admin_users {
+    int id PK
+    text email UK
+    text password_hash
+  }
+  admin_sessions {
+    text token_hash PK
+    int admin_user_id FK
+    text expires_at
+  }
+```
+
+`blocked_dates` and `business_settings` have no relationships: the service checks the order's date against them.
+
 ## Decision: SQLite, and how to move to Postgres later
 
 The database is **SQLite** (Jonathan's instruction). [ADR 0002](ADR/0002-supabase-postgres-sqlalchemy.md) still says Supabase Postgres via SQLAlchemy; it has not been updated and should be superseded by a new ADR before the first migration lands.
@@ -128,7 +267,9 @@ Which date to group by is an open question (below).
 
 ## Out of scope on purpose
 
-Employees, ingredients, inventory. Also not modelled yet: payments (OPEN #2), customer accounts (OPEN #1), notifications (OPEN #13), cancellation and revisions (OPEN #7), quantity rules (OPEN #3, only the placeholder `qty_per_guest` and `step` exist), and slot or daily capacity (OPEN #5).
+Out of scope on purpose: employees, ingredients, inventory.
+
+Also not modelled yet: payments (OPEN #2), customer accounts (OPEN #1), notifications (OPEN #13), cancellation and revisions (OPEN #7), quantity rules (OPEN #3, only the placeholder `qty_per_guest` and `step` exist), and slot or daily capacity (OPEN #5).
 
 ## Open questions
 
