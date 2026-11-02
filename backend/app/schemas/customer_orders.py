@@ -1,7 +1,8 @@
-"""Customer-side order DTOs (screen C1: event configuration and draft order)."""
+"""Customer order DTOs: event configuration (C1), items, pricing, recommendations (C2/C3)."""
 
 import uuid
 from datetime import date
+from decimal import Decimal
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
@@ -65,3 +66,46 @@ class CustomerOrderOut(BaseModel):
     delivery_address: str | None
     decision_note: str | None
     event: EventOut
+    items: list["OrderItemOut"]
+
+
+class ItemIn(_In):
+    """Set a dish's quantity. Units: whole units, or kg in 0.5 steps for per_weight dishes."""
+
+    quantity: Decimal = Field(gt=0, le=10_000, max_digits=7, decimal_places=2)
+    version: int
+
+
+class OrderItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    dish_id: uuid.UUID
+    quantity: Decimal
+
+
+class PricingLineOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    dish_id: uuid.UUID
+    name: str
+    pricing_unit: str
+    unit_label: str | None
+    quantity: Decimal
+    unit_price: Decimal
+    line_total: Decimal
+    available: bool  # false: the dish can't be ordered anymore and is left out of the total
+
+
+class PricingOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    currency: Literal["ILS"] = "ILS"
+    vat_included: Literal[True] = True
+    lines: list[PricingLineOut]
+    subtotal: Decimal
+    delivery_fee: Decimal | None
+    total: Decimal
+
+
+class RecommendationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    dish_id: uuid.UUID
+    quantity: Decimal
+    eligible_guests: int

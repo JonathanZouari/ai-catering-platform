@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-route="menu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>בחירת מנות · Yummai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
+    <nav class="site-nav" aria-label="ניווט ראשי">
+      <a href="/customer/">האזור האישי</a><a id="nav-event" href="/customer/event/">האירוע</a><a href="#" aria-current="page">המנות</a>
+    </nav>
+  </div>
+</header>
+
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/spread.jpg" alt="" width="900" height="600"><span class="band-note hand"><i data-ill="basket"></i>מה נגיש על השולחן</span></div>
+<div class="app wrap">
+  <main id="screen">
+    <div class="screen-head">
+      <ol class="progress" aria-label="שלבי ההזמנה">
+        <li>האירוע</li><li aria-current="step"><strong>המנות</strong></li><li>סיכום ושליחה</li>
+      </ol>
+      <h2>בחירת מנות</h2>
+      <p class="lede" id="event-line"></p>
+    </div>
+
+    <p class="notice warn" id="page-notice" role="alert" hidden></p>
+
+    <div id="menu" hidden>
+      <div class="field">
+        <span class="counter-label" id="cat-label">קטגוריה</span>
+        <div class="chips" role="group" aria-labelledby="cat-label" id="categories"></div>
+      </div>
+      <div class="chips" role="group" aria-label="סינון לפי תזונה" id="diet-filters">
+        <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegetarian">רק צמחוני</button>
+        <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegan">רק טבעוני</button>
+      </div>
+
+      <p class="notice warn" id="allergen-notice">
+        במטבח שלנו יש אגוזים, גלוטן, שומשום, חלב, ביצים, סויה ודגים, וייתכן מגע צולב בין מנות.
+        מה שמסומן "לא ידוע" לא נבדק. באלרגיה חמורה דברו איתנו לפני ההזמנה.
+      </p>
+
+      <div class="dish-grid" id="dishes"></div>
+      <p class="empty" id="no-dishes" hidden>אין מנות שמתאימות לסינון.</p>
+
+      <section class="summary" id="summary" aria-labelledby="summary-h">
+        <h3 id="summary-h">סיכום ההזמנה</h3>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">מנה</th><th scope="col">כמות</th><th scope="col">מחיר</th><th scope="col">סה"כ</th></tr></thead>
+            <tbody id="lines"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-lines">עוד לא נבחרו מנות.</p>
+        <dl class="totals" id="totals"></dl>
+        <p class="fine">המחירים כוללים מע"מ. שליחת ההזמנה לאישור בעל העסק תתווסף בשלב הבא.</p>
+      </section>
+
+      <div class="menu-bar" id="menu-bar">
+        <span id="bar-text" aria-live="polite"></span>
+        <a class="btn primary" href="#summary">לסיכום</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="site-footer wrap"><span>Yummai · תל אביב</span></footer>
+<script type="module">
+  import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initMenu } from "/js/menu.js";
+  initMotion();
+  initRouteBand();
+  initMenu();
+</script>
+</body>
+</html>

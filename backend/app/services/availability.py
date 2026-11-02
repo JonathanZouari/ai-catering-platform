@@ -9,10 +9,12 @@ from datetime import date, timedelta
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core import clock
 from app.core.errors import AppError
 from app.models.availability import BlockedDate, TimeSlot
 from app.repositories import availability as repo
 from app.schemas import availability as s
+from app.services import settings as settings_svc
 
 MAX_RANGE = timedelta(days=366)
 
@@ -100,6 +102,7 @@ def availability(db: Session, start: date, end: date) -> s.AvailabilityOut:
             422, "validation_error", "from must be <= to, at most a year apart", {"field": "to"}
         )
     return s.AvailabilityOut(
+        earliest_date=clock.today() + timedelta(days=settings_svc.get(db).lead_days),
         blocked_dates=[b.date for b in repo.list_blocked(db, start, end)],
         time_slots=[
             s.PublicSlotOut.model_validate(t) for t in repo.list_slots(db, active_only=True)

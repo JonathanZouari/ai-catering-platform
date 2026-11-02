@@ -45,6 +45,8 @@ class Dish(Timestamps, Base):
     # shortcut: fixed ILS until currency is decided (OPEN_DECISIONS #17).
     currency: Mapped[str] = mapped_column(String(3), default="ILS")
     min_quantity: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    # How many adult portions one unit serves (OPEN_DECISIONS #3); null = no recommendation.
+    serves_adults: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     is_available: Mapped[bool] = mapped_column(Boolean, default=True)
 
     category: Mapped[DishCategory] = relationship(lazy="joined")

@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 
-from app.services import customer_orders
+from app.core import clock
 from tests.conftest import AUTH, token
 
 pytestmark = pytest.mark.usefixtures("supabase")
@@ -15,7 +15,7 @@ WEEKDAY = (EVENT_DAY.weekday() + 1) % 7  # Sun=0 convention
 
 @pytest.fixture(autouse=True)
 def fixed_today(monkeypatch):
-    monkeypatch.setattr(customer_orders, "today", lambda: TODAY)
+    monkeypatch.setattr(clock, "today", lambda: TODAY)
 
 
 @pytest.fixture
@@ -173,3 +173,141 @@ def test_mass_assignment_rejected(client, setup):
     for extra in ({"status": "approved"}, {"version": 9}, {"customer_id": str(uuid.uuid4())}):
         res = client.post("/api/orders", json={**draft(slots["pickup"]), **extra}, headers=headers)
         assert res.status_code == 422, extra
+
+
+# --- slice 3: settings, lead time, veg + vegan, items, pricing, recommendations ---
+
+
+def test_settings_defaults_and_update(client):
+    assert client.get("/api/admin/settings").status_code == 401
+    assert client.get("/api/admin/settings", headers=AUTH).json() == {
+        "child_portion": "0.75",
+        "lead_days": 3,
+    }
+    res = client.put(
+        "/api/admin/settings", json={"child_portion": "0.5", "lead_days": 5}, headers=AUTH
+    )
+    assert res.json() == {"child_portion": "0.50", "lead_days": 5}
+    bad = {"child_portion": "1.5", "lead_days": 3}
+    assert client.put("/api/admin/settings", json=bad, headers=AUTH).status_code == 422
+
+
+def test_lead_time_and_earliest_date(client, setup):
+    headers, slots = setup
+    avail = client.get("/api/availability?from=2027-03-01&to=2027-03-31").json()
+    assert avail["earliest_date"] == "2027-03-04"  # TODAY + 3 days
+    too_soon = date(2027, 3, 3)
+    sunday_slot = client.post(
+        "/api/admin/time-slots",
+        json={"fulfillment_type": "pickup", "start_time": "10:00", "end_time": "12:00"},
+        headers=AUTH,
+    ).json()["id"]
+    body = draft(sunday_slot, event={"event_date": too_soon.isoformat()})
+    res = client.post("/api/orders", json=body, headers=headers)
+    assert res.status_code == 422 and res.json()["error"]["code"] == "date_unavailable"
+    client.put("/api/admin/settings", json={"child_portion": "0.75", "lead_days": 0}, headers=AUTH)
+    assert client.post("/api/orders", json=body, headers=headers).status_code == 201
+
+
+def test_vegetarian_and_vegan_are_separate_groups(client, setup):
+    headers, slots = setup
+    body = draft(slots["pickup"], event={"vegetarian_guests": 30, "vegan_guests": 21})  # 51 > 50
+    res = client.post("/api/orders", json=body, headers=headers)
+    assert res.status_code == 422 and res.json()["error"]["details"]["field"] == "vegan_guests"
+
+
+def menu(client):
+    """Two orderable dishes and one unavailable; returns their ids."""
+    cat = client.post("/api/admin/categories", json={"name": "עיקריות"}, headers=AUTH).json()["id"]
+
+    def add(name, unit, price, **extra):
+        body = {"category_id": cat, "name": name, "pricing_unit": unit, "unit_price": price}
+        return client.post("/api/admin/dishes", json={**body, **extra}, headers=AUTH).json()["id"]
+
+    tray = add("חומוס", "per_tray", "120", serves_adults="10", min_quantity="2")
+    kg = add("בריסקט", "per_weight", "219.99", serves_adults="4")
+    off = add("טופו", "per_guest", "48", is_available=False)
+    client.put(f"/api/admin/dishes/{tray}/dietary", json={"is_vegan": True}, headers=AUTH)
+    return tray, kg, off
+
+
+def test_items_pricing_and_versions(client, setup):
+    headers, slots = setup
+    tray, kg, off = menu(client)
+    order = client.post("/api/orders", json=draft(slots["pickup"]), headers=headers).json()
+    url = f"/api/orders/{order['id']}/items"
+
+    res = client.put(f"{url}/{tray}", json={"quantity": "3", "version": 1}, headers=headers)
+    assert res.status_code == 200, res.text
+    assert res.json()["version"] == 2 and res.json()["items"] == [
+        {"dish_id": tray, "quantity": "3.00"}
+    ]
+    res = client.put(f"{url}/{kg}", json={"quantity": "2.5", "version": 2}, headers=headers)
+    assert res.json()["version"] == 3
+
+    pricing = client.get(f"/api/orders/{order['id']}/pricing", headers=headers).json()
+    assert pricing["vat_included"] is True and pricing["currency"] == "ILS"
+    assert [(line["name"], line["line_total"]) for line in pricing["lines"]] == [
+        ("בריסקט", "549.98"),
+        ("חומוס", "360.00"),
+    ]
+    assert pricing["subtotal"] == "909.98" and pricing["total"] == "909.98"
+
+    stale = client.put(f"{url}/{tray}", json={"quantity": "4", "version": 2}, headers=headers)
+    assert stale.status_code == 409 and stale.json()["error"]["code"] == "order_version_conflict"
+    res = client.delete(f"{url}/{kg}?version=3", headers=headers)
+    assert res.json()["version"] == 4 and len(res.json()["items"]) == 1
+    assert client.delete(f"{url}/{kg}?version=4", headers=headers).status_code == 404
+
+
+@pytest.mark.parametrize(
+    ("dish", "quantity", "code"),
+    [
+        ("tray", "1.5", "validation_error"),  # whole trays only
+        ("tray", "1", "below_minimum"),  # minimum 2
+        ("kg", "2.3", "validation_error"),  # 0.5 kg steps
+        ("off", "10", "dish_unavailable"),
+    ],
+)
+def test_item_rules(client, setup, dish, quantity, code):
+    headers, slots = setup
+    ids = dict(zip(("tray", "kg", "off"), menu(client), strict=True))
+    order = client.post("/api/orders", json=draft(slots["pickup"]), headers=headers).json()
+    res = client.put(
+        f"/api/orders/{order['id']}/items/{ids[dish]}",
+        json={"quantity": quantity, "version": 1},
+        headers=headers,
+    )
+    assert res.status_code == 422 and res.json()["error"]["code"] == code, res.text
+
+
+def test_items_owner_only_and_draft_only(client, setup, make_session):
+    from app.models.orders import Order
+
+    headers, slots = setup
+    tray, _, _ = menu(client)
+    order = client.post("/api/orders", json=draft(slots["pickup"]), headers=headers).json()
+    url = f"/api/orders/{order['id']}"
+    stranger = token(uuid.uuid4(), email="eve@example.com")
+    client.put("/api/me", json={"full_name": "איב", "phone": "050-9999999"}, headers=stranger)
+    body = {"quantity": "2", "version": 1}
+    assert client.put(f"{url}/items/{tray}", json=body, headers=stranger).status_code == 404
+    assert client.get(f"{url}/pricing", headers=stranger).status_code == 404
+    assert client.get(f"{url}/recommendations", headers=stranger).status_code == 404
+    with make_session() as db:
+        db.get(Order, uuid.UUID(order["id"])).status = "pending_approval"
+        db.commit()
+    res = client.put(f"{url}/items/{tray}", json=body, headers=headers)
+    assert res.json()["error"]["code"] == "invalid_transition"
+
+
+def test_recommendations_endpoint(client, setup):
+    headers, slots = setup
+    tray, kg, _ = menu(client)
+    # 40 adults + 10 children, 5 vegetarian, 2 vegan -> 47.5 portions
+    order = client.post("/api/orders", json=draft(slots["pickup"]), headers=headers).json()
+    recs = client.get(f"/api/orders/{order['id']}/recommendations", headers=headers).json()
+    by_dish = {r["dish_id"]: (r["quantity"], r["eligible_guests"]) for r in recs}
+    # hummus is vegan (everyone, 47.5/10 -> 5); brisket's dietary is unknown -> 43 guests,
+    # 40.85/4 = 10.21 -> 10.5 kg; the unavailable dish never appears
+    assert by_dish == {tray: ("5.00", 50), kg: ("10.50", 43)}

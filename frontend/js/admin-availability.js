@@ -1,4 +1,4 @@
-// Owner screens A4 (blocked dates) and A5 (pickup/delivery time slots).
+// Owner screens A4 (blocked dates, order rules) and A5 (pickup/delivery time slots).
 // All server data is written with textContent / input values only (never innerHTML).
 import { $, call, confirmThen, el, mutate, startAdmin } from "/js/admin-common.js";
 
@@ -20,9 +20,13 @@ const typeOptions = () => Object.entries(TYPES);
 const dayOptions = () => [["", "כל יום"], ...DAYS.map((d, i) => [String(i), d])];
 
 async function load() {
-  const [blocked, slots] = await Promise.all([call("/api/admin/blocked-dates"), call("/api/admin/time-slots")]);
+  const [blocked, slots, settings] = await Promise.all([
+    call("/api/admin/blocked-dates"), call("/api/admin/time-slots"), call("/api/admin/settings"),
+  ]);
   renderBlocked(blocked);
   renderSlots(slots);
+  $("lead-days").value = settings.lead_days;
+  $("child-portion").value = Number(settings.child_portion);
 }
 
 function renderBlocked(blocked) {
@@ -104,6 +108,18 @@ export function initAvailability() {
     mutate(() => call("/api/admin/time-slots", {
       method: "POST", body: JSON.stringify(slotBody($("s-type"), $("s-day"), start, end, cap)),
     }), "החלון נוסף").then((ok) => { if (ok) { start.value = ""; end.value = ""; cap.value = ""; } });
+  });
+
+  $("settings-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const lead = $("lead-days");
+    const child = $("child-portion");
+    const bad = [lead, child].filter((i) => !i.checkValidity() || i.value === "");
+    for (const i of [lead, child]) i.setAttribute("aria-invalid", String(bad.includes(i)));
+    if (bad.length) { bad[0].reportValidity(); return; }
+    mutate(() => call("/api/admin/settings", {
+      method: "PUT", body: JSON.stringify({ lead_days: Number(lead.value), child_portion: Number(child.value).toFixed(2) }),
+    }), "הכללים נשמרו");
   });
 
   startAdmin({ content: "availability", load, errors: ERRORS });

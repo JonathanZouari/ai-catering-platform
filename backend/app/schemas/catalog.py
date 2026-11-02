@@ -48,6 +48,8 @@ class DishCreate(_In):
     unit_price: Money
     unit_label: Name | None = None
     min_quantity: Quantity | None = None
+    # Adults one unit serves (child = settings.child_portion); null = no recommendation.
+    serves_adults: Quantity | None = None
     is_available: bool = True
 
 
@@ -59,6 +61,8 @@ class DishUpdate(_In):
     unit_price: Money | None = None
     unit_label: Name | None = None
     min_quantity: Quantity | None = None
+    # Adults one unit serves (child = settings.child_portion); null = no recommendation.
+    serves_adults: Quantity | None = None
     is_available: bool | None = None
 
 
@@ -109,6 +113,7 @@ class DishOut(_Out):
     unit_label: str | None
     currency: str
     min_quantity: Decimal | None
+    serves_adults: Decimal | None
     is_available: bool
     dietary: DietaryOut
     allergens: list[DishAllergenOut]

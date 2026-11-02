@@ -55,9 +55,10 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | image_path | text null | Supabase Storage object path |
 | pricing_unit | pricing_unit not null | |
 | unit_price | numeric(10,2) not null CHECK ≥ 0 | |
-| unit_label | text null | e.g., tray size / weight unit text **[OPEN #18]** |
-| currency | char(3) not null default from config | **[OPEN #17]** |
-| min_quantity | numeric(10,2) null | **[OPEN #15]** |
+| unit_label | text null | e.g., tray size; weight prices are per kg (#18 decided) |
+| currency | char(3) not null default `ILS` | ILS only (#17 decided) |
+| min_quantity | numeric(10,2) null | Per-dish minimum; the only minimum (#15 decided) |
+| serves_adults | numeric(10,2) null > 0 | Adults one unit serves, for recommendations (#3); null = no advice |
 | is_available | bool not null default true | |
 | created_at, updated_at | timestamptz | |
 
@@ -77,7 +78,7 @@ A missing row = **unknown**.
 `id` uuid PK · `name` text not null · `fee` numeric(10,2) not null ≥ 0 · `definition` jsonb not null (shape depends on **[OPEN #19]**) · `is_active` bool
 
 ### time_slots
-`id` uuid PK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 null · `start_time` time · `end_time` time · `capacity` int null **[OPEN #5]** · `is_active` bool · CHECK `end_time > start_time`
+`id` uuid PK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 null · `start_time` time · `end_time` time · `capacity` int null (orders per slot per date, enforced at submission; null = unlimited) · `is_active` bool · CHECK `end_time > start_time`
 
 ### blocked_dates
 `id` uuid PK · `date` date unique · `reason` text null
@@ -145,4 +146,4 @@ Proposals may only execute while order is `draft`.
 
 ## Business rules storage
 
-Quantity rules (Decision 5) will live in a `quantity_rules` table once formulas are known **[OPEN #3]**. Shape intentionally not designed yet.
+Quantity rules (OPEN #3, decided) need no rules table: `dishes.serves_adults` per dish plus `business_settings` (single row: `child_portion` 0.75, `lead_days` 3). See ERD.md for the formula.

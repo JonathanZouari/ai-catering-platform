@@ -90,7 +90,7 @@ States: pending, applying, applied, rejected, expired ("Your order changed; ask 
 | A1 | Order management | Filter by status, list with event date/guests/total, detail with frozen snapshot, Approve / Reject + note |
 | A2 | Dishes & categories | Table/cards, create/edit form, image upload, dietary + allergen editor with explicit Unknown option |
 | A3 | Pricing configuration | Pricing unit, unit price, unit label per dish; bulk view |
-| A4 | Availability | Calendar of blocked dates; capacity **[OPEN #5]** |
+| A4 | Availability | Blocked dates; slot capacity; owner settings (child portion, lead days) |
 | A5 | Pickup & delivery | Time slots per weekday and type; delivery zones with fees |
 
 ## 5. Frontend structure
