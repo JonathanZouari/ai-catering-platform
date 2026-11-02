@@ -2,6 +2,7 @@
 // parsed as HTML. Totals shown are always the server's OrderOut values, never computed here.
 import { api } from "/js/api.js";
 import { h, svg } from "/js/dom.js";
+import { beep, chirp, muteToggle } from "/js/radio.js";
 import { S, DIR, LANGS } from "./i18n.js";
 
 const STORE = "catering_order";
@@ -323,6 +324,7 @@ async function submitEvent(f) {
   await loadRecs();
   await loadCatalog();
   st.step = "menu";
+  beep();
   render();
 }
 
@@ -457,7 +459,7 @@ function summaryCard(withActions) {
     h("details", { class: "sum", open }, h("summary", {}, h("h2", {}, t().summary), h("strong", { class: "sum-total" }, money(o.total, o.currency))), body),
     o.status === "draft" && minGauge(o), warnings(o),
     withActions && h("div", { class: "actions" },
-      h("button", { type: "button", class: "primary", id: "to-review", disabled: !o.items.length || !meetsMin(o), onclick: () => { st.step = "review"; render(); } }, t().review),
+      h("button", { type: "button", class: "primary", id: "to-review", disabled: !o.items.length || !meetsMin(o), onclick: () => { beep(); st.step = "review"; render(); } }, t().review),
       h("button", { type: "button", class: "link", onclick: () => { st.form = null; st.step = "event"; render(); } }, t().edit)));
 }
 
@@ -479,7 +481,7 @@ function viewReview() {
     h("p", {}, t().submitNote),
     h("div", { class: "actions" },
       h("button", { type: "button", class: "primary", id: "submit", disabled: st.busy || !st.order.items.length || !meetsMin(st.order),
-        onclick: () => guard(async () => { st.order = await orderApi("/submit", { method: "POST", body: JSON.stringify({ version: st.order.version }) }); render(); }) },
+        onclick: () => guard(async () => { st.order = await orderApi("/submit", { method: "POST", body: JSON.stringify({ version: st.order.version }) }); beep(); render(); }) },
       st.busy ? t().submitting : t().submit),
       h("button", { type: "button", class: "link", onclick: () => { st.step = "menu"; render(); } }, t().back)),
     linkBox());
@@ -541,6 +543,7 @@ function submitRating() {
     rt.err = "";
     try {
       st.order = await orderApi("/rating", { method: "POST", body: JSON.stringify({ stars: rt.stars, comment: rt.comment.trim() || null }) });
+      beep();
     } catch (e) {
       if (e.code === "already_rated") await reloadOrder(); // someone rated already: show the saved rating
       else if (e.status === 404 || e.code === "invalid_transition") throw e;
@@ -737,6 +740,7 @@ async function decide(pid, action) {
       if (action === "approve") {
         st.order = await orderApi(`/proposals/${pid}/approve`, { method: "POST" });
         e.state = "applied";
+        beep();
         await loadRecs();
       } else {
         await orderApi(`/proposals/${pid}/reject`, { method: "POST" });
@@ -767,7 +771,8 @@ function render() {
   document.documentElement.dir = DIR[st.lang];
   document.title = "CaterKing";
   $("langs").replaceChildren(h("div", { class: "pills", role: "group", "aria-label": t().lang },
-    Object.entries(LANGS).map(([k, label]) => h("button", { type: "button", lang: k, "aria-pressed": String(k === st.lang), onclick: () => setLang(k) }, label))));
+    Object.entries(LANGS).map(([k, label]) => h("button", { type: "button", lang: k, "aria-pressed": String(k === st.lang), onclick: () => setLang(k) }, label))),
+    muteToggle({ on: "RADIO ON", off: "MUTE RADIO", aria: t().radio }));
   const step = !st.order ? (st.started ? "event" : "hero") : st.order.status !== "draft" ? "status" : st.step;
   const view = { hero: viewHero, event: viewEvent, menu: viewMenu, review: viewReview, status: viewStatus }[step]();
   if (step !== "menu") as.open = false;
@@ -815,8 +820,10 @@ function syncPoll(on) {
       if (stale(o)) return;
       const changed = o.status !== st.order?.status || o.version !== st.order?.version || (s2 && s2.safety_car !== st.settings.safety_car);
       if (s2) Object.assign(st.settings, s2);
+      const stage = o.status !== st.order?.status;
       st.order = o;
       if (changed) render();
+      if (stage) chirp();
     } catch (e) { if (e.status === 404 && !stale()) resetOrder(t().notFound); } finally { polling = false; }
   }, 60000);
 }

@@ -1,5 +1,6 @@
 // All DOM is built with createElement/textContent; server data is never parsed as HTML.
 import { api, auth } from "/js/api.js";
+import { beep, muteToggle } from "/js/radio.js";
 import { h } from "/js/dom.js";
 
 const app = document.getElementById("app");
@@ -38,7 +39,7 @@ function safetySwitch() {
     h("span", { class: "sw-text label" }, `SAFETY CAR (${state.safety ? "ON" : "OFF"})`));
   sw.addEventListener("click", () => {
     sw.disabled = true;
-    run(async () => setSafety((await api("/api/admin/safety-car", { method: "PUT", body: JSON.stringify({ on: !state.safety }) })).safety_car))
+    run(async () => { setSafety((await api("/api/admin/safety-car", { method: "PUT", body: JSON.stringify({ on: !state.safety }) })).safety_car); beep(); })
       .finally(() => { sw.disabled = false; });
   });
   switches.push(sw);
@@ -333,6 +334,7 @@ function advanceButton(o, after) {
       try {
         const r = await api(`/api/admin/orders/${o.id}/advance`, { method: "POST", body: JSON.stringify({ version: o.version }) });
         say(`ההזמנה התקדמה ל-${STAGES[r.status]?.en ?? r.status}.`);
+        beep();
       } catch (e) {
         if (e.status !== 409) throw e;
         say(e.code === "order_version_conflict" ? "ההזמנה עודכנה במקום אחר. הרשימה רועננה, נסו שוב." : "אי אפשר להתקדם מהשלב הזה. הרשימה רועננה.", "error");
@@ -423,6 +425,7 @@ async function orderDetail(id, refresh) {
       await api(`/api/admin/orders/${id}/${kind}`, { method: "POST", body: JSON.stringify({ note: note.value.trim() || null }) });
       await refresh(id);
       say(kind === "approve" ? "ההזמנה אושרה." : "ההזמנה נדחתה.");
+      if (kind === "approve") beep();
     } catch (e) {
       if (e.code !== "invalid_transition") throw e;
       await refresh(id);
@@ -602,7 +605,7 @@ async function showDashboard() {
   };
   topTabs.replaceChildren(...Object.entries(GROUPS).map(([g, { label, keys }]) =>
     h("button", { type: "button", class: "tab", "data-key": g, "aria-current": "false", onclick: () => run(() => openSection(keys[0] ?? g)) }, label)));
-  tools.replaceChildren(safetySwitch(), h("button", { type: "button", class: "ghost", onclick: () => logout() }, "יציאה"));
+  tools.replaceChildren(safetySwitch(), muteToggle({ on: "RADIO ON", off: "MUTE RADIO", aria: "Mute Radio" }), h("button", { type: "button", class: "ghost", onclick: () => logout() }, "יציאה"));
   await openSection("wall");
 }
 
