@@ -13,7 +13,7 @@ Both sites run on Render's free plan, which sleeps when idle: the first load aft
 
 ## Next: F1 "Pit Wall" redesign (concept)
 
-![CaterKing F1 redesign walkthrough](docs/design/f1/caterking-f1-sim.gif)
+![CaterKing F1 redesign walkthrough](docs/design/f1/caterking-f1-pitwall.gif)
 
 A Formula 1 motorsport look for both sides of the app, designed in Stitch and **not live yet**. Orders move through race stages — Grid Position → Box Box (kitchen) → Flying Lap (delivery) → Chequered Flag — shown as an S1/S2/S3 Sector Times bar. The owner runs the kitchen from the **Pit Wall** timing tower, with a manual Safety Car switch for busy periods; customers rate the order (Driver of the Day) at the flag.
 
@@ -21,7 +21,7 @@ A Formula 1 motorsport look for both sides of the app, designed in Stitch and **
 |---|---|
 | <img src="docs/design/f1/customer-tracker.png" width="260" alt="Customer order tracker"> | <img src="docs/design/f1/pit-wall.png" width="520" alt="Pit Wall dashboard"> |
 
-Full-quality video: [docs/design/f1/caterking-f1-sim.mp4](docs/design/f1/caterking-f1-sim.mp4) · rebuild it with `docs/design/f1/make_video.py`.
+Full-quality 1080p video: [docs/design/f1/caterking-f1-pitwall.mp4](docs/design/f1/caterking-f1-pitwall.mp4). The walkthrough is an HTML composition in `docs/design/f1/video/` rendered with [HyperFrames](https://hyperframes.heygen.com) (`npx hyperframes render`).
 
 ## Features
 
