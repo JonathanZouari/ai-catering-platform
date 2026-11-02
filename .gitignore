@@ -16,6 +16,9 @@ build/
 .env.*
 !.env.example
 
+# Local SQLite database
+*.db
+
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/
