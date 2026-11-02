@@ -3,7 +3,7 @@ import enum
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import CHAR, ForeignKey, Numeric, SmallInteger, Text, func
+from sqlalchemy import CHAR, ForeignKey, Numeric, SmallInteger, Text, false, func
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -98,6 +98,8 @@ class Order(Base):
     decision_note: Mapped[str | None] = mapped_column(Text)
     cancelled_at: Mapped[dt.datetime | None]
     cancel_note: Mapped[str | None] = mapped_column(Text)
+    sms_opt_in: Mapped[bool] = mapped_column(default=False, server_default=false())
+    lang: Mapped[str] = mapped_column(Text, default="he", server_default="he")
     kitchen_at: Mapped[dt.datetime | None]
     dispatched_at: Mapped[dt.datetime | None]
     delivered_at: Mapped[dt.datetime | None]
@@ -129,3 +131,14 @@ class QuantityRule(Base):
     per_adult: Mapped[Decimal] = mapped_column(Numeric(10, 3))
     per_child: Mapped[Decimal] = mapped_column(Numeric(10, 3))
     round_step: Mapped[Decimal] = mapped_column(Numeric(10, 3), default=Decimal(1))
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("orders.id", ondelete="CASCADE"), primary_key=True
+    )
+    kind: Mapped[str] = mapped_column(Text, primary_key=True)
+    channel: Mapped[str] = mapped_column(Text, primary_key=True)
+    status: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[dt.datetime] = mapped_column(server_default=func.now())

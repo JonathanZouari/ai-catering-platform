@@ -549,6 +549,7 @@ async function showRules(tabs) {
 // ---- settings
 async function showSettings(tabs) {
   const st = await api("/api/admin/settings");
+  const connected = (await api("/api/admin/notify-status").catch(() => ({ enabled: false }))).enabled;
   const f = (name, label, unit, attrs) => [name, h("label", {}, `${label} (${unit})`, h("input", { name, required: true, value: st[name] ?? "", ...attrs }))];
   const num = (name, label, unit, max) => f(name, label, unit, { type: "number", min: "0", step: name === "lead_time_days" || name === "edit_cutoff_hours" ? "1" : "0.01", ...(max ? { max } : {}) });
   const fields = Object.fromEntries([num("lead_time_days", "Notice needed", "days", "365"), num("edit_cutoff_hours", "Edit cutoff (hours before event)", "hours", "168"), num("min_food_total", "Food minimum", "₪"),
@@ -572,7 +573,7 @@ async function showSettings(tabs) {
     h("p", { class: "hint" }, "הפעלת Safety Car מציגה ללקוחות באנר ענבר ומאטה את קצב ההזמנות."), safetySwitch(),
     h("div", { class: "label" }, "LIVE CUSTOMER TICKER PREVIEW"), h("p", { class: "ticker", dir: "ltr" }, TICKER));
   const smsBox = h("section", { class: "panel" }, h("h2", {}, "SMS / WHATSAPP"),
-    h("p", { class: "notice", role: "note" }, "ספק SMS/WhatsApp: לא מחובר — יחובר בשלב הבא"),
+    h("p", { class: "notice", role: "note" }, `ספק SMS/WhatsApp: ${connected ? "מחובר" : "לא מחובר"}`),
     h("div", { class: "grid" },
       sms("עברית (Flying Lap)", "ההזמנה שלך יצאה למסלול! Flying Lap - הצוות בדרך אליך", "rtl"),
       sms("العربية (Flying Lap)", "طلبك انطلق! Flying Lap - الفريق في الطريق إليك", "rtl")),

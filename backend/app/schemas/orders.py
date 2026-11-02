@@ -80,6 +80,7 @@ class ItemIn(BaseModel):
 
 class SubmitIn(BaseModel):
     version: int
+    sms_opt_in: bool = False
 
 
 class DecisionIn(BaseModel):

@@ -340,7 +340,7 @@ def _recommendations(db: Session, order: Order, extra=()) -> list[Recommendation
     return [RecommendationOut(**vars(r), preview=r.dish_id in previewed) for r in found]
 
 
-def submit(db: Session, order_id, token, version, lang) -> OrderOut:
+def submit(db: Session, order_id, token, version, lang, sms_opt_in: bool = False) -> OrderOut:
     order = _draft(db, order_id, token, version)
     if not order.items:
         raise AppError(422, "Order has no items")
@@ -371,6 +371,7 @@ def submit(db: Session, order_id, token, version, lang) -> OrderOut:
         priced.total,
     )  # fmt: skip
     order.currency = priced.currency
+    order.sms_opt_in, order.lang = sms_opt_in, lang
     order.status = OrderStatus.pending_approval
     order.submitted_at = dt.datetime.now(dt.UTC)
     order.first_submitted_at = order.first_submitted_at or order.submitted_at

@@ -477,11 +477,13 @@ function eventRecap() {
   return h("p", { class: "hint" }, `${t().event_types[o.event.event_type] ?? o.event.event_type} · ${o.event.event_date} · ${t().guests}: ${o.event.adults + o.event.children}`);
 }
 function viewReview() {
+  // Unchecked by default; only offered when the customer gave a phone number.
+  const sms = st.order.customer.phone ? h("label", { class: "check" }, h("input", { type: "checkbox", id: "sms-opt" }), " ", t().smsOptIn) : null;
   return h("div", { class: "ep-form" }, stageHead("Formation Lap", t().sub3), eventRecap(), summaryCard(false),
-    h("p", {}, t().submitNote),
+    h("p", {}, t().submitNote), sms,
     h("div", { class: "actions" },
       h("button", { type: "button", class: "primary", id: "submit", disabled: st.busy || !st.order.items.length || !meetsMin(st.order),
-        onclick: () => guard(async () => { st.order = await orderApi("/submit", { method: "POST", body: JSON.stringify({ version: st.order.version }) }); beep(); render(); }) },
+        onclick: () => guard(async () => { st.order = await orderApi("/submit", { method: "POST", body: JSON.stringify({ version: st.order.version, sms_opt_in: !!sms?.querySelector("input").checked }) }); beep(); render(); }) },
       st.busy ? t().submitting : t().submit),
       h("button", { type: "button", class: "link", onclick: () => { st.step = "menu"; render(); } }, t().back)),
     linkBox());
