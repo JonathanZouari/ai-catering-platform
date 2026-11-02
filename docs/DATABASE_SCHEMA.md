@@ -1,148 +1,147 @@
-# Preliminary Database Schema (PostgreSQL / Supabase)
+# Database Schema (SQLite)
 
-Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
+Status: **Draft v0.2, proposal.** Replaces the v0.1 Postgres draft. Source of truth for the DDL: [`database/schema.sql`](../database/schema.sql). Demo data: [`database/seed.sql`](../database/seed.sql), generated from `frontend/js/customer/mock-backend.js` (placeholder business data).
 
-Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
+Derived from the chosen UI (PR #24): `mock-backend.js`, `store.js`, `views/*`, plus `API_CONTRACTS.md`.
 
-## Enums
+## Decision: SQLite, and how to move to Postgres later
 
-| Enum | Values | Source |
-|---|---|---|
-| `pricing_unit` | `per_guest`, `per_tray`, `per_weight`, `per_item` | Decision 6 |
-| `kashrut_class` | `meat`, `dairy`, `pareve` | Decision 9 |
-| `fulfillment_type` | `pickup`, `delivery` | Decision 8 |
-| `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
-| `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
-| `allergen_status` | `contains`, `free`, `unknown` | Decision 9 — unknown ≠ free |
+The database is **SQLite** (Jonathan's instruction). [ADR 0002](ADR/0002-supabase-postgres-sqlalchemy.md) still says Supabase Postgres via SQLAlchemy; it has not been updated and should be superseded by a new ADR before the first migration lands.
+
+The schema avoids SQLite-only tricks so the move stays mechanical:
+
+| SQLite (now) | Postgres (later) |
+|---|---|
+| `INTEGER` agorot | `integer` (keep agorot) or `numeric(10,2)` (divide by 100) |
+| `TEXT` ids that hold a uuid | `uuid` |
+| `TEXT` dates / timestamps (ISO-8601 UTC) | `date` / `timestamptz` |
+| `INTEGER` 0/1 booleans | `boolean` |
+| `CHECK (x IN (...))` enums | `CHECK` or Postgres enum types |
+| `TEXT` with `json_valid` | `jsonb` |
+| `INTEGER PRIMARY KEY` | `bigint generated always as identity` |
+| `strftime(...)` defaults | `now()` |
+| `STRICT`, `WITHOUT ROWID` | drop |
+
+Rules that keep it portable: all access goes through SQLAlchemy 2.x (no raw SQLite functions in services), money stays integer, and each schema change is a numbered SQL file in `database/migrations/`. Copy data with one script per table (`INSERT ... SELECT`), then add RLS if Supabase Auth/Storage is used. Two behaviours differ: SQLite needs `PRAGMA foreign_keys = ON` on **every** connection, and it has no row locks (`SELECT ... FOR UPDATE`). Proposal approval is safe anyway because it uses `UPDATE orders SET version = version + 1 WHERE id = ? AND version = ?` and checks the affected row count; that statement works unchanged on Postgres.
+
+## Conventions
+
+- **Money:** integer agorot. `fmtMoney` in the frontend divides by 100. Currency is ILS (OPEN #17).
+- **Dates:** `YYYY-MM-DD`; times `HH:MM`; timestamps ISO-8601 UTC.
+- **Unknown is not "no":** `NULL` in a dietary flag or allergen data means unknown and is never shown as safe.
+- **Ids:** `TEXT` for entities exposed in URLs or the API (orders, proposals, dishes); `INTEGER` for configuration tables.
+- **No triggers.** The service sets `updated_at` and bumps `orders.version`.
 
 ## Tables
 
-### customers
-| Column | Type | Notes |
+### Configuration
+
+| Table | Columns | Notes |
 |---|---|---|
-| id | uuid PK | |
-| auth_user_id | uuid null unique | FK `auth.users` if accounts are chosen **[OPEN #1]** |
-| full_name | text not null | |
-| email | text null | |
-| phone | text null | |
-| created_at, updated_at | timestamptz | |
+| `business_settings` | `id` (always 1), `lead_days`, `updated_at` | Minimum days from today to the event (mock: 2, OPEN #5) |
+| `event_types` | `id`, `name` unique, `sort_order`, `is_active` | Required on the order form; owner-editable |
+| `delivery_zones` | `id`, `city` unique, `fee`, `is_active` | Fee per city (OPEN #19 may change the definition) |
+| `time_slots` | `id`, `fulfillment` (pickup/delivery), `start_time`, `end_time`, `is_active` | The customer picks a window, not an exact time. No capacity column until OPEN #5 |
+| `blocked_dates` | `date` PK, `reason` | Closed dates |
 
-### events
-| Column | Type | Notes |
+### Owner login
+
+| Table | Columns | Notes |
 |---|---|---|
-| id | uuid PK | |
-| customer_id | uuid FK → customers, not null | |
-| event_type | text not null | Private event label; list configurable **[RECOMMENDATION]** |
-| event_date | date not null | |
-| adults | int not null ≥ 0 | |
-| children | int not null ≥ 0 | |
-| vegetarian_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| vegan_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| restricted_guests | int not null ≥ 0 | |
-| dietary_notes | text null | Free text, shown to owner; never parsed into safety claims |
-| CHECK | `adults + children > 0` | |
+| `admin_users` | `id`, `email` unique, `password_hash`, `display_name`, `is_active`, `created_at`, `last_login_at` | Hash only. No seeded user: create the owner with a script |
+| `admin_sessions` | `token_hash` PK, `admin_user_id`, `created_at`, `expires_at` | Hash of the cookie value; the raw token is never stored |
 
-### dish_categories
-`id` uuid PK · `name` text not null unique · `sort_order` int not null default 0 · `is_active` bool default true
+### Catalog
 
-### dishes
-| Column | Type | Notes |
+| Table | Columns | Notes |
 |---|---|---|
-| id | uuid PK | |
-| category_id | uuid FK → dish_categories not null | index |
-| name | text not null | |
-| description | text null | |
-| image_path | text null | Supabase Storage object path |
-| pricing_unit | pricing_unit not null | |
-| unit_price | numeric(10,2) not null CHECK ≥ 0 | |
-| unit_label | text null | e.g., tray size / weight unit text **[OPEN #18]** |
-| currency | char(3) not null default from config | **[OPEN #17]** |
-| min_quantity | numeric(10,2) null | **[OPEN #15]** |
-| is_available | bool not null default true | |
-| created_at, updated_at | timestamptz | |
+| `dish_categories` | `id`, `slug` unique, `name` unique, `sort_order`, `is_active` | `slug` is the key the frontend uses (`salads`, `mains`...) |
+| `dishes` | `id`, `category_id`, `name`, `description`, `image_path`, `pricing_unit`, `unit_price`, `qty_per_guest`, `step`, `kashrut`, `is_vegetarian`, `is_vegan`, `allergens_verified_at`, `is_available`, `sort_order`, `created_at`, `updated_at` | See below |
+| `allergens` | `id`, `name` unique | |
+| `dish_allergens` | `dish_id`, `allergen_id` (PK both) | Allergens the dish **contains** |
 
-### dish_dietary (1:1 with dishes)
-`dish_id` uuid PK/FK → dishes · `kashrut_class` kashrut_class **null** (null = not provided) · `is_vegetarian` bool null · `is_vegan` bool null · `verified_at` timestamptz null
+`dishes` details:
 
-Null booleans mean **unknown** and must be presented as unknown, never as "no"/"yes".
+- `pricing_unit`: `tray` · `kg` · `item` · `guest`. `guest` is the new unit (drinks): quantity equals the number of guests.
+- `qty_per_guest` is the mock's `perGuest`; `step` is the quantity increment. Both are nullable and **placeholders** until the quantity rules are decided (OPEN #3). When `step` is NULL the app uses its default (0.5 for kg, else 1).
+- `kashrut`, `is_vegetarian`, `is_vegan` are nullable (NULL = not provided). A vegan dish must be vegetarian (CHECK).
+- **Allergens** use three states, matching the mock (`[...]`, `[]`, `null`): `allergens_verified_at IS NULL` means unknown; set with rows in `dish_allergens` means contains those; set with no rows means verified free. This replaces the v0.1 `allergen_status` enum and `free` rows.
 
-### allergens
-`id` smallint PK · `name` text unique (list maintained by owner)
+### Orders
 
-### dish_allergens
-`dish_id` FK · `allergen_id` FK · `status` allergen_status not null · PK(`dish_id`,`allergen_id`)
-A missing row = **unknown**.
+| Table | Columns |
+|---|---|
+| `orders` | see below |
+| `order_items` | `id`, `order_id`, `dish_id`, `quantity`, `snapshot_name`, `snapshot_pricing_unit`, `snapshot_unit_price`, `snapshot_line_total`; UNIQUE(`order_id`, `dish_id`) |
+| `order_status_events` | `id`, `order_id`, `from_status` (NULL = creation), `to_status`, `actor` (customer/owner/system), `admin_user_id`, `note`, `created_at` |
 
-### delivery_zones
-`id` uuid PK · `name` text not null · `fee` numeric(10,2) not null ≥ 0 · `definition` jsonb not null (shape depends on **[OPEN #19]**) · `is_active` bool
+`orders`:
 
-### time_slots
-`id` uuid PK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 null · `start_time` time · `end_time` time · `capacity` int null **[OPEN #5]** · `is_active` bool · CHECK `end_time > start_time`
-
-### blocked_dates
-`id` uuid PK · `date` date unique · `reason` text null
-
-### orders
-| Column | Type | Notes |
+| Group | Columns | Notes |
 |---|---|---|
-| id | uuid PK | |
-| customer_id | uuid FK not null | index |
-| event_id | uuid FK not null unique | |
-| status | order_status not null default `draft` | index |
-| version | int not null default 1 | Incremented on every mutation; optimistic locking for proposals |
-| fulfillment_type | fulfillment_type not null | |
-| requested_at | timestamptz not null | Requested pickup/delivery time |
-| delivery_address | text null | CHECK: required when `delivery` |
-| delivery_zone_id | uuid FK null | |
-| subtotal, delivery_fee, total | numeric(10,2) null | Computed by backend; frozen at submission |
-| submitted_at, decided_at | timestamptz null | |
-| decision_note | text null | Owner's note on approve/reject |
-| created_at, updated_at | timestamptz | |
+| Identity | `id`, `access_token_hash`, `status`, `version` | `status`: draft · pending_approval · approved · rejected. `version` is +1 on every mutation |
+| Contact | `contact_name`, `contact_phone` | No accounts (OPEN #1), so contact lives on the order. NULL only while `draft` |
+| Event | `event_type_id`, `event_date`, `adults`, `children`, `vegetarian_guests`, `vegan_guests`, `restricted_guests`, `dietary_notes` | `adults >= 1`. Event type is required |
+| Fulfillment | `fulfillment`, `slot_id`, `slot_start`, `slot_end`, `delivery_zone_id`, `city`, `address` | Delivery needs zone + city + address; pickup must have none of them. Slot times and city are copied at creation, so editing a slot or zone does not rewrite old orders |
+| Prices | `subtotal`, `delivery_fee`, `total` | NULL while draft (priced live from `dishes`); frozen on submit; `total = subtotal + delivery_fee` |
+| Decision | `submitted_at`, `decided_at`, `decided_by`, `owner_note` | `owner_note` is shown on the status page |
+| Audit | `created_at`, `updated_at` | |
 
-### order_items
-| Column | Type | Notes |
+How the pieces behave:
+
+- **Access token.** A random token (at least 32 bytes) is created with the draft and appears in the customer's status link (`?token=...`; the exact route is up to the backend). Only its sha256 is stored, so a database leak does not expose customers' names, phones and addresses. The raw token is returned once, on creation.
+- **Price snapshot.** While `draft`, `order_items` has no snapshot and prices come live from `dishes`. On submit, the four `snapshot_*` columns are filled in the same transaction as `orders.subtotal/delivery_fee/total`; from then on they are the only source of truth. A CHECK forces the four columns to be all NULL or all set.
+- **Constraints worth knowing.** A non-draft order must have contact, `submitted_at` and prices; `decided_at` is set exactly when the status is approved or rejected.
+- **Not enforced in SQL (service rules):** the slot matches the fulfillment type; the date respects `lead_days` and `blocked_dates`; the dietary counts fit in the guest total (OPEN #4); legal status transitions.
+
+### AI assistant
+
+| Table | Columns | Notes |
 |---|---|---|
-| id | uuid PK | |
-| order_id | uuid FK not null | index |
-| dish_id | uuid FK not null | |
-| quantity | numeric(10,2) not null CHECK > 0 | |
-| UNIQUE | (`order_id`, `dish_id`) | |
-| snapshot_name | text null | **Price snapshot** — filled on submission |
-| snapshot_pricing_unit | pricing_unit null | |
-| snapshot_unit_price | numeric(10,2) null | |
-| snapshot_line_total | numeric(10,2) null | |
+| `ai_messages` | `id`, `order_id`, `role` (user/assistant/tool), `content`, `created_at` | One conversation per order. May contain personal data |
+| `ai_proposals` | `id`, `order_id`, `message_id`, `base_order_version`, `changes` (JSON), `price_before`, `price_after`, `status`, `created_at`, `decided_at`, `executed_at` | `status`: pending · approved · rejected · expired · failed |
 
-While `draft`, prices are read live from `dishes`; on `pending_approval` the snapshot columns become authoritative.
+`changes` is a JSON list of `{op, dish_id, quantity}` with `op` in `add_item`, `set_quantity`, `remove_item`. A proposal executes only if `status = 'pending'` and `base_order_version = orders.version`; otherwise it becomes `expired`. `executed_at` is set once, so approving twice cannot apply twice. `price_before` / `price_after` are computed by the backend, never by the model (ADR 0003). `ai_conversations` from v0.1 is gone: with one conversation per order it only added a join.
 
-### ai_conversations
-`id` uuid PK · `order_id` FK not null · `created_at` · index on `order_id`
+## Status transitions
 
-### ai_messages
-`id` uuid PK · `conversation_id` FK · `role` text CHECK in (`user`,`assistant`,`tool`) · `content` jsonb · `created_at`
+| From | To | Actor | Event row |
+|---|---|---|---|
+| (none) | draft | customer | `from_status = NULL` |
+| draft | pending_approval | customer | |
+| pending_approval | approved | owner | `admin_user_id` set |
+| pending_approval | rejected | owner | `admin_user_id` set |
 
-### ai_change_proposals
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| order_id | uuid FK not null | index |
-| conversation_id | uuid FK null | |
-| base_order_version | int not null | Must equal `orders.version` at execution |
-| changes | jsonb not null | Validated list of typed operations |
-| price_before, price_after | numeric(10,2) not null | Computed by backend at proposal time |
-| status | proposal_status not null default `pending` | |
-| created_at, decided_at, executed_at | timestamptz | `executed_at` set once → idempotency |
-| PARTIAL UNIQUE | one `pending` per order? **[RECOMMENDATION]** — simplifies UI | |
+Proposals can only execute while the order is `draft`.
 
-## Status transitions **[RECOMMENDATION]**
+## Revenue
 
-| From | To | Actor |
-|---|---|---|
-| draft | pending_approval | Customer (owner of order) |
-| pending_approval | approved | Owner |
-| pending_approval | rejected | Owner |
+Out of scope as a table on purpose. Revenue is a query over approved orders, so there is nothing to keep in sync:
 
-Proposals may only execute while order is `draft`.
+```sql
+-- Agorot per month, by event date
+SELECT substr(event_date, 1, 7) AS month, count(*) AS orders, sum(total) AS revenue
+FROM orders WHERE status = 'approved' GROUP BY month ORDER BY month;
+```
 
-## Business rules storage
+Which date to group by is an open question (below).
 
-Quantity rules (Decision 5) will live in a `quantity_rules` table once formulas are known **[OPEN #3]**. Shape intentionally not designed yet.
+## Out of scope on purpose
+
+Employees, ingredients, inventory. Also not modelled yet: payments (OPEN #2), customer accounts (OPEN #1), notifications (OPEN #13), cancellation and revisions (OPEN #7), quantity rules (OPEN #3, only the placeholder `qty_per_guest` and `step` exist), and slot or daily capacity (OPEN #5).
+
+## Open questions
+
+1. **Revenue date:** count revenue by `event_date` or by approval date (`decided_at`)? This changes which month a December event approved in November lands in.
+2. **AI message retention:** how long do we keep `ai_messages`? Customers can type names, phones, addresses and health details. Options: delete after N days from the event, or delete with the order.
+3. **Dietary counts (OPEN #4):** are vegetarians, vegans and restricted guests counted **inside** adults + children, or in addition? The mock rejects the order when the three counts add up to more than the total. The schema does not enforce it until this is decided.
+
+## Where this differs from `API_CONTRACTS.md`
+
+The contract predates PR #24 and should be reconciled before Phase 2:
+
+- Orders need `contact_name`, `contact_phone`, `slot_id` (instead of `requested_at`), `city`, `restricted_guests` and a required `event_type_id`.
+- `POST /api/orders` must return the status-link token once; customer reads then use `?token=` instead of a customer id.
+- Money is integer agorot, not decimal strings (`"1200.00"`).
+- Add `GET /api/availability` fields for `lead_days`, delivery zones with fees, and `unit: guest`.
+- Add `POST /api/admin/login` and `POST /api/admin/logout`, and the admin CRUD for `event_types`.
