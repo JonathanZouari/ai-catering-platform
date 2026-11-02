@@ -2,8 +2,8 @@ import { STRINGS, LANGS } from "/js/home-i18n.js";
 
 function pick() {
   let l = new URLSearchParams(location.search).get("lang");
-  if (!(l in LANGS)) { try { l = localStorage.getItem("ck-lang"); } catch {} }
-  return l in LANGS ? l : "he";
+  if (!Object.hasOwn(LANGS, l ?? "")) { try { l = localStorage.getItem("ck-lang"); } catch {} }
+  return Object.hasOwn(LANGS, l ?? "") ? l : "he";
 }
 
 function apply(lang, remember) {
