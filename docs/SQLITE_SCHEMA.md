@@ -5,12 +5,23 @@ A SQLite port of the draft schema in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md), f
 - `database/sqlite/schema.sql` — creates all 15 tables.
 - `database/sqlite/seed.sql` — **sample data only** (invented dishes, prices and zones).
 
+- `database/sqlite/build_db.py` — builds a database from the two files above.
+
 Build a database:
+
+```sh
+python database/sqlite/build_db.py              # creates database/sqlite/catering.db
+python database/sqlite/build_db.py --no-seed    # schema only
+```
+
+Or with the `sqlite3` CLI:
 
 ```sh
 sqlite3 catering.db < database/sqlite/schema.sql
 sqlite3 catering.db < database/sqlite/seed.sql
 ```
+
+Tests: `backend/tests/test_sqlite_schema.py` (run `uv run pytest` in `backend/`).
 
 ![Table relationships](pr-assets/sqlite-schema-relations.gif)
 
