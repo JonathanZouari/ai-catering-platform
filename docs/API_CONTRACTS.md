@@ -25,6 +25,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | GET | `/api/catalog/categories` | Active categories, ordered |
 | GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`) |
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
+| GET | `/api/delivery/cities` | `[{city, fee}]` for active zones |
 | GET | `/api/availability?from=&to=` | `{earliest_date, blocked_dates, time_slots, full_slots: [{slot_id, date}]}`. Only which slot is full, never booking counts |
 
 ## Customer account (Supabase Auth access token as `Authorization: Bearer`, ADR 0005)
@@ -60,7 +61,8 @@ Implemented so far (Phase 3, slice 2): `POST`, `GET` and `PATCH /api/orders/{id}
             "vegetarian_guests": 6, "vegan_guests": 2, "restricted_guests": 0, "dietary_notes": null},
   "fulfillment_type": "pickup",
   "slot_id": "uuid",
-  "delivery_address": null
+  "delivery_address": null,
+  "delivery_city": null
 }
 ```
 
@@ -68,7 +70,7 @@ Implemented so far (Phase 3, slice 2): `POST`, `GET` and `PATCH /api/orders/{id}
 - The date is not in the past (Israel time) and not blocked → `422 date_unavailable`.
 - The slot is active, of the same type, and valid for that weekday → `422 slot_unavailable`. `requested_at` is the event date at the slot's start time, Israel time, returned in UTC.
 - Dietary groups are at most adults + children → `422 validation_error` with `details.field`.
-- Delivery needs an address.
+- Delivery needs a street address, and its `delivery_city` must be in an active zone (`422 city_not_served`). The fee is live while draft and frozen at submit.
 - A customer without a profile → `409 profile_required`.
 - Someone else's order → `404`.
 - A non-draft → `409 invalid_transition`.
@@ -109,7 +111,7 @@ Proposal shape:
 | GET/POST | `/api/admin/dishes` · PATCH/DELETE `/api/admin/dishes/{id}` |
 | POST | `/api/admin/dishes/{id}/image` (multipart → Supabase Storage) |
 | PUT | `/api/admin/dishes/{id}/dietary` |
-| GET/POST/PATCH/DELETE | `/api/admin/delivery-zones` |
+| GET/POST/PATCH/DELETE | `/api/admin/delivery-zones` `{name, fee, cities[], is_active}`. `cities` is a full replacement; a city already in another zone gives `409 city_taken` with `{city, zone}` |
 | GET/POST/PATCH/DELETE | `/api/admin/time-slots` |
 | GET/POST/DELETE | `/api/admin/blocked-dates` |
 | GET | `/api/admin/orders?status=` · GET `/api/admin/orders/{id}` |

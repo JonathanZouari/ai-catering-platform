@@ -7,6 +7,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from app.schemas.delivery import City
 from app.schemas.orders import OrderStatus, UtcDatetime
 
 EventType = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=60)]
@@ -37,7 +38,8 @@ class DraftIn(_In):
     event: EventIn
     fulfillment_type: Literal["pickup", "delivery"]
     slot_id: uuid.UUID
-    delivery_address: Address | None = None
+    delivery_address: Address | None = None  # street and number
+    delivery_city: City | None = None  # must be in an active delivery zone
 
 
 class DraftUpdate(DraftIn):
@@ -65,6 +67,7 @@ class CustomerOrderOut(BaseModel):
     slot_id: uuid.UUID | None
     requested_at: UtcDatetime
     delivery_address: str | None
+    delivery_city: str | None
     subtotal: Decimal | None
     delivery_fee: Decimal | None
     total: Decimal | None

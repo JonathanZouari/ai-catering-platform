@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0007` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0008` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -17,6 +17,8 @@ erDiagram
     events ||--|| orders : "is ordered by"
     orders ||--o{ order_items : "contains"
     time_slots |o--o{ orders : "booked in"
+    delivery_zones ||--o{ delivery_zone_cities : "covers"
+    delivery_zones |o--o{ orders : "fee frozen from"
     dishes ||--o{ order_items : "is ordered as"
 
     dish_categories {
@@ -101,15 +103,27 @@ erDiagram
         fulfillment_type fulfillment_type
         uuid slot_id FK "null, set null if the slot is deleted"
         timestamptz requested_at "event date at the slot start"
-        text delivery_address "required when delivery"
+        text delivery_address "street, required when delivery"
+        text delivery_city "null, a zone city when delivery"
+        uuid delivery_zone_id FK "null, set at submission; set null on zone delete"
         numeric subtotal "null until submission"
-        numeric delivery_fee "null"
+        numeric delivery_fee "null; frozen from the zone at submission"
         numeric total "null until submission"
         timestamptz submitted_at "null"
         timestamptz decided_at "null"
         text decision_note "null, shown to customer"
         timestamptz created_at
         timestamptz updated_at
+    }
+    delivery_zones {
+        uuid id PK
+        text name UK
+        numeric fee ">= 0"
+        bool is_active
+    }
+    delivery_zone_cities {
+        text city PK "normalized; one zone per city"
+        uuid zone_id FK "cascade"
     }
     business_settings {
         smallint id PK "always 1"
@@ -139,25 +153,18 @@ erDiagram
   - A child counts as `business_settings.child_portion` of an adult.
   - A vegan dish suits everyone. A vegetarian dish suits everyone except vegans. Any other dish, including one with unknown dietary data, excludes vegetarians and vegans.
 - **`business_settings`** is a single, unrelated row of owner-editable settings.
+- **Delivery fee** (#19). While draft, the fee is the current fee of the active zone containing `delivery_city`. At submission it is frozen into `orders.delivery_fee`, and `total` = sum of lines + fee.
 - **Capacity** (#5). Orders that are `pending_approval` or `approved` hold their slot on their event date. Submitting checks `count < time_slots.capacity` while the slot row is locked (`SELECT … FOR UPDATE`).
 
 ## Planned (not migrated yet)
 
 ```mermaid
 erDiagram
-    delivery_zones ||--o{ orders : "priced by (OPEN 19)"
     orders ||--o{ ai_conversations : "discussed in (Phase 4)"
     ai_conversations ||--o{ ai_messages : "has"
     orders ||--o{ ai_change_proposals : "changed by"
     ai_conversations ||--o{ ai_change_proposals : "suggests"
 
-    delivery_zones {
-        uuid id PK
-        text name
-        numeric fee ">= 0"
-        jsonb definition "shape depends on OPEN 19"
-        bool is_active
-    }
     ai_conversations {
         uuid id PK
         uuid order_id FK

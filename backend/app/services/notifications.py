@@ -38,7 +38,7 @@ def order_submitted(db: Session, order_id: uuid.UUID) -> Email | None:
         f" = {_money(i.snapshot_line_total)}"
         for i in order.items
     )
-    fee_note = " + דמי משלוח" if order.fulfillment_type == "delivery" else ""
+    fee_note = f" (כולל משלוח {_money(order.delivery_fee)})" if order.delivery_fee else ""
     body = f"""הזמנה חדשה ממתינה לאישור.
 
 לקוח: {c.full_name}, טלפון {c.phone or "—"}, אימייל {c.email or "—"}
@@ -46,7 +46,7 @@ def order_submitted(db: Session, order_id: uuid.UUID) -> Email | None:
 צמחונים / טבעונים / הגבלות: {e.vegetarian_guests} / {e.vegan_guests} / {e.restricted_guests}
 הערות תזונה: {e.dietary_notes or "—"}
 {FULFILLMENT[order.fulfillment_type]}: {_local(order.requested_at)}
-{f"כתובת: {order.delivery_address}" if order.delivery_address else ""}
+{f"כתובת: {order.delivery_address}, {order.delivery_city}" if order.delivery_address else ""}
 
 {lines}
 סה"כ כולל מע"מ: {_money(order.total)}{fee_note}

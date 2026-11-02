@@ -18,18 +18,19 @@ const CODES = {
   date_unavailable: "אי אפשר להזמין לתאריך הזה (סגור, או קרוב מדי). בחרו תאריך אחר",
   slot_unavailable: "השעה הזו כבר לא פנויה ביום הזה. בחרו שעה אחרת",
   slot_full: "השעה הזו כבר מלאה ביום הזה. בחרו שעה אחרת",
+  city_not_served: "אין לנו משלוחים לעיר הזו. בחרו עיר מהרשימה או איסוף עצמי",
   profile_required: "קודם משלימים שם וטלפון באזור האישי",
   order_version_conflict: "הטיוטה עודכנה בחלון אחר. טענו את הדף כדי לראות את הגרסה העדכנית",
   invalid_transition: "ההזמנה כבר נשלחה ולא ניתן לערוך אותה",
 };
 // Server field -> the input to mark and focus.
 const FIELD_INPUT = {
-  event_type: "other-type", event_date: "event-date", slot_id: "slot", delivery_address: "address",
+  event_type: "other-type", event_date: "event-date", slot_id: "slot", delivery_address: "address", delivery_city: "city",
   ...Object.fromEntries(COUNTERS.map(([key]) => [key, `c-${key}`])),
 };
 
 const $ = (id) => document.getElementById(id);
-const state = { order: null, blocked: new Set(), slots: [], earliest: null, full: new Set() };
+const state = { order: null, blocked: new Set(), slots: [], earliest: null, full: new Set(), cities: [] };
 
 // Dates are plain YYYY-MM-DD strings in Israel time; never parsed in the viewer's timezone.
 const isoToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date());
@@ -111,6 +112,24 @@ function renderSlots(selectId = null) {
     : "אין שעות פנויות ביום הזה. נסו יום אחר או סוג משלוח אחר.";
 }
 
+const money = (v) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(v);
+
+function renderCities(selected = $("city").value) {
+  const known = state.cities.some((c) => c.city === selected);
+  const options = state.cities.map((c) => el("option", { value: c.city, textContent: c.city }));
+  // A city the order had that is no longer served stays visible, so the customer sees why.
+  if (selected && !known) options.unshift(el("option", { value: selected, textContent: `${selected} (אין משלוחים כרגע)` }));
+  $("city").replaceChildren(el("option", { value: "", textContent: "בחרו עיר" }), ...options);
+  $("city").value = selected ?? "";
+  showFee();
+}
+
+function showFee() {
+  const city = state.cities.find((c) => c.city === $("city").value);
+  $("city-help").textContent = city ? `דמי משלוח: ${money(city.fee)}`
+    : $("city").value ? "לעיר הזו אין כרגע משלוחים." : "משלוחים רק לערים שברשימה.";
+}
+
 function checkDate() {
   const date = $("event-date").value;
   const help = $("date-help");
@@ -138,6 +157,7 @@ function readForm() {
     fulfillment_type: fulfillment(),
     slot_id: $("slot").value,
     delivery_address: fulfillment() === "delivery" ? $("address").value.trim() || null : null,
+    delivery_city: fulfillment() === "delivery" ? $("city").value || null : null,
   };
 }
 
@@ -154,7 +174,8 @@ function clientProblem(body) {
   const over = SUBSETS.find((k) => e[k] > guests);
   if (over) return [over, `לא יכול להיות יותר מסך האורחים (${guests})`];
   if (e.vegetarian_guests + e.vegan_guests > guests) return ["vegan_guests", `צמחונים וטבעונים יחד לא יכולים לעבור את סך האורחים (${guests})`];
-  if (body.fulfillment_type === "delivery" && !body.delivery_address) return ["delivery_address", "צריך כתובת למשלוח"];
+  if (body.fulfillment_type === "delivery" && !body.delivery_city) return ["delivery_city", "בחרו עיר למשלוח"];
+  if (body.fulfillment_type === "delivery" && !body.delivery_address) return ["delivery_address", "צריך רחוב ומספר למשלוח"];
   return null;
 }
 
@@ -180,6 +201,7 @@ function fill(order) {
   $("event-date").value = e.event_date;
   document.querySelector(`input[name="fulfillment"][value="${order.fulfillment_type}"]`).checked = true;
   $("address").value = order.delivery_address ?? "";
+  renderCities(order.delivery_city);
   $("address-field").hidden = order.fulfillment_type !== "delivery";
   for (const [key] of COUNTERS) $(`c-${key}`).value = e[key];
   $("notes").value = e.dietary_notes ?? "";
@@ -240,10 +262,17 @@ export async function initEvent() {
     state.slots = availability.time_slots;
     state.earliest = availability.earliest_date;
     state.full = new Set(availability.full_slots.map((f) => `${f.slot_id}|${f.date}`));
+    state.cities = await api("/api/delivery/cities");
   } catch {
     toast("לא הצלחנו לטעון את השעות הפנויות");
   }
   $("event-date").min = state.earliest;
+  renderCities();
+  if (!state.cities.length) {  // no zones yet: delivery can't be chosen
+    $("delivery-option").disabled = true;
+    $("delivery-option").closest("label").title = "אין כרגע משלוחים";
+  }
+  $("city").addEventListener("change", showFee);
   $("event-date").addEventListener("change", checkDate);
   for (const r of document.querySelectorAll('input[name="fulfillment"]')) r.addEventListener("change", onFulfillment);
   $("event-form").addEventListener("submit", save);

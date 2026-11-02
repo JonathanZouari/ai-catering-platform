@@ -75,7 +75,10 @@ Null booleans mean **unknown** and must be presented as unknown, never as "no"/"
 A missing row = **unknown**.
 
 ### delivery_zones
-`id` uuid PK · `name` text not null · `fee` numeric(10,2) not null ≥ 0 · `definition` jsonb not null (shape depends on **[OPEN #19]**) · `is_active` bool
+`id` uuid PK · `name` text not null unique · `fee` numeric(10,2) not null ≥ 0 · `is_active` bool (OPEN #19 decided: zones are city lists)
+
+### delivery_zone_cities
+`city` text PK (normalized; a city belongs to at most one zone) · `zone_id` FK → delivery_zones, on delete cascade
 
 ### time_slots
 `id` uuid PK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 null · `start_time` time · `end_time` time · `capacity` int null (orders per slot per date, enforced at submission; null = unlimited) · `is_active` bool · CHECK `end_time > start_time`
@@ -95,7 +98,8 @@ A missing row = **unknown**.
 | slot_id | uuid FK → time_slots null | Chosen slot; on delete set null; capacity counted per slot per event date |
 | requested_at | timestamptz not null | Requested pickup/delivery time |
 | delivery_address | text null | CHECK: required when `delivery` |
-| delivery_zone_id | uuid FK null | |
+| delivery_city | text null | A zone city, required for delivery |
+| delivery_zone_id | uuid FK null | Zone whose fee was frozen at submission; on delete set null |
 | subtotal, delivery_fee, total | numeric(10,2) null | Computed by backend; frozen at submission |
 | submitted_at, decided_at | timestamptz null | |
 | decision_note | text null | Owner's note on approve/reject |

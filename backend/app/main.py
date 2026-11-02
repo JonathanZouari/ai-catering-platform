@@ -3,9 +3,10 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api import availability, catalog, me, orders
+from app.api import availability, catalog, delivery, me, orders
 from app.api.admin import availability as admin_availability
 from app.api.admin import catalog as admin_catalog
+from app.api.admin import delivery as admin_delivery
 from app.api.admin import orders as admin_orders
 from app.api.admin import settings as admin_settings
 from app.core.config import get_settings
@@ -23,6 +24,8 @@ app.include_router(admin_orders.router)
 app.include_router(admin_settings.router)
 app.include_router(me.router)
 app.include_router(orders.router)
+app.include_router(delivery.router)
+app.include_router(admin_delivery.router)
 
 
 @app.get("/health")

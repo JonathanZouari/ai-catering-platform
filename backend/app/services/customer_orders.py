@@ -7,7 +7,8 @@ Rules (backend-authoritative, ADR 0003):
   pickup/delivery happens on the event date at the slot's start time
 - dietary groups are subsets of adults + children; vegetarian and vegan are separate groups,
   so vegetarian + vegan <= total too (OPEN_DECISIONS #4)
-- delivery needs an address; zone and fee wait for OPEN #19
+- delivery needs a street address and a city served by an active zone (OPEN #19); the fee is
+  the zone's current fee while draft and is frozen at submission
 - edits only while draft, and only against the version the client saw (optimistic lock)
 - submit: everything above is checked again, every dish must still be orderable, and the slot
   must have room (capacity per slot per event date, OPEN #5); prices are then frozen into the
@@ -32,6 +33,7 @@ from app.repositories import catalog as catalog_repo
 from app.repositories import customers as customers_repo
 from app.repositories import orders as orders_repo
 from app.schemas import customer_orders as s
+from app.services import delivery as delivery_svc
 from app.services import pricing, recommendations
 from app.services import settings as settings_svc
 
@@ -85,8 +87,11 @@ def _validate(db: Session, data: s.DraftIn) -> datetime:
     ):
         raise _invalid("slot_id", "This time is not available for that date", "slot_unavailable")
 
-    if data.fulfillment_type == "delivery" and not data.delivery_address:
-        raise _invalid("delivery_address", "A delivery address is required")
+    if data.fulfillment_type == "delivery":
+        if not data.delivery_address:
+            raise _invalid("delivery_address", "A delivery address is required")
+        if not data.delivery_city or not delivery_svc.zone_for_city(db, data.delivery_city):
+            raise _invalid("delivery_city", "We don't deliver to this city", "city_not_served")
     local = datetime.combine(e.event_date, slot.start_time, tzinfo=clock.BUSINESS_TZ)
     return local.astimezone(UTC)
 
@@ -97,7 +102,9 @@ def _apply(order: Order, event: Event, data: s.DraftIn, requested_at: datetime) 
     order.fulfillment_type = data.fulfillment_type
     order.slot_id = data.slot_id
     order.requested_at = requested_at
-    order.delivery_address = data.delivery_address if data.fulfillment_type == "delivery" else None
+    delivery = data.fulfillment_type == "delivery"
+    order.delivery_address = data.delivery_address if delivery else None
+    order.delivery_city = data.delivery_city if delivery else None
 
 
 def create_draft(db: Session, who: CustomerIdentity, data: s.DraftIn) -> s.CustomerOrderOut:
@@ -212,10 +219,21 @@ def remove_item(
 # pricing and recommendations (C3)
 
 
+def _live_zone(db: Session, order: Order):
+    if order.fulfillment_type != "delivery" or not order.delivery_city:
+        return None
+    return delivery_svc.zone_for_city(db, order.delivery_city)
+
+
+def _live_fee(db: Session, order: Order) -> Decimal | None:
+    zone = _live_zone(db, order)
+    return zone.fee if zone else None
+
+
 def get_pricing(db: Session, who: CustomerIdentity, order_id: uuid.UUID) -> s.PricingOut:
     order = _owned(db, who, order_id)
     dishes = {i.dish_id: db.get(Dish, i.dish_id) for i in order.items}
-    return s.PricingOut.model_validate(pricing.price_order(order, dishes))
+    return s.PricingOut.model_validate(pricing.price_order(order, dishes, _live_fee(db, order)))
 
 
 def get_recommendations(
@@ -242,6 +260,7 @@ def _as_draft_in(order: Order) -> s.DraftIn:
         fulfillment_type=order.fulfillment_type,
         slot_id=order.slot_id,
         delivery_address=order.delivery_address,
+        delivery_city=order.delivery_city,
     )
 
 
@@ -266,7 +285,8 @@ def submit(
     if slot.capacity is not None and taken >= slot.capacity:
         raise AppError(409, "slot_full", "This time is fully booked for that date")
 
-    priced = pricing.price_order(order, dishes)
+    zone = _live_zone(db, order)  # _validate made sure a delivery city is served
+    priced = pricing.price_order(order, dishes, zone.fee if zone else None)
     for item in order.items:
         dish = dishes[item.dish_id]
         item.snapshot_name = dish.name
@@ -274,7 +294,8 @@ def submit(
         item.snapshot_unit_price = dish.unit_price
         item.snapshot_line_total = pricing.line_total(item.quantity, dish.unit_price)
     order.subtotal = priced.subtotal
-    order.delivery_fee = None  # per delivery zone, OPEN #19 slice
+    order.delivery_zone_id = zone.id if zone else None
+    order.delivery_fee = priced.delivery_fee  # frozen with the prices
     order.total = priced.total
     order.submitted_at = datetime.now(UTC)
     return _commit_bump(db, who, order_id, version, to_status="pending_approval")
@@ -294,6 +315,7 @@ def withdraw(
         item.snapshot_name = item.snapshot_pricing_unit = None
         item.snapshot_unit_price = item.snapshot_line_total = None
     order.subtotal = order.total = order.submitted_at = None
+    order.delivery_fee = order.delivery_zone_id = None  # live from the zone again
     return _commit_bump(
         db, who, order_id, version, from_status="pending_approval", to_status="draft"
     )

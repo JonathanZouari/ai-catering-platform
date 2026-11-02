@@ -66,7 +66,7 @@ async function openOrder(id) {
     ["צמחונים / טבעונים / הגבלות", `${e.vegetarian_guests} / ${e.vegan_guests} / ${e.restricted_guests}`],
     [FULFILLMENT[o.fulfillment_type], when(o.requested_at)],
   ];
-  if (o.delivery_address) facts.push(["כתובת", o.delivery_address]);
+  if (o.delivery_address) facts.push(["כתובת", [o.delivery_address, o.delivery_city].filter(Boolean).join(", ")]);
   if (e.dietary_notes) facts.push(["הערות תזונה", e.dietary_notes]);
   facts.push(["טלפון", o.customer.phone ?? "—"], ["אימייל", o.customer.email ?? "—"]);
   if (o.submitted_at) facts.push(["נשלחה", when(o.submitted_at)]);

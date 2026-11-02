@@ -1,11 +1,16 @@
-// Owner screens A4 (blocked dates, order rules) and A5 (pickup/delivery time slots).
+// Owner screens A4 (blocked dates, order rules) and A5 (time slots, delivery zones).
 // All server data is written with textContent / input values only (never innerHTML).
 import { $, call, confirmThen, el, mutate, startAdmin } from "/js/admin-common.js";
 
 const TYPES = { pickup: "איסוף", delivery: "משלוח" };
 // 0 = Sunday, same as the backend and Date.getDay(); "" = every day.
 const DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
-const ERRORS = { conflict: "התאריך הזה כבר חסום" };
+const ERRORS = {
+  conflict: "התאריך או שם האזור כבר קיימים",
+  city_taken: "אחת הערים כבר שייכת לאזור אחר",
+};
+// "תל אביב-יפו, רמת גן" -> ["תל אביב-יפו", "רמת גן"]; the server trims and dedupes as well.
+const cityList = (text) => text.split(/[,،\n]/).map((c) => c.trim()).filter(Boolean);
 
 const hhmm = (t) => t.slice(0, 5);
 const longDate = (iso) => {
@@ -20,11 +25,13 @@ const typeOptions = () => Object.entries(TYPES);
 const dayOptions = () => [["", "כל יום"], ...DAYS.map((d, i) => [String(i), d])];
 
 async function load() {
-  const [blocked, slots, settings] = await Promise.all([
+  const [blocked, slots, settings, zones] = await Promise.all([
     call("/api/admin/blocked-dates"), call("/api/admin/time-slots"), call("/api/admin/settings"),
+    call("/api/admin/delivery-zones"),
   ]);
   renderBlocked(blocked);
   renderSlots(slots);
+  renderZones(zones);
   $("lead-days").value = settings.lead_days;
   $("child-portion").value = Number(settings.child_portion);
 }
@@ -73,6 +80,26 @@ function renderSlots(slots) {
   }));
 }
 
+function renderZones(zones) {
+  $("no-zones").hidden = zones.length > 0;
+  $("zone-rows").replaceChildren(...zones.map((z) => {
+    const name = labelled(el("input", { value: z.name, maxLength: 60, required: true }), `שם האזור ${z.name}`);
+    const fee = labelled(el("input", { type: "number", min: 0, max: 10000, step: "0.01", value: z.fee, className: "num" }), `דמי משלוח, ${z.name}`);
+    fee.style.inlineSize = "7em";
+    const cities = labelled(el("input", { value: z.cities.join(", ") }), `ערים, ${z.name}`);
+    cities.style.minInlineSize = "16em";
+    const active = labelled(el("input", { type: "checkbox", checked: z.is_active }), `פעיל, ${z.name}`);
+    const save = el("button", { type: "button", className: "btn ghost", textContent: "שמירה" });
+    save.onclick = () => mutate(() => call(`/api/admin/delivery-zones/${z.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name: name.value.trim(), fee: Number(fee.value).toFixed(2), cities: cityList(cities.value), is_active: active.checked }),
+    }), "האזור נשמר");
+    const del = el("button", { type: "button", className: "btn danger", textContent: "מחיקה" });
+    del.onclick = () => confirmThen(del, () => mutate(() => call(`/api/admin/delivery-zones/${z.id}`, { method: "DELETE" }), "האזור נמחק"));
+    return el("tr", {}, el("td", {}, name), el("td", {}, fee), el("td", {}, cities), el("td", {}, active), el("td", {}, save, " ", del));
+  }));
+}
+
 function slotBody(type, day, start, end, cap) {
   return {
     fulfillment_type: type.value,
@@ -108,6 +135,18 @@ export function initAvailability() {
     mutate(() => call("/api/admin/time-slots", {
       method: "POST", body: JSON.stringify(slotBody($("s-type"), $("s-day"), start, end, cap)),
     }), "החלון נוסף").then((ok) => { if (ok) { start.value = ""; end.value = ""; cap.value = ""; } });
+  });
+
+  $("zone-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const [name, fee, cities] = [$("z-name"), $("z-fee"), $("z-cities")];
+    const bad = [name, fee, cities].filter((i) => !i.checkValidity() || !i.value.trim());
+    for (const i of [name, fee, cities]) i.setAttribute("aria-invalid", String(bad.includes(i)));
+    if (bad.length) { bad[0].reportValidity(); return; }
+    mutate(() => call("/api/admin/delivery-zones", {
+      method: "POST",
+      body: JSON.stringify({ name: name.value.trim(), fee: Number(fee.value).toFixed(2), cities: cityList(cities.value) }),
+    }), "האזור נוסף").then((ok) => { if (ok) { name.value = ""; fee.value = ""; cities.value = ""; } });
   });
 
   $("settings-form").addEventListener("submit", (e) => {
