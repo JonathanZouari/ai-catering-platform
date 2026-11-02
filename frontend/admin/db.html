@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מבנה מסד הנתונים</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <style>
+    .layout { display: flex; gap: 1.5rem; align-items: flex-start; }
+    nav ul { list-style: none; padding: 0; margin: 0; min-width: 14rem; }
+    nav button { width: 100%; text-align: start; padding: .4rem .6rem; cursor: pointer;
+      border: 1px solid #ddd; background: #fff; margin-bottom: .25rem; border-radius: 6px; }
+    nav button[aria-current="true"] { background: #fff4d6; border-color: #d9a400; }
+    nav small { float: left; color: #777; }
+    section { flex: 1; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; font-size: .9rem; }
+    th, td { border: 1px solid #ddd; padding: .3rem .5rem; text-align: start; }
+    th { background: #f6f6f6; }
+    .pk { font-weight: 700; } .muted { color: #888; } code { direction: ltr; unicode-bidi: embed; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>מבנה מסד הנתונים (SQLite)</h1>
+    <p class="muted">תצוגה לקריאה בלבד, זמינה רק בסביבת פיתוח.</p>
+    <div class="layout">
+      <nav><ul id="tables"></ul></nav>
+      <section id="detail"><p>בחרו טבלה.</p></section>
+    </div>
+  </main>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const esc = (v) => String(v ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+    async function load() {
+      const res = await fetch("/api/dev/db/tables");
+      if (!res.ok) { $("#tables").innerHTML = "<li>לא זמין (" + res.status + ")</li>"; return; }
+      const tables = await res.json();
+      $("#tables").innerHTML = tables.map((t) =>
+        `<li><button data-t="${esc(t.name)}">${esc(t.name)} <small>${t.rows}</small></button></li>`).join("");
+      $("#tables").onclick = (e) => { const b = e.target.closest("button"); if (b) show(b.dataset.t); };
+      if (tables.length) show(tables[0].name);
+    }
+
+    async function show(name) {
+      document.querySelectorAll("nav button").forEach((b) => b.setAttribute("aria-current", b.dataset.t === name));
+      const d = await (await fetch("/api/dev/db/tables/" + encodeURIComponent(name))).json();
+      const fk = Object.fromEntries(d.foreign_keys.map((f) => [f.column, f.references]));
+      $("#detail").innerHTML =
+        `<h2><code>${esc(d.name)}</code></h2><h3>עמודות</h3><table><tr><th>שם</th><th>סוג</th><th>חובה</th><th>ברירת מחדל</th><th>קשר</th></tr>` +
+        d.columns.map((c) => `<tr><td class="${c.pk ? "pk" : ""}"><code>${esc(c.name)}</code>${c.pk ? " 🔑" : ""}</td><td>${esc(c.type)}</td><td>${c.notnull ? "כן" : ""}</td><td><code>${esc(c.default)}</code></td><td><code>${esc(fk[c.name])}</code></td></tr>`).join("") +
+        `</table><h3>שורות (${d.rows.length})</h3>` +
+        (d.rows.length
+          ? `<table><tr>${d.columns.map((c) => `<th>${esc(c.name)}</th>`).join("")}</tr>` +
+            d.rows.map((r) => `<tr>${r.map((v) => `<td>${esc(v)}</td>`).join("")}</tr>`).join("") + "</table>"
+          : `<p class="muted">הטבלה ריקה.</p>`);
+    }
+    load();
+  </script>
+</body>
+</html>
