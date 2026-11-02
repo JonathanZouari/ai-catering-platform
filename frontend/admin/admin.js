@@ -4,7 +4,46 @@ import { h } from "/js/dom.js";
 
 const app = document.getElementById("app");
 const message = document.getElementById("message");
-const state = { config: null, categories: [], allergens: [] };
+const topTabs = document.getElementById("tabs");
+const tools = document.getElementById("tools");
+const state = { config: null, categories: [], allergens: [], safety: false };
+let openSection = async () => {};
+
+// ---- time helpers (the owner's clock is Asia/Jerusalem whatever the browser says)
+const TZ = "Asia/Jerusalem";
+const parseTs = (s) => new Date(/(Z|[+-]\d\d:?\d\d)$/i.test(s) ? s : `${s}Z`);
+const fmt = (opts, s) => (s ? new Intl.DateTimeFormat("he-IL", { timeZone: TZ, hour12: false, ...opts }).format(parseTs(s)) : "—");
+const fmtTime = (s) => fmt({ hour: "2-digit", minute: "2-digit" }, s);
+const fmtDT = (s) => fmt({ day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }, s);
+const fmtDate = (d) => (d ? d.split("-").reverse().join(".") : "—");
+const todayStr = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date());
+const localDay = (s) => (s ? new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(parseTs(s)) : "");
+
+// ---- Safety Car switch (header and settings share state)
+const TICKER = "SAFETY CAR DEPLOYED: Pacing the kitchen to guarantee 100% perfection on every dish";
+const switches = [];
+function setSafety(on) {
+  state.safety = on;
+  for (const sw of switches) {
+    if (!sw.isConnected) continue;
+    sw.setAttribute("aria-checked", String(on));
+    const t = sw.querySelector(".sw-text");
+    if (t) t.textContent = `SAFETY CAR (${on ? "ON" : "OFF"})`;
+  }
+  document.body.classList.toggle("safety-on", on);
+}
+function safetySwitch() {
+  const sw = h("button", { type: "button", class: "sw", role: "switch", "aria-checked": String(state.safety), dir: "ltr" },
+    h("span", { class: "track", "aria-hidden": "true" }, h("span", { class: "knob" })),
+    h("span", { class: "sw-text label" }, `SAFETY CAR (${state.safety ? "ON" : "OFF"})`));
+  sw.addEventListener("click", () => {
+    sw.disabled = true;
+    run(async () => setSafety((await api("/api/admin/safety-car", { method: "PUT", body: JSON.stringify({ on: !state.safety }) })).safety_car))
+      .finally(() => { sw.disabled = false; });
+  });
+  switches.push(sw);
+  return sw;
+}
 
 function say(text, kind = "ok") {
   message.textContent = text;
@@ -23,18 +62,24 @@ async function run(action) {
 
 function logout(text = "") {
   auth.clear();
+  topTabs.replaceChildren();
+  tools.replaceChildren();
+  document.body.classList.remove("safety-on");
   showLogin();
   say(text, "error");
 }
 
 // ---- login (Supabase Auth REST, email + password)
 function showLogin() {
-  const email = h("input", { type: "email", required: true, autocomplete: "username" });
-  const password = h("input", { type: "password", required: true, autocomplete: "current-password" });
-  const form = h("form", { class: "card", onsubmit: (ev) => { ev.preventDefault(); run(() => login(email.value, password.value)); } },
-    h("label", {}, "Email", email),
-    h("label", {}, "Password", password),
-    h("button", { class: "primary", type: "submit" }, "Log in"));
+  const email = h("input", { type: "email", required: true, autocomplete: "username", dir: "ltr" });
+  const password = h("input", { type: "password", required: true, autocomplete: "current-password", dir: "ltr" });
+  const form = h("form", { class: "panel login", onsubmit: (ev) => { ev.preventDefault(); run(() => login(email.value, password.value)); } },
+    h("img", { src: "/assets/brand/favicon.svg", alt: "", width: "56", height: "44" }),
+    h("div", { class: "label" }, "PIT WALL // ACCESS"),
+    h("h2", {}, "כניסת בעל העסק"),
+    h("label", {}, "אימייל", email),
+    h("label", {}, "סיסמה", password),
+    h("button", { class: "primary", type: "submit" }, "כניסה"));
   app.replaceChildren(form);
 }
 
@@ -205,6 +250,8 @@ async function dishExtras(dish, reload) {
   const tri = (name, value) => {
     const s = h("select", { name }, h("option", { value: "" }, "Unknown"), h("option", { value: "true" }, "Yes"), h("option", { value: "false" }, "No"));
     s.value = value === null || value === undefined ? "" : String(value);
+    s.dataset.tri = s.value;
+    s.addEventListener("change", () => { s.dataset.tri = s.value; });
     return s;
   };
   const kashrut = h("select", { name: "kashrut_class" }, h("option", { value: "" }, "Unknown"),
@@ -214,7 +261,9 @@ async function dishExtras(dish, reload) {
   const allergenSelects = state.allergens.map((a) => {
     const s = h("select", { "data-allergen": a.id }, ...["unknown", "contains", "free"].map((v) => h("option", { value: v }, v)));
     s.value = current[a.id] ?? "unknown";
-    return h("label", {}, a.name, s);
+    s.dataset.status = s.value;
+    s.addEventListener("change", () => { s.dataset.status = s.value; });
+    return h("label", { class: "allergen" }, a.name, s);
   });
   const veg = tri("is_vegetarian", dish.dietary.is_vegetarian);
   const vegan = tri("is_vegan", dish.dietary.is_vegan);
@@ -234,7 +283,7 @@ async function dishExtras(dish, reload) {
     h("h2", {}, "Dietary info and allergens"),
     h("p", {}, "Unknown means not provided; it is never shown as No."),
     h("div", { class: "grid" }, h("label", {}, "Kashrut", kashrut), h("label", {}, "Vegetarian", veg), h("label", {}, "Vegan", vegan)),
-    h("fieldset", {}, h("legend", {}, "Allergens"), h("div", { class: "grid" }, ...allergenSelects)),
+    h("fieldset", {}, h("legend", {}, "Allergens"), h("div", { class: "grid allergens" }, ...allergenSelects)),
     h("button", { class: "primary", type: "submit" }, "Save dietary info"));
 
   const file = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp", required: true });
@@ -257,32 +306,109 @@ async function dishExtras(dish, reload) {
 }
 
 // ---- orders
-const STATUS_TEXT = { draft: "Draft", pending_approval: "Awaiting approval", approved: "Approved", rejected: "Rejected", cancelled: "Cancelled" };
+const STATUS_TEXT = { draft: "טיוטה", pending_approval: "ממתינה לאישור", approved: "אושרה", in_kitchen: "בבישול", out_for_delivery: "במשלוח",
+  ready_for_pickup: "מוכנה לאיסוף", delivered: "נמסרה", rejected: "נדחתה", cancelled: "בוטלה" };
+const STAGES = {
+  pending_approval: { en: "Grid", tone: "amber" }, approved: { en: "Grid", tone: "amber" },
+  in_kitchen: { en: "Box Box", tone: "purple" }, out_for_delivery: { en: "Flying Lap", tone: "cyan" },
+  ready_for_pickup: { en: "Pit Lane", tone: "cyan" }, delivered: { en: "Chequered Flag", tone: "green" },
+};
+const ACTIVE = ["pending_approval", "approved", "in_kitchen", "out_for_delivery", "ready_for_pickup"];
+const nextTerm = (o) => (o.status === "approved" ? "Box Box"
+  : o.status === "in_kitchen" ? (o.fulfillment_type === "delivery" ? "Flying Lap" : "Pit Lane") : "Chequered Flag");
+const canAdvance = (o) => ["approved", "in_kitchen", "out_for_delivery", "ready_for_pickup"].includes(o.status);
 const money = (v, cur) => `${Number(v).toFixed(2)} ${cur}`;
-const statusBadge = (st) => h("span", { class: `badge badge-${st}` }, STATUS_TEXT[st] ?? st);
+const shekel = (v) => `₪${Number(v).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+const statusBadge = (st) => h("span", { class: `chip chip-${STAGES[st]?.tone ?? (st === "rejected" || st === "cancelled" ? "red" : "muted")}` }, STATUS_TEXT[st] ?? st);
+const stageChip = (st) => h("span", { class: "stage" },
+  h("span", { class: `chip chip-${STAGES[st]?.tone ?? "muted"}` }, STAGES[st]?.en ?? st), h("small", {}, STATUS_TEXT[st] ?? st));
+const firstName = (n) => String(n ?? "").trim().split(/\s+/)[0] || "—";
+
+// Advance one stage with the version the screen was rendered from; a conflict reloads the view.
+function advanceButton(o, after) {
+  const btn = h("button", { type: "button", class: "primary advance", "aria-label": `Advance ${o.id.slice(0, 8)} to ${nextTerm(o)}` }, "Advance ▸");
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    run(async () => {
+      try {
+        const r = await api(`/api/admin/orders/${o.id}/advance`, { method: "POST", body: JSON.stringify({ version: o.version }) });
+        say(`ההזמנה התקדמה ל-${STAGES[r.status]?.en ?? r.status}.`);
+      } catch (e) {
+        if (e.status !== 409) throw e;
+        say(e.code === "order_version_conflict" ? "ההזמנה עודכנה במקום אחר. הרשימה רועננה, נסו שוב." : "אי אפשר להתקדם מהשלב הזה. הרשימה רועננה.", "error");
+      }
+      await after();
+    }).finally(() => { btn.disabled = false; });
+  });
+  return btn;
+}
+
+// ---- Pit Wall dashboard
+async function showWall(tabs) {
+  const list = await api("/api/admin/orders");
+  const today = todayStr();
+  const near = (o) => Math.abs((new Date(o.event_date) - new Date(today)) / 864e5) <= 1;
+  const full = list.filter((o) => ACTIVE.includes(o.status) || (o.status === "delivered" && near(o)));
+  const active = full.filter((o) => ACTIVE.includes(o.status)).sort((a, b) => parseTs(a.requested_at) - parseTs(b.requested_at));
+  const doneToday = full.filter((o) => o.status === "delivered" && localDay(o.delivered_at) === today).length;
+  const count = (...st) => active.filter((o) => st.includes(o.status)).length;
+  const tile = (n, tone, term, he, num) => h("div", { class: `tile tile-${tone}` },
+    h("div", { class: "label" }, `SECTOR ${n} // ${term}`), h("div", { class: "he" }, he), h("div", { class: "num" }, String(num)));
+  const tiles = h("section", { class: "tiles", "aria-label": "Stages" },
+    tile(1, "amber", "GRID", "ממתינות לאישור ולהכנה", count("pending_approval", "approved")),
+    tile(2, "purple", "BOX BOX", "בבישול והכנה", count("in_kitchen")),
+    tile(3, "cyan", "FLYING LAP", "במשלוח / מוכנות לאיסוף", count("out_for_delivery", "ready_for_pickup")),
+    tile(4, "green", "CHEQUERED FLAG", "נמסרו היום", doneToday));
+  const goOrder = (id) => run(() => openSection("orders", id));
+  const refresh = () => showWall(tabs);
+  const tower = h("section", { class: "panel tower" },
+    h("div", { class: "head" }, h("h2", {}, "TIMING TOWER"), h("p", { class: "hint" }, "הזמנות פעילות לפי מועד האירוע")),
+    active.length ? h("ul", { class: "rows" },
+      h("li", { class: "row th", "aria-hidden": "true" }, ...["POS", "לקוח / תאריך", "אורחים", "סך הזמנה", "שלב", ""].map((t) => h("span", { class: "label" }, t))),
+      ...active.map((o, i) => h("li", { class: `row tone-${STAGES[o.status].tone}` },
+        h("span", { class: "pos" }, `P${i + 1}`),
+        h("span", { class: "who" }, h("button", { type: "button", class: "link", onclick: () => goOrder(o.id) }, firstName(o.customer_name)),
+          h("small", {}, `${fmtDate(o.event_date)} · ${fmtTime(o.requested_at)}`)),
+        h("span", { class: "guests" }, `${o.guests} אורחים`),
+        h("span", { class: "total num" }, shekel(o.total)),
+        stageChip(o.status),
+        canAdvance(o) ? advanceButton(o, refresh)
+          : h("button", { type: "button", class: "ghost", onclick: () => goOrder(o.id) }, o.status === "pending_approval" ? "לאישור" : "פתיחה"))))
+      : h("p", { class: "hint" }, "אין הזמנות פעילות."));
+  const todays = full.filter((o) => o.event_date === today)
+    .sort((a, b) => parseTs(a.requested_at) - parseTs(b.requested_at));
+  const race = h("section", { class: "panel race" },
+    h("div", { class: "head" }, h("h2", {}, "RACE CONTROL"), h("p", { class: "hint" }, "האירועים של היום לפי שעה")),
+    todays.length ? h("ol", { class: "timeline" }, ...todays.map((o) => h("li", { class: `tone-${STAGES[o.status].tone}` },
+      h("time", { class: "num" }, fmtTime(o.requested_at)),
+      h("div", {}, h("span", { class: `chip chip-${STAGES[o.status].tone}` }, STAGES[o.status].en),
+        h("strong", {}, firstName(o.customer_name)), h("small", {}, `${o.guests} אורחים`))))) 
+      : h("p", { class: "hint" }, "אין אירועים להיום."));
+  app.replaceChildren(tabs, tiles, h("div", { class: "wall" }, tower, race));
+}
 
 async function showOrders(tabs, filter = "", openId = null) {
   const rows = await api(`/api/admin/orders${filter ? `?status=${encodeURIComponent(filter)}` : ""}`);
   const holder = h("div");
   const select = h("select", { onchange: () => run(() => showOrders(tabs, select.value)) },
-    h("option", { value: "" }, "All"),
+    h("option", { value: "" }, "הכול"),
     ...Object.entries(STATUS_TEXT).map(([v, t]) => h("option", { value: v }, t)));
   select.value = filter;
   const refresh = (id) => showOrders(tabs, filter, id);
   const table = h("div", { class: "table-wrap" }, h("table", {},
-    h("thead", {}, h("tr", {}, ...["Event date", "Customer", "Event type", "Guests", "Total", "Status", ""].map((c) => h("th", {}, c)))),
+    h("thead", {}, h("tr", {}, ...["תאריך", "לקוח", "סוג אירוע", "אורחים", "סכום", "סטטוס", ""].map((c) => h("th", {}, c)))),
     h("tbody", {}, ...rows.map((o) => h("tr", {},
-      h("td", {}, cell(o.event_date)), h("td", {}, cell(o.customer_name)), h("td", {}, cell(o.event_type)),
+      h("td", {}, fmtDate(o.event_date)), h("td", {}, cell(o.customer_name)), h("td", {}, cell(o.event_type)),
       h("td", {}, cell(o.guests)),
       h("td", {}, o.status === "draft" || o.total == null ? "—" : money(o.total, o.currency)),
       h("td", {}, statusBadge(o.status)),
       h("td", { class: "actions" }, h("button", { type: "button", onclick: () => run(async () => {
         holder.replaceChildren(await orderDetail(o.id, refresh));
         holder.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }) }, "Open")))))));
-  app.replaceChildren(tabs, h("section", {}, h("h2", {}, "Orders"),
-    h("label", { class: "filter" }, "Status", select),
-    h("div", { class: "card" }, rows.length ? table : h("p", {}, "No orders.")), holder));
+      }) }, "פתיחה")))))));
+  app.replaceChildren(tabs, h("section", {}, h("h2", {}, "הזמנות"),
+    h("label", { class: "filter" }, "סטטוס", select),
+    h("div", { class: "card" }, rows.length ? table : h("p", { class: "hint" }, "אין הזמנות.")), holder));
   if (openId) holder.replaceChildren(await orderDetail(openId, refresh));
 }
 
@@ -296,7 +422,7 @@ async function orderDetail(id, refresh) {
     try {
       await api(`/api/admin/orders/${id}/${kind}`, { method: "POST", body: JSON.stringify({ note: note.value.trim() || null }) });
       await refresh(id);
-      say(kind === "approve" ? "Order approved." : "Order rejected.");
+      say(kind === "approve" ? "ההזמנה אושרה." : "ההזמנה נדחתה.");
     } catch (e) {
       if (e.code !== "invalid_transition") throw e;
       await refresh(id);
@@ -304,12 +430,12 @@ async function orderDetail(id, refresh) {
     }
   });
   const ask = (kind) => actions.replaceChildren(
-    h("span", { role: "alert" }, kind === "approve" ? "Approve this order?" : "Reject this order?"),
-    h("button", { type: "button", class: kind === "approve" ? "primary" : "danger", onclick: () => decide(kind) }, `Yes, ${kind}`),
-    h("button", { type: "button", onclick: idle }, "Cancel"));
+    h("span", { role: "alert" }, kind === "approve" ? "לאשר את ההזמנה?" : "לדחות את ההזמנה?"),
+    h("button", { type: "button", class: kind === "approve" ? "approve" : "danger", onclick: () => decide(kind) }, kind === "approve" ? "כן, לאשר" : "כן, לדחות"),
+    h("button", { type: "button", onclick: idle }, "חזרה"));
   function idle() {
-    actions.replaceChildren(h("button", { type: "button", class: "primary", onclick: () => ask("approve") }, "Approve"),
-      h("button", { type: "button", class: "danger", onclick: () => ask("reject") }, "Reject"));
+    actions.replaceChildren(h("button", { type: "button", class: "approve", onclick: () => ask("approve") }, "אשר הזמנה"),
+      h("button", { type: "button", class: "danger", onclick: () => ask("reject") }, "דחה"));
   }
   idle();
   const why = h("textarea", { maxlength: 1000, rows: 3 });
@@ -318,7 +444,7 @@ async function orderDetail(id, refresh) {
     try {
       await api(`/api/admin/orders/${id}/cancel`, { method: "POST", body: JSON.stringify({ note: why.value.trim() }) });
       await refresh(id);
-      say("Order cancelled.");
+      say("ההזמנה בוטלה.");
     } catch (e) {
       if (e.code !== "invalid_transition") throw e;
       await refresh(id);
@@ -326,47 +452,68 @@ async function orderDetail(id, refresh) {
     }
   });
   const askCancel = () => cancelBox.replaceChildren(
-    h("span", { role: "alert" }, "Cancel this order? The customer will see your note."),
-    h("button", { type: "button", class: "danger", onclick: doCancel }, "Yes, cancel"),
-    h("button", { type: "button", onclick: idleCancel }, "Keep order"));
+    h("span", { role: "alert" }, "לבטל את ההזמנה? הלקוח יראה את ההערה."),
+    h("button", { type: "button", class: "danger", onclick: doCancel }, "כן, לבטל"),
+    h("button", { type: "button", onclick: idleCancel }, "השאר הזמנה"));
   function idleCancel() {
-    cancelBox.replaceChildren(h("button", { type: "button", class: "danger", disabled: !why.value.trim(), onclick: askCancel }, "Cancel order"));
+    cancelBox.replaceChildren(h("button", { type: "button", class: "danger", disabled: !why.value.trim(), onclick: askCancel }, "בטל הזמנה"));
   }
   why.addEventListener("input", idleCancel);
   idleCancel();
   const ai = await api(`/api/admin/orders/${id}/assistant`);
   const diffText = (d) => `${d.name}: ${d.current == null ? "—" : d.current} → ${d.proposed == null ? "removed" : d.proposed}`;
   const assistant = h("div", { class: "assistant" },
-    h("p", {}, `${ai.message_count} messages · last at ${cell(ai.last_message_at)}`),
+    h("p", {}, `${ai.message_count} messages · last at ${fmtDT(ai.last_message_at)}`),
     ai.proposals.length ? h("ul", { class: "proposals" }, ...ai.proposals.map((p) => h("li", {},
-      h("span", { class: `badge badge-${p.status}` }, p.status), ` ${p.created_at} · ${money(p.price_before, o.currency)} → ${money(p.price_after, o.currency)}`,
+      h("span", { class: "chip" }, p.status), ` ${fmtDT(p.created_at)} · ${money(p.price_before, o.currency)} → ${money(p.price_after, o.currency)}`,
       h("ul", {}, ...p.diff.map((d) => h("li", {}, diffText(d))))))) : h("p", { class: "hint" }, "No proposals."));
-  return h("div", { class: "card order-detail" },
-    h("h2", {}, "Order ", statusBadge(o.status)),
-    o.reopened_at ? h("p", { class: "notice", role: "note" }, `Changed by customer at ${o.reopened_at}`) : null,
-    h("h3", {}, "Contact"), dl([["Name", o.customer.full_name], ["Email", o.customer.email], ["Phone", o.customer.phone]]),
-    h("h3", {}, "Event"), dl([["Type", ev.event_type], ["Date", ev.event_date], ["Adults", ev.adults], ["Children", ev.children],
-      ["Vegetarian guests (within total)", ev.vegetarian_guests], ["Vegan guests (within total)", ev.vegan_guests],
-      ["Restricted-diet guests (within total)", ev.restricted_guests], ["Dietary notes", ev.dietary_notes]]),
-    h("h3", {}, "Fulfillment"), dl([["Type", o.fulfillment_type], ["Requested time", o.requested_at], ["Address", o.delivery_address]]),
-    h("h3", {}, "Items"),
-    h("div", { class: "table-wrap" }, h("table", {}, h("tbody", {}, ...o.items.map((i) => h("tr", {},
-      h("td", {}, i.name),
-      h("td", {}, `${i.quantity} × ${money(i.unit_price, o.currency)}${i.unit ? ` (${i.unit})` : ""}`),
-      h("td", {}, money(i.line_total, o.currency))))))),
-    o.warnings?.includes("mixes_meat_dairy") ? h("p", { class: "notice", role: "note" }, "Order mixes meat and dairy dishes") : null,
-    dl([...(o.delivery_km != null ? [["Distance", `${Number(o.delivery_km)} km`]] : []), ["Subtotal", money(o.subtotal, o.currency)],
-      ["Delivery fee", o.delivery_fee == null ? (o.delivery_fee_estimated ? "To be confirmed (address not found)" : "—")
-        : o.delivery_fee_estimated ? `${money(o.delivery_fee, o.currency)} (estimate)` : money(o.delivery_fee, o.currency)],
-      ["Total", money(o.total, o.currency)]]),
-    h("p", { class: "hint" }, "Prices include VAT."),
-    h("h3", {}, "Assistant"), assistant,
-    o.status === "pending_approval"
-      ? h("div", {}, h("label", {}, "Note (optional, up to 1000 characters)", note), actions)
-      : o.decided_at ? h("div", {}, h("h3", {}, "Decision"), dl([["Decided at", o.decided_at], ["Note", o.decision_note]])) : null,
-    o.status === "pending_approval" || o.status === "approved"
-      ? h("div", {}, h("h3", {}, "Cancel order"), h("label", {}, "Reason (required, shown to the customer, up to 1000 characters)", why), cancelBox) : null,
-    o.cancelled_at ? h("div", {}, h("h3", {}, "Cancellation"), dl([["Cancelled at", o.cancelled_at], ["Cancellation note", o.cancel_note]])) : null);
+  const cur = { pending_approval: 0, approved: 0, in_kitchen: 1, out_for_delivery: 2, ready_for_pickup: 2, delivered: 3 }[o.status];
+  const delivery = o.fulfillment_type === "delivery";
+  const steps = [["Grid", "הזמנה אושרה", o.submitted_at], ["Box Box", "בישול והכנה", o.kitchen_at],
+    [delivery ? "Flying Lap" : "Pit Lane", delivery ? "במשלוח" : "מוכנה לאיסוף", o.dispatched_at], ["Chequered Flag", "נמסרה", o.delivered_at]];
+  const timeline = h("ol", { class: "sectors" }, ...steps.map(([en, he, at], i) => h("li", {
+    class: i === cur && o.status !== "delivered" ? "active" : at || (cur != null && i <= cur) ? "done" : "", "aria-current": i === cur ? "step" : null },
+    h("span", { class: "dot", "aria-hidden": "true" }), h("strong", { dir: "ltr" }, en), h("small", {}, he), h("span", { class: "label" }, at ? fmtDT(at) : "—"))));
+  const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n);
+  const driver = h("section", { class: "panel" }, h("h3", {}, "DRIVER OF THE DAY"),
+    o.rating ? h("div", { class: "rating" }, h("div", { class: "stars", role: "img", "aria-label": `${o.rating.stars} / 5` }, stars(o.rating.stars)),
+      o.rating.comment ? h("p", { class: "comment" }, o.rating.comment) : null, h("span", { class: "label" }, fmtDT(o.rating.created_at)))
+      : h("p", { class: "hint" }, "הדירוג יופיע אחרי Chequered Flag"));
+  const decisionBlock = o.status === "pending_approval"
+    ? h("div", {}, h("label", {}, "הערה (אופציונלי, עד 1000 תווים)", note), actions)
+    : o.decided_at ? h("div", {}, h("h3", {}, "החלטה"), dl([["Decided at", fmtDT(o.decided_at)], ["Note", o.decision_note]])) : null;
+  const advance = canAdvance(o) ? advanceButton(o, () => refresh(id)) : null;
+  return h("div", { class: "order-detail" },
+    h("header", { class: "panel od-head" }, h("div", {}, h("div", { class: "label" }, `ORDER ${o.id.slice(0, 8)}`), h("h2", {}, o.customer.full_name), stageChip(o.status)),
+      h("div", { class: "od-total" }, h("span", { class: "label" }, "TOTAL"), h("span", { class: "num" }, shekel(o.total)))),
+    o.reopened_at ? h("p", { class: "notice", role: "note" }, `Changed by customer at ${fmtDT(o.reopened_at)}`) : null,
+    h("div", { class: "od-grid" },
+      h("div", { class: "col" },
+        h("section", { class: "panel" }, h("h3", {}, "RACE CONTROL"), decisionBlock, advance,
+          o.status === "pending_approval" || o.status === "approved"
+            ? h("div", {}, h("h3", {}, "ביטול הזמנה"), h("label", {}, "סיבה (חובה, מוצגת ללקוח, עד 1000 תווים)", why), cancelBox) : null,
+          o.cancelled_at ? h("div", {}, h("h3", {}, "ביטול"), dl([["Cancelled at", fmtDT(o.cancelled_at)], ["Cancellation note", o.cancel_note]])) : null),
+        h("section", { class: "panel" }, h("h3", {}, "RACE ENGINEER"), assistant),
+        driver),
+      h("div", { class: "col" },
+        h("section", { class: "panel" }, h("h3", {}, "SECTOR TIMINGS"), timeline),
+        h("section", { class: "panel" },
+          h("h3", {}, "Contact"), dl([["Name", o.customer.full_name], ["Email", o.customer.email], ["Phone", o.customer.phone]]),
+          h("h3", {}, "Event"), dl([["Type", ev.event_type], ["Date", fmtDate(ev.event_date)], ["Adults", ev.adults], ["Children", ev.children],
+            ["Vegetarian guests (within total)", ev.vegetarian_guests], ["Vegan guests (within total)", ev.vegan_guests],
+            ["Restricted-diet guests (within total)", ev.restricted_guests], ["Dietary notes", ev.dietary_notes]]),
+          h("h3", {}, "Fulfillment"), dl([["Type", o.fulfillment_type], ["Requested time", fmtDT(o.requested_at)], ["Address", o.delivery_address]])),
+        h("section", { class: "panel" }, h("h3", {}, "LOCKED SNAPSHOT MANIFEST"),
+          h("div", { class: "table-wrap" }, h("table", {}, h("tbody", {}, ...o.items.map((i) => h("tr", {},
+            h("td", {}, i.name),
+            h("td", { class: "num" }, `${i.quantity} × ${money(i.unit_price, o.currency)}${i.unit ? ` (${i.unit})` : ""}`),
+            h("td", { class: "num" }, money(i.line_total, o.currency))))))),
+          o.warnings?.includes("mixes_meat_dairy") ? h("p", { class: "notice", role: "note" }, "Order mixes meat and dairy dishes") : null,
+          dl([...(o.delivery_km != null ? [["Distance", `${Number(o.delivery_km)} km`]] : []), ["Subtotal", money(o.subtotal, o.currency)],
+            ["Delivery fee", o.delivery_fee == null ? (o.delivery_fee_estimated ? "To be confirmed (address not found)" : "—")
+              : o.delivery_fee_estimated ? `${money(o.delivery_fee, o.currency)} (estimate)` : money(o.delivery_fee, o.currency)],
+            ["Total", money(o.total, o.currency)]]),
+          h("p", { class: "hint" }, "Prices include VAT.")))));
 }
 
 // ---- serving rules
@@ -417,30 +564,46 @@ async function showSettings(tabs) {
   } }, ...Object.values(fields),
     h("p", { class: "hint" }, `Located at ${st.kitchen_lat}, ${st.kitchen_lon}`),
     h("button", { class: "primary", type: "submit" }, "Save"));
-  app.replaceChildren(tabs, h("section", {}, h("h2", {}, "Settings"), form));
+  const sms = (label, text, dir) => h("label", {}, label, h("textarea", { readonly: true, rows: 3, dir }, text));
+  const safety = h("section", { class: "panel safety" }, h("h2", {}, "SAFETY CAR"),
+    h("p", { class: "hint" }, "הפעלת Safety Car מציגה ללקוחות באנר ענבר ומאטה את קצב ההזמנות."), safetySwitch(),
+    h("div", { class: "label" }, "LIVE CUSTOMER TICKER PREVIEW"), h("p", { class: "ticker", dir: "ltr" }, TICKER));
+  const smsBox = h("section", { class: "panel" }, h("h2", {}, "SMS / WHATSAPP"),
+    h("p", { class: "notice", role: "note" }, "ספק SMS/WhatsApp: לא מחובר — יחובר בשלב הבא"),
+    h("div", { class: "grid" },
+      sms("עברית (Flying Lap)", "ההזמנה שלך יצאה למסלול! Flying Lap - הצוות בדרך אליך", "rtl"),
+      sms("العربية (Flying Lap)", "طلبك انطلق! Flying Lap - الفريق في الطريق إليك", "rtl")),
+    h("p", { class: "hint", dir: "ltr" }, "{customer_name} {driver_name} {eta} {order_id}"));
+  app.replaceChildren(tabs, h("section", {}, h("h2", {}, "הגדרות"), form, safety, smsBox));
 }
 
 // ---- shell
+const GROUPS = {
+  wall: { label: "Pit Wall", keys: [] }, orders: { label: "הזמנות", keys: [] },
+  menu: { label: "תפריט", keys: ["categories", "dishes", "serving-rules"] },
+  settings: { label: "הגדרות", keys: ["settings", "time-slots", "blocked-dates"] },
+};
+const SUB = { categories: "Categories", dishes: "Dishes", "serving-rules": "Serving rules", settings: "Settings", "time-slots": "Time slots", "blocked-dates": "Blocked dates" };
+const groupOf = (key) => (GROUPS[key] ? key : Object.keys(GROUPS).find((g) => GROUPS[g].keys.includes(key)));
+
 async function showDashboard() {
   state.config ??= await api("/api/public-config");
-  const tabs = h("nav", { "aria-label": "Sections" });
-  const open = (key) => run(async () => {
-    for (const b of tabs.children) b.setAttribute("aria-pressed", String(b.dataset.key === key));
-    if (key === "orders") await showOrders(tabs);
-    else if (key === "serving-rules") await showRules(tabs);
-    else if (key === "settings") await showSettings(tabs);
-    else await showResource(key, tabs);
-  });
-  for (const [key, cfg] of Object.entries(RESOURCES)) {
-    if (key === "delivery-zones") continue; // replaced by distance-based fees in Settings
-    tabs.append(h("button", { type: "button", "data-key": key, "aria-pressed": "false", onclick: () => open(key) }, cfg.title));
-  }
-  for (const [key, title] of [["orders", "Orders"], ["serving-rules", "Serving rules"], ["settings", "Settings"]]) {
-    tabs.append(h("button", { type: "button", "data-key": key, "aria-pressed": "false", onclick: () => open(key) }, title));
-  }
-  tabs.append(h("button", { type: "button", onclick: () => logout() }, "Log out"));
-  app.replaceChildren(tabs);
-  await open("orders");
+  try { setSafety((await api("/api/public-settings")).safety_car); } catch { /* the switch stays off */ }
+  openSection = async (key, arg = null) => {
+    const g = groupOf(key);
+    for (const b of topTabs.children) b.setAttribute("aria-current", String(b.dataset.key === g));
+    const sub = h("nav", { class: "subnav", "aria-label": "Subsections" });
+    for (const k of GROUPS[g].keys) sub.append(h("button", { type: "button", "aria-pressed": String(k === key), onclick: () => run(() => openSection(k)) }, SUB[k]));
+    if (key === "wall") await showWall(sub);
+    else if (key === "orders") await showOrders(sub, "", arg);
+    else if (key === "serving-rules") await showRules(sub);
+    else if (key === "settings") await showSettings(sub);
+    else await showResource(key, sub);
+  };
+  topTabs.replaceChildren(...Object.entries(GROUPS).map(([g, { label, keys }]) =>
+    h("button", { type: "button", class: "tab", "data-key": g, "aria-current": "false", onclick: () => run(() => openSection(keys[0] ?? g)) }, label)));
+  tools.replaceChildren(safetySwitch(), h("button", { type: "button", class: "ghost", onclick: () => logout() }, "יציאה"));
+  await openSection("wall");
 }
 
 if (auth.get()) run(showDashboard); else showLogin();
