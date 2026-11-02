@@ -29,12 +29,12 @@ When a decision is made, record it here and move the row out of the table above.
 | Date | # | Decision | Decided by |
 |---|---|---|---|
 | 2026-10-29 | 12 | Interface language is **Hebrew only, RTL**. AI responses must also be in Hebrew. | Project owner (chat) |
-| 2026-11-02 | 4 | Vegetarian, vegan and restricted guests are **subsets** of adults + children and mutually exclusive (a vegan is not also counted as vegetarian). | Project owner (DB planning chat) |
-| 2026-11-02 | 5 (part) | Kitchen capacity is a **maximum number of guests per day**: a default in settings plus per-date overrides. Time slots have no capacity. Pending and approved orders count. | Project owner (DB planning chat) |
-| 2026-11-02 | 14 (part) | Catalog prices **include VAT**. The VAT rate and VAT amount are frozen on the order at submission. | Project owner (DB planning chat) |
-| 2026-11-02 | 19 | Delivery zones are **lists of cities**; each zone has one fee. The customer picks a city from the list. | Project owner (DB planning chat) |
-| 2026-11-02 | 14 | Each order line is rounded half up to the agora; the total is the exact sum of lines plus the delivery fee, with no further rounding. | Project owner (DB planning chat) |
-| 2026-11-02 | 9 (part) | Meat and dairy dishes **may be mixed** in one order, with a warning to the customer and a flag for the owner. | Project owner (DB planning chat) |
-| 2026-11-02 | 18 | Weight-based dishes are priced **per 100 g**. | Project owner (DB planning chat) |
-| 2026-11-02 | — | One phone number = one customer (`customers.phone` unique). | Project owner (DB planning chat) |
-| 2026-11-02 | — | AI chat messages are deleted **90 days after the event date**; suggestions and their outcome stay with the order. Customers are told in the chat. | Project owner (DB planning chat) |
+| 2026-11-02 | 4 | Vegetarian, vegan and restricted guests are **subsets** of adults + children and mutually exclusive (a vegan is not also counted as vegetarian). | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | 5 (part) | Kitchen capacity is a **maximum number of guests per day**: a default in settings plus per-date overrides. Time slots have no capacity. Pending and approved orders count. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | 14 (part) | Catalog prices **include VAT**. The VAT rate and VAT amount are frozen on the order at submission. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | 19 | Delivery zones are **lists of cities**; each zone has one fee. The customer picks a city from the list. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | 14 | Each order line is rounded half up to the agora; the total is the exact sum of lines plus the delivery fee, with no further rounding. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | 9 (part) | Meat and dairy dishes **may be mixed** in one order, with a warning to the customer and a flag for the owner. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | 18 | Weight-based dishes are priced **per 100 g**. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | — | One phone number = one customer (`customers.phone` unique). | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-02 | — | AI chat messages are deleted **90 days after the event date**; suggestions and their outcome stay with the order. Customers are told in the chat. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |

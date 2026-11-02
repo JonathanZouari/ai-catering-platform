@@ -2,6 +2,7 @@
 
 Status: **Draft v0.2** — planned, not yet migrated. First migration is planned for Phase 2.
 v0.2 replaces the v0.1 Postgres-only draft after a planning session on 2026-11-02 (decisions recorded in `OPEN_DECISIONS.md` and ADR-0002).
+Diagrams: [`ERD.md`](ERD.md).
 
 ## Conventions
 
