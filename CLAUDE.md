@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Ordering and management web app for a single catering business (Hebrew, RTL). Currently **Phase 1 (scaffolding)**: only `/health` and the static pages exist. The specs in `docs/` say what comes next and in which phase. Check `docs/OPEN_DECISIONS.md` before implementing anything marked **[OPEN]**, such as auth, the LLM provider, quantity rules or the logo.
+Ordering and management web app for a single catering business (Hebrew, RTL). Currently **Phase 3 (customer side)**: the Phase 2 admin screens (catalog, availability, orders) are built; customer accounts use Supabase Auth (ADR 0005). The specs in `docs/` say what comes next and in which phase. Check `docs/OPEN_DECISIONS.md` before implementing anything marked **[OPEN]**, such as the LLM provider, quantity rules or the logo.
 
 ## Working rules
 

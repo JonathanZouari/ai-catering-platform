@@ -21,7 +21,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| auth_user_id | uuid null unique | FK `auth.users` if accounts are chosen **[OPEN #1]** |
+| auth_user_id | uuid null unique | FK `auth.users` (ADR 0005); null for customers created without an account |
 | full_name | text not null | |
 | email | text null | |
 | phone | text null | |

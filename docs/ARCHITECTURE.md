@@ -61,12 +61,12 @@ Status: **Draft v0.1** · Phase 0 deliverable
 - Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
 - Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via a public bucket (or signed URLs — to confirm in Phase 2).
 - Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
-- RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies depend on the auth decision **[OPEN #1]**.
+- RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies can follow the customer-auth model (ADR 0005).
 
-## 5. Authentication **[OPEN]**
+## 5. Authentication
 
-- Admin: one owner account. Recommended: Supabase Auth email login, backend verifies the JWT and checks an `admin` role.
-- Customer: undecided (account vs guest link). Backend dependencies will be written so either option plugs in.
+- Customer **[CONFIRMED 2026-11-02, ADR 0005]**: account required; passwordless 6-digit email code via Supabase Auth. The browser signs in with supabase-js; the backend verifies the access token (JWKS signature, `aud`, `iss`, `exp`) in `core/customer_auth.py` and resolves ownership from the token's `sub` only.
+- Admin: temporary shared `ADMIN_TOKEN` bearer. Recommended next: the owner signs in the same way and the backend checks an `admin` role.
 
 ## 6. Environments and branches **[CONFIRMED]** (separate Supabase projects strongly preferred)
 

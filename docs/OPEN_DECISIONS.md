@@ -6,7 +6,6 @@ Format: **Question** · *Why it matters* · **Blocks**
 
 | # | Topic | Question | Why it matters | Blocks |
 |---|---|---|---|---|
-| 1 | Customer authentication / guest checkout | Must customers create an account? Email magic link, OTP by phone, password, or guest checkout with a tokenized link? | Determines ownership model, RLS policies, and how a customer returns to a draft/quote | Phase 3 order ownership, Phase 4 chat history |
 | 2 | Payment & deposit | Is any deposit or payment collected in-app? | Payments are out of scope unless approved | Nothing in MVP unless approved |
 | 3 | Serving & quantity formulas | Per category/dish, how much per adult / child? Rounding (e.g., whole trays)? Different for vegetarian/vegan guests? | Quantity recommendation must use business rules, not AI guesses | Phase 3 quantity engine (schema can hold rules; values unknown) |
 | 4 | Overlapping guest dietary categories | Are vegetarian/vegan/restricted guests counted *within* adults/children (subsets) or separately? Is vegan a subset of vegetarian? | Prevents double-counting | Phase 3 guest composition validation |
@@ -33,4 +32,4 @@ When a decision is made, record it here and move the row out of the table above.
 
 | Date | # | Decision | Decided by |
 |---|---|---|---|
-| — | — | — | — |
+| 2026-11-02 | 1 | Customers must create an account. Passwordless email login only: a 6-digit code sent by email (no password, no guest checkout, no phone OTP for now). Implemented with Supabase Auth (ADR 0005). | Business owner |

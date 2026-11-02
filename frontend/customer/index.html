@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>תכנון אירוע · Yummai</title>
+  <title>האזור האישי · Yummai</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
@@ -14,7 +14,7 @@
   <div class="header-inner wrap">
     <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
     <nav class="site-nav" aria-label="ניווט ראשי">
-      <a href="/customer/" aria-current="page">תכנון אירוע</a><a href="/admin/">לעסק</a>
+      <a href="/customer/" aria-current="page">האזור האישי</a><a href="/admin/orders/">לעסק</a>
     </nav>
   </div>
 </header>
@@ -23,22 +23,83 @@
 <div class="app wrap">
   <main id="screen">
     <div class="screen-head">
-      <p class="eyebrow">שלב 1 מתוך 3</p>
-      <h2>תכנון האירוע</h2>
-      <p class="lede">המסכים C1–C5 נבנים בשלבים הבאים (docs/UX_UI_SPEC.md). הסגנונות שלהם כבר מוכנים ב-css/base.css.</p>
+      <p class="eyebrow">האזור האישי</p>
+      <h2 id="title">כניסה</h2>
+      <p class="lede" id="lede">בלי סיסמה: שולחים לכם קוד לאימייל, ומקלידים אותו כאן.</p>
     </div>
-    <p class="fine">מצב השרת: <span id="status" aria-live="polite">בודק…</span></p>
+
+    <p class="notice warn" id="unavailable" role="alert" hidden>הכניסה ללקוחות עוד לא מוגדרת באתר. נסו שוב מאוחר יותר.</p>
+
+    <form id="email-step" class="event-form" novalidate hidden>
+      <div class="field">
+        <label for="email">אימייל</label>
+        <input id="email" type="email" autocomplete="email" inputmode="email" dir="ltr" required maxlength="254">
+      </div>
+      <p class="help error" id="email-error" role="alert" hidden></p>
+      <div class="actions"><button class="btn primary" type="submit">שליחת קוד</button></div>
+    </form>
+
+    <form id="code-step" class="event-form" novalidate hidden>
+      <p>שלחנו קוד בן 6 ספרות אל <bdi id="sent-to"></bdi>. הוא בתוקף לזמן קצר.</p>
+      <div class="field">
+        <label for="code">הקוד מהמייל</label>
+        <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" dir="ltr" required>
+      </div>
+      <p class="help error" id="code-error" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" type="button" id="change-email">אימייל אחר</button>
+        <button class="btn ghost" type="button" id="resend">שליחה מחדש</button>
+        <button class="btn primary" type="submit">כניסה</button>
+      </div>
+    </form>
+
+    <form id="profile-step" class="event-form" novalidate hidden>
+      <p>כדי שנוכל לחזור אליכם לגבי ההזמנה:</p>
+      <div class="field">
+        <label for="full-name">שם מלא</label>
+        <input id="full-name" autocomplete="name" required minlength="2" maxlength="120">
+      </div>
+      <div class="field">
+        <label for="phone">טלפון</label>
+        <input id="phone" type="tel" autocomplete="tel" inputmode="tel" dir="ltr" required maxlength="20">
+      </div>
+      <p class="help error" id="profile-error" role="alert" hidden></p>
+      <div class="actions"><button class="btn primary" type="submit">שמירה</button></div>
+    </form>
+
+    <section id="account" class="admin-stack" aria-labelledby="orders-h" hidden>
+      <div class="order-detail">
+        <div class="detail-head">
+          <h3>הפרטים שלי</h3>
+          <div class="actions">
+            <button class="btn ghost" type="button" id="edit-profile">עריכה</button>
+            <button class="btn ghost" type="button" id="sign-out">יציאה</button>
+          </div>
+        </div>
+        <dl class="totals" id="profile-facts"></dl>
+      </div>
+      <div class="order-detail">
+        <div class="detail-head"><h3 id="orders-h">ההזמנות שלי</h3></div>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">אירוע</th><th scope="col">סטטוס</th><th scope="col">סה"כ</th></tr></thead>
+            <tbody id="order-rows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-orders" hidden>עוד אין לכם הזמנות. תכנון אירוע חדש יגיע לכאן בקרוב.</p>
+      </div>
+    </section>
   </main>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <footer class="site-footer wrap"><span>Yummai · תל אביב</span></footer>
 <script type="module">
-  import { api } from "/js/api.js";
   import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initAccount } from "/js/account.js";
   initMotion();
   initRouteBand();
-  const el = document.getElementById("status");
-  api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+  initAccount();
 </script>
 </body>
 </html>

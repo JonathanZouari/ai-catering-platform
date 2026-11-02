@@ -30,6 +30,7 @@ def test_design_assets_served():
         "/js/admin-common.js",
         "/js/admin-availability.js",
         "/js/admin-orders.js",
+        "/js/account.js",
         "/assets/img/table.jpg",
     )
     for path in paths:
