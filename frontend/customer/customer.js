@@ -490,7 +490,7 @@ const stamp = (v) => v && new Intl.DateTimeFormat(LOCALES[st.lang], { dateStyle:
 function tracker(o) {
   const [idx, name] = STAGES[o.status];
   const pickup = o.fulfillment_type === "pickup" || o.status === "ready_for_pickup";
-  const stamps = [o.requested_at, o.kitchen_at, o.dispatched_at, o.delivered_at];
+  const stamps = [o.submitted_at, o.kitchen_at, o.dispatched_at, o.delivered_at];
   const list = [["Grid", "pending_approval"], ["Box Box", "in_kitchen"], [pickup ? "Pit Lane" : "Flying Lap", pickup ? "ready_for_pickup" : "out_for_delivery"], ["Chequered Flag", "delivered"]];
   const done = o.status === "delivered" ? 4 : o.status === "approved" ? 1 : idx; // stages before `done` are complete
   const active = o.status === "delivered" || o.status === "approved" ? -1 : idx;
@@ -807,13 +807,17 @@ function syncPoll(on) {
   pollTimer ??= setInterval(async () => {
     if (document.visibilityState !== "visible" || polling || st.busy || !st.cred) return;
     polling = true;
+    const cred = st.cred;
+    // A user action, order switch or stop during the request wins over its (now stale) answer.
+    const stale = (o) => st.busy || st.cred !== cred || !pollTimer || (o && st.order && o.version < st.order.version);
     try {
       const [o, s2] = await Promise.all([orderApi(), api("/api/public-settings").catch(() => null)]);
+      if (stale(o)) return;
       const changed = o.status !== st.order?.status || o.version !== st.order?.version || (s2 && s2.safety_car !== st.settings.safety_car);
       if (s2) Object.assign(st.settings, s2);
       st.order = o;
       if (changed) render();
-    } catch (e) { if (e.status === 404) resetOrder(t().notFound); } finally { polling = false; }
+    } catch (e) { if (e.status === 404 && !stale()) resetOrder(t().notFound); } finally { polling = false; }
   }, 60000);
 }
 
