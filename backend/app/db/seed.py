@@ -4,7 +4,25 @@
 Run: uv run python -m app.db.seed
 """
 
+import json
+from datetime import date, timedelta
+
 from app.db import init_db
+
+# PLACEHOLDER zones, fees (agorot) and slots (OPEN #5, #19); not business rules.
+ZONES = [
+    ("תל אביב-יפו", 6000),
+    ("רמת גן", 6000),
+    ("גבעתיים", 6000),
+    ("הרצליה", 9000),
+    ("פתח תקווה", 10000),
+    ("ראשון לציון", 11000),
+]
+SLOTS = {
+    "pickup": [("10:00", "12:00"), ("12:00", "14:00"), ("15:00", "17:00")],
+    "delivery": [("09:00", "11:00"), ("11:00", "13:00"), ("14:00", "16:00")],
+}
+BLOCKED_DAYS_AHEAD = (5, 11)  # relative to the day the seed runs
 
 CATEGORIES = ["ראשונות", "סלטים", "עיקריות", "תוספות", "קינוחים"]
 ALLERGENS = ["גלוטן", "אגוזים", "בוטנים", "שומשום", "ביצים", "חלב", "דגים", "סויה"]
@@ -142,6 +160,27 @@ def seed(path: str = "catering.db") -> None:
             conn.execute(
                 "INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES (?, ?, ?)",
                 (f"cat-{i + 1}", name, i),
+            )
+        for i, (city, fee) in enumerate(ZONES):
+            conn.execute(
+                "INSERT OR IGNORE INTO delivery_zones (id, name, fee, definition) VALUES (?, ?, ?, ?)",
+                (
+                    f"zone-{i + 1}",
+                    city,
+                    fee,
+                    json.dumps({"type": "city", "city": city}, ensure_ascii=False),
+                ),
+            )
+        for kind, slots in SLOTS.items():
+            for i, (start, end) in enumerate(slots):
+                conn.execute(
+                    "INSERT OR IGNORE INTO time_slots (id, fulfillment_type, start_time, end_time) VALUES (?, ?, ?, ?)",
+                    (f"slot-{kind}-{i + 1}", kind, start, end),
+                )
+        for days in BLOCKED_DAYS_AHEAD:
+            conn.execute(
+                "INSERT OR IGNORE INTO blocked_dates (date, reason) VALUES (?, 'סגור להזמנות')",
+                ((date.today() + timedelta(days=days)).isoformat(),),
             )
         for i, name in enumerate(ALLERGENS):
             conn.execute("INSERT OR IGNORE INTO allergens (id, name) VALUES (?, ?)", (i + 1, name))

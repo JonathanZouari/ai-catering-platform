@@ -58,12 +58,21 @@ const SLOTS = {
 
 const LEAD_DAYS = 2; // PLACEHOLDER minimum lead time (OPEN #5)
 
+// GET /api/availability replaces the placeholders above (zones, slots, closed dates, lead time).
+let remote = null;
+
+export function applyAvailability(a) {
+  remote = { min: a.min_date, blocked: a.blocked_dates };
+  ZONES.splice(0, ZONES.length, ...a.zones.map((z) => ({ city: z.city, fee: z.fee / 100 })));
+  Object.assign(SLOTS, a.slots);
+}
+
 export function minEventDate() {
-  return toIsoDate(addDays(new Date(), LEAD_DAYS));
+  return remote?.min ?? toIsoDate(addDays(new Date(), LEAD_DAYS));
 }
 
 export function blockedDates() {
-  return [toIsoDate(addDays(new Date(), 5)), toIsoDate(addDays(new Date(), 11))];
+  return remote?.blocked ?? [toIsoDate(addDays(new Date(), 5)), toIsoDate(addDays(new Date(), 11))];
 }
 
 export function slotsFor(fulfillment) {
