@@ -1,34 +1,18 @@
 // The home page's sample ticket and scroll story. Figures here only illustrate:
 // real prices and quantities always come from the backend.
 
+const DISHES = {
+  bowl: { name: "קערת בריאות", price: 120, serves: 10 },
+  potato: { name: "בטטה צלויה", price: 160, serves: 10 },
+  pasta: { name: "פסטה ברוטב עגבניות", price: 180, serves: 10 },
+  chef: { name: "מנת השף", price: 200, serves: 20 },
+  veg: { name: "מגש ירקות העונה", price: 120, serves: 12 },
+};
+
 const MENUS = {
-  birthday: {
-    label: "יום הולדת",
-    lines: [
-      { kind: "salad", name: "סלט עונתי", price: 120, serves: 10 },
-      { kind: "main", name: "עוף בתנור", price: 180, serves: 10 },
-      { kind: "side", name: "אורז עם שקדים", price: 90, serves: 14 },
-      { kind: "dessert", name: "מגש עוגות", price: 130, serves: 20 },
-    ],
-  },
-  brit: {
-    label: "ברית",
-    lines: [
-      { kind: "salad", name: "סלטים לפתיחה", price: 110, serves: 10 },
-      { kind: "main", name: "דג אפוי", price: 240, serves: 10 },
-      { kind: "side", name: "קוסקוס ירקות", price: 100, serves: 14 },
-      { kind: "dessert", name: "פירות העונה", price: 140, serves: 15 },
-    ],
-  },
-  office: {
-    label: "אירוע חברה",
-    lines: [
-      { kind: "salad", name: "סלט קינואה", price: 130, serves: 10 },
-      { kind: "main", name: "כריכים מיני", price: 150, serves: 8 },
-      { kind: "side", name: "ירקות צלויים", price: 95, serves: 14 },
-      { kind: "dessert", name: "עוגיות הבית", price: 90, serves: 20 },
-    ],
-  },
+  birthday: { label: "יום הולדת", dishes: ["bowl", "potato", "pasta", "chef"] },
+  brit: { label: "ברית", dishes: ["veg", "chef", "potato", "bowl"] },
+  office: { label: "אירוע חברה", dishes: ["bowl", "pasta", "veg", "potato"] },
 };
 
 const shekels = (amount) => `₪${amount.toLocaleString("en-US")}`;
@@ -41,13 +25,16 @@ function span(className, text) {
   return element;
 }
 
-function renderLine({ kind, name, price, serves }, guests) {
+function renderLine(key, guests) {
+  const { name, price, serves } = DISHES[key];
   const quantity = Math.ceil(guests / serves);
   const row = document.createElement("li");
-  const icon = span(`dish dish-${kind}`, "");
-  icon.setAttribute("aria-hidden", "true");
+  const photo = document.createElement("img");
+  photo.className = "dish";
+  photo.src = `/img/food/${key}.jpg`;
+  photo.alt = "";
   row.append(
-    icon,
+    photo,
     span("line-name", name),
     span("line-qty", trays(quantity)),
     span("line-price", shekels(quantity * price)),
@@ -64,7 +51,7 @@ function setUpDemo() {
   const render = () => {
     const guests = Number(slider.value);
     const menu = MENUS[form.elements.event.value];
-    const lines = menu.lines.map((line) => renderLine(line, guests));
+    const lines = menu.dishes.map((key) => renderLine(key, guests));
     const total = lines.reduce((sum, line) => sum + line.cost, 0);
 
     document.querySelector("#guests-value").textContent = guests;

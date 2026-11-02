@@ -44,6 +44,9 @@ def test_page_fits_loads_everything_and_has_no_errors(page: Page, size):
     assert page.locator("html").get_attribute("dir") == "rtl"
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     assert page.evaluate("document.fonts.check('700 20px Heebo', 'א')")
+    for photo in page.locator("img").all():
+        photo.scroll_into_view_if_needed()
+        assert photo.evaluate("p => p.decode().then(() => p.naturalWidth)") > 0
     assert failed == []
     assert page.errors == []
 
@@ -68,14 +71,14 @@ def test_every_story_stage_fits_and_is_shown(page: Page, size):
 
 def test_guest_count_reprints_the_ticket(page: Page):
     page.goto("/")
-    expect(page.locator("#ticket-total")).to_have_text("₪1,730")
+    expect(page.locator("#ticket-total")).to_have_text("₪2,240")
 
     set_guests(page, 100)
 
     expect(page.locator("#guests-value")).to_have_text("100")
     expect(page.locator("#ticket-event")).to_have_text("יום הולדת · 100 אורחים")
     expect(page.locator("#ticket-lines li").first).to_contain_text("10 מגשים")
-    expect(page.locator("#ticket-total")).to_have_text("₪4,370")
+    expect(page.locator("#ticket-total")).to_have_text("₪5,600")
 
 
 def test_event_type_changes_the_ticket_and_works_by_keyboard(page: Page):
@@ -86,7 +89,7 @@ def test_event_type_changes_the_ticket_and_works_by_keyboard(page: Page):
 
     expect(page.locator("input[value=brit]")).to_be_checked()
     expect(page.locator("#ticket-event")).to_contain_text("ברית")
-    expect(page.locator("#ticket-lines")).to_contain_text("דג אפוי")
+    expect(page.locator("#ticket-lines")).to_contain_text("מגש ירקות העונה")
 
 
 def test_sample_figures_are_marked_as_samples(page: Page):
@@ -108,7 +111,7 @@ def test_without_javascript_the_page_still_reads(page: Page, base_url):
     tab.goto(base_url)
 
     expect(tab.locator("h1")).to_be_visible()
-    expect(tab.locator("#ticket-total")).to_have_text("₪1,730")
+    expect(tab.locator("#ticket-total")).to_have_text("₪2,240")
     expect(tab.locator(".step").first).to_be_visible()
     context.close()
 
