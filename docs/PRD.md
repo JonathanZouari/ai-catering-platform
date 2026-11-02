@@ -84,7 +84,7 @@ Details: `AI_AGENT_DESIGN.md`.
 
 Multi-business marketplace · admin AI agent · corporate customers · staff/waiter management · advanced inventory · supplier procurement · accounting/invoicing · payment gateway · calorie/nutrition database · automated dish generation · autonomous order approval · native mobile apps.
 
-Unresolved and **not** to be built until decided: serving utensils/disposables, alcohol, voice AI, customer auth method, notifications, cancellation/refund, owner-proposed revisions, post-submission customer edits.
+Unresolved and **not** to be built until decided: serving utensils/disposables, alcohol, voice AI, notifications, cancellation/refund, owner-proposed revisions, post-submission customer edits.
 
 ## 10. Success criteria for MVP (proposed) **[RECOMMENDATION]**
 

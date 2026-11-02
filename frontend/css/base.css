@@ -153,6 +153,7 @@ legend { padding: 0; margin-block-end: 10px; }
 .lines { width: 100%; border-collapse: collapse; }
 .lines th, .lines td { padding: 12px 0; text-align: start; border-block-end: 1px solid var(--line); vertical-align: top; }
 .lines thead th { font-size: .8rem; color: var(--muted); font-weight: 600; }
+.lines thead th + th { padding-inline-start: 12px; } /* same gutter as body cells */
 .lines tbody th { font-weight: 500; padding-inline-end: 12px; }
 .lines td { white-space: nowrap; padding-inline-start: 12px; }
 .lines td:last-child { text-align: end; font-weight: 600; }

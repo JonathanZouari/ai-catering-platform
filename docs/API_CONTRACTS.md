@@ -27,7 +27,16 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
 | GET | `/api/availability?from=&to=` | Blocked dates + slots |
 
-## Customer orders (auth model **[OPEN #1]**)
+## Customer account (Supabase Auth access token as `Authorization: Bearer`, ADR 0005)
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/auth/config` | Public: `{supabase_url, supabase_anon_key}` for supabase-js; 503 `auth_unavailable` if not configured |
+| GET | `/api/me` | `{email, profile: {full_name, phone} \| null}`; profile is null until first save |
+| PUT | `/api/me` | `{full_name, phone}`; creates the customer on first save; email always from the token |
+| GET | `/api/me/orders` | The signed-in customer's orders only, any status, newest event first |
+
+## Customer orders (same customer auth; owner = the signed-in customer)
 
 | Method | Path | Notes |
 |---|---|---|

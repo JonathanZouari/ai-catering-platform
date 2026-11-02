@@ -26,9 +26,10 @@ ORDER_STATUSES = ("draft", "pending_approval", "approved", "rejected")
 
 
 class Customer(Timestamps, Base):
-    # shortcut: no auth_user_id until customer auth is decided (OPEN_DECISIONS #1).
     __tablename__ = "customers"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    # Supabase auth.users.id; null for customers created before accounts (e.g. sample data).
+    auth_user_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, unique=True)
     full_name: Mapped[str] = mapped_column(Text)
     email: Mapped[str | None] = mapped_column(Text)
     phone: Mapped[str | None] = mapped_column(Text)
