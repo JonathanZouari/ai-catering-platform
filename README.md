@@ -2,24 +2,24 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Phase 1 — scaffolding**. No business features yet. See `docs/` for the specs.
+> Status: **Phase 2 — data layer**. Customer UI runs on a mock backend; the SQLite database and migrations are in place. See `docs/` for the specs.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
+| Backend | Python 3.12+, FastAPI, Pydantic, standard-library `sqlite3` |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Data | **SQLite** ([ADR 0005](docs/ADR/0005-sqlite-database.md)). Supabase Storage/Auth optional, if approved |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
 ## Repository layout
 
 ```
-backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
+backend/        FastAPI app (api, core, db, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+database/       migrations/NNNN_name.sql (SQLite, forward-only)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -35,10 +35,15 @@ Requires [uv](https://docs.astral.sh/uv/) (it installs a matching Python automat
 cp .env.example .env          # fill values when needed; .env is git-ignored
 cd backend
 uv sync                       # install dependencies
+uv run python -m app.db       # create/upgrade data/catering.sqlite3 (safe to repeat)
 uv run uvicorn app.main:app --reload
 ```
 
-- API health: http://127.0.0.1:8000/health
+The app also applies pending migrations on startup (`DB_AUTO_MIGRATE=true`). Migrations never drop
+data; `uv run python -m app.db status` lists what is applied. Schema and rules:
+[docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md).
+
+- API health (includes database status): http://127.0.0.1:8000/health
 - Customer UI: http://127.0.0.1:8000/customer/
 - Admin UI: http://127.0.0.1:8000/admin/
 
@@ -62,23 +67,23 @@ uv run pytest
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 2, when database code exists.
+The database needs no extra package: SQLite (3.37+) ships with Python. The Supabase client is added only if Storage/Auth are adopted.
 
 ## Branches and environments
 
-| Branch | Purpose | Railway env | Supabase project |
+| Branch | Purpose | Railway env | Database |
 |---|---|---|---|
-| `main` | Production (default branch) | `production` | prod project |
-| `dev` | Integration | `development` | dev project |
+| `main` | Production (default branch) | `production` | own SQLite file (volume) |
+| `dev` | Integration | `development` | own SQLite file (volume) |
 
 - Feature work → PR into `dev` (CI must pass).
 - Release → PR `dev` → `main`.
 - Production deploys are manual and need explicit approval.
 - Each Railway environment holds its own variables from `.env.example`. **Never commit secrets.** The service-role key stays server-side.
 
-## Railway / Supabase status
+## Railway status
 
-Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 6.
+Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project is connected yet. That is planned for Phase 6. Railway's container disk is ephemeral, so each environment needs a volume, with `SQLITE_PATH` pointing into it (the image defaults to `/srv/data/catering.sqlite3`).
 
 ## Documentation
 

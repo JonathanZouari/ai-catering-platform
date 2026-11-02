@@ -1,148 +1,170 @@
-# Preliminary Database Schema (PostgreSQL / Supabase)
+# Database Schema (SQLite)
 
-Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
+Status: **v1.0 — migrated** (`database/migrations/0001_initial_schema.sql`). The database is SQLite
+([ADR 0005](ADR/0005-sqlite-database.md)), which supersedes the earlier Supabase Postgres draft
+([ADR 0002](ADR/0002-supabase-postgres-sqlalchemy.md)). The migration file is the source of truth. This
+page explains it.
 
-Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
+## Initialise and migrate
 
-## Enums
+```bash
+cd backend
+uv run python -m app.db            # create data/catering.sqlite3 or apply pending migrations
+uv run python -m app.db status     # list applied / pending migrations
+```
 
-| Enum | Values | Source |
-|---|---|---|
-| `pricing_unit` | `per_guest`, `per_tray`, `per_weight`, `per_item` | Decision 6 |
-| `kashrut_class` | `meat`, `dairy`, `pareve` | Decision 9 |
-| `fulfillment_type` | `pickup`, `delivery` | Decision 8 |
-| `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
-| `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
-| `allergen_status` | `contains`, `free`, `unknown` | Decision 9 — unknown ≠ free |
+The app also migrates on startup (`DB_AUTO_MIGRATE=true`). Both paths are **non-destructive and
+repeatable**:
+
+- Each `database/migrations/NNNN_name.sql` runs once, in order, inside its own `BEGIN IMMEDIATE`
+  transaction, and is recorded in `schema_migrations` (version, name, SHA-256 checksum, applied_at).
+  Running again applies only new files. Existing data is never dropped or rewritten.
+- A failing migration rolls back completely and is not recorded.
+- An applied migration whose file changed, or a database that has a version the code does not know,
+  stops the run with an error. Fix it with a **new** migration, never by editing an old one.
+- Checksums ignore CRLF/LF differences, so Windows and Linux checkouts agree.
+- Migration files must not contain `BEGIN`/`COMMIT` or `PRAGMA`. The runner detects a migration that
+  ends the transaction.
+
+## Connections
+
+Always use `app.db.connect()` (or the FastAPI dependency `app.db.get_db`). Every connection runs
+`PRAGMA foreign_keys = ON` and checks that it took effect. SQLite turns this off by default on each
+new connection, and the pragma does nothing inside a transaction, so it is set before the connection
+switches to transactional mode. It also sets `busy_timeout = 5000` and `journal_mode = WAL`.
+SQLite 3.37+ is required for `STRICT` tables.
+
+`GET /health` reports `{"engine": "sqlite", "schema_version": "0001", "foreign_keys": true}`. It
+returns 503 if the schema is missing or foreign keys are off.
+
+## Conventions
+
+| Topic | Rule |
+|---|---|
+| Tables | `STRICT`. Wrong types are rejected, not coerced (`'twenty'` into an INTEGER fails). |
+| Keys | `id INTEGER PRIMARY KEY` |
+| Money | `INTEGER` **minor units** (agorot for ILS) in `*_minor` columns. Never REAL. Convert with `app.db.money.to_minor` / `from_minor` (Decimal only, floats rejected, more than 2 decimals rejected). |
+| Currency | `TEXT` ISO-4217 code, 3 upper-case letters, default `ILS` (**[OPEN #17]**) |
+| Ingredient quantities | `INTEGER` in the ingredient's base unit: `g`, `ml`, or `unit` |
+| Timestamps | `TEXT` UTC `YYYY-MM-DDTHH:MM:SSZ`, CHECKed with `strftime`, so text order = time order. Use `app.db.timestamps.format_utc`. |
+| Dates | `TEXT` `YYYY-MM-DD`, CHECKed with `date(x) IS x` (rejects `2026-02-30`) |
+| Booleans | `INTEGER` `0`/`1` with CHECK |
+| Enums | `TEXT` with a CHECK list |
+| Foreign keys | Default `NO ACTION` (acts as restrict). History is never cascade-deleted. |
+| Ledgers | `payments`, `equipment_movements`, `ingredient_movements` are **append-only** (UPDATE/DELETE raise). Correct them with a refund or adjustment row. |
+| `updated_at` | Maintained by triggers unless the statement sets it explicitly |
 
 ## Tables
 
 ### customers
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| auth_user_id | uuid null unique | FK `auth.users` if accounts are chosen **[OPEN #1]** |
-| full_name | text not null | |
-| email | text null | |
-| phone | text null | |
-| created_at, updated_at | timestamptz | |
+`id` · `full_name` not blank · `email` unique (case-insensitive), nullable · `phone` nullable ·
+`created_at`, `updated_at` · CHECK: email **or** phone is present.
+
+### employees
+`id` · `full_name` · `role` ∈ `owner, manager, chef, cook, kitchen_assistant, driver, server, other` ·
+`email` unique (case-insensitive) · `phone` · `hired_on` date · `is_active` 0/1 · timestamps.
+
+### addresses
+`id` · `customer_id` → customers, **null = business address** (kitchen, warehouse) · `label` · `street`
+· `house_number` · `apartment` · `floor` · `city` · `postal_code` · `access_notes` · timestamps ·
+UNIQUE(`id`, `customer_id`) so orders can require an address of their own customer.
 
 ### events
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| customer_id | uuid FK → customers, not null | |
-| event_type | text not null | Private event label; list configurable **[RECOMMENDATION]** |
-| event_date | date not null | |
-| adults | int not null ≥ 0 | |
-| children | int not null ≥ 0 | |
-| vegetarian_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| vegan_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| restricted_guests | int not null ≥ 0 | |
-| dietary_notes | text null | Free text, shown to owner; never parsed into safety claims |
-| CHECK | `adults + children > 0` | |
-
-### dish_categories
-`id` uuid PK · `name` text not null unique · `sort_order` int not null default 0 · `is_active` bool default true
-
-### dishes
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| category_id | uuid FK → dish_categories not null | index |
-| name | text not null | |
-| description | text null | |
-| image_path | text null | Supabase Storage object path |
-| pricing_unit | pricing_unit not null | |
-| unit_price | numeric(10,2) not null CHECK ≥ 0 | |
-| unit_label | text null | e.g., tray size / weight unit text **[OPEN #18]** |
-| currency | char(3) not null default from config | **[OPEN #17]** |
-| min_quantity | numeric(10,2) null | **[OPEN #15]** |
-| is_available | bool not null default true | |
-| created_at, updated_at | timestamptz | |
-
-### dish_dietary (1:1 with dishes)
-`dish_id` uuid PK/FK → dishes · `kashrut_class` kashrut_class **null** (null = not provided) · `is_vegetarian` bool null · `is_vegan` bool null · `verified_at` timestamptz null
-
-Null booleans mean **unknown** and must be presented as unknown, never as "no"/"yes".
-
-### allergens
-`id` smallint PK · `name` text unique (list maintained by owner)
-
-### dish_allergens
-`dish_id` FK · `allergen_id` FK · `status` allergen_status not null · PK(`dish_id`,`allergen_id`)
-A missing row = **unknown**.
-
-### delivery_zones
-`id` uuid PK · `name` text not null · `fee` numeric(10,2) not null ≥ 0 · `definition` jsonb not null (shape depends on **[OPEN #19]**) · `is_active` bool
-
-### time_slots
-`id` uuid PK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 null · `start_time` time · `end_time` time · `capacity` int null **[OPEN #5]** · `is_active` bool · CHECK `end_time > start_time`
-
-### blocked_dates
-`id` uuid PK · `date` date unique · `reason` text null
+`id` · `customer_id` → customers · `event_type` · `event_date` · `adults`, `children`,
+`vegetarian_guests`, `vegan_guests`, `restricted_guests` (all ≥ 0; subset semantics **[OPEN #4]**) ·
+`dietary_notes` · timestamps · CHECK `adults + children > 0`.
 
 ### orders
-| Column | Type | Notes |
+| Column | Rule |
+|---|---|
+| `customer_id` | → customers |
+| `event_id` | unique. Composite FK (`event_id`, `customer_id`) → events: the event belongs to the same customer |
+| `status` | `draft` → `pending_approval` → `approved` \| `rejected`. Other transitions raise (trigger) |
+| `version` | ≥ 1. Optimistic lock for AI proposals (ADR 0003) |
+| `fulfillment_type` | `pickup` \| `delivery` |
+| `requested_at` | timestamp |
+| `delivery_address_id` | composite FK (`delivery_address_id`, `customer_id`) → addresses. Only for delivery. Required once submitted |
+| `currency` | default `ILS` |
+| `subtotal_minor`, `delivery_fee_minor`, `total_minor` | ≥ 0. Required once submitted (price frozen). `total = subtotal + fee`. Pickup fee is 0 |
+| `submitted_at`, `decided_at`, `decision_note` | `decided_at` is set exactly when approved/rejected |
+
+### deliveries
+`order_id` → orders · `purpose` ∈ `food_drop_off, equipment_collection` (food drop-off only for
+delivery orders, trigger) · `address_id` → addresses · `driver_employee_id` → employees ·
+`status` ∈ `scheduled, out_for_delivery, delivered, failed, cancelled` · `window_start` < `window_end` ·
+`dispatched_at`, `completed_at` · `notes`.
+Rules: out_for_delivery/delivered need a driver and `dispatched_at`. delivered/failed ⇔ `completed_at`
+is set. `completed_at ≥ dispatched_at`.
+
+### payments — income receipts and refunds
+| Column | Rule |
+|---|---|
+| `kind` | `receipt` \| `refund` |
+| `order_id`, `currency` | composite FK → orders(`id`, `currency`): same currency as the order |
+| `amount_minor` | **> 0**. The sign comes from `kind` |
+| `method` | `cash, credit_card, bank_transfer, bit, check, other` |
+| `document_number` | unique receipt / credit-note number, optional |
+| `refund_of_payment_id` | required for refunds, null for receipts. Composite FK keeps the refund on the receipt's order and currency |
+| `reason` | required for refunds |
+| `recorded_by_employee_id` | → employees |
+| `occurred_at` | timestamp |
+
+Triggers: a refund must reference a **receipt**, total refunds of a receipt ≤ the receipt, rows are
+append-only. View **`order_payment_summary`**: received, refunded, net paid, and balance due per order.
+Python API: `app.repositories.finance.record_receipt / record_refund / order_balance`.
+
+### equipment_items — reusable tables and serving utensils
+`name` unique (case-insensitive) · `category` ∈ `table, serving_utensil` · `description` ·
+`replacement_cost_minor` · `is_active` · timestamps.
+
+### equipment_movements
+`equipment_item_id` · `movement_type` · `quantity` > 0 · `order_id` (required exactly for
+dispatch / return / lost_at_event) · `delivery_id` (composite FK → deliveries of the same order) ·
+`employee_id` · `occurred_at` · `notes` (required for losses, write-offs, adjustments).
+
+| Type | On hand | Out at events |
 |---|---|---|
-| id | uuid PK | |
-| customer_id | uuid FK not null | index |
-| event_id | uuid FK not null unique | |
-| status | order_status not null default `draft` | index |
-| version | int not null default 1 | Incremented on every mutation; optimistic locking for proposals |
-| fulfillment_type | fulfillment_type not null | |
-| requested_at | timestamptz not null | Requested pickup/delivery time |
-| delivery_address | text null | CHECK: required when `delivery` |
-| delivery_zone_id | uuid FK null | |
-| subtotal, delivery_fee, total | numeric(10,2) null | Computed by backend; frozen at submission |
-| submitted_at, decided_at | timestamptz null | |
-| decision_note | text null | Owner's note on approve/reject |
-| created_at, updated_at | timestamptz | |
+| `purchase` | +q | |
+| `dispatch` | −q | +q |
+| `return` | +q | −q |
+| `lost_at_event` | | −q |
+| `write_off` | −q | |
+| `adjustment_in` / `adjustment_out` | ±q | |
 
-### order_items
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| order_id | uuid FK not null | index |
-| dish_id | uuid FK not null | |
-| quantity | numeric(10,2) not null CHECK > 0 | |
-| UNIQUE | (`order_id`, `dish_id`) | |
-| snapshot_name | text null | **Price snapshot** — filled on submission |
-| snapshot_pricing_unit | pricing_unit null | |
-| snapshot_unit_price | numeric(10,2) null | |
-| snapshot_line_total | numeric(10,2) null | |
+Triggers: on hand never goes negative. An order cannot return or lose more than was dispatched to it.
+Append-only. Views: **`equipment_stock`** (on hand, out at events) and **`equipment_out_by_order`**.
 
-While `draft`, prices are read live from `dishes`; on `pending_approval` the snapshot columns become authoritative.
+### ingredients
+`name` unique (case-insensitive) · `base_unit` ∈ `g, ml, unit` · `reorder_level` (base units) ·
+`is_active` · timestamps.
 
-### ai_conversations
-`id` uuid PK · `order_id` FK not null · `created_at` · index on `order_id`
+### ingredient_batches
+`ingredient_id` · `lot_code` (unique per ingredient) · `supplier_name` · `received_on` ·
+`expires_on` (null = non-perishable, ≥ `received_on`) · `total_cost_minor` · `currency`.
+Quantity is not stored here. It is the sum of the batch's movements.
 
-### ai_messages
-`id` uuid PK · `conversation_id` FK · `role` text CHECK in (`user`,`assistant`,`tool`) · `content` jsonb · `created_at`
+### ingredient_movements
+`batch_id` · `movement_type` ∈ `receipt, consumption, waste, expired_disposal, return_to_supplier,
+adjustment_in, adjustment_out` · `quantity` > 0 (base units) · `order_id` (consumption/waste only) ·
+`employee_id` · `occurred_at` · `notes` (required for waste and adjustments).
+Triggers: a batch never goes negative. No movement before the batch's `received_on`. **No consumption
+after `expires_on`** (disposal is allowed). Append-only.
+Views: **`ingredient_batch_stock`** (on hand per batch) and **`ingredient_stock`** (usable vs. expired
+on hand per ingredient, judged against today's UTC date).
+Python API: `app.repositories.inventory.consume_ingredient` draws first-expired-first-out across
+usable batches, all or nothing. `expiring_batches(conn, on_or_before)` lists batches to use or discard.
 
-### ai_change_proposals
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| order_id | uuid FK not null | index |
-| conversation_id | uuid FK null | |
-| base_order_version | int not null | Must equal `orders.version` at execution |
-| changes | jsonb not null | Validated list of typed operations |
-| price_before, price_after | numeric(10,2) not null | Computed by backend at proposal time |
-| status | proposal_status not null default `pending` | |
-| created_at, decided_at, executed_at | timestamptz | `executed_at` set once → idempotency |
-| PARTIAL UNIQUE | one `pending` per order? **[RECOMMENDATION]** — simplifies UI | |
+## Planned tables (not migrated yet)
 
-## Status transitions **[RECOMMENDATION]**
+The catalog, order lines, and AI tables from the draft are still planned for their phases. They will
+follow the conventions above (money in `*_minor`, enums as CHECK lists, JSON as `TEXT` checked with
+`json_valid`):
 
-| From | To | Actor |
-|---|---|---|
-| draft | pending_approval | Customer (owner of order) |
-| pending_approval | approved | Owner |
-| pending_approval | rejected | Owner |
-
-Proposals may only execute while order is `draft`.
-
-## Business rules storage
-
-Quantity rules (Decision 5) will live in a `quantity_rules` table once formulas are known **[OPEN #3]**. Shape intentionally not designed yet.
+- `dish_categories`, `dishes`, `dish_dietary`, `allergens`, `dish_allergens` (missing row = unknown,
+  never "free")
+- `order_items` with price snapshot columns frozen at submission
+- `delivery_zones` (**[OPEN #19]**), `time_slots`, `blocked_dates`
+- `ai_conversations`, `ai_messages`, `ai_change_proposals` (`base_order_version` must equal
+  `orders.version` at execution, `executed_at` set once for idempotency)
+- `quantity_rules` once formulas are known (**[OPEN #3]**)
+- A recipe link between dishes and ingredients, so consumption can be planned from orders

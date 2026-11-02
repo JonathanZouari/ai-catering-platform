@@ -78,11 +78,13 @@ Details: `AI_AGENT_DESIGN.md`.
 | UX | Mobile-first, responsive, accessible (WCAG 2.2 AA target), premium look | CONFIRMED / target RECOMMENDATION |
 | Quote integrity | Price snapshot at submission | CONFIRMED |
 | Testing | pytest, Ruff, API integration tests, AI action validation tests | CONFIRMED |
-| Environments | `dev` → Railway dev + Supabase dev; `main` → Railway prod + Supabase prod | CONFIRMED (separate Supabase projects strongly preferred) |
+| Environments | `dev` → Railway dev; `main` → Railway prod; each with its own SQLite database (ADR 0005) | CONFIRMED |
 
 ## 9. Out of scope **[CONFIRMED]**
 
 Multi-business marketplace · admin AI agent · corporate customers · staff/waiter management · advanced inventory · supplier procurement · accounting/invoicing · payment gateway · calorie/nutrition database · automated dish generation · autonomous order approval · native mobile apps.
+
+**Data layer only (course assignment, 2026-11-02):** the SQLite schema includes employees, deliveries, income receipts and refunds, reusable equipment (tables and serving utensils), and ingredient batches and inventory movements (`DATABASE_SCHEMA.md`). No UI, API, or business workflow uses them yet. Building those still follows the rules below and the open decisions (#2 payments, #7 cancellation/refunds, #10 equipment).
 
 Unresolved and **not** to be built until decided: serving utensils/disposables, alcohol, voice AI, customer auth method, notifications, cancellation/refund, owner-proposed revisions, post-submission customer edits.
 
