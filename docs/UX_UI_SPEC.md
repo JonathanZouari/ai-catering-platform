@@ -1,18 +1,64 @@
 # UX/UI Specification (initial structure)
 
-Status: **Draft v0.1**. High-fidelity prototypes (Claude Artifacts) come in the UI phase; brand, colors, and language are **[OPEN #12, #20]**.
+Status: **Draft v0.2**. Visual direction chosen: **"Table Journal" (יומן שולחן)**, an editorial food-magazine look, Hebrew RTL. It was picked from three Claude Artifact prototypes; the logo is still **[OPEN #20]**.
 
 ## 1. Principles
 
 - Mobile-first; breakpoints 640 / 1024 px **[RECOMMENDATION]**.
 - Accessibility target WCAG 2.2 AA: 4.5:1 text contrast, visible focus, 44×44 px touch targets, labels on all inputs, `aria-live` for price totals and chat replies, full keyboard use.
-- Direction-agnostic CSS (logical properties: `margin-inline-start`, etc.) so RTL can be enabled without rewrites.
+- Hebrew RTL (`<html lang="he" dir="rtl">`). Logical CSS properties only (`margin-inline-start`, `inset-inline-end`, etc.), never left/right.
 - Premium but calm: generous whitespace, one accent color, restrained motion, `prefers-reduced-motion` respected.
 - Never show a pending quotation as a confirmed booking — status badges use explicit text ("Awaiting business approval").
 
-## 2. Design tokens (neutral placeholders)
+## 2. Design system ("Table Journal")
 
-Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, `--color-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radius, font stack (system fonts until brand fonts chosen), shadow levels. Dark mode not in scope unless requested.
+Source of truth: `frontend/css/base.css` (tokens, primitives, every app-screen component) and `frontend/css/home.css` (landing page only).
+
+**Look.** White page, near-black text, one forest-green accent. Square corners, thin black rules instead of cards. Large food photography, 3D depth on the landing page, and hand-drawn line illustrations with handwritten notes.
+
+**Color tokens.** Light values are listed. Dark values switch automatically with `prefers-color-scheme`, or can be forced with `data-theme`.
+
+| Token | Light | Use |
+|---|---|---|
+| `--bg` / `--surface` | `#ffffff` | Page and panel background |
+| `--fg` | `#121211` | Text, rules, primary button |
+| `--muted` | `#5a5955` | Secondary text |
+| `--line` / `--line-strong` | `#e2e1dd` / `#8f8d88` | Dividers and control borders |
+| `--accent` / `--accent-ink` | `#1e4a37` | Brand accent, focus ring, illustrations |
+| `--success` / `--danger` / `--warning-ink` (+ `-soft`) | | Status pills, notices |
+| `--meat` / `--dairy` / `--parve` | | Kashrut badges |
+| `--photo-ink`, `--paper`, `--paper-ink` | | Text on photos; the polaroid cards |
+
+**Type.** All fonts come from Google Fonts.
+
+| Token | Font | Use |
+|---|---|---|
+| `--font-display` | Frank Ruhl Libre 400/700/900 | Headings |
+| `--font-body` | Assistant 400/600/700 | Body text |
+| `--font-hand` | Amatic SC 700 | Handwritten notes only (`.hand`) |
+
+**Radius.** `--radius`, `--radius-sm` and `--radius-pill` are all `0`.
+
+**Illustrations.** `js/illustrations.js` holds line art on a 64×64 grid: basket, pot, grill, glass, lemon, olive, calendar, plate, sign and arrow.
+- To place one, write `<i data-ill="pot"></i>`. `hydrateIllustrations()` replaces it with an inline SVG.
+- Color comes from `currentColor`, which defaults to the accent.
+
+**Motion.** `js/motion.js` runs it, and it stays restrained: nothing hijacks scroll except the 3D ring on the landing page.
+- It adds `.motion` to `<html>` only when reduced motion is off. Content is never hidden without JS or for reduced-motion users.
+- `.reveal` children fade in one after another when they enter the screen. Illustrations inside them draw themselves in.
+- `.tilt` tiles and `.dish-media` lean toward a mouse pointer.
+- The photo band on app screens moves with parallax.
+
+**Landing page** (`index.html`, `js/home.js`):
+- A parallax hero with three floating polaroid dishes and handwritten notes.
+- A four-column "day of an event" strip.
+- A handwritten marquee.
+- A scroll-driven 3D ring of featured dishes, with arrow buttons. It is static marketing content until the catalog API exists.
+- Stories, then "how to order".
+
+**App screens** (`customer/`, `admin/`):
+- Each screen opens with a photo band and a handwritten caption with an illustration.
+- The classes for C1–C5 and A1 already exist in `base.css`: `.dish`, `.stepper`, `.lines`, `.ai`, `.proposal`, `.timeline`, `.order-row`.
 
 ## 3. Customer screens
 
@@ -53,8 +99,13 @@ States: pending, applying, applied, rejected, expired ("Your order changed; ask 
 frontend/
   customer/index.html   # C1–C5 (single page, JS-driven steps)
   admin/index.html      # A1–A5
-  css/base.css          # tokens, reset, primitives
+  index.html            # landing page
+  css/base.css          # tokens, reset, primitives, app-screen components
+  css/home.css          # landing page only
   js/api.js             # fetch wrapper, error format handling
-  assets/
+  js/illustrations.js   # line-art SVG set
+  js/motion.js          # reveals, draw-in, tilt, photo band parallax
+  js/home.js            # landing page: hero parallax, 3D ring
+  assets/img/           # Unsplash placeholders until real photography [OPEN #20]
 ```
 Reusable components as small ES modules (e.g., `js/components/dish-card.js`) added in later phases.

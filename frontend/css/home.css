@@ -1,0 +1,101 @@
+/* Landing page only: parallax hero with floating plates, day-of-event strip, marquee, 3D menu ring, stories. */
+
+/* hero */
+.hero { position: relative; overflow: hidden; height: clamp(600px, 86vh, 860px); color: var(--photo-ink); perspective: 1200px; background: #0c0c0b; }
+.hero-bg { position: absolute; inset: 0; }
+.hero-bg img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); will-change: transform; }
+.hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to left, rgb(0 0 0 / .78), rgb(0 0 0 / .15) 70%), linear-gradient(to top, rgb(0 0 0 / .6), transparent 50%); }
+.hero-stage { position: absolute; inset-block: 0; inset-inline-end: 0; width: 56%; transform-style: preserve-3d; will-change: transform; }
+.float { position: absolute; margin: 0; width: clamp(130px, 15vw, 230px); padding: 8px 8px 0; background: var(--paper); color: var(--paper-ink); box-shadow: 0 30px 60px rgb(0 0 0 / .45), 0 8px 16px rgb(0 0 0 / .3); transform: translate3d(0, var(--sy, 0px), var(--tz)) rotate(var(--rot)); will-change: transform; }
+.float img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.float figcaption { font: 700 .85rem/1 var(--font-body); padding: 10px 2px 12px; }
+.f1 { top: 12%; inset-inline-end: 12%; --tz: 140px; --rot: -7deg; }
+.f2 { top: 44%; inset-inline-end: 40%; --tz: 40px; --rot: 5deg; }
+.f3 { top: 52%; inset-inline-end: 8%; --tz: 260px; --rot: -3deg; width: clamp(150px, 18vw, 270px); }
+.scribble { position: absolute; bottom: calc(100% + 4px); inset-inline-start: -10%; display: flex; align-items: end; gap: 2px; color: var(--photo-ink); white-space: nowrap; pointer-events: none; }
+.scribble .ill { width: 46px; height: 34px; color: inherit; transform: scaleX(-1); }
+.hero-copy { position: absolute; z-index: 2; inset-inline: 0; bottom: 0; padding-block: 40px; will-change: transform, opacity; }
+.hero-copy .wrap { display: grid; gap: 16px; justify-items: start; }
+.hero h1 { font-size: clamp(2.6rem, 6.4vw, 5.6rem); font-weight: 900; max-width: 12ch; line-height: 1.02; }
+.hero p { font-size: 1.15rem; max-width: 42ch; }
+.hero .btn { background: var(--paper); color: var(--paper-ink); }
+.scroll-cue { font-size: .85rem; letter-spacing: .1em; opacity: .85; display: inline-flex; align-items: center; gap: 10px; }
+.scroll-cue::after { content: ""; width: 1px; height: 34px; background: currentColor; animation: cue 1.8s ease-in-out infinite; transform-origin: top; }
+@keyframes cue { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+@media (max-width: 760px) {
+  .hero { height: 680px; }
+  .hero-stage { width: 100%; height: 52%; }
+  .f1 { top: 8%; inset-inline-end: 8%; width: 132px; }
+  .f2 { top: 16%; inset-inline-end: 52%; width: 118px; }
+  .f3, .scribble { display: none; }
+  .hero-bg::after { background: linear-gradient(to top, rgb(0 0 0 / .85), rgb(0 0 0 / .1) 75%); }
+}
+.motion .hero h1 .w { display: inline-block; opacity: 0; translate: 0 .5em; animation: word-in .9s cubic-bezier(.2, .8, .2, 1) forwards; animation-delay: calc(var(--i) * 70ms + 150ms); }
+@keyframes word-in { to { opacity: 1; translate: none; } }
+.motion .scribble { opacity: 0; transition: opacity .6s ease 1.2s; }
+.motion .in .scribble { opacity: 1; }
+
+/* sections */
+.section { padding-block: 56px 16px; display: grid; gap: 24px; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; border-block-end: 1px solid var(--fg); padding-block-end: 10px; }
+.section-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.section-head a { font-weight: 700; }
+
+/* a day of an event: four quiet columns */
+.day { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.day li { display: grid; gap: 6px; align-content: start; }
+.day img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-block-end: 8px; }
+.time { display: flex; align-items: center; gap: 10px; font: 700 1.5rem/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--accent-ink); }
+.day h3 { font-size: 1.4rem; }
+.day p { color: var(--muted); }
+@media (max-width: 639px) { .day li { grid-template-columns: 88px 1fr; column-gap: 14px; } .day img { grid-row: span 3; aspect-ratio: 1; margin: 0; } }
+
+/* handwritten marquee */
+.marquee { overflow: hidden; border-block: 1px solid var(--fg); padding-block: 10px; margin-block-start: 56px; }
+.marquee-track { display: flex; width: max-content; animation: marq 46s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee span { display: inline-flex; align-items: center; gap: 18px; padding-inline-end: 34px; white-space: nowrap; font-size: 2.3rem; }
+.marquee .ill { width: 38px; height: 38px; }
+.motion .marquee .ill path { stroke-dashoffset: 0; }
+@keyframes marq { to { transform: translateX(50%); } }
+
+/* 3D menu ring */
+.ring-sec { position: relative; height: 300vh; }
+.ring-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; isolation: isolate; display: grid; grid-template-rows: auto 1fr auto; padding-block: 96px 28px; }
+.ring-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; width: 100%; border-block-end: 1px solid var(--fg); padding-block-end: 10px; }
+.ring-head p { color: var(--muted); }
+.ring-scene { perspective: 1300px; display: grid; place-items: center; min-height: 0; }
+.ring { list-style: none; margin: 0; padding: 0; position: relative; width: clamp(150px, 19vw, 240px); aspect-ratio: 3 / 4; transform-style: preserve-3d; will-change: transform; }
+.ring-card { position: absolute; inset: 0; will-change: transform, opacity; }
+.ring-card a { position: absolute; inset: 0; display: block; color: var(--photo-ink); text-decoration: none; box-shadow: 0 24px 50px rgb(0 0 0 / .3); }
+.ring-card img { width: 100%; height: 100%; object-fit: cover; }
+.ring-card a::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / .78), transparent 55%); }
+.rc-name { position: absolute; z-index: 1; inset-inline: 12px; bottom: 12px; font: 700 1.1rem/1.15 var(--font-display); }
+.ring-card.front a { outline: 3px solid var(--accent-ink); outline-offset: 6px; }
+.ring-ctrl { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ring-ctrl .btn.ghost { width: 48px; padding: 0; font-size: 1.2rem; }
+.ring-now { min-width: 16ch; text-align: center; font-weight: 600; }
+.ring-deco { position: absolute; z-index: -1; width: clamp(180px, 26vw, 340px); aspect-ratio: 1; opacity: .22; pointer-events: none; }
+.ring-deco .ill { width: 100%; height: 100%; }
+.ring-deco .ill path { stroke-width: .9; }
+.ring-deco.d1 { top: 18%; inset-inline-start: 2%; rotate: -12deg; }
+.ring-deco.d2 { bottom: 10%; inset-inline-end: 3%; rotate: 18deg; }
+
+/* stories and how-to */
+.stories { display: grid; gap: 36px 24px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.story { display: grid; gap: 10px; text-decoration: none; transform-style: preserve-3d; }
+.story img { aspect-ratio: 3 / 2; object-fit: cover; width: 100%; box-shadow: 0 18px 30px -18px rgb(0 0 0 / .5); }
+.story .tag, .story h3, .story p { transform: translateZ(28px); }
+.story .tag { font-size: .78rem; letter-spacing: .12em; color: var(--muted); font-weight: 700; }
+.story h3 { font-size: 1.55rem; }
+.story p { color: var(--muted); }
+.how { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); counter-reset: h; }
+.how li { position: relative; counter-increment: h; display: grid; gap: 6px; border-block-start: 1px solid var(--line-strong); padding-block-start: 14px; }
+.how li::before { content: counter(h); font: 900 2.6rem/1 var(--font-display); color: var(--accent-ink); }
+.how strong { font-size: 1.15rem; }
+.how .ill { position: absolute; top: 14px; inset-inline-end: 0; width: 56px; height: 56px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ring-sec { height: auto; }
+  .ring-sticky { position: relative; height: auto; min-height: 640px; }
+}

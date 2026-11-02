@@ -1,18 +1,109 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Yummai · קייטרינג לאירועים</title>
+  <meta name="description" content="קייטרינג לאירועים פרטיים מתל אביב. בוחרים מנות, מקבלים כמויות ומחיר, ובעל העסק מאשר כל הזמנה אישית.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
-  </main>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
+    <nav class="site-nav" aria-label="ניווט ראשי">
+      <a href="/customer/">תכנון אירוע</a><a href="#ring-sec">התפריט</a><a href="#how-h">איך מזמינים</a><a href="/admin/">לעסק</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero bleed" id="hero">
+    <div class="hero-bg"><img src="/assets/img/table.jpg" alt="שולחן ערוך עם צלחות, כוסות יין ונרות" width="900" height="600"></div>
+    <div class="hero-stage" aria-hidden="true">
+      <figure class="float f1" data-depth="1.2"><img src="/assets/img/salmon.jpg" alt="" width="900" height="1350"><figcaption>סלמון בעשבי תיבול</figcaption><span class="scribble hand">דג טרי מהבוקר<i data-ill="arrow"></i></span></figure>
+      <figure class="float f2" data-depth="0.6"><img src="/assets/img/cake.jpg" alt="" width="900" height="1125"><figcaption>עוגת פטל ושמנת</figcaption></figure>
+      <figure class="float f3" data-depth="1.8"><img src="/assets/img/skewers.jpg" alt="" width="900" height="1350"><figcaption>מגש שיפודים</figcaption><span class="scribble hand">ישר מהגחלים<i data-ill="arrow"></i></span></figure>
+    </div>
+    <div class="hero-copy gutter"><div class="wrap">
+      <span class="kicker">תפריט החורף</span>
+      <h1>אוכל שמספר את הסיפור של השולחן שלכם</h1>
+      <p>מטבח קטן מתל אביב שמבשל לאירועים פרטיים. בוחרים מנות, מקבלים כמויות ומחיר מדויק, ובעל העסק מאשר כל הזמנה באופן אישי.</p>
+      <a class="btn" href="/customer/">מתחילים לתכנן אירוע</a>
+      <span class="scroll-cue">גללו ליום של אירוע</span>
+    </div></div>
+  </section>
+
+  <div class="wrap">
+    <section class="section" aria-labelledby="ch-h">
+      <div class="section-head"><h2 id="ch-h">יום אחד של אירוע</h2><span class="kicker">מאחורי הקלעים</span></div>
+      <ol class="day reveal">
+        <li><img class="tilt" src="/assets/img/spread.jpg" alt="ירקות ועשבי תיבול טריים על השולחן" loading="lazy" width="900" height="600"><span class="time"><i data-ill="basket"></i>06:00</span><h3>השוק</h3><p>ירקות, עשבי תיבול ופטל נקנים בבוקר האירוע. מה שלא טרי לא נכנס למגש.</p></li>
+        <li><img class="tilt" src="/assets/img/chef.jpg" alt="טבח חותך ירקות במטבח" loading="lazy" width="900" height="1350"><span class="time"><i data-ill="pot"></i>10:00</span><h3>המטבח</h3><p>שלושה טבחים חותכים, צולים ומרכיבים. הכמויות מגיעות ישר מההזמנה שאישרתם, בלי ניחושים.</p></li>
+        <li><img class="tilt" src="/assets/img/skewers.jpg" alt="שיפודים על הגריל" loading="lazy" width="900" height="1350"><span class="time"><i data-ill="grill"></i>13:00</span><h3>הגחלים</h3><p>שיפודי פרגית וקבב טלה עולים על הגריל, ומגש ל-10 סועדים יוצא כל שבע דקות.</p></li>
+        <li><img class="tilt" src="/assets/img/buffet.jpg" alt="שולחן אירוע ערוך" loading="lazy" width="900" height="600"><span class="time"><i data-ill="glass"></i>19:00</span><h3>השולחן שלכם</h3><p>המשלוח מגיע בחלון השעות שבחרתם. אתם רק מזמינים את האורחים.</p></li>
+      </ol>
+    </section>
+  </div>
+
+  <div class="marquee bleed" aria-hidden="true"><div class="marquee-track">
+    <span class="hand"><i data-ill="lemon"></i>לימונים מהשוק</span><span class="hand"><i data-ill="olive"></i>שמן זית מהגליל</span><span class="hand"><i data-ill="grill"></i>גחלים אמיתיות</span><span class="hand"><i data-ill="glass"></i>יין מהרי יהודה</span><span class="hand"><i data-ill="basket"></i>עשבי תיבול של הבוקר</span><span class="hand"><i data-ill="pot"></i>בישול איטי</span>
+    <span class="hand"><i data-ill="lemon"></i>לימונים מהשוק</span><span class="hand"><i data-ill="olive"></i>שמן זית מהגליל</span><span class="hand"><i data-ill="grill"></i>גחלים אמיתיות</span><span class="hand"><i data-ill="glass"></i>יין מהרי יהודה</span><span class="hand"><i data-ill="basket"></i>עשבי תיבול של הבוקר</span><span class="hand"><i data-ill="pot"></i>בישול איטי</span>
+  </div></div>
+
+  <section class="ring-sec bleed" id="ring-sec" aria-labelledby="ring-h" data-reveal>
+    <div class="ring-sticky gutter">
+      <div class="ring-head wrap"><h2 id="ring-h">התפריט של החורף</h2><p>גללו כדי לסובב.</p></div>
+      <span class="ring-deco d1" aria-hidden="true"><i data-ill="olive"></i></span><span class="ring-deco d2" aria-hidden="true"><i data-ill="lemon"></i></span>
+      <div class="ring-scene">
+        <!-- shortcut: featured dishes are static marketing content; switch to the catalog API once it exists (Phase 2). -->
+        <ul class="ring" id="ring" aria-label="מנות מהתפריט">
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/skewers.jpg" alt="" loading="lazy" width="900" height="1350"><span class="rc-name">מגש שיפודים מהגריל</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/brisket.jpg" alt="" loading="lazy" width="900" height="600"><span class="rc-name">צלי בקר בבישול איטי</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/salmon.jpg" alt="" loading="lazy" width="900" height="1350"><span class="rc-name">פילה סלמון בעשבי תיבול</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/greens.jpg" alt="" loading="lazy" width="900" height="600"><span class="rc-name">ביצה רכה, תרד ואבוקדו</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/chickpea.jpg" alt="" loading="lazy" width="900" height="600"><span class="rc-name">קערת חומוס, אבוקדו וירקות</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/green-salad.jpg" alt="" loading="lazy" width="900" height="600"><span class="rc-name">סלט עלים, זיתים ואגוזי מלך</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/tofu.jpg" alt="" loading="lazy" width="900" height="600"><span class="rc-name">קערת טופו צלוי ותירס</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/quinoa.jpg" alt="" loading="lazy" width="900" height="600"><span class="rc-name">קינואה עם שעועית ירוקה</span></a></li>
+          <li class="ring-card"><a href="/customer/"><img src="/assets/img/cake.jpg" alt="" loading="lazy" width="900" height="1125"><span class="rc-name">עוגת פטל ושמנת</span></a></li>
+        </ul>
+      </div>
+      <div class="ring-ctrl">
+        <button type="button" class="btn ghost" id="ring-prev" aria-label="המנה הקודמת">→</button>
+        <span class="ring-now" id="ring-now" aria-live="polite"></span>
+        <button type="button" class="btn ghost" id="ring-next" aria-label="המנה הבאה">←</button>
+        <a class="btn primary" href="/customer/">לתכנון האירוע</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="section" aria-labelledby="stories-h">
+      <div class="section-head"><h2 id="stories-h">מהמטבח שלנו</h2><a href="/customer/">לתכנון האירוע</a></div>
+      <div class="stories reveal">
+        <a class="story tilt" href="/customer/"><img src="/assets/img/brisket.jpg" alt="צלי בקר פרוס על קרש" loading="lazy" width="900" height="600"><span class="tag">עיקריות</span><h3>12 שעות בתנור</h3><p>צלי בקר ביין אדום, נמכר לפי ק״ג.</p></a>
+        <a class="story tilt" href="/customer/"><img src="/assets/img/chef.jpg" alt="טבח חותך ירקות על קרש" loading="lazy" width="900" height="1350"><span class="tag">המטבח</span><h3>מי מבשל לכם</h3><p>שלושה טבחים, ירקות מהשוק של יום חמישי בבוקר.</p></a>
+        <a class="story tilt" href="/customer/"><img src="/assets/img/chickpea.jpg" alt="קערת חומוס, אבוקדו וירקות צבעוניים" loading="lazy" width="900" height="600"><span class="tag">סלטים · טבעוני</span><h3>קערות לכל השולחן</h3><p>גם הצמחונים והטבעונים יוצאים שבעים.</p></a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="how-h">
+      <div class="section-head"><h2 id="how-h">איך מזמינים</h2></div>
+      <ol class="how reveal">
+        <li><i data-ill="calendar"></i><strong>מספרים לנו על האירוע</strong><span>תאריך, מספר אורחים ומי צמחוני. מזה נגזרות הכמויות.</span></li>
+        <li><i data-ill="plate"></i><strong>בוחרים מנות</strong><span>המחיר מתעדכן בכל שינוי, ועוזר ההזמנה מציע מה חסר.</span></li>
+        <li><i data-ill="sign"></i><strong>בעל העסק מאשר</strong><span>ההצעה נשלחת לאישור. רק אחרי האישור היא הופכת להזמנה.</span></li>
+      </ol>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer wrap reveal"><span><i data-ill="olive"></i><br>Yummai · תל אביב</span><span>תמונות: Unsplash (זמני)</span></footer>
+<script type="module" src="/js/home.js"></script>
 </body>
 </html>

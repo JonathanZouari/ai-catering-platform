@@ -1,21 +1,44 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl" data-route="event">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Plan your event</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>תכנון אירוע · Yummai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
   <link rel="stylesheet" href="/css/base.css">
 </head>
 <body>
-  <main>
-    <h1>Plan your event</h1>
-    <p>Placeholder. Screens are built in later phases (see docs/UX_UI_SPEC.md).</p>
-    <p>API status: <span id="status" aria-live="polite">checking…</span></p>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
+    <nav class="site-nav" aria-label="ניווט ראשי">
+      <a href="/customer/" aria-current="page">תכנון אירוע</a><a href="/admin/">לעסק</a>
+    </nav>
+  </div>
+</header>
+
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/table.jpg" alt="" width="900" height="600"><span class="band-note hand"><i data-ill="calendar"></i>מספרים לנו על האירוע</span></div>
+<div class="app wrap">
+  <main id="screen">
+    <div class="screen-head">
+      <p class="eyebrow">שלב 1 מתוך 3</p>
+      <h2>תכנון האירוע</h2>
+      <p class="lede">המסכים C1–C5 נבנים בשלבים הבאים (docs/UX_UI_SPEC.md). הסגנונות שלהם כבר מוכנים ב-css/base.css.</p>
+    </div>
+    <p class="fine">מצב השרת: <span id="status" aria-live="polite">בודק…</span></p>
   </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+</div>
+
+<footer class="site-footer wrap"><span>Yummai · תל אביב</span></footer>
+<script type="module">
+  import { api } from "/js/api.js";
+  import { initMotion, initRouteBand } from "/js/motion.js";
+  initMotion();
+  initRouteBand();
+  const el = document.getElementById("status");
+  api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+</script>
 </body>
 </html>

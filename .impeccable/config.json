@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "frontend/index.html"
+        ],
+        "createdAt": "2026-11-01T09:31:22.826Z",
+        "reason": "user confirmed: keep the scrolling marquee on the home page (decorative, aria-hidden, pauses on hover, off under reduced motion)"
+      }
+    ]
+  }
+}
