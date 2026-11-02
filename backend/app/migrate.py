@@ -42,7 +42,7 @@ ALLERGENS = (
 SETTINGS = {
     "lead_time_days": 7, "edit_cutoff_hours": 4, "min_food_total": 500, "delivery_base_fee": 50,
     "delivery_per_km": 4, "delivery_max_km": 40, "kitchen_address": "Jerusalem",
-    "kitchen_lat": 31.7683, "kitchen_lon": 35.2137,
+    "kitchen_lat": 31.7683, "kitchen_lon": 35.2137, "safety_car": False,
 }  # fmt: skip
 
 

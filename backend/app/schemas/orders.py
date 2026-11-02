@@ -90,6 +90,21 @@ class CancelIn(BaseModel):
     note: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
 
 
+class AdvanceIn(BaseModel):
+    version: int
+
+
+class RatingIn(BaseModel):
+    stars: Annotated[int, Field(ge=1, le=5)]
+    comment: Annotated[str, StringConstraints(max_length=500)] | None = None
+
+
+class RatingOut(Out):
+    stars: int
+    comment: str | None
+    created_at: dt.datetime
+
+
 class ItemOut(BaseModel):
     dish_id: uuid.UUID
     name: str
@@ -143,6 +158,10 @@ class OrderOut(PricingOut):
     decision_note: str | None
     cancelled_at: dt.datetime | None
     cancel_note: str | None
+    kitchen_at: dt.datetime | None
+    dispatched_at: dt.datetime | None
+    delivered_at: dt.datetime | None
+    rating: RatingOut | None
     warnings: list[str]
     delivery_km: Decimal | None
     delivery_fee_estimated: bool

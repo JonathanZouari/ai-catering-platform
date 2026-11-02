@@ -35,6 +35,7 @@ from app.schemas.logistics import (
     ZonePatch,
 )
 from app.schemas.orders import (
+    AdvanceIn,
     CancelIn,
     DecisionIn,
     OrderOut,
@@ -42,7 +43,7 @@ from app.schemas.orders import (
     QuantityRuleIn,
     QuantityRuleOut,
 )
-from app.schemas.settings import SettingsIn, SettingsOut
+from app.schemas.settings import SafetyCarIn, SettingsIn, SettingsOut
 from app.services import availability, delivery, geo
 from app.services import catalog as service
 from app.services import orders as order_service
@@ -232,6 +233,11 @@ def cancel_order(order_id: uuid.UUID, body: CancelIn, db: Db) -> OrderOut:
     return order_service.cancel(db, order_id, body.note)
 
 
+@router.post("/orders/{order_id}/advance")
+def advance_order(order_id: uuid.UUID, body: AdvanceIn, db: Db) -> OrderOut:
+    return order_service.advance(db, order_id, body.version)
+
+
 @router.get("/quantity-rules")
 def list_rules(db: Db) -> list[QuantityRuleOut]:
     return repo.list_all(db, QuantityRule, QuantityRule.category_id)
@@ -257,3 +263,8 @@ def put_settings(
     body: SettingsIn, db: Db, geocode: Annotated[geo.Geocoder, Depends(geo.get_geocoder)]
 ) -> SettingsOut:
     return settings_service.update(db, body.model_dump(), geocode)
+
+
+@router.put("/safety-car")
+def put_safety_car(body: SafetyCarIn, db: Db) -> dict:
+    return {"safety_car": settings_service.set_safety_car(db, body.on).safety_car}
