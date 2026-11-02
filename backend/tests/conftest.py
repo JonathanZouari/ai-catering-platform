@@ -1,8 +1,7 @@
-import os
+import sqlite3
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 from uuid import UUID, uuid4
 
 import jwt
@@ -13,54 +12,37 @@ from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session
 
 from app.core import rate_limit
-from app.core.db import build_engine, get_session
+from app.core.db import apply_migrations, build_engine, get_session, read_only
 from app.core.security import get_signing_key_resolver
 from app.core.storage import get_storage
 from app.main import app
 from app.schemas.caterers import CatererCreate
 from app.services.caterers import create_caterer
 
-MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "database" / "migrations"
 SIGNING_KEY = ec.generate_private_key(ec.SECP256R1())
+# Raw SQL in tests binds ids directly; stored ids are 32 hex characters.
+sqlite3.register_adapter(UUID, lambda value: value.hex)
 
 
 @pytest.fixture(scope="session")
-def engine() -> Iterator[Engine]:
-    url = os.environ.get("TEST_DATABASE_URL")
-    if not url:
-        # In CI a skip would silently drop the isolation proof, so fail instead.
-        if os.environ.get("CI"):
-            pytest.fail("TEST_DATABASE_URL must be set in CI")
-        pytest.skip("TEST_DATABASE_URL not set")
-    # This fixture wipes the schema, so refuse anything not clearly a test database.
-    if "test" not in url.rsplit("/", 1)[-1]:
-        pytest.fail("TEST_DATABASE_URL database name must contain 'test'")
-
-    test_engine = build_engine(url)
-    with test_engine.begin() as conn:
-        conn.execute(text("drop schema if exists public cascade"))
-        conn.execute(text("drop schema if exists auth cascade"))
-        conn.execute(text("create schema public"))
-        # Stands in for the schema Supabase provides.
-        conn.execute(text("create schema auth"))
-        conn.execute(text("create table auth.users (id uuid primary key)"))
-        for migration in sorted(MIGRATIONS_DIR.glob("*.sql")):
-            conn.exec_driver_sql(migration.read_text(encoding="utf-8"))
+def engine(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Engine]:
+    test_engine = build_engine(f"sqlite:///{tmp_path_factory.mktemp('db') / 'test.db'}")
+    apply_migrations(test_engine)
     yield test_engine
     test_engine.dispose()
 
 
 @pytest.fixture
 def session(engine: Engine) -> Iterator[Session]:
-    with Session(engine, expire_on_commit=False) as db:
+    # Read-only start: a test's own reads must not hold the lock the app's requests need.
+    with Session(read_only(engine), expire_on_commit=False) as db:
         yield db
     with engine.begin() as conn:
-        # Not truncate: its cascade would also wipe the seeded platform quantity rules.
+        # Not everything: this must keep the seeded platform quantity rules.
         conn.execute(text("delete from orders"))
         conn.execute(text("delete from events"))
         conn.execute(text("delete from customers"))
         conn.execute(text("delete from caterers"))
-        conn.execute(text("delete from auth.users"))
 
 
 class FakeStorage:
@@ -113,7 +95,6 @@ class TenantFixture:
 def make_tenant(session: Session) -> Callable[[str], TenantFixture]:
     def _make(slug: str) -> TenantFixture:
         user_id = uuid4()
-        session.execute(text("insert into auth.users (id) values (:id)"), {"id": user_id})
         data = CatererCreate(slug=slug, name=f"קייטרינג {slug}", auth_user_id=user_id)
         caterer = create_caterer(session, data)
         headers = {"Authorization": f"Bearer {make_token(user_id)}"}

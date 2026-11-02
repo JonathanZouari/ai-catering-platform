@@ -40,7 +40,7 @@ Sample menu and made-up names.
 |---|---|
 | Backend | Python 3.12+, FastAPI, Pydantic, SQLAlchemy |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth for caterer logins) |
+| Data | SQLite, plus Supabase for caterer logins and images |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -81,7 +81,7 @@ uv run ruff format --check .
 uv run pytest
 ```
 
-Database tests need a disposable Postgres in `TEST_DATABASE_URL` (see `.env.example`); they skip locally without one and fail in CI. **The suite wipes that database.**
+To try the whole app with no accounts, run `uv run python -m scripts.dev_server` from `backend/`. Tests create their own temporary database.
 
 ### Onboarding a caterer
 
@@ -95,7 +95,6 @@ Create the login in Supabase, then run `uv run python -m scripts.create_caterer 
 | `uvicorn[standard]` | ASGI server for FastAPI |
 | `pydantic-settings` | Typed config from environment variables |
 | `sqlalchemy` | ORM and queries (ADR 0002) |
-| `psycopg[binary]` | Postgres driver |
 | `pyjwt[crypto]` | Verifies Supabase login tokens |
 | `httpx` | Calls Supabase Storage and Resend; also used by the test client |
 | `anthropic` | Calls the model behind the AI assistant |

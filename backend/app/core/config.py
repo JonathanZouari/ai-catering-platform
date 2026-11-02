@@ -39,6 +39,9 @@ class Settings(BaseSettings):
         missing = [name for name, value in required.items() if not value]
         if missing:
             raise RuntimeError(f"Missing settings: {', '.join(missing)}")
+        # A relative path lands inside the container and is lost on the next deploy.
+        if not self.database_url.startswith("sqlite:////"):
+            raise RuntimeError("DATABASE_URL must be an absolute path on the mounted volume")
 
 
 @lru_cache

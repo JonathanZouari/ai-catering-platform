@@ -16,6 +16,8 @@ Run from `backend/`. Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
+uv run python -m scripts.dev_server      # the whole app with a fake login and a demo caterer, no accounts
+uv run python -m scripts.migrate         # apply new migrations to DATABASE_URL
 uv run uvicorn app.main:app --reload     # http://127.0.0.1:8000  (/health, /admin/, /customer/)
 uv run ruff check .
 uv run ruff format --check .
@@ -24,18 +26,18 @@ uv run pytest tests/test_auth.py::test_garbage_token_is_rejected   # single test
 uv run python -m scripts.create_caterer --help                     # onboard a caterer by hand
 ```
 
-Database tests need `TEST_DATABASE_URL` pointing at a disposable Postgres whose database name contains `test`. **The suite drops the `public` schema of that database**, so never point it at Supabase. Without the variable, database tests skip locally and fail in CI (`CI` set).
+Tests create their own temporary SQLite file, so they need no setup.
 
-E2E tests live in `e2e/` and drive a real browser against the real app and Postgres, with only Supabase Auth and Storage faked. From `backend/`, with `E2E_DATABASE_URL` set to a disposable Postgres whose name contains `test`:
+E2E tests live in `e2e/` and drive a real browser against the real app and SQLite, with only Supabase Auth and Storage faked. From `backend/`:
 
 ```bash
 uv run --with playwright playwright install chromium
 uv run --with playwright pytest ../e2e
 ```
 
-Tests must use real Postgres, not SQLite: composite foreign keys, enums, and RLS are part of what's tested. If there's no Docker or Postgres on the machine, `pip install pgserver` in a throwaway venv gives an embedded Postgres.
+The database is SQLite everywhere (ADR 0007). Supabase is used only for Auth and Storage.
 
-Migrations are plain SQL in `database/migrations/` (Supabase CLI naming, `YYYYMMDDHHMMSS_name.sql`). The test fixture applies them in filename order on a stub `auth.users`. There is no ORM autogeneration: `models/` maps a hand-written schema, so a schema change means a new migration plus a model edit.
+Migrations are plain SQL in `database/migrations/` (`YYYYMMDDHHMMSS_name.sql`), run once each in filename order by `apply_migrations`, and in production at container start. New tables are `strict`. There is no ORM autogeneration: `models/` maps a hand-written schema, so a schema change means a new migration plus a model edit.
 
 ## Architecture
 
@@ -43,18 +45,19 @@ One FastAPI app serves the REST API and static `frontend/` (plain HTML/CSS/JS mo
 
 ### Tenant isolation (ADR 0005)
 
-This is the most important invariant. The backend connects as a privileged role, so RLS doesn't protect it; isolation is enforced by the code and the schema together:
+This is the most important invariant. Isolation is enforced by the code and the schema together:
 
 - A request's `CatererScope` is built server-side only: from the login (`api/deps.py`), a URL slug, or (Phase 5) the order's private token. Never from a request body or model output.
 - Tenant data goes through a `ScopedRepository` subclass (`repositories/base.py`), which requires a scope. `add()` overwrites any `caterer_id` the caller set.
 - Input schemas use `extra="forbid"`, so a body naming `caterer_id` is rejected.
 - Another caterer's resource returns the same `404` as a missing one, never `403`.
-- Referencing tables use composite FKs on `(caterer_id, ...)`, so the database rejects cross-caterer links. New tenant tables need `caterer_id`, these FKs, and `enable row level security`.
+- Referencing tables use composite FKs on `(caterer_id, ...)`, so the database rejects cross-caterer links. New tenant tables need `caterer_id` and these FKs.
 
-`tests/test_tenant_isolation.py` has guards that fail on new `/api/admin` routes without login and new tables without tenant scope or RLS. New tables with no `caterer_id` must be added to its explicit allowlists. Add cross-caterer tests for each new resource.
+`tests/test_tenant_isolation.py` has guards that fail on new `/api/admin` routes without login and new tables without tenant scope. New tables with no `caterer_id` must be added to its explicit allowlists. Add cross-caterer tests for each new resource.
 
 ### Other invariants
 
+- **One writer at a time.** Non-GET requests hold SQLite's write lock from their first query until they commit (`core/db.py`). Never call the AI, send email, or do other slow work inside a write transaction. GET and HEAD requests are read-only snapshots, so they must not write.
 - **Backend is authoritative.** Prices, quantities, and order state are computed in `services/`, never by the frontend or the LLM.
 - **The AI only proposes.** No agent tool mutates an order; only the customer-facing approve endpoint does (`docs/AI_AGENT_DESIGN.md`, ADR 0003).
 - **Unknown stays unknown.** Null dietary fields and missing allergen rows mean unknown, never "no" or "free". Null calories are shown as unknown and are never estimated.
@@ -96,7 +99,8 @@ Worked in order. Don't build features of a later phase early.
 | 8 | Ready to go live: rate limits, security headers, Docker, deployment guide | Done |
 | Design | Redesign and Yummai logo | Done |
 | Emails | New-order email to caterers, not yet tested with the real provider | Done |
-| Test site | Supabase and Railway, needs the user's accounts and approval | Skipped for now |
+| SQLite | Replaced Postgres everywhere (ADR 0007) | Done |
+| Test site | Supabase Auth and Storage plus Railway with a volume, needs the user's accounts and approval | Skipped for now |
 | Pilot | First real caterer, needs its own approval | Not started |
 
-All of this is merged into `dev` and `main` on `origin`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.
+Everything before SQLite is merged into `dev` and `main` on `origin`; SQLite is on `feat/sqlite-database`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.

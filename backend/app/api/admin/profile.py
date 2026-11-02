@@ -25,7 +25,7 @@ def update_profile(data: ProfileUpdate, session: SessionDep, scope: ScopeDep):
 @router.post("/profile/logo", response_model=ProfileOut)
 def upload_logo(file: UploadFile, session: SessionDep, scope: ScopeDep, storage: StorageDep):
     caterer = get_own_caterer(session, scope)
-    caterer.logo_path = store_upload(storage, scope, "logos", file.file)
+    caterer.logo_path = store_upload(session, storage, scope, "logos", file.file)
     session.commit()
     return caterer
 
@@ -36,7 +36,7 @@ def upload_kashrut_certificate(
 ):
     caterer = get_own_caterer(session, scope)
     caterer.kashrut_certificate_path = store_upload(
-        storage, scope, "certificates", file.file, allow_pdf=True
+        session, storage, scope, "certificates", file.file, allow_pdf=True
     )
     session.commit()
     return caterer
