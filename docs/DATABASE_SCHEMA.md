@@ -2,6 +2,10 @@
 
 Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
 
+> **Local SQLite (development):** the core ordering tables are implemented for SQLite in
+> `database/migrations/0001_init_sqlite.sql` (money in agorot, UUID text ids, CHECKs for enums),
+> with sample data in `database/seed_sqlite.sql`. Create it with `python scripts/init_db.py` from `backend/`.
+
 Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
 
 ## Enums
