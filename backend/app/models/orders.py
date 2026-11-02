@@ -50,6 +50,10 @@ class Event(Base):
             " and restricted_guests <= adults + children",
             name="events_dietary_subsets",
         ),
+        # Vegetarian and vegan are separate groups, so together they fit in the total too.
+        CheckConstraint(
+            "vegetarian_guests + vegan_guests <= adults + children", name="events_veg_vegan_total"
+        ),
     )
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"))

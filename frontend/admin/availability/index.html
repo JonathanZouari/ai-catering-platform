@@ -25,7 +25,7 @@
     <div class="screen-head">
       <p class="eyebrow">ניהול</p>
       <h2>זמינות ושעות</h2>
-      <p class="lede">ימים שבהם לא מקבלים הזמנות, ושעות האיסוף והמשלוח. קיבולת נשמרת לתיעוד ועדיין לא נאכפת.</p>
+      <p class="lede">ימים שבהם לא מקבלים הזמנות, שעות האיסוף והמשלוח, וכללי ההזמנה. הקיבולת של כל חלון תיאכף כשלקוחות ישלחו הזמנות.</p>
     </div>
 
     <form id="login" class="event-form" hidden>
@@ -72,6 +72,23 @@
           <div class="field"><span class="help" aria-hidden="true">&nbsp;</span><button class="btn ghost" type="submit">הוספה</button></div>
         </form>
       </section>
+
+      <form class="order-detail" id="settings-form" aria-labelledby="settings-h" novalidate>
+        <div class="detail-head"><h3 id="settings-h">כללי הזמנה</h3></div>
+        <div class="field-row">
+          <div class="field">
+            <label for="lead-days">כמה ימים מראש מזמינים</label>
+            <input id="lead-days" type="number" inputmode="numeric" min="0" max="60" step="1" required>
+            <span class="help">התאריך הכי מוקדם שלקוח יכול לבחור הוא היום ועוד מספר הימים הזה.</span>
+          </div>
+          <div class="field">
+            <label for="child-portion">מנת ילד, ביחס למבוגר</label>
+            <input id="child-portion" type="number" inputmode="decimal" min="0.05" max="1" step="0.05" required>
+            <span class="help">0.75 = שלושת רבעי מנה. משמש להמלצת כמויות.</span>
+          </div>
+        </div>
+        <div class="actions"><button class="btn primary" type="submit">שמירת הכללים</button></div>
+      </form>
     </div>
   </main>
 </div>

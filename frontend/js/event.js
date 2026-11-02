@@ -15,7 +15,7 @@ const COUNTERS = [
 ];
 const SUBSETS = ["vegetarian_guests", "vegan_guests", "restricted_guests"];
 const CODES = {
-  date_unavailable: "אי אפשר להזמין לתאריך הזה. בחרו תאריך אחר",
+  date_unavailable: "אי אפשר להזמין לתאריך הזה (סגור, או קרוב מדי). בחרו תאריך אחר",
   slot_unavailable: "השעה הזו כבר לא פנויה ביום הזה. בחרו שעה אחרת",
   profile_required: "קודם משלימים שם וטלפון באזור האישי",
   order_version_conflict: "הטיוטה עודכנה בחלון אחר. טענו את הדף כדי לראות את הגרסה העדכנית",
@@ -28,7 +28,7 @@ const FIELD_INPUT = {
 };
 
 const $ = (id) => document.getElementById(id);
-const state = { order: null, blocked: new Set(), slots: [] };
+const state = { order: null, blocked: new Set(), slots: [], earliest: null };
 
 // Dates are plain YYYY-MM-DD strings in Israel time; never parsed in the viewer's timezone.
 const isoToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date());
@@ -36,6 +36,8 @@ const addDays = (iso, n) => new Date(Date.parse(`${iso}T00:00Z`) + n * 864e5).to
 const weekday = (iso) => new Date(`${iso}T00:00Z`).getUTCDay(); // 0 = Sunday, like the backend
 const localTime = (instant) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(instant));
 const hhmm = (t) => t.slice(0, 5);
+const shortDate = (iso) => new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00Z`));
+const tooSoon = () => `צריך להזמין מראש. התאריך הכי מוקדם: ${shortDate(state.earliest)}`;
 
 let toastTimer;
 function toast(text) {
@@ -104,7 +106,7 @@ function renderSlots(selectTime = null) {
 function checkDate() {
   const date = $("event-date").value;
   const help = $("date-help");
-  const problem = !date ? "" : date < isoToday() ? "התאריך כבר עבר" : state.blocked.has(date) ? "אנחנו לא מקבלים הזמנות לתאריך הזה" : "";
+  const problem = !date ? "" : date < state.earliest ? tooSoon() : state.blocked.has(date) ? "אנחנו לא מקבלים הזמנות לתאריך הזה" : "";
   help.textContent = problem;
   help.hidden = !problem;
   $("event-date").setAttribute("aria-invalid", String(Boolean(problem)));
@@ -137,12 +139,13 @@ function clientProblem(body) {
   const guests = e.adults + e.children;
   if (e.event_type.length < 2) return ["event_type", "בחרו סוג אירוע"];
   if (!e.event_date) return ["event_date", "בחרו תאריך"];
-  if (e.event_date < isoToday()) return ["event_date", "התאריך כבר עבר"];
+  if (e.event_date < state.earliest) return ["event_date", tooSoon()];
   if (state.blocked.has(e.event_date)) return ["event_date", CODES.date_unavailable];
   if (!body.slot_id) return ["slot_id", "בחרו שעה"];
   if (guests === 0) return ["adults", "צריך לפחות אורח אחד"];
   const over = SUBSETS.find((k) => e[k] > guests);
   if (over) return [over, `לא יכול להיות יותר מסך האורחים (${guests})`];
+  if (e.vegetarian_guests + e.vegan_guests > guests) return ["vegan_guests", `צמחונים וטבעונים יחד לא יכולים לעבור את סך האורחים (${guests})`];
   if (body.fulfillment_type === "delivery" && !body.delivery_address) return ["delivery_address", "צריך כתובת למשלוח"];
   return null;
 }
@@ -185,6 +188,8 @@ function setOrder(order) {
     $("blocked-notice").hidden = false;
   }
   $("title").textContent = `תכנון האירוע: ${order.event.event_type}`;
+  $("to-menu").href = `/customer/menu/?order=${encodeURIComponent(order.id)}`;
+  $("next-step").hidden = !editable;
 }
 
 async function save(e) {
@@ -200,7 +205,6 @@ async function save(e) {
       : await call("/api/orders", { method: "POST", body: JSON.stringify(body) });
     setOrder(order);
     history.replaceState(null, "", `/customer/event/?order=${encodeURIComponent(order.id)}`);
-    $("next-step").hidden = false;
     toast("הטיוטה נשמרה");
   } catch (err) {
     if (err.status === 401) { location.href = "/customer/"; return; }
@@ -221,14 +225,16 @@ export async function initEvent() {
   buildTypes();
   buildCounters();
   const today = isoToday();
-  $("event-date").min = today;
+  state.earliest = today;
   try {
     const availability = await api(`/api/availability?from=${today}&to=${addDays(today, 365)}`);
     state.blocked = new Set(availability.blocked_dates);
     state.slots = availability.time_slots;
+    state.earliest = availability.earliest_date;
   } catch {
     toast("לא הצלחנו לטעון את השעות הפנויות");
   }
+  $("event-date").min = state.earliest;
   $("event-date").addEventListener("change", checkDate);
   for (const r of document.querySelectorAll('input[name="fulfillment"]')) r.addEventListener("change", onFulfillment);
   $("event-form").addEventListener("submit", save);

@@ -63,5 +63,6 @@ class TimeSlotOut(PublicSlotOut):
 class AvailabilityOut(BaseModel):
     """Public view: dates only (the owner's reason stays private) and active slots."""
 
+    earliest_date: date  # today (Israel time) + the owner's lead days
     blocked_dates: list[date]
     time_slots: list[PublicSlotOut]

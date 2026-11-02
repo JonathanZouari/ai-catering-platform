@@ -109,6 +109,7 @@ function openEditor(dish) {
     $("d-price").value = dish.unit_price;
     $("d-label").value = dish.unit_label ?? "";
     $("d-min").value = dish.min_quantity ?? "";
+    $("d-serves").value = dish.serves_adults ?? "";
     $("d-avail").checked = dish.is_available;
     $("d-kashrut").value = dish.dietary.kashrut_class ?? "";
     $("d-veg").value = triState(dish.dietary.is_vegetarian);
@@ -131,6 +132,7 @@ function dishPayload() {
     unit_price: $("d-price").value,
     unit_label: text("d-label"),
     min_quantity: text("d-min"),
+    serves_adults: text("d-serves"),
     is_available: $("d-avail").checked,
   };
 }
@@ -147,7 +149,7 @@ function dietaryPayload() {
 
 function validate(form) {
   let ok = true;
-  for (const input of form.querySelectorAll("#d-name, #d-category, #d-price, #d-min")) {
+  for (const input of form.querySelectorAll("#d-name, #d-category, #d-price, #d-min, #d-serves")) {
     const bad = !input.checkValidity();
     input.setAttribute("aria-invalid", String(bad));
     if (bad && ok) { input.focus(); ok = false; }
@@ -161,7 +163,7 @@ async function saveDish(event) {
   const error = $("form-error");
   error.hidden = true;
   if (!validate(form)) {
-    error.textContent = "יש למלא שם, קטגוריה ומחיר תקין";
+    error.textContent = "יש למלא שם, קטגוריה ומחיר תקין (וכמויות חיוביות)";
     error.hidden = false;
     return;
   }

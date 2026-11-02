@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0005` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0006` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -35,6 +35,7 @@ erDiagram
         text unit_label "null"
         char3 currency "ILS (OPEN 17)"
         numeric min_quantity "null, > 0"
+        numeric serves_adults "null, > 0, adults one unit serves"
         bool is_available
         timestamptz created_at
         timestamptz updated_at
@@ -85,8 +86,8 @@ erDiagram
         date event_date
         int adults ">= 0"
         int children ">= 0, adults + children > 0"
-        int vegetarian_guests "subset: <= adults + children"
-        int vegan_guests "subset: <= adults + children"
+        int vegetarian_guests "subset; vegetarian + vegan <= total"
+        int vegan_guests "subset, separate from vegetarian"
         int restricted_guests "subset: <= adults + children"
         text dietary_notes "null, free text, never parsed"
     }
@@ -108,6 +109,11 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
+    business_settings {
+        smallint id PK "always 1"
+        numeric child_portion "0 to 1, default 0.75"
+        int lead_days "0 to 60, default 3"
+    }
     order_items {
         uuid id PK
         uuid order_id FK "cascade"
@@ -125,7 +131,12 @@ erDiagram
 - **Price snapshot.** While an order is `draft`, prices are read live from `dishes`. From `pending_approval` on, the `snapshot_*` columns are authoritative.
 - **Status transitions** (enforced in services, with atomic conditional updates): `draft → pending_approval` (customer), then `pending_approval → approved | rejected` (owner). Anything else returns `409 invalid_transition`.
 - **Ownership.** Customer access is always resolved from the verified token's `sub` → `customers.auth_user_id` (ADR 0005), never by email.
-- **Guest groups are subsets** (OPEN_DECISIONS #4, decided 2026-11-02). Vegetarian, vegan and restricted guests are counted within adults + children. Whether vegan guests also count as vegetarian is still open.
+- **Guest groups are subsets** (OPEN_DECISIONS #4, decided 2026-11-02). Vegetarian, vegan and restricted guests are counted within adults + children. Vegetarian and vegan are **separate** groups, so vegetarian + vegan ≤ adults + children.
+- **Pricing** (#14, #17, #18). Prices are in ILS, VAT included, and weight prices are per kg. Each line is rounded half-up to the agora, and the total is the sum of the lines.
+- **Recommendations** (#3). A dish's quantity = eligible guests' portions ÷ `serves_adults`, rounded up (0.5 kg steps for weight, whole units otherwise) and never below `min_quantity`.
+  - A child counts as `business_settings.child_portion` of an adult.
+  - A vegan dish suits everyone. A vegetarian dish suits everyone except vegans. Any other dish, including one with unknown dietary data, excludes vegetarians and vegans.
+- **`business_settings`** is a single, unrelated row of owner-editable settings.
 
 ## Planned (not migrated yet)
 

@@ -1,4 +1,4 @@
-"""Signed-in customer's orders (screen C1). Items, pricing and submit come in later slices."""
+"""Signed-in customer's orders: event (C1), items (C2), pricing and recommendations (C3)."""
 
 import uuid
 
@@ -39,3 +39,43 @@ def update_draft(
     db: Session = Depends(get_db),
 ):
     return svc.update_draft(db, who, order_id, data)
+
+
+@router.put("/{order_id}/items/{dish_id}", response_model=s.CustomerOrderOut)
+def set_item(
+    order_id: uuid.UUID,
+    dish_id: uuid.UUID,
+    data: s.ItemIn,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    return svc.set_item(db, who, order_id, dish_id, data)
+
+
+@router.delete("/{order_id}/items/{dish_id}", response_model=s.CustomerOrderOut)
+def remove_item(
+    order_id: uuid.UUID,
+    dish_id: uuid.UUID,
+    version: int,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    return svc.remove_item(db, who, order_id, dish_id, version)
+
+
+@router.get("/{order_id}/pricing", response_model=s.PricingOut)
+def pricing(
+    order_id: uuid.UUID,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    return svc.get_pricing(db, who, order_id)
+
+
+@router.get("/{order_id}/recommendations", response_model=list[s.RecommendationOut])
+def recommendations(
+    order_id: uuid.UUID,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    return svc.get_recommendations(db, who, order_id)

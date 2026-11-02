@@ -43,10 +43,10 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | POST | `/api/orders` | Create draft from event config |
 | GET | `/api/orders/{id}` | Order with items, live pricing, `version` |
 | PATCH | `/api/orders/{id}` | Update event/fulfillment details; requires `version` |
-| PUT | `/api/orders/{id}/items/{dish_id}` | Set quantity; requires `version` |
-| DELETE | `/api/orders/{id}/items/{dish_id}` | Remove dish; requires `version` |
-| GET | `/api/orders/{id}/pricing` | Itemized breakdown |
-| GET | `/api/orders/{id}/recommendations` | Quantity recommendations (rules **[OPEN #3]**) |
+| PUT | `/api/orders/{id}/items/{dish_id}` | `{quantity, version}`. Whole units, or 0.5 kg steps for weight dishes; ≥ the dish minimum (`422 below_minimum`); the dish must be orderable (`422 dish_unavailable`) |
+| DELETE | `/api/orders/{id}/items/{dish_id}?version=N` | Remove dish |
+| GET | `/api/orders/{id}/pricing` | `{currency: ILS, vat_included: true, lines[], subtotal, delivery_fee, total}`. Lines are rounded half-up to the agora; a dish no longer orderable is flagged `available: false` and left out of the total |
+| GET | `/api/orders/{id}/recommendations` | `[{dish_id, quantity, eligible_guests}]` for dishes with `serves_adults` (rules: OPEN_DECISIONS #3, decided) |
 | POST | `/api/orders/{id}/submit` | `draft → pending_approval`; freezes snapshot |
 
 Every mutation returns the full updated order (new `version`). A stale `version` → `409 order_version_conflict`.

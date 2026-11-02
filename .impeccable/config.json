@@ -56,6 +56,15 @@
         ],
         "createdAt": "2026-11-02T11:06:12.576Z",
         "reason": "only hit is .route-band: full-bleed photo band, image fills it by design; caption .band-note is inset 14px/16px. Re-check this page by hand if its layout changes."
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "frontend/customer/menu/index.html"
+        ],
+        "createdAt": "2026-11-02T15:21:45.743Z",
+        "reason": "only hit is .route-band: full-bleed photo band, image fills it by design; caption .band-note is inset 14px/16px. Re-check this page by hand if its layout changes."
       }
     ]
   }
