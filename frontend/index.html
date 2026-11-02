@@ -1,18 +1,97 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catering</title>
+  <title>Yummai | הזמנות קייטרינג מסודרות לעסק שלכם</title>
+  <meta name="description" content="Yummai נותנת לעסקי קייטרינג לינק הזמנות משלהם. הלקוחות בונים הזמנה בעזרת עוזר חכם, ואתם מאשרים את הצעת המחיר.">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/landing.css">
 </head>
-<body>
-  <main>
-    <h1>Catering</h1>
-    <ul>
-      <li><a href="/customer/">Customer ordering</a></li>
-      <li><a href="/admin/">Business dashboard</a></li>
-    </ul>
-  </main>
+<body class="landing">
+  <div class="page">
+    <header class="topbar">
+      <a href="/" class="brand"><img src="/img/yummai-logo.svg" alt="Yummai" width="133" height="40"></a>
+      <a href="/admin/" class="login login-small">כניסה לעסקים</a>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-text">
+          <p class="eyebrow">לעסקי קייטרינג</p>
+          <h1 id="hero-title">הזמנות קייטרינג מסודרות, בלי הלוך ושוב בטלפון</h1>
+          <p class="lead">לינק הזמנות משלכם. הלקוחות בוחרים מנות ומקבלים עזרה מעוזר חכם, ואתם מקבלים הזמנה מסודרת לאישור.</p>
+          <a href="/admin/" class="login">כניסה לעסקים</a>
+        </div>
+        <img class="shot hero-shot" src="/img/landing/customer-menu.png" width="1366" height="860"
+          alt="מסך הזמנה של לקוח: תפריט מנות עם תמונות, מחירים ורשימת ההזמנה">
+      </section>
+
+      <section class="section" aria-labelledby="how-title">
+        <h2 id="how-title">איך זה עובד</h2>
+        <ol class="steps">
+          <li>
+            <h3>משתפים את הלינק</h3>
+            <p>לכל עסק כתובת משלו, עם השם, הצבעים והתפריט שלו.</p>
+          </li>
+          <li>
+            <h3>הלקוח בונה הזמנה</h3>
+            <p>הלקוח ממלא את פרטי האירוע, בוחר מנות ויכול לשאול את העוזר החכם מה מתאים.</p>
+          </li>
+          <li>
+            <h3>אתם מאשרים</h3>
+            <p>הצעת המחיר מגיעה אליכם. אתם מאשרים או דוחים, והלקוח רואה את התשובה בלינק שלו.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section" aria-labelledby="features-title">
+        <h2 id="features-title">מה מקבלים</h2>
+        <ul class="features">
+          <li>
+            <span class="icon icon-bag" aria-hidden="true"></span>
+            <h3>לינק ממותג</h3>
+            <p>הלקוחות מזמינים אצלכם, בלי השוואה לעסקים אחרים.</p>
+          </li>
+          <li>
+            <span class="icon icon-calendar" aria-hidden="true"></span>
+            <h3>לוח זמינות</h3>
+            <p>אתם קובעים שעות, תאריכים חסומים ואזורי משלוח.</p>
+          </li>
+          <li>
+            <span class="icon icon-leaf" aria-hidden="true"></span>
+            <h3>כשרות ואלרגנים</h3>
+            <p>מידע ברור לכל מנה. מה שלא הוזן מוצג כלא ידוע, ולא כתקין.</p>
+          </li>
+          <li>
+            <span class="icon icon-person" aria-hidden="true"></span>
+            <h3>ההחלטה שלכם</h3>
+            <p>העוזר החכם רק מציע. המחירים מחושבים לפי התפריט שלכם, ואף הזמנה לא מאושרת בלעדיכם.</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section" aria-labelledby="screens-title">
+        <h2 id="screens-title">ככה זה נראה</h2>
+        <div class="screens">
+          <figure>
+            <img class="shot" src="/img/landing/caterer-orders.png" width="1366" height="860" loading="lazy"
+              alt="לוח הבקרה של העסק: רשימת הזמנות שממתינות לאישור">
+            <figcaption>לוח הבקרה שלכם</figcaption>
+          </figure>
+          <figure class="screen-phone">
+            <img class="shot" src="/img/landing/customer-phone.png" width="390" height="844" loading="lazy"
+              alt="תפריט הזמנה כפי שהוא נראה בטלפון">
+            <figcaption>ההזמנה בטלפון</figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>© Yummai</span>
+      <a href="/admin/">כניסה לעסקים</a>
+    </footer>
+  </div>
 </body>
 </html>

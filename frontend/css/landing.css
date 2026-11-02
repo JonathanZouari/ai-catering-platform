@@ -1,0 +1,146 @@
+/* The public home page. It floats on the blue backdrop as one card, like the app. */
+.page {
+  max-inline-size: 1180px;
+  margin-inline: auto;
+  margin-block: 0;
+  background: var(--color-surface);
+}
+
+.page main {
+  max-width: none;
+  padding: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-block-end: 1px solid var(--color-border);
+}
+.brand { display: block; line-height: 0; }
+.brand img { block-size: 40px; inline-size: auto; }
+
+.login {
+  display: inline-block;
+  padding: var(--space-3) var(--space-8);
+  border-radius: var(--radius);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.login:hover { background: #33333c; }
+.login-small { padding: var(--space-2) var(--space-4); }
+
+.hero {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-6);
+}
+.eyebrow { margin: 0; color: var(--color-accent); font-weight: 600; }
+.hero h1 {
+  margin-block: var(--space-2) var(--space-4);
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.lead {
+  margin-block: 0 var(--space-6);
+  color: var(--color-muted);
+  font-size: 1.15rem;
+}
+
+.shot {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+.section {
+  padding: var(--space-8) var(--space-6);
+  border-block-start: 1px solid var(--color-border);
+}
+.section h2 {
+  margin-block: 0 var(--space-6);
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+.section h3 { margin-block: 0 var(--space-1); font-size: 1.1rem; }
+.section p { margin: 0; color: var(--color-muted); }
+
+.steps, .features {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps { counter-reset: step; }
+.steps li {
+  counter-increment: step;
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+.steps li::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  margin-block-end: var(--space-3);
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.features li {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+.features .icon { margin-block-end: var(--space-2); color: var(--color-accent); }
+
+.screens { display: grid; gap: var(--space-6); }
+.screens figure { margin: 0; }
+.screens figcaption {
+  margin-block-start: var(--space-2);
+  color: var(--color-muted);
+  text-align: center;
+}
+.screens .screen-phone { max-inline-size: 280px; margin-inline: auto; }
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-block-start: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+.footer a { color: inherit; }
+
+@media (min-width: 720px) {
+  .steps { grid-template-columns: repeat(3, 1fr); }
+  .features { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 960px) {
+  .page {
+    margin-block: var(--frame-block);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .hero {
+    grid-template-columns: 2fr 3fr;
+    align-items: center;
+    padding-block: var(--space-8);
+  }
+  .features { grid-template-columns: repeat(4, 1fr); }
+  .screens { grid-template-columns: 1fr 240px; align-items: start; }
+}
