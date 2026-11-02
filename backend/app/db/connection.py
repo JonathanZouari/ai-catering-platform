@@ -1,4 +1,5 @@
 import sqlite3
+import time
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -7,6 +8,23 @@ from app.core.config import get_settings
 # STRICT tables need SQLite 3.37+.
 MIN_SQLITE_VERSION = (3, 37, 0)
 BUSY_TIMEOUT_MS = 5000
+
+
+def _enable_wal(conn: sqlite3.Connection) -> None:
+    # Concurrent first opens can race while changing journal mode. SQLite does not
+    # always invoke the busy handler for that transition, so retry within our timeout.
+    deadline = time.monotonic() + BUSY_TIMEOUT_MS / 1000
+    while True:
+        try:
+            mode = conn.execute("PRAGMA journal_mode = WAL").fetchone()[0]
+            if mode.lower() != "wal":
+                raise RuntimeError(f"SQLite WAL mode could not be enabled: {mode}")
+            return
+        except sqlite3.OperationalError as exc:
+            code = getattr(exc, "sqlite_errorcode", 0)
+            if code & 0xFF != sqlite3.SQLITE_BUSY or time.monotonic() >= deadline:
+                raise
+            time.sleep(0.05)
 
 
 def _is_file_database(target: str) -> bool:
@@ -43,7 +61,7 @@ def connect(path: str | Path, *, autocommit: bool = False) -> sqlite3.Connection
         conn.execute("PRAGMA foreign_keys = ON")
         conn.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
         if _is_file_database(target):
-            conn.execute("PRAGMA journal_mode = WAL")
+            _enable_wal(conn)
         if conn.execute("PRAGMA foreign_keys").fetchone()[0] != 1:
             raise RuntimeError("SQLite foreign key enforcement could not be enabled")
         conn.autocommit = autocommit

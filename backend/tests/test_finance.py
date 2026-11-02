@@ -179,7 +179,7 @@ def test_document_numbers_unique(conn, make):
     record_receipt(
         conn, order_id=order_id, amount="1", method="cash", occurred_at=WHEN, document_number="R-9"
     )
-    with pytest.raises(IntegrityError, match="UNIQUE"):
+    with pytest.raises(IntegrityError, match="append-only"):
         record_receipt(
             conn,
             order_id=order_id,

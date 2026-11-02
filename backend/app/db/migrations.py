@@ -31,6 +31,23 @@ class MigrationError(RuntimeError):
     pass
 
 
+def _migration_authorizer(action: int, argument: str | None, *_: object) -> int:
+    # Reject transaction control BEFORE it executes, otherwise a COMMIT in a
+    # migration permanently saves partial changes before we can detect it.
+    # SQLite itself runs quick_check when ALTER TABLE adds a column to a STRICT table.
+    if action == sqlite3.SQLITE_PRAGMA and argument == "quick_check":
+        return sqlite3.SQLITE_OK
+    if action in (
+        sqlite3.SQLITE_TRANSACTION,
+        sqlite3.SQLITE_SAVEPOINT,
+        sqlite3.SQLITE_PRAGMA,
+        sqlite3.SQLITE_ATTACH,
+        sqlite3.SQLITE_DETACH,
+    ):
+        return sqlite3.SQLITE_DENY
+    return sqlite3.SQLITE_OK
+
+
 @dataclass(frozen=True)
 class Migration:
     version: str
@@ -96,7 +113,17 @@ def migrate(db_path: str | Path, directory: Path = MIGRATIONS_DIR) -> list[str]:
                     conn.execute("COMMIT")
                     continue
 
-                conn.executescript(migration.sql)
+                conn.set_authorizer(_migration_authorizer)
+                try:
+                    conn.executescript(migration.sql)
+                except sqlite3.DatabaseError as exc:
+                    if getattr(exc, "sqlite_errorcode", None) == sqlite3.SQLITE_AUTH:
+                        raise MigrationError(
+                            "migration contains forbidden transaction control, PRAGMA or ATTACH"
+                        ) from exc
+                    raise
+                finally:
+                    conn.set_authorizer(None)
                 if not conn.in_transaction:
                     raise MigrationError(
                         f"migration {migration.version} ended the transaction; remove "

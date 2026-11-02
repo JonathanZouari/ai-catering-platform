@@ -1,6 +1,6 @@
 # Database Schema (SQLite)
 
-Status: **v1.0 — migrated** (`database/migrations/0001_initial_schema.sql`). The database is SQLite
+Status: **v1.1 — migrations 0001 and 0002** (`database/migrations/`). The database is SQLite
 ([ADR 0005](ADR/0005-sqlite-database.md)), which supersedes the earlier Supabase Postgres draft
 ([ADR 0002](ADR/0002-supabase-postgres-sqlalchemy.md)). The migration file is the source of truth. This
 page explains it.
@@ -18,13 +18,15 @@ repeatable**:
 
 - Each `database/migrations/NNNN_name.sql` runs once, in order, inside its own `BEGIN IMMEDIATE`
   transaction, and is recorded in `schema_migrations` (version, name, SHA-256 checksum, applied_at).
-  Running again applies only new files. Existing data is never dropped or rewritten.
+  Running again applies only new files. Migration 0002 adds history guards and backfills delivery
+  snapshots using the current address book; it cannot recover addresses changed before that upgrade.
 - A failing migration rolls back completely and is not recorded.
 - An applied migration whose file changed, or a database that has a version the code does not know,
   stops the run with an error. Fix it with a **new** migration, never by editing an old one.
 - Checksums ignore CRLF/LF differences, so Windows and Linux checkouts agree.
-- Migration files must not contain `BEGIN`/`COMMIT` or `PRAGMA`. The runner detects a migration that
-  ends the transaction.
+- Transaction control, configuration pragmas and database attachment are rejected by an authorizer
+  before execution, so a rogue COMMIT cannot persist half a migration. SQLite's internal read-only
+  `quick_check` during ALTER TABLE is allowed.
 
 ## Connections
 
@@ -34,14 +36,14 @@ new connection, and the pragma does nothing inside a transaction, so it is set b
 switches to transactional mode. It also sets `busy_timeout = 5000` and `journal_mode = WAL`.
 SQLite 3.37+ is required for `STRICT` tables.
 
-`GET /health` reports `{"engine": "sqlite", "schema_version": "0001", "foreign_keys": true}`. It
+`GET /health` reports `{"engine": "sqlite", "schema_version": "0002", "foreign_keys": true}`. It
 returns 503 if the schema is missing or foreign keys are off.
 
 ## Conventions
 
 | Topic | Rule |
 |---|---|
-| Tables | `STRICT`. Wrong types are rejected, not coerced (`'twenty'` into an INTEGER fails). |
+| Tables | `STRICT`. Values that cannot be converted losslessly to the declared type are rejected (`'twenty'` into an INTEGER fails). |
 | Keys | `id INTEGER PRIMARY KEY` |
 | Money | `INTEGER` **minor units** (agorot for ILS) in `*_minor` columns. Never REAL. Convert with `app.db.money.to_minor` / `from_minor` (Decimal only, floats rejected, more than 2 decimals rejected). |
 | Currency | `TEXT` ISO-4217 code, 3 upper-case letters, default `ILS` (**[OPEN #17]**) |
@@ -51,7 +53,7 @@ returns 503 if the schema is missing or foreign keys are off.
 | Booleans | `INTEGER` `0`/`1` with CHECK |
 | Enums | `TEXT` with a CHECK list |
 | Foreign keys | Default `NO ACTION` (acts as restrict). History is never cascade-deleted. |
-| Ledgers | `payments`, `equipment_movements`, `ingredient_movements` are **append-only** (UPDATE/DELETE raise). Correct them with a refund or adjustment row. |
+| Ledgers | `payments`, `equipment_movements`, `ingredient_movements` are **append-only** (UPDATE/DELETE and conflicting INSERT OR REPLACE raise). Correct them with a refund or adjustment row. |
 | `updated_at` | Maintained by triggers unless the statement sets it explicitly |
 
 ## Tables
@@ -95,6 +97,9 @@ delivery orders, trigger) · `address_id` → addresses · `driver_employee_id` 
 `dispatched_at`, `completed_at` · `notes`.
 Rules: out_for_delivery/delivered need a driver and `dispatched_at`. delivered/failed ⇔ `completed_at`
 is set. `completed_at ≥ dispatched_at`.
+`address_snapshot` stores destination fields as JSON at creation and remains unchanged when the
+address book is edited. A changed destination requires a new delivery record. The food-drop-off
+requirement is enforced when either the delivery or its order is updated.
 
 ### payments — income receipts and refunds
 | Column | Rule |
@@ -142,6 +147,9 @@ Append-only. Views: **`equipment_stock`** (on hand, out at events) and **`equipm
 `ingredient_id` · `lot_code` (unique per ingredient) · `supplier_name` · `received_on` ·
 `expires_on` (null = non-perishable, ≥ `received_on`) · `total_cost_minor` · `currency`.
 Quantity is not stored here. It is the sum of the batch's movements.
+After movements exist, ingredient units and the batch's ingredient, receipt date and expiry date
+cannot be changed; this prevents relabeling historical stock. Corrections need new batch records
+and explicit adjustment movements.
 
 ### ingredient_movements
 `batch_id` · `movement_type` ∈ `receipt, consumption, waste, expired_disposal, return_to_supplier,

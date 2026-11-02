@@ -8,6 +8,8 @@ from app.db import MigrationError, connect, migrate
 from app.db.__main__ import main as cli
 from app.db.migrations import MIGRATIONS_DIR, discover
 
+EXPECTED_VERSIONS = [m.version for m in discover()]
+
 EXPECTED_TABLES = {
     "schema_migrations",
     "customers",
@@ -40,7 +42,7 @@ def _objects(conn: sqlite3.Connection, kind: str) -> set[str]:
 
 
 def test_fresh_init_creates_schema(isolated_settings: Path):
-    assert migrate(isolated_settings) == ["0001"]
+    assert migrate(isolated_settings) == EXPECTED_VERSIONS
     conn = connect(isolated_settings)
     try:
         assert _objects(conn, "table") == EXPECTED_TABLES
@@ -66,7 +68,9 @@ def test_rerun_is_noop_and_keeps_data(db_path: Path):
     conn = connect(db_path)
     try:
         assert conn.execute("SELECT full_name FROM customers").fetchall()[0][0] == "Keep Me"
-        assert conn.execute("SELECT count(*) FROM schema_migrations").fetchone()[0] == 1
+        assert conn.execute("SELECT count(*) FROM schema_migrations").fetchone()[0] == len(
+            EXPECTED_VERSIONS
+        )
     finally:
         conn.close()
 
@@ -96,7 +100,7 @@ def _copy_migrations(tmp_path: Path) -> Path:
     target = tmp_path / "migrations"
     target.mkdir()
     for m in discover(MIGRATIONS_DIR):
-        (target / f"{m.version}_{m.name}.sql").write_text(m.sql, encoding="utf-8")
+        (target / f"{m.version}_{m.name}.sql").write_text(m.sql, encoding="utf-8", newline="\n")
     return target
 
 
@@ -117,15 +121,15 @@ def test_crlf_checkout_has_same_checksum(tmp_path: Path, db_path: Path):
 
 def test_unknown_applied_version_is_refused(tmp_path: Path, db_path: Path):
     migrations = _copy_migrations(tmp_path)
-    (migrations / "0002_extra.sql").write_text("CREATE TABLE extra (id INTEGER PRIMARY KEY);")
-    assert migrate(db_path, migrations) == ["0002"]
-    with pytest.raises(MigrationError, match="does not know about: 0002"):
+    (migrations / "9999_extra.sql").write_text("CREATE TABLE extra (id INTEGER PRIMARY KEY);")
+    assert migrate(db_path, migrations) == ["9999"]
+    with pytest.raises(MigrationError, match="does not know about: 9999"):
         migrate(db_path)  # older code, newer database
 
 
 def test_failed_migration_rolls_back_completely(tmp_path: Path, db_path: Path):
     migrations = _copy_migrations(tmp_path)
-    (migrations / "0002_broken.sql").write_text(
+    (migrations / "9999_broken.sql").write_text(
         "CREATE TABLE half_done (id INTEGER PRIMARY KEY);\nINSERT INTO no_such_table VALUES (1);\n"
     )
     with pytest.raises(MigrationError):
@@ -134,16 +138,27 @@ def test_failed_migration_rolls_back_completely(tmp_path: Path, db_path: Path):
     try:
         assert "half_done" not in _objects(conn, "table")
         versions = [r[0] for r in conn.execute("SELECT version FROM schema_migrations")]
-        assert versions == ["0001"]
+        assert versions == EXPECTED_VERSIONS
     finally:
         conn.close()
 
 
-def test_migration_with_transaction_control_is_refused(tmp_path: Path, db_path: Path):
+@pytest.mark.parametrize("statement", ["COMMIT", "END", "ROLLBACK", "PRAGMA foreign_keys=OFF"])
+def test_migration_with_transaction_control_is_refused(tmp_path: Path, db_path: Path, statement):
     migrations = _copy_migrations(tmp_path)
-    (migrations / "0002_commits.sql").write_text("CREATE TABLE t (id INTEGER PRIMARY KEY); COMMIT;")
-    with pytest.raises(MigrationError, match="ended the transaction"):
+    (migrations / "9999_commits.sql").write_text(
+        f"CREATE TABLE t (id INTEGER PRIMARY KEY); {statement};"
+    )
+    with pytest.raises(MigrationError, match="forbidden transaction control"):
         migrate(db_path, migrations)
+    conn = connect(db_path)
+    try:
+        assert "t" not in _objects(conn, "table")
+        assert [
+            r[0] for r in conn.execute("SELECT version FROM schema_migrations")
+        ] == EXPECTED_VERSIONS
+    finally:
+        conn.close()
 
 
 def test_bad_migration_filename_is_refused(tmp_path: Path):
@@ -169,7 +184,7 @@ def test_concurrent_initialisation_applies_once(isolated_settings: Path):
     for t in threads:
         t.join()
     assert errors == []
-    assert sorted(results) == [[], [], [], ["0001"]]
+    assert sorted(results) == [[], [], [], EXPECTED_VERSIONS]
 
 
 def test_cli_migrate_and_status(tmp_path: Path, capsys: pytest.CaptureFixture[str]):
