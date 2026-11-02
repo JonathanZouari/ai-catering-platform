@@ -1,11 +1,7 @@
-import runpy
-from pathlib import Path
-
 from fastapi.testclient import TestClient
 
 from app.main import app
 
-runpy.run_path(str(Path(__file__).resolve().parents[2] / "database/sqlite/build_db.py"))
 client = TestClient(app)
 
 
