@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import Customer, Event, Order, QuantityRule, TimeSlot
+from app.models import Customer, Event, Order, QuantityRule
 from app.models.enums import CategoryType, OrderStatus
 from app.repositories.base import ScopedRepository
 
@@ -24,12 +24,8 @@ class OrderRepository(ScopedRepository[Order]):
     model = Order
 
     def lock(self, order_id: UUID) -> Order | None:
-        query = (
-            self._select()
-            .where(Order.id == order_id)
-            .with_for_update(of=Order)
-            .execution_options(populate_existing=True)
-        )
+        """Rereads the row. The transaction's write lock keeps it current (core/db.py)."""
+        query = self._select().where(Order.id == order_id).execution_options(populate_existing=True)
         return self.session.scalar(query)
 
     def list_submitted(self, status: OrderStatus | None) -> Sequence[Order]:
@@ -43,13 +39,6 @@ class OrderRepository(ScopedRepository[Order]):
         if status is not None:
             query = query.where(Order.status == status)
         return self.session.scalars(query).all()
-
-    def lock_slot(self, slot_id: UUID) -> None:
-        """Serializes capacity checks, so two submissions can't take the last place."""
-        query = select(TimeSlot.id).where(
-            TimeSlot.id == slot_id, TimeSlot.caterer_id == self.scope.caterer_id
-        )
-        self.session.scalar(query.with_for_update())
 
     def count_booked(self, slot_id: UUID, event_date: date, excluding: UUID) -> int:
         query = (

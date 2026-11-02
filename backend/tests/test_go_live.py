@@ -26,7 +26,7 @@ def other_shop(client, make_tenant):
 def deployed(monkeypatch):
     settings = get_settings()
     monkeypatch.setattr(settings, "app_env", "staging")
-    monkeypatch.setattr(settings, "database_url", settings.database_url or "postgresql://x/y")
+    monkeypatch.setattr(settings, "database_url", "sqlite:////data/test.db")
     monkeypatch.setattr(settings, "supabase_url", "https://project.supabase.co")
     monkeypatch.setattr(settings, "supabase_anon_key", "anon")
     monkeypatch.setattr(settings, "supabase_service_role_key", "service")

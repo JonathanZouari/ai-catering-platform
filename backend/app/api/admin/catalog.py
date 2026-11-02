@@ -99,6 +99,6 @@ def upload_dish_image(
     dish_id: UUID, file: UploadFile, repo: DishRepoDep, storage: StorageDep, scope: ScopeDep
 ):
     dish = get_or_404(repo, dish_id)
-    dish.image_path = store_upload(storage, scope, "dishes", file.file)
+    dish.image_path = store_upload(repo.session, storage, scope, "dishes", file.file)
     repo.session.commit()
     return dish

@@ -1,12 +1,15 @@
 from typing import BinaryIO
 from uuid import UUID, uuid4
 
+from sqlalchemy.orm import Session
+
 from app.core.errors import AppError
 from app.core.storage import MAX_UPLOAD_BYTES, Storage, content_type_for, detect_file_type
 from app.core.tenancy import CatererScope
 
 
 def store_upload(
+    session: Session,
     storage: Storage,
     scope: CatererScope,
     folder: str,
@@ -20,6 +23,8 @@ def store_upload(
         raise AppError(413, "file_too_large", "הקובץ גדול מדי (עד 5MB)")
     extension = detect_file_type(content, allow_pdf=allow_pdf)
     path = _object_path(scope.caterer_id, folder, extension)
+    # Nothing is unsaved yet, and the write lock must not be held during the network call.
+    session.commit()
     storage.upload(path, content, content_type_for(extension))
     return path
 

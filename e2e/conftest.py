@@ -26,16 +26,17 @@ def call(base_url, path, body=None, token=None, method="POST", headers=None):
 
 
 @pytest.fixture(scope="module")
-def base_url():
+def base_url(tmp_path_factory):
     """A fresh server and database for each test file."""
-    url = os.environ.get("E2E_DATABASE_URL", "")
-    if "test" not in url.rsplit("/", 1)[-1]:
-        pytest.fail("E2E_DATABASE_URL must be set and its database name must contain 'test'")
+    database = tmp_path_factory.mktemp("db") / "e2e.db"
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
     server = Path(__file__).parent / "server.py"
-    process = subprocess.Popen([sys.executable, str(server), str(port)])  # noqa: S603
+    environment = os.environ | {"E2E_DATABASE_URL": f"sqlite:///{database}"}
+    process = subprocess.Popen(  # noqa: S603
+        [sys.executable, str(server), str(port)], env=environment
+    )
     address = f"http://127.0.0.1:{port}"
     for _ in range(100):
         try:

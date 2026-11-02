@@ -16,6 +16,11 @@ build/
 .env.*
 !.env.example
 
+# SQLite databases and backups hold customer data
+*.db
+*.db-shm
+*.db-wal
+
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/

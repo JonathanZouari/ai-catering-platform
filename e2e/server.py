@@ -1,4 +1,4 @@
-"""Runs the real app on real Postgres, faking only Supabase Auth and Storage on the same origin."""
+"""Runs the real app on real SQLite, faking only Supabase Auth and Storage on the same origin."""
 
 import json
 import os
@@ -22,7 +22,7 @@ os.environ.update(
 import jwt  # noqa: E402
 import uvicorn  # noqa: E402
 from app.agents.client import get_llm  # noqa: E402
-from app.core.db import get_engine  # noqa: E402
+from app.core.db import apply_migrations, get_engine  # noqa: E402
 from app.core.email import get_mailer  # noqa: E402
 from app.core.security import get_signing_key_resolver  # noqa: E402
 from app.core.storage import get_storage  # noqa: E402
@@ -32,7 +32,6 @@ from app.services.caterers import create_caterer  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import ec  # noqa: E402
 from fastapi import APIRouter, Request  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
-from sqlalchemy import text  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 USER_ID = uuid4()
@@ -43,15 +42,7 @@ SENT: list[dict[str, str]] = []
 
 def reset_database() -> None:
     engine = get_engine()
-    with engine.begin() as conn:
-        conn.execute(text("drop schema if exists public cascade"))
-        conn.execute(text("drop schema if exists auth cascade"))
-        conn.execute(text("create schema public"))
-        conn.execute(text("create schema auth"))
-        conn.execute(text("create table auth.users (id uuid primary key)"))
-        for migration in sorted((BACKEND.parent / "database" / "migrations").glob("*.sql")):
-            conn.exec_driver_sql(migration.read_text(encoding="utf-8"))
-        conn.execute(text("insert into auth.users (id) values (:id)"), {"id": USER_ID})
+    apply_migrations(engine)
     with Session(engine) as session:
         data = CatererCreate(slug="taamim", name="טעמים קייטרינג", auth_user_id=USER_ID)
         create_caterer(session, data)

@@ -2,7 +2,7 @@
 and the customer's name, phone and address never leave this module toward the model."""
 
 from collections.abc import Sequence
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID
 
@@ -219,6 +219,12 @@ def save_exchange(
     session: Session, scope: CatererScope, conversation_id: UUID, question: str, answer: str
 ) -> None:
     messages = repo.MessageRepository(session, scope)
+    # One timestamp for both, so role alone orders them (MessageRepository.latest).
+    now = datetime.now(UTC)
     for role, text in (("user", question), ("assistant", answer)):
-        messages.add(AiMessage(conversation_id=conversation_id, role=role, content={"text": text}))
+        messages.add(
+            AiMessage(
+                conversation_id=conversation_id, role=role, content={"text": text}, created_at=now
+            )
+        )
     session.commit()
