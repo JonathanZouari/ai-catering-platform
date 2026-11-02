@@ -14,13 +14,19 @@ AUTH = {"Authorization": f"Bearer {TOKEN}"}
 
 
 @pytest.fixture
-def client(monkeypatch):
-    """App client on a fresh in-memory SQLite DB, with the owner token configured."""
+def make_session():
+    """Session factory on a fresh in-memory SQLite DB (shared with `client`)."""
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     Base.metadata.create_all(engine)
-    make = sessionmaker(engine, expire_on_commit=False)
+    return sessionmaker(engine, expire_on_commit=False)
+
+
+@pytest.fixture
+def client(monkeypatch, make_session):
+    """App client on that DB, with the owner token configured."""
+    make = make_session
 
     def override():
         with make() as session:
