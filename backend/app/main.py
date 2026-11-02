@@ -20,7 +20,14 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = FastAPI(title="AI Catering Platform", lifespan=lifespan)
+_dev = get_settings().app_env == "development"
+app = FastAPI(
+    title="AI Catering Platform",
+    lifespan=lifespan,
+    docs_url="/docs" if _dev else None,
+    redoc_url="/redoc" if _dev else None,
+    openapi_url="/openapi.json" if _dev else None,
+)
 app.include_router(catalog.router)
 app.include_router(orders.router)
 

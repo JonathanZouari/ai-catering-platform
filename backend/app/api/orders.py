@@ -26,13 +26,13 @@ def create_order(order_in: OrderIn, conn: sqlite3.Connection = Depends(get_db)):
                 "dishId": line["dish_id"],
                 "name": line["snapshot_name"],
                 "qty": line["quantity"],
-                "unitPrice": line["snapshot_unit_price_agorot"] / 100,
-                "lineTotal": line["snapshot_line_total_agorot"] / 100,
+                "unitPrice": line["snapshot_unit_price"],
+                "lineTotal": line["snapshot_line_total"],
             }
             for line in result["lines"]
         ],
-        "subtotal": order["subtotal_agorot"] / 100,
-        "deliveryFee": order["delivery_fee_agorot"] / 100,
-        "total": order["total_agorot"] / 100,
+        "subtotal": order["subtotal"],
+        "deliveryFee": order["delivery_fee"],
+        "total": order["total"],
         "submittedAt": order["created_at"],
     }

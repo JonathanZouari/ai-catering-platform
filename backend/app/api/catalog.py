@@ -26,7 +26,7 @@ def dishes(conn: sqlite3.Connection = Depends(get_db)) -> list[dict]:  # noqa: B
             "categoryId": d["category_id"],
             "name": d["name"],
             "description": d["description"],
-            "price": d["price_agorot"] / 100,
+            "price": d["price"],
             "unit": d["unit"],
             "perGuest": d["per_guest"],
             "step": d["step"],
@@ -41,4 +41,4 @@ def dishes(conn: sqlite3.Connection = Depends(get_db)) -> list[dict]:  # noqa: B
 
 @router.get("/zones")
 def zones(conn: sqlite3.Connection = Depends(get_db)) -> list[dict]:  # noqa: B008
-    return [{"city": z["city"], "fee": z["fee_agorot"] / 100} for z in catalog.list_zones(conn)]
+    return [{"city": z["city"], "fee": z["fee"]} for z in catalog.list_zones(conn)]

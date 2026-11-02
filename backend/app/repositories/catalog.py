@@ -17,9 +17,9 @@ def get_dishes(conn: sqlite3.Connection, ids: list[str]) -> list[sqlite3.Row]:
 
 
 def list_zones(conn: sqlite3.Connection) -> list[sqlite3.Row]:
-    return conn.execute("SELECT city, fee_agorot FROM delivery_zones ORDER BY rowid").fetchall()
+    return conn.execute("SELECT city, fee FROM delivery_zones ORDER BY rowid").fetchall()
 
 
 def get_zone_fee(conn: sqlite3.Connection, city: str) -> int | None:
-    row = conn.execute("SELECT fee_agorot FROM delivery_zones WHERE city = ?", (city,)).fetchone()
-    return row["fee_agorot"] if row else None
+    row = conn.execute("SELECT fee FROM delivery_zones WHERE city = ?", (city,)).fetchone()
+    return row["fee"] if row else None

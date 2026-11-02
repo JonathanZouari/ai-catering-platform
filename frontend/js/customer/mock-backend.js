@@ -156,13 +156,13 @@ export function priceOrder(order) {
   const lines = Object.entries(order.items)
     .map(([dishId, qty]) => {
       const dish = getDish(dishId);
-      return { dish, qty, unitPrice: dish.price, lineTotal: round2(dish.price * qty) };
+      return { dish, qty, unitPrice: dish.price, lineTotal: Math.round(dish.price * qty) };
     })
     .sort((a, b) => DISHES.indexOf(a.dish) - DISHES.indexOf(b.dish));
-  const subtotal = round2(lines.reduce((sum, l) => sum + l.lineTotal, 0));
+  const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
   const zone = ZONES.find((z) => z.city === order.event.city);
   const deliveryFee = order.event.fulfillment === "delivery" ? (zone ? zone.fee : null) : 0;
-  return { lines, subtotal, deliveryFee, total: round2(subtotal + (deliveryFee ?? 0)) };
+  return { lines, subtotal, deliveryFee, total: subtotal + (deliveryFee ?? 0) };
 }
 
 export function missingCategories(order) {

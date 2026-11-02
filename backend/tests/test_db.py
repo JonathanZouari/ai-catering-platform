@@ -1,6 +1,10 @@
 import datetime
 import json
+import os
 import sqlite3
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -68,11 +72,11 @@ def test_catalog(client):
 
 def test_init_db_rerun_keeps_edits(client):
     conn = sqlite3.connect(get_settings().sqlite_path)
-    conn.execute("UPDATE dishes SET price_agorot = 1 WHERE id = 'd1'")
+    conn.execute("UPDATE dishes SET price = 1 WHERE id = 'd1'")
     conn.commit()
     conn.close()
     init_db()
-    assert rows(client, "SELECT price_agorot FROM dishes WHERE id = 'd1'") == [(1,)]
+    assert rows(client, "SELECT price FROM dishes WHERE id = 'd1'") == [(1,)]
     assert rows(client, "SELECT count(*) FROM dishes") == [(17,)]
 
 
@@ -83,13 +87,11 @@ def test_order_round_trip(client):
     assert response.status_code == 201
     data = response.json()
     assert data["status"] == "pending_approval"
-    assert data["subtotal"] == 2 * 85 + 0.5 * 74
+    assert data["subtotal"] == 2 * 85 + 37
     assert data["deliveryFee"] == 90
     assert data["total"] == 170 + 37 + 90
     assert {line["dishId"] for line in data["lines"]} == {"d1", "d5"}
-    assert rows(client, "SELECT customer_phone, total_agorot FROM orders") == [
-        ("0501234567", 29700)
-    ]
+    assert rows(client, "SELECT customer_phone, total FROM orders") == [("0501234567", 297)]
     assert rows(client, "SELECT count(*) FROM order_items") == [(2,)]
 
 
@@ -147,3 +149,85 @@ def test_sql_injection_name_stored_verbatim(client):
     assert client.post("/api/orders", json=body).status_code == 201
     assert rows(client, "SELECT customer_name FROM orders") == [(evil,)]
     assert rows(client, "SELECT count(*) FROM dishes") == [(17,)]
+
+
+def test_half_up_rounding(client):
+    response = client.post("/api/orders", json=payload(items={"d10": 0.5}))
+    assert response.status_code == 201
+    data = response.json()
+    assert data["lines"][0]["lineTotal"] == 73  # 72.5 rounds up, not banker's 72
+    assert data["total"] == 73
+    assert isinstance(data["total"], int)
+
+
+@pytest.mark.parametrize("items", [{"d1": 0.5}, {"d5": 0.3}, {"d13": 1}, {"d1": 0.001}])
+def test_invalid_quantity_writes_nothing(client, items):
+    assert_error(client.post("/api/orders", json=payload(items=items)), "invalid_quantity")
+    assert rows(client, "SELECT count(*) FROM orders") == [(0,)]
+    assert rows(client, "SELECT count(*) FROM order_items") == [(0,)]
+
+
+@pytest.mark.parametrize("items", [{"d13": 8}, {"d5": 1.5}])
+def test_valid_quantity_accepted(client, items):
+    assert client.post("/api/orders", json=payload(items=items)).status_code == 201
+
+
+ORDER = (
+    "INSERT INTO orders VALUES ('o', 'draft', '{name}', '{phone}', '{{}}',"
+    " {sub}, {fee}, {total}, 't')"
+)
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"phone": ""},
+        {"phone": "05012x4567"},
+        {"phone": "12345"},
+        {"total": -1, "sub": -1},
+        {"total": 5},
+        {"name": ""},
+    ],
+)
+def test_db_rejects_bad_order(client, bad):
+    args = {"name": "x", "phone": "0501234567", "sub": 10, "fee": 0, "total": 10} | bad
+    conn = sqlite3.connect(get_settings().sqlite_path)
+    try:
+        with pytest.raises(sqlite3.IntegrityError):
+            conn.execute(ORDER.format(**args))
+    finally:
+        conn.close()
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "UPDATE dishes SET price = 72.5 WHERE id = 'd1'",
+        "UPDATE dishes SET name = '' WHERE id = 'd1'",
+    ],
+)
+def test_db_rejects_bad_dish(client, sql):
+    conn = sqlite3.connect(get_settings().sqlite_path)
+    try:
+        with pytest.raises(sqlite3.IntegrityError):
+            conn.execute(sql)
+    finally:
+        conn.close()
+
+
+@pytest.mark.parametrize(("env", "status"), [("production", 404), ("development", 200)])
+def test_openapi_only_in_development(env, status):
+    # The app is built at import time, so check it in a fresh interpreter.
+    code = (
+        "from fastapi.testclient import TestClient; from app.main import app;"
+        "print(TestClient(app).get('/openapi.json').status_code)"
+    )
+    out = subprocess.run(  # noqa: S603
+        [sys.executable, "-c", code],
+        cwd=Path(__file__).resolve().parents[1],
+        env={**os.environ, "APP_ENV": env},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert out.stdout.strip() == str(status)

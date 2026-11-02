@@ -10,7 +10,7 @@ Base: same origin as the frontend. JSON only. All bodies validated with Pydantic
 { "error": { "code": "order_version_conflict", "message": "Human readable", "details": {} } }
 ```
 
-Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409).
+Common codes: `validation_error` (422), `invalid_quantity` (422), `not_found` (404), `forbidden` (403), `unauthenticated` (401), `invalid_transition` (409), `order_version_conflict` (409), `proposal_not_pending` (409).
 
 ## System
 
@@ -23,7 +23,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/catalog/categories` | **Implemented.** `[{id, name}]`, ordered |
-| GET | `/api/catalog/dishes` | **Implemented (no filters yet).** Available dishes: `{id, categoryId, name, description, price, unit, perGuest, step, kashrut, vegetarian, vegan, allergens}`; price in shekels; unknown fields are `null` (`allergens: []` means verified none) |
+| GET | `/api/catalog/dishes` | **Implemented (no filters yet).** Available dishes: `{id, categoryId, name, description, price, unit, perGuest, step, kashrut, vegetarian, vegan, allergens}`; price in whole shekels (integer); unknown fields are `null` (`allergens: []` means verified none) |
 | GET | `/api/catalog/zones` | **Implemented.** `[{city, fee}]`, fee in shekels |
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
 | GET | `/api/availability?from=&to=` | Blocked dates + slots |
@@ -32,7 +32,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/api/orders` | **Implemented (SQLite phase).** Takes the full order at submit time: `{event, items: {dishId: qty}, contact}`. The backend prices it and stores it as `pending_approval`. Returns 201 `{id, status, lines:[{dishId, name, qty, unitPrice, lineTotal}], subtotal, deliveryFee, total, submittedAt}`. Errors: `validation_error`, `unknown_dish`, `unknown_zone`, `past_date` (all 422). Replaces the draft-first flow below for now |
+| POST | `/api/orders` | **Implemented (SQLite phase).** Takes the full order at submit time: `{event, items: {dishId: qty}, contact}`. The backend prices it and stores it as `pending_approval`. Returns 201 `{id, status, lines:[{dishId, name, qty, unitPrice, lineTotal}], subtotal, deliveryFee, total, submittedAt}`. Errors: `validation_error`, `unknown_dish`, `unknown_zone`, `past_date`, `invalid_quantity` (quantity not a positive multiple of the dish step; all 422). All amounts are whole-shekel integers; a line total is `price * qty` rounded half up to the nearest shekel (placeholder until **[OPEN #14]**) Replaces the draft-first flow below for now |
 | GET | `/api/orders/{id}` | Order with items, live pricing, `version`. **Deliberately not implemented** until customer auth (OPEN #1) is decided: orders hold personal data |
 | PATCH | `/api/orders/{id}` | Update event/fulfillment details; requires `version` |
 | PUT | `/api/orders/{id}/items/{dish_id}` | Set quantity; requires `version` |

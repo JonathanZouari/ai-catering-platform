@@ -6,7 +6,7 @@ Status: Proposed · Date: 2026-11-02
 ADR-0002 plans Supabase Postgres via SQLAlchemy, which needs a Supabase project and extra dependencies. The customer flow needs real persistence now: a server-owned catalog and orders priced by the backend (ADR-0003).
 
 ## Decision
-For now the backend uses the stdlib `sqlite3` module with plain SQL migrations in `database/migrations/` (applied idempotently at startup by `app/core/db.py`). The file path comes from `SQLITE_PATH` (default `catering.db`, git-ignored). Money is stored as integer agorot. This supersedes ADR-0002 until that is revisited; no new dependencies.
+For now the backend uses the stdlib `sqlite3` module with plain SQL migrations in `database/migrations/` (applied idempotently at startup by `app/core/db.py`). The file path comes from `SQLITE_PATH` (default `catering.db`, git-ignored). Money is stored as integer whole shekels; CHECK constraints reject fractional or negative amounts and `total != subtotal + delivery_fee`. This supersedes ADR-0002 until that is revisited; no new dependencies.
 
 ## Consequences
 + Zero setup, no extra dependencies, easy to test with a temp file.
