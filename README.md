@@ -10,7 +10,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 |---|---|
 | Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Data | Supabase (Postgres, Storage) in production; SQLite for local development and tests |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -19,7 +19,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+database/       migrations/ (Alembic, runs on SQLite locally and Postgres in production — first migration in Phase 2)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
