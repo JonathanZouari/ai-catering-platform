@@ -48,6 +48,8 @@ erDiagram
     int subtotal
     int delivery_fee
     int total
+    text submitted_at
+    text decided_at
     int decided_by FK
   }
   order_items {
