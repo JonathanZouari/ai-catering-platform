@@ -3,14 +3,15 @@ import { h, svg } from "/js/dom.js";
 
 const KEY = "ck-radio";
 let ctx = null;
-const listeners = new Set();
+const toggles = new Set(); // { btn, sync } for each rendered toggle
 
 export function isOn() {
   try { return localStorage.getItem(KEY) === "on"; } catch { return false; }
 }
 export function setOn(on) {
   try { localStorage.setItem(KEY, on ? "on" : "off"); } catch { /* sound stays per-session off */ }
-  listeners.forEach((f) => f());
+  // Re-renders replace toggles; forget the ones no longer on the page.
+  for (const t of toggles) if (t.btn.isConnected) t.sync(); else toggles.delete(t);
 }
 
 // One tone: sine with a 10ms attack / 30ms release so it never clicks. Callers are user-gesture handlers.
@@ -51,7 +52,7 @@ export function muteToggle(labels = {}) {
   };
   btn.append(icon, text);
   btn.addEventListener("click", () => { setOn(!isOn()); if (isOn()) beep(); });
-  listeners.add(sync); // keeps several toggles (and re-renders) in step
+  toggles.add({ btn, sync }); // keeps several toggles in step
   sync();
   return btn;
 }
