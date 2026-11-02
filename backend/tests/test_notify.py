@@ -142,6 +142,8 @@ def test_submit_stores_opt_in_and_lang(admin, client, make_dish, body, db):
         ("0501234567", "+972501234567"),
         ("+972 50-123-4567", "+972501234567"),
         ("+14155550123", None),
+        ("+97205012345", None),  # trunk 0 kept by mistake
+        ("+97221234567", None),  # landline: no SMS
         ("501234567", None),
         ("05012", None),
         ("", None),
@@ -183,3 +185,12 @@ def test_get_sender_env(monkeypatch):
     assert isinstance(notify.get_sender(), notify.DisabledSender)  # no sender number
     monkeypatch.setattr(s, "twilio_sms_from", "+15005550006")
     assert notify.get_sender().channels == ("sms",)
+
+
+def test_budget_used_up_leaves_orders_unclaimed(
+    admin, client, make_dish, body, db, sender, monkeypatch
+):
+    monkeypatch.setattr(notify, "BUDGET_S", -1)  # already past the deadline
+    o = approved(client, admin, make_dish, body)
+    to_delivery_dispatch(admin, db, o)
+    assert sender.calls == [] and statuses(db) == []  # nothing claimed: still eligible later

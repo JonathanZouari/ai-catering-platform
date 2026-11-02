@@ -7,6 +7,7 @@ during network I/O (same rule as geo.py). Never log phone numbers or message bod
 import datetime as dt
 import logging
 import re
+import time
 import uuid
 from typing import Protocol
 from zoneinfo import ZoneInfo
@@ -20,7 +21,7 @@ from app.repositories import notifications as repo
 log = logging.getLogger(__name__)
 SID_RE = re.compile(r"^AC[0-9a-f]{32}$")
 LOCAL_RE = re.compile(r"^05\d{8}$")
-INTL_RE = re.compile(r"^\+972\d{8,9}$")
+INTL_RE = re.compile(r"^\+9725\d{8}$")  # Israeli mobile, the only kind that gets SMS
 
 # EN: our translation, owner gave he/ar.
 TEXTS = {
@@ -104,11 +105,20 @@ def normalize_phone(raw: str | None) -> str | None:
     return phone if INTL_RE.fullmatch(phone) else None
 
 
+# shortcut: sends run inside the owner's request; the budget keeps it well under Render's timeout.
+# Unreached orders stay unclaimed (eligible next time). Move to a job queue if volume grows.
+BUDGET_S = 20
+
+
 def notify(db: Session, sender: Sender, kind: str, order_ids: list[uuid.UUID]) -> None:
     if not sender.channels:
         log.info("sms disabled")
         return
+    deadline = time.monotonic() + BUDGET_S
     for order_id in order_ids:
+        if time.monotonic() > deadline:
+            log.warning("notify budget used up kind=%s", kind)
+            break
         order = repo.get_order(db, order_id)
         to = normalize_phone(order.customer.phone) if order and order.sms_opt_in else None
         if to is None:
