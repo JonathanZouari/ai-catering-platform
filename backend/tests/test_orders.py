@@ -645,6 +645,7 @@ def test_delivery_quote_validation(client):
 def test_public_settings(client):
     assert client.get("/api/public-settings").json() == {
         "lead_time_days": 7, "edit_cutoff_hours": 4, "min_food_total": "0.00", "max_km": "40.00",
+        "safety_car": False,
     }  # fmt: skip
 
 

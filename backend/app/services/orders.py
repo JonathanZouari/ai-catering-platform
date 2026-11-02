@@ -12,7 +12,15 @@ from app.core.config import get_settings
 from app.core.errors import AppError
 from app.models.catalog import Dish, DishCategory, KashrutClass
 from app.models.logistics import FulfillmentType, TimeSlot
-from app.models.orders import Customer, Event, Order, OrderItem, OrderStatus, QuantityRule
+from app.models.orders import (
+    Customer,
+    Event,
+    Order,
+    OrderItem,
+    OrderRating,
+    OrderStatus,
+    QuantityRule,
+)
 from app.repositories import catalog as crepo
 from app.repositories import logistics as lrepo
 from app.repositories import orders as repo
@@ -26,6 +34,7 @@ from app.schemas.orders import (
     OrderSummary,
     PricingOut,
     QuantityRuleIn,
+    RatingIn,
     RecommendationOut,
 )
 from app.services import geo, pricing, quantities
@@ -206,7 +215,8 @@ def order_out(order: Order, lang: str = "he") -> OrderOut:
         submitted_at=order.submitted_at, first_submitted_at=order.first_submitted_at,
         reopened_at=order.reopened_at, decided_at=order.decided_at,
         decision_note=order.decision_note, cancelled_at=order.cancelled_at,
-        cancel_note=order.cancel_note,
+        cancel_note=order.cancel_note, kitchen_at=order.kitchen_at,
+        dispatched_at=order.dispatched_at, delivered_at=order.delivered_at, rating=order.rating,
     )  # fmt: skip
 
 
@@ -439,6 +449,37 @@ def cancel(db: Session, order_id, note: str) -> OrderOut:
     order.cancelled_at = dt.datetime.now(dt.UTC)
     order.version += 1
     return order_out(_save(db, order))
+
+
+def advance(db: Session, order_id, version: int) -> OrderOut:
+    order = repo.get_order(db, order_id, lock=True)
+    if order is None:
+        raise _not_found()
+    if order.version != version:
+        raise AppError(409, "Order was changed elsewhere", code="order_version_conflict")
+    S, now = OrderStatus, dt.datetime.now(dt.UTC)
+    if order.status == S.approved:
+        order.status, order.kitchen_at = S.in_kitchen, now
+    elif order.status == S.in_kitchen:
+        delivery = order.fulfillment_type == FulfillmentType.delivery
+        order.status = S.out_for_delivery if delivery else S.ready_for_pickup
+        order.dispatched_at = now
+    elif order.status in (S.out_for_delivery, S.ready_for_pickup):
+        order.status, order.delivered_at = S.delivered, now
+    else:
+        raise AppError(409, "Order cannot be advanced from its status", code="invalid_transition")
+    order.version += 1
+    return order_out(_save(db, order))
+
+
+def rate(db: Session, order_id, token, body: RatingIn, lang: str) -> OrderOut:
+    order = customer_order(db, order_id, token, lock=True)
+    if order.status != OrderStatus.delivered:
+        raise AppError(409, "Only delivered orders can be rated", code="invalid_transition")
+    if order.rating is not None:
+        raise AppError(409, "Order was already rated", code="already_rated")
+    order.rating = OrderRating(**body.model_dump())
+    return order_out(_save(db, order), lang)
 
 
 def put_rule(db: Session, category_id, body: QuantityRuleIn) -> QuantityRule:
