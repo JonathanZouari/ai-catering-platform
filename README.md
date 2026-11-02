@@ -129,6 +129,17 @@ uv run uvicorn app.main:app --reload
 
 Instead of `app.migrate` you can apply files by hand: `psql catering_dev -f database/migrations/<file>.sql`.
 
+**No Postgres? Use SQLite** for quick local runs and tests:
+
+```bash
+cd backend
+DATABASE_URL=sqlite:///./caterking_dev.db uv run python -m app.migrate   # builds tables + seed rows
+DATABASE_URL=sqlite:///./caterking_dev.db uv run uvicorn app.main:app --reload
+TEST_DATABASE_URL=sqlite:///./x_test.db uv run pytest                  # uses a fresh temp file
+```
+
+SQLite builds the schema from the models, so it lacks the SQL migrations' CHECK constraints, RLS and row locks (2 migration tests are skipped). CI and every deploy stay on Postgres, and `database/migrations/` remains the real schema.
+
 Open:
 - Customer app: http://127.0.0.1:8000/customer/
 - Owner dashboard: http://127.0.0.1:8000/admin/
