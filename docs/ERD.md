@@ -1,15 +1,16 @@
-# ERD: implemented tables
+# ERD — תרשים הטבלאות הקיימות
 
-Tables that exist in code today (`backend/app/models/`). Column detail and the full planned schema: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+ERD (Entity Relationship Diagram) = תרשים ישויות וקשרים: אילו טבלאות יש ואיך הן מחוברות.
+כאן מופיעות רק הטבלאות שכבר קיימות בקוד (`backend/app/models/`). הסכמה המלאה המתוכננת: [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 ```mermaid
 erDiagram
-    customers ||--o{ events : "plans"
-    customers ||--o{ orders : "places"
-    events ||--o| orders : "has one"
-    orders ||--|{ order_items : "contains"
-    dish_categories ||--o{ dishes : "groups"
-    dishes ||--o{ order_items : "ordered as"
+    customers ||--o{ events : "מתכנן"
+    customers ||--o{ orders : "מבצע"
+    events ||--o| orders : "יש לו הזמנה אחת"
+    orders ||--|{ order_items : "מכילה"
+    dish_categories ||--o{ dishes : "מקבצת"
+    dishes ||--o{ order_items : "מוזמנת בתור"
 
     customers {
         int id PK
@@ -64,24 +65,26 @@ erDiagram
     }
 ```
 
-## What each table holds
+**איך לקרוא את התרשים:** לקוח מתכנן אירועים. לכל אירוע יש לכל היותר הזמנה אחת. הזמנה מכילה שורות הזמנה, וכל שורה מצביעה על מנה אחת מתוך קטגוריה.
 
-| Table | Holds | Key columns |
+## מה יש בכל טבלה
+
+| טבלה | מה היא שומרת | עמודות עיקריות |
 |---|---|---|
-| `customers` | One row per person who orders: contact details. | `full_name`, `email`, `phone` |
-| `events` | The occasion being catered: what, when, and for how many guests (including dietary counts). A customer can have many events. | `customer_id`, `event_type`, `event_date`, `adults`, `children`, `vegetarian_guests`, `vegan_guests`, `restricted_guests`, `dietary_notes` |
-| `dish_categories` | Menu sections (e.g. salads, mains, desserts) and their display order. | `name` (unique), `sort_order`, `is_active` |
-| `dishes` | The menu: each dish, its category, how it's priced (per guest / tray / weight / item) and its price. | `category_id`, `name`, `pricing_unit`, `unit_price`, `currency`, `min_quantity`, `is_available` |
-| `orders` | The order for one event: status (`draft` → `pending_approval` → `approved`/`rejected`), pickup or delivery, requested time, and totals computed by the backend. `version` goes up on every change so AI proposals can detect a stale order. | `customer_id`, `event_id` (unique), `status`, `version`, `fulfillment_type`, `requested_at`, `delivery_address`, `subtotal`, `delivery_fee`, `total` |
-| `order_items` | The lines of an order: which dish and how much. While the order is a draft, prices come live from `dishes`; when it's submitted, `snapshot_*` freezes the name and price so later menu changes don't alter it. | `order_id`, `dish_id`, `quantity`, `snapshot_name`, `snapshot_unit_price`, `snapshot_line_total` |
+| `customers` (לקוחות) | שורה לכל אדם שמזמין: פרטי קשר. | `full_name`, `email`, `phone` |
+| `events` (אירועים) | האירוע שמזמינים אליו קייטרינג: סוג, תאריך, מספר אורחים (כולל צמחונים, טבעונים ובעלי הגבלות). ללקוח יכולים להיות כמה אירועים. | `customer_id`, `event_type`, `event_date`, `adults`, `children`, `vegetarian_guests`, `vegan_guests`, `restricted_guests`, `dietary_notes` |
+| `dish_categories` (קטגוריות) | חלקי התפריט (סלטים, עיקריות, קינוחים) וסדר התצוגה שלהם. | `name` (ייחודי), `sort_order`, `is_active` |
+| `dishes` (מנות) | התפריט: כל מנה, הקטגוריה שלה, שיטת התמחור (לאורח / למגש / לפי משקל / ליחידה) והמחיר. | `category_id`, `name`, `pricing_unit`, `unit_price`, `currency`, `min_quantity`, `is_available` |
+| `orders` (הזמנות) | ההזמנה של אירוע אחד: סטטוס (`draft` טיוטה → `pending_approval` ממתינה לאישור → `approved` אושרה / `rejected` נדחתה), איסוף או משלוח, מועד מבוקש, וסכומים שהשרת מחשב. `version` עולה בכל שינוי, כדי שהצעות של ה-AI יזהו הזמנה שהשתנתה בינתיים. | `customer_id`, `event_id` (ייחודי), `status`, `version`, `fulfillment_type`, `requested_at`, `delivery_address`, `subtotal`, `delivery_fee`, `total` |
+| `order_items` (שורות הזמנה) | מה יש בהזמנה: איזו מנה ובאיזו כמות. כל עוד ההזמנה בטיוטה, המחיר נלקח בזמן אמת מ-`dishes`. כשההזמנה נשלחת, עמודות `snapshot_*` "מקפיאות" את השם והמחיר, כך ששינויים בתפריט לא ישנו אותה. | `order_id`, `dish_id`, `quantity`, `snapshot_name`, `snapshot_unit_price`, `snapshot_line_total` |
 
-## Rules enforced by the database
-- Every foreign key is enforced (SQLite needs `PRAGMA foreign_keys=ON`, set in `app/core/db.py`).
-- An event has at least one guest (`adults + children > 0`), and no guest count is negative.
-- An order belongs to exactly one event (`orders.event_id` is unique).
-- A delivery order must have `delivery_address`.
-- `order_items.quantity > 0`, and each dish appears once per order (`UNIQUE(order_id, dish_id)`).
-- `dishes.unit_price >= 0`.
+## כללים שמסד הנתונים אוכף בעצמו
+- כל קשר בין טבלאות נבדק: אי אפשר, למשל, ליצור הזמנה ללקוח שלא קיים. ב-SQLite זה דורש `PRAGMA foreign_keys=ON`, שמוגדר ב-`app/core/db.py`.
+- לאירוע יש לפחות אורח אחד (`adults + children > 0`), ואף מספר אורחים לא שלילי.
+- להזמנה יש בדיוק אירוע אחד (`orders.event_id` ייחודי).
+- הזמנה במשלוח חייבת כתובת (`delivery_address`).
+- כמות בשורת הזמנה גדולה מ-0 (`quantity > 0`), וכל מנה מופיעה פעם אחת בהזמנה (`UNIQUE(order_id, dish_id)`).
+- מחיר מנה לא שלילי (`unit_price >= 0`).
 
-## Not built yet
-`dish_dietary`, `allergens`, `dish_allergens`, `delivery_zones`, `time_slots`, `blocked_dates`, `ai_conversations`, `ai_messages`, `ai_change_proposals`. Because `delivery_zones` doesn't exist yet, `orders.delivery_zone_id` is left out for now.
+## עוד לא נבנה
+`dish_dietary`, `allergens`, `dish_allergens`, `delivery_zones`, `time_slots`, `blocked_dates`, `ai_conversations`, `ai_messages`, `ai_change_proposals`. מכיוון שאין עדיין `delivery_zones`, העמודה `orders.delivery_zone_id` הושמטה בינתיים.
