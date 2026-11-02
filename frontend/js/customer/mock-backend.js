@@ -153,7 +153,9 @@ export function priceOrder(order) {
 
 export function missingCategories(order) {
   const picked = new Set(Object.keys(order.items).map((id) => getDish(id).categoryId));
-  return ["salads", "mains", "sides", "desserts"].filter((c) => !picked.has(c)).map(getCategory);
+  // Matched by name prefix so it works for both the mock and the API catalog (different ids).
+  const wanted = ["סלטים", "עיקריות", "תוספות", "קינוחים"];
+  return CATEGORIES.filter((c) => wanted.some((w) => c.name.startsWith(w)) && !picked.has(c.id));
 }
 
 const UNIT_PLURAL = { tray: "מגשים", kg: "ק״ג", item: "יחידות", guest: "אורחים" };
@@ -231,9 +233,10 @@ export function assistantReply(order, rawText) {
   }
 
   if (/קינוח|מתוק|עוגה|סוכר/.test(text)) {
-    const hasDessert = inOrder.some((id) => getDish(id).categoryId === "desserts");
-    if (hasDessert) return reply("כבר יש בהזמנה קינוח. אפשר לשנות את הכמות בסיכום ההזמנה.");
-    const dish = getDish("d15");
+    const isDessert = (d) => getCategory(d.categoryId)?.name.startsWith("קינוחים");
+    if (inOrder.some((id) => isDessert(getDish(id)))) return reply("כבר יש בהזמנה קינוח. אפשר לשנות את הכמות בסיכום ההזמנה.");
+    const dish = DISHES.find((d) => isDessert(d) && d.vegan);
+    if (!dish) return reply("אין כרגע קינוח טבעוני בתפריט.");
     return reply(`אפשר להוסיף את ${dish.name}, שמתאימה גם לאורחים טבעוניים.`, [{ op: "add_item", dish_id: dish.id, quantity: recommendedQty(dish, order.event) }]);
   }
 

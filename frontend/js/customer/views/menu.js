@@ -2,15 +2,36 @@
 import { fill, h, icon } from "../../lib/dom.js";
 import { announce } from "../../lib/announce.js";
 import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
-import { CATEGORIES, DISHES, priceOrder, qtyLabel, totalGuests } from "../mock-backend.js";
+import { api } from "../../api.js";
+import { CATEGORIES, DISHES, getDish, priceOrder, qtyLabel, totalGuests } from "../mock-backend.js";
 import { CATEGORY_ART, illustration } from "../../lib/illustrations.js";
 import { animatedAmount } from "../../lib/motion.js";
 import { createDishCard } from "../components/dish-card.js";
 import { getState, goto, setQty, subscribe } from "../store.js";
 
-// Stand-in for GET /api/catalog/categories and /dishes. The delay lets the skeleton state be reviewed.
-function loadCatalog() {
-  return new Promise((resolve) => setTimeout(() => resolve({ categories: CATEGORIES, dishes: DISHES }), 350));
+const UNITS = { per_tray: "tray", per_weight: "kg", per_item: "item", per_guest: "guest" };
+
+// GET /api/dishes, adapted to the shape the views use. The shared CATEGORIES/DISHES arrays are
+// refilled in place because pricing, the order summary and the chat all read them.
+// The API only lists allergens a dish contains, so an empty list means unknown (null), never safe.
+async function loadCatalog() {
+  const rows = await api("/api/dishes");
+  CATEGORIES.splice(0, CATEGORIES.length, ...new Map(rows.map((r) => [r.category_id, { id: r.category_id, name: r.category }])).values());
+  DISHES.splice(0, DISHES.length, ...rows.map((r) => ({
+    id: r.id,
+    categoryId: r.category_id,
+    name: r.name,
+    description: r.description ?? "",
+    price: r.unit_price / 100, // API prices are in agorot
+    unit: UNITS[r.pricing_unit],
+    kashrut: r.kashrut_class,
+    vegetarian: r.is_vegetarian,
+    vegan: r.is_vegan,
+    allergens: r.allergens.length ? r.allergens.filter((a) => a.status === "contains").map((a) => a.name) : null,
+  })));
+  // Drop saved order lines for dishes that no longer exist (e.g. ids from the old mock catalog).
+  for (const id of Object.keys(getState().order.items)) if (!getDish(id)) setQty(id, 0);
+  return { categories: CATEGORIES, dishes: DISHES };
 }
 
 export function mountMenu(root) {
