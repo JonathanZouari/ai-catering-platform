@@ -8,9 +8,9 @@ Ordering and management web app for a **single catering business**. Customers pl
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
+| Backend | Python 3.12+, FastAPI, Pydantic |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Data | SQLite now (Python's built-in `sqlite3`); Supabase (Postgres, Storage, Auth) planned |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -19,7 +19,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+database/       migrations/ (SQLite schema) and seeds/ (sample data); catering.db is created here
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -41,6 +41,13 @@ uv run uvicorn app.main:app --reload
 - API health: http://127.0.0.1:8000/health
 - Customer UI: http://127.0.0.1:8000/customer/
 - Admin UI: http://127.0.0.1:8000/admin/
+- Catalog API: http://127.0.0.1:8000/api/catalog/dishes
+
+### Database
+
+On startup the app creates `database/catering.db` and runs every SQL file in `database/migrations/`, then `database/seeds/`, that has not run yet. Each file runs once, in name order, and is recorded in the `schema_migrations` table. Set `SQLITE_PATH` to use another file. To start over, stop the app and delete `database/catering.db`.
+
+Add a schema change as a new numbered file (`0002_….sql`); never edit a file that has already run.
 
 ### Tests and lint
 
@@ -62,7 +69,7 @@ uv run pytest
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 2, when database code exists.
+The SQLite database uses Python's built-in `sqlite3`, so it needs no package. `sqlalchemy`, `psycopg`, and the Supabase client are added when the app moves to Supabase.
 
 ## Branches and environments
 
