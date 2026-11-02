@@ -13,55 +13,66 @@ erDiagram
     dishes ||--o{ order_items : "מוזמנת בתור"
 
     customers {
-        int id PK
-        text full_name
-        text email
-        text phone
+        int id PK "מזהה"
+        text full_name "שם מלא"
+        text email "אימייל"
+        text phone "טלפון"
     }
     events {
-        int id PK
-        int customer_id FK
-        text event_type
-        date event_date
-        int adults
-        int children
-        int vegetarian_guests
-        int vegan_guests
-        int restricted_guests
-        text dietary_notes
+        int id PK "מזהה"
+        int customer_id FK "הלקוח"
+        text event_type "סוג האירוע"
+        date event_date "תאריך"
+        int adults "מבוגרים"
+        int children "ילדים"
+        int vegetarian_guests "צמחונים"
+        int vegan_guests "טבעונים"
+        int restricted_guests "בעלי הגבלות"
+        text dietary_notes "הערות תזונה"
     }
     dish_categories {
-        int id PK
-        text name UK
-        int sort_order
-        bool is_active
+        int id PK "מזהה"
+        text name UK "שם הקטגוריה"
+        int sort_order "סדר תצוגה"
+        bool is_active "פעילה"
     }
     dishes {
-        int id PK
-        int category_id FK
-        text name
-        pricing_unit pricing_unit
-        numeric unit_price
-        char currency
-        bool is_available
+        int id PK "מזהה"
+        int category_id FK "הקטגוריה"
+        text name "שם המנה"
+        text description "תיאור"
+        text image_path "תמונה"
+        pricing_unit pricing_unit "תמחור: אורח/מגש/משקל/יחידה"
+        numeric unit_price "מחיר ליחידה"
+        text unit_label "תיאור יחידה"
+        char currency "מטבע"
+        numeric min_quantity "כמות מינימום"
+        bool is_available "זמינה"
     }
     orders {
-        int id PK
-        int customer_id FK
-        int event_id FK,UK
-        order_status status
-        int version
-        fulfillment_type fulfillment_type
-        timestamptz requested_at
-        text delivery_address
-        numeric total
+        int id PK "מזהה"
+        int customer_id FK "הלקוח"
+        int event_id FK,UK "האירוע"
+        order_status status "טיוטה/ממתינה/אושרה/נדחתה"
+        int version "גרסה, עולה בכל שינוי"
+        fulfillment_type fulfillment_type "איסוף או משלוח"
+        timestamptz requested_at "מועד מבוקש"
+        text delivery_address "כתובת למשלוח"
+        numeric subtotal "סכום מנות"
+        numeric delivery_fee "דמי משלוח"
+        numeric total "סך הכול"
+        timestamptz submitted_at "נשלחה בתאריך"
+        timestamptz decided_at "הוחלט בתאריך"
+        text decision_note "הערת בעל העסק"
     }
     order_items {
-        int id PK
-        int order_id FK
-        int dish_id FK
-        numeric quantity
-        numeric snapshot_unit_price
+        int id PK "מזהה"
+        int order_id FK "ההזמנה"
+        int dish_id FK "המנה"
+        numeric quantity "כמות"
+        text snapshot_name "שם המנה שהוקפא"
+        numeric snapshot_unit_price "מחיר שהוקפא"
+        numeric snapshot_line_total "סכום השורה שהוקפא"
     }
 ```
 
