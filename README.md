@@ -138,6 +138,8 @@ DATABASE_URL=sqlite:///./caterking_dev.db uv run uvicorn app.main:app --reload
 TEST_DATABASE_URL=sqlite:///./x_test.db uv run pytest                  # uses a fresh temp file
 ```
 
+Load demo data with `sqlite3 caterking_dev.db < ../database/sqlite/demo_seed.sql`; the [ERD](docs/database/ERD.md) shows how the tables connect.
+
 SQLite builds the schema from the models, so it lacks the SQL migrations' CHECK constraints, RLS and row locks (2 migration tests are skipped). CI and every deploy stay on Postgres, and `database/migrations/` remains the real schema.
 
 Open:
@@ -194,6 +196,7 @@ uv run pytest
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and layers |
 | [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md) | API endpoints and error shape |
 | [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md) | Tables, conventions, relationships |
+| [docs/database/ERD.md](docs/database/ERD.md) | ERD diagram of how the 18 tables connect, plus SQLite demo data and example JOINs |
 | [docs/AI_AGENT_DESIGN.md](docs/AI_AGENT_DESIGN.md) | AI assistant scope, tools, safeguards |
 | [docs/UX_UI_SPEC.md](docs/UX_UI_SPEC.md) | UX principles and screens |
 | [docs/OPEN_DECISIONS.md](docs/OPEN_DECISIONS.md) | Open business questions and decision log |
