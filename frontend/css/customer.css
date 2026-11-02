@@ -98,7 +98,7 @@ button.stepper-btn:hover { background: var(--color-surface-2); }
 @media (max-width: 640px) {
   .site-header-inner { flex-wrap: nowrap; padding-block: var(--space-1); gap: var(--space-2); }
   .brand { font-size: 1.25rem; }
-  .stepper-label { font-size: var(--text-sm); }
+  .stepper-label { font-size: var(--text-sm); white-space: nowrap; }
   .stepper, .stepper-item { gap: 0; }
   .stepper-btn { padding: 0 var(--space-1); }
   /* Hidden visually, not with display:none, so each step button keeps its name for screen readers. */
