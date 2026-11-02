@@ -1,13 +1,22 @@
+import os
 import uuid
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.database import Base, init_db, make_engine, resolve_database_url
+from app.core.database import (
+    Base,
+    default_sqlite_path,
+    init_db,
+    lockdown_statements,
+    make_engine,
+    resolve_database_url,
+)
 from app.models import (
     Customer,
     Dish,
@@ -126,3 +135,41 @@ def test_event_needs_guests(session):
     )
     with pytest.raises(IntegrityError):
         session.flush()
+
+
+def test_default_sqlite_path_is_outside_the_repo_and_honours_xdg(monkeypatch, tmp_path):
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    path = default_sqlite_path()
+    assert path == tmp_path / "ai-catering-platform" / "catering.db"
+    assert resolve_database_url(None) == f"sqlite:///{path}"
+    assert Path(__file__).resolve().parents[2] not in path.parents
+
+
+def test_make_engine_creates_missing_sqlite_directory(tmp_path):
+    db = tmp_path / "nested" / "dir" / "x.db"
+    make_engine(f"sqlite:///{db}")
+    assert db.parent.is_dir()
+
+
+def test_lockdown_statements_cover_every_table():
+    init_db_tables = Base.metadata.sorted_tables
+    with_revoke = lockdown_statements(init_db_tables, revoke_api_roles=True)
+    without = lockdown_statements(init_db_tables, revoke_api_roles=False)
+    for table in init_db_tables:
+        assert f'ALTER TABLE "{table.name}" ENABLE ROW LEVEL SECURITY' in with_revoke
+        assert f'REVOKE ALL ON TABLE "{table.name}" FROM anon, authenticated' in with_revoke
+    assert len(without) == len(init_db_tables)
+    assert not any(s.startswith("REVOKE") for s in without)
+
+
+@pytest.mark.skipif(not os.environ.get("TEST_POSTGRES_URL"), reason="needs TEST_POSTGRES_URL")
+def test_postgres_tables_have_rls_enabled():
+    engine = make_engine(os.environ["TEST_POSTGRES_URL"])
+    init_db(engine)
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT relname, relrowsecurity FROM pg_class WHERE relname = ANY(:names)"),
+            {"names": [t.name for t in Base.metadata.sorted_tables]},
+        ).all()
+    assert len(rows) == len(Base.metadata.sorted_tables)
+    assert all(enabled for _, enabled in rows)

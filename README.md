@@ -4,7 +4,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 
 > Status: **Phase 1 — scaffolding**. No business features yet. See `docs/` for the specs.
 >
-> Database: with `DATABASE_URL` unset the backend creates a SQLite file at `backend/catering.db` on startup (tables from `app/models`). Set `DATABASE_URL` to a Postgres URL to use Supabase instead. There are no migrations yet; `create_all` only creates missing tables.
+> Database: with `DATABASE_URL` unset the backend creates a SQLite file at `~/.local/share/ai-catering-platform/catering.db` (or under `$XDG_DATA_HOME`) on startup, outside the source tree (tables from `app/models`). Set `DATABASE_URL` to a Postgres URL to use Supabase instead. There are no migrations yet; `create_all` only creates missing tables.
 
 ## Stack
 
