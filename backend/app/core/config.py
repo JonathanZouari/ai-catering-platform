@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_anon_key: str | None = None
     supabase_service_role_key: str | None = None
+    # shortcut: shared owner token until auth is decided (OPEN_DECISIONS #1); replace with
+    # Supabase JWT verification. Unset = every admin route answers 401.
+    admin_token: str | None = None
 
 
 @lru_cache

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>ניהול הזמנות · Yummai</title>
+  <title>מנות ותמחור · Yummai</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
@@ -14,31 +14,121 @@
   <div class="header-inner wrap">
     <a class="brand" href="/">Yummai<small>לוח העסק</small></a>
     <nav class="site-nav" aria-label="ניווט ראשי">
-      <a href="/admin/" aria-current="page">הזמנות</a><a href="/customer/">צד הלקוח</a>
+      <a href="/admin/" aria-current="page">מנות ותמחור</a><a href="/customer/">צד הלקוח</a>
     </nav>
   </div>
 </header>
 
-<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/chef.jpg" alt="" width="900" height="1350"><span class="band-note hand"><i data-ill="basket"></i>ההזמנות של היום</span></div>
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/chef.jpg" alt="" width="900" height="1350"><span class="band-note hand"><i data-ill="basket"></i>מה יש היום בתפריט</span></div>
 <div class="app wrap">
   <main id="screen">
     <div class="screen-head">
       <p class="eyebrow">ניהול</p>
-      <h2>הזמנות</h2>
-      <p class="lede">המסכים A1–A5 נבנים בשלבים הבאים (docs/UX_UI_SPEC.md). הסגנונות שלהם כבר מוכנים ב-css/base.css.</p>
+      <h2>מנות ותמחור</h2>
+      <p class="lede">קטגוריות, מנות, מחירים ומידע תזונתי. מה שמסומן "לא ידוע" מוצג ללקוח כלא ידוע.</p>
     </div>
-    <p class="fine">מצב השרת: <span id="status" aria-live="polite">בודק…</span></p>
+
+    <form id="login" class="event-form" hidden>
+      <div class="field">
+        <label for="token">קוד גישה לבעלים</label>
+        <input id="token" type="password" autocomplete="current-password" required>
+        <span class="help">זמני, עד שתיבחר שיטת התחברות. נשמר רק בלשונית הזו.</span>
+      </div>
+      <div class="actions"><button class="btn primary" type="submit">כניסה</button></div>
+    </form>
+
+    <div id="catalog" class="admin" hidden>
+      <section class="catalog-list" aria-labelledby="dishes-h">
+        <div class="detail-head">
+          <h3 id="dishes-h">מנות</h3>
+          <button class="btn add" type="button" id="new-dish">מנה חדשה +</button>
+        </div>
+        <div class="field">
+          <label for="filter">קטגוריה</label>
+          <select id="filter"><option value="">כל הקטגוריות</option></select>
+        </div>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">מנה</th><th scope="col">מחיר</th><th scope="col">כשרות</th><th scope="col"><span class="sr-only">פעולות</span></th></tr></thead>
+            <tbody id="dish-rows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-dishes" hidden>אין עדיין מנות. התחילו בקטגוריה ואז "מנה חדשה".</p>
+
+        <h3 id="cats-h">קטגוריות</h3>
+        <div class="table-scroll">
+          <table class="lines" aria-labelledby="cats-h">
+            <thead><tr><th scope="col">שם</th><th scope="col">סדר</th><th scope="col">פעילה</th><th scope="col"><span class="sr-only">פעולות</span></th></tr></thead>
+            <tbody id="cat-rows"></tbody>
+          </table>
+        </div>
+        <form id="cat-form" class="field-row">
+          <div class="field"><label for="cat-name">קטגוריה חדשה</label><input id="cat-name" required maxlength="120"></div>
+          <div class="field"><span class="help" aria-hidden="true">&nbsp;</span><button class="btn ghost" type="submit">הוספה</button></div>
+        </form>
+      </section>
+
+      <form id="dish-form" class="order-detail" aria-labelledby="form-h" novalidate>
+        <div class="detail-head"><h3 id="form-h">מנה חדשה</h3></div>
+        <div class="field"><label for="d-name">שם המנה</label><input id="d-name" name="name" required maxlength="120"></div>
+        <div class="field"><label for="d-category">קטגוריה</label><select id="d-category" name="category_id" required></select></div>
+        <div class="field"><label for="d-desc">תיאור</label><textarea id="d-desc" name="description" rows="3" maxlength="2000"></textarea></div>
+
+        <fieldset>
+          <legend>תמחור</legend>
+          <div class="field-row">
+            <div class="field"><label for="d-unit">יחידת תמחור</label>
+              <select id="d-unit" name="pricing_unit">
+                <option value="per_tray">למגש</option><option value="per_guest">לאורח</option>
+                <option value="per_weight">לפי משקל</option><option value="per_item">ליחידה</option>
+              </select></div>
+            <div class="field"><label for="d-price">מחיר ליחידה (₪)</label><input id="d-price" name="unit_price" type="number" inputmode="decimal" min="0" step="0.01" required></div>
+            <div class="field"><label for="d-label">תווית יחידה</label><input id="d-label" name="unit_label" maxlength="120" placeholder='מגש 2 ק"ג'></div>
+            <div class="field"><label for="d-min">כמות מינימום</label><input id="d-min" name="min_quantity" type="number" inputmode="decimal" min="0.01" step="0.01"></div>
+          </div>
+          <label class="check"><input id="d-avail" name="is_available" type="checkbox" checked> זמינה להזמנה</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>כשרות ותזונה</legend>
+          <div class="field-row">
+            <div class="field"><label for="d-kashrut">כשרות</label>
+              <select id="d-kashrut"><option value="">לא ידוע</option><option value="meat">בשרי</option><option value="dairy">חלבי</option><option value="pareve">פרווה</option></select></div>
+            <div class="field"><label for="d-veg">צמחוני</label>
+              <select id="d-veg"><option value="">לא ידוע</option><option value="true">כן</option><option value="false">לא</option></select></div>
+            <div class="field"><label for="d-vegan">טבעוני</label>
+              <select id="d-vegan"><option value="">לא ידוע</option><option value="true">כן</option><option value="false">לא</option></select></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>אלרגנים</legend>
+          <p class="help">אלרגן שלא סומן נשאר "לא ידוע", לא "לא מכיל".</p>
+          <div class="field-row" id="allergen-fields"></div>
+          <div class="field-row">
+            <div class="field"><label for="new-allergen">אלרגן חדש לרשימה</label><input id="new-allergen" maxlength="120"></div>
+            <div class="field"><span class="help" aria-hidden="true">&nbsp;</span><button class="btn ghost" type="button" id="add-allergen">הוספה לרשימה</button></div>
+          </div>
+        </fieldset>
+
+        <p class="help error" id="form-error" role="alert" hidden></p>
+        <div class="actions">
+          <button class="btn danger" type="button" id="delete-dish" hidden>מחיקה</button>
+          <button class="btn primary" type="submit">שמירה</button>
+        </div>
+      </form>
+    </div>
   </main>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <footer class="site-footer wrap"><span>Yummai · לוח העסק</span></footer>
 <script type="module">
-  import { api } from "/js/api.js";
   import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initAdmin } from "/js/admin.js";
   initMotion();
   initRouteBand();
-  const el = document.getElementById("status");
-  api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+  initAdmin();
 </script>
 </body>
 </html>

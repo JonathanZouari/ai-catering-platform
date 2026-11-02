@@ -25,3 +25,10 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+
+# Claude Code personal settings (machine-specific hooks)
+.claude/settings.local.json
+
+# Local SQLite dev database
+*.db
+.playwright-mcp/

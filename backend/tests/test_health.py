@@ -26,6 +26,7 @@ def test_design_assets_served():
         "/js/illustrations.js",
         "/js/motion.js",
         "/js/home.js",
+        "/js/admin.js",
         "/assets/img/table.jpg",
     )
     for path in paths:
