@@ -3,11 +3,13 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app.api import catalog
 from app.core.config import get_settings
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 app = FastAPI(title="AI Catering Platform")
+app.include_router(catalog.router)
 
 
 @app.get("/health")
