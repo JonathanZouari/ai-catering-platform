@@ -2,33 +2,26 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff9ed">
-  <title>yumm.ai | הזמנת קייטרינג</title>
-  <link rel="preload" href="/assets/fonts/heebo-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/assets/fonts/playpen-sans-hebrew-hebrew-800.woff2" as="font" type="font/woff2" crossorigin>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#0B0F17">
+  <title>CaterKing</title>
+  <link rel="icon" href="/assets/brand/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/customer.css">
-  <link rel="stylesheet" href="/css/motion.css">
 </head>
-<body>
-  <a class="skip-link" href="#app">דילוג לתוכן</a>
-
-  <header class="site-header">
-    <div class="site-header-inner">
-      <!-- Name confirmed: yumm.ai. A designed logo is still pending (OPEN_DECISIONS #20); this is the typographic wordmark. -->
-      <p class="brand wordmark"><a class="brand-link" href="/" aria-label="yumm.ai, לעמוד הבית"><bdi>yumm<span class="dot">.</span>ai</bdi></a></p>
-      <nav id="stepper" class="stepper-nav" aria-label="שלבי ההזמנה"></nav>
+<body class="f1 ep carbon">
+  <header class="ep-header">
+    <div class="ep-wrap ep-header-row">
+      <h1 id="title" class="brand" dir="ltr"><img src="/assets/brand/favicon.svg" alt="" width="36" height="28"><span class="wordmark" aria-label="CaterKing">CATER<b>KING</b></span></h1>
+      <div id="langs" role="group"></div>
     </div>
   </header>
-
-  <main id="app" class="app" tabindex="-1">
-    <noscript><p>האתר דורש JavaScript כדי להציג את תהליך ההזמנה.</p></noscript>
+  <main class="ep-wrap">
+    <div id="message" role="status" aria-live="polite"></div>
+    <div id="app"></div>
   </main>
-
-  <div id="chat-root" hidden></div>
-  <div id="announce" class="visually-hidden" aria-live="polite" role="status"></div>
-
-  <script type="module" src="/js/customer/main.js"></script>
+  <div id="live" class="sr-only" role="status" aria-live="polite"></div>
+  <script type="module" src="/customer/customer.js"></script>
 </body>
 </html>
