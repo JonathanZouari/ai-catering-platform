@@ -100,6 +100,8 @@ legend { padding: 0; margin-block-end: 10px; }
 .stepper { display: inline-flex; align-items: center; border: 1.5px solid var(--line-strong); border-radius: var(--radius-pill); }
 .step-btn { width: 44px; height: 44px; border: 0; background: transparent; color: var(--fg); font-size: 1.25rem; cursor: pointer; border-radius: var(--radius-pill); }
 .stepper output { min-width: 4.5em; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stepper input { width: 4.5em; min-height: 44px; padding: 0; border: 0; background: transparent; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
 /* app shell: photo band with a handwritten caption on top of every app screen */
 .route-band { position: relative; height: clamp(150px, 24vw, 280px); overflow: hidden; background: #0c0c0b; }

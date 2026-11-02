@@ -51,6 +51,27 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 
 Every mutation returns the full updated order (new `version`). A stale `version` → `409 order_version_conflict`.
 
+Implemented so far (Phase 3, slice 2): `POST`, `GET` and `PATCH /api/orders/{id}`. Body:
+
+```json
+{
+  "event": {"event_type": "ברית", "event_date": "2026-12-06", "adults": 30, "children": 4,
+            "vegetarian_guests": 6, "vegan_guests": 2, "restricted_guests": 0, "dietary_notes": null},
+  "fulfillment_type": "pickup",
+  "slot_id": "uuid",
+  "delivery_address": null
+}
+```
+
+`PATCH` takes the same full body plus `version`. The rules are enforced server-side:
+- The date is not in the past (Israel time) and not blocked → `422 date_unavailable`.
+- The slot is active, of the same type, and valid for that weekday → `422 slot_unavailable`. `requested_at` is the event date at the slot's start time, Israel time, returned in UTC.
+- Dietary groups are at most adults + children → `422 validation_error` with `details.field`.
+- Delivery needs an address.
+- A customer without a profile → `409 profile_required`.
+- Someone else's order → `404`.
+- A non-draft → `409 invalid_transition`.
+
 ## AI assistant (Phase 4)
 
 | Method | Path | Notes |

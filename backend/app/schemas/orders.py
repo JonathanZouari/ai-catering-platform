@@ -1,14 +1,22 @@
 import uuid
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, StringConstraints
+from pydantic import AfterValidator, BaseModel, ConfigDict, StringConstraints
 
 OrderStatus = Literal["draft", "pending_approval", "approved", "rejected"]
 # Statuses the owner sees; drafts are still the customer's work in progress.
 OwnerStatus = Literal["pending_approval", "approved", "rejected"]
 Note = Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)]
+# Stored as UTC; SQLite hands it back without tzinfo, so mark it before it reaches the browser.
+
+
+def _as_utc(value: datetime) -> datetime:
+    return value if value.tzinfo else value.replace(tzinfo=UTC)
+
+
+UtcDatetime = Annotated[datetime, AfterValidator(_as_utc)]
 
 
 class _Out(BaseModel):
@@ -54,9 +62,9 @@ class OrderSummaryOut(BaseModel):
     event_date: date
     guests: int
     fulfillment_type: Literal["pickup", "delivery"]
-    requested_at: datetime
+    requested_at: UtcDatetime
     total: Decimal | None
-    submitted_at: datetime | None
+    submitted_at: UtcDatetime | None
 
 
 class OrderDetailOut(_Out):
@@ -64,13 +72,13 @@ class OrderDetailOut(_Out):
     status: OrderStatus
     version: int
     fulfillment_type: Literal["pickup", "delivery"]
-    requested_at: datetime
+    requested_at: UtcDatetime
     delivery_address: str | None
     subtotal: Decimal | None
     delivery_fee: Decimal | None
     total: Decimal | None
-    submitted_at: datetime | None
-    decided_at: datetime | None
+    submitted_at: UtcDatetime | None
+    decided_at: UtcDatetime | None
     decision_note: str | None
     customer: CustomerOut
     event: EventOut

@@ -36,9 +36,9 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | event_date | date not null | |
 | adults | int not null ≥ 0 | |
 | children | int not null ≥ 0 | |
-| vegetarian_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| vegan_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| restricted_guests | int not null ≥ 0 | |
+| vegetarian_guests | int not null ≥ 0 | Subset of adults + children (decided, #4) |
+| vegan_guests | int not null ≥ 0 | Subset of adults + children; vegan ⊂ vegetarian still **[OPEN #4]** |
+| restricted_guests | int not null ≥ 0 | Subset of adults + children |
 | dietary_notes | text null | Free text, shown to owner; never parsed into safety claims |
 | CHECK | `adults + children > 0` | |
 

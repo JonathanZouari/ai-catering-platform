@@ -6,34 +6,13 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from app.core import customer_auth
 from app.core.config import get_settings
 from app.models.orders import Customer
+from tests.conftest import SUPABASE, token
 from tests.test_orders import add_order
 
-SUPABASE = "https://test-project.supabase.co"
-KEY = ec.generate_private_key(ec.SECP256R1())
 OTHER_KEY = ec.generate_private_key(ec.SECP256R1())
-
-
-@pytest.fixture(autouse=True)
-def supabase(monkeypatch):
-    monkeypatch.setattr(get_settings(), "supabase_url", SUPABASE)
-    monkeypatch.setattr(get_settings(), "supabase_anon_key", "anon-public-key")
-    monkeypatch.setattr(customer_auth, "signing_key", lambda _token: KEY.public_key())
-
-
-def token(sub=None, email="Dana@Example.com", key=KEY, **override):
-    claims = {
-        "sub": str(sub or uuid.uuid4()),
-        "email": email,
-        "aud": "authenticated",
-        "iss": f"{SUPABASE}/auth/v1",
-        "exp": int(time.time()) + 3600,
-        "role": "authenticated",
-        **override,
-    }
-    return {"Authorization": f"Bearer {jwt.encode(claims, key, algorithm='ES256')}"}
+pytestmark = pytest.mark.usefixtures("supabase")
 
 
 def test_auth_config_is_public(client):

@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api import availability, catalog, me
+from app.api import availability, catalog, me, orders
 from app.api.admin import availability as admin_availability
 from app.api.admin import catalog as admin_catalog
 from app.api.admin import orders as admin_orders
@@ -20,6 +20,7 @@ app.include_router(availability.router)
 app.include_router(admin_availability.router)
 app.include_router(admin_orders.router)
 app.include_router(me.router)
+app.include_router(orders.router)
 
 
 @app.get("/health")
