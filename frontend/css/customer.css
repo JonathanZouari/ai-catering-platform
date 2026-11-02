@@ -264,3 +264,11 @@ body.as-lock { overflow: hidden; }
   .gauge-bar span { transition: none; }
   .lights span { animation: none; background: var(--red); }
 }
+
+/* team radio toggle (js/radio.js) */
+#langs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.radio-toggle { display: inline-flex; align-items: center; gap: var(--space-2); min-block-size: 44px; min-inline-size: 44px; padding-inline: var(--space-3); border-radius: 999px; }
+.radio-toggle.on { border-color: var(--green, #22c55e); }
+.radio-toggle .radio-wave { opacity: 0.35; transition: opacity 120ms; }
+.radio-toggle.on .radio-wave { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .radio-toggle .radio-wave { transition: none; } }

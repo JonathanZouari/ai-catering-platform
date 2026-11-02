@@ -174,3 +174,10 @@ textarea[readonly] { color: var(--muted); background: var(--panel-2); }
   dl { grid-template-columns: minmax(0, 1fr); } dd { margin-block-end: var(--space-2); }
   .subnav button, .decision button { flex: 1 1 auto; }
 }
+
+/* team radio toggle (js/radio.js) */
+.radio-toggle { display: inline-flex; align-items: center; gap: var(--space-2); min-block-size: 44px; min-inline-size: 44px; padding-inline: var(--space-3); }
+.radio-toggle.on { border-color: var(--amber); color: var(--amber); }
+.radio-toggle .radio-wave { opacity: 0.35; transition: opacity 120ms; }
+.radio-toggle.on .radio-wave { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .radio-toggle .radio-wave { transition: none; } }
