@@ -1,6 +1,6 @@
 # CaterKing database: ERD
 
-18 tables in four groups. The diagram is generated from the SQLAlchemy models by `scripts/erd.py`, so it always matches the code. It shows keys plus a few columns per table; full columns are in [DATABASE_SCHEMA.md](../DATABASE_SCHEMA.md).
+18 tables in five groups. The diagram is generated from the SQLAlchemy models by `scripts/erd.py`, so it always matches the code. Every column in it has a short description (from `scripts/erd_columns.py`); key columns must be described, and technical columns (timestamps, cached coordinates…) are left out to keep it readable. Full columns are in [DATABASE_SCHEMA.md](../DATABASE_SCHEMA.md).
 
 | Group | Tables |
 |---|---|
@@ -15,119 +15,156 @@
 ```mermaid
 erDiagram
   allergens {
-    int id PK
-    str name
+    int id PK "Allergen id"
+    str name "Allergen name, e.g. peanuts, gluten"
   }
   blocked_dates {
-    uuid id PK
-    date date
-    str reason
+    uuid id PK "Blocked date id"
+    date date "Date when no orders are taken"
+    str reason "Why the date is blocked"
   }
   business_settings {
-    bool id PK
-    int lead_time_days
-    int edit_cutoff_hours
-    numeric min_food_total
+    bool id PK "Always true: the table has exactly one row"
+    int lead_time_days "Minimum days of notice for a new order"
+    int edit_cutoff_hours "Edits close this many hours before the event"
+    numeric min_food_total "Minimum food total before submitting"
+    numeric delivery_base_fee "Delivery fee base amount"
+    numeric delivery_per_km "Delivery fee per km from the kitchen"
+    numeric delivery_max_km "Furthest delivery distance"
+    str kitchen_address "Where deliveries start"
   }
   customers {
-    uuid id PK
-    str full_name
-    str email
-    str phone
+    uuid id PK "Customer id (guest checkout, no account)"
+    str full_name "Customer name; never sent to the AI"
+    str email "Contact email (email or phone is required)"
+    str phone "Contact phone"
   }
   delivery_zones {
-    uuid id PK
-    str name
-    numeric fee
-    object definition
+    uuid id PK "Zone id"
+    str name "Zone name"
+    numeric fee "Flat delivery fee for the zone"
+    object definition "Zone shape as JSON (kept loose until decided)"
+    bool is_active "Zone in use"
   }
   dish_categories {
-    uuid id PK
-    str name_he
-    str name_ar
-    str name_en
+    uuid id PK "Category id"
+    str name_he "Name in Hebrew (required)"
+    str name_ar "Name in Arabic (falls back to Hebrew)"
+    str name_en "Name in English (falls back to Hebrew)"
+    int sort_order "Position on the menu"
+    bool is_active "Shown to customers"
   }
   geocode_cache {
-    str address_norm PK
-    float lat
-    float lon
-    bool found
+    str address_norm PK "Address, lower-cased with spaces collapsed"
+    float lat "Latitude (empty when not found)"
+    float lon "Longitude (empty when not found)"
+    bool found "Whether OpenStreetMap found the address"
   }
   time_slots {
-    uuid id PK
-    FulfillmentType fulfillment_type
-    int weekday
-    time start_time
+    uuid id PK "Slot id"
+    FulfillmentType fulfillment_type "pickup or delivery"
+    int weekday "0-6 (Sunday = 0); empty = every day"
+    time start_time "Slot start time"
+    time end_time "Slot end time"
+    int capacity "Max orders in the slot; empty = no limit"
+    bool is_active "Offered to customers"
   }
   dishes {
-    uuid id PK
-    uuid category_id FK
-    str name_he
-    str name_ar
-    str name_en
+    uuid id PK "Dish id"
+    uuid category_id FK "Category the dish belongs to"
+    str name_he "Name in Hebrew (required)"
+    str name_ar "Name in Arabic (falls back to Hebrew)"
+    str name_en "Name in English (falls back to Hebrew)"
+    PricingUnit pricing_unit "per_guest, per_tray, per_weight (kg) or per_item"
+    numeric unit_price "Price per unit, VAT included"
+    str currency "ISO currency code, ILS by default"
+    numeric min_quantity "Smallest quantity a customer may order"
+    bool is_available "Can be ordered right now"
   }
   events {
-    uuid id PK
-    uuid customer_id FK
-    str event_type
-    date event_date
-    int adults
+    uuid id PK "Event id"
+    uuid customer_id FK "Customer who is planning the event"
+    str event_type "Kind of event, e.g. birthday"
+    date event_date "Date of the event"
+    int adults "Number of adult guests"
+    int children "Number of child guests"
+    int vegetarian_guests "Vegetarian guests, counted within adults + children"
+    int vegan_guests "Vegan guests, counted within adults + children"
+    int restricted_guests "Guests with other restrictions"
+    str dietary_notes "Free-text dietary notes from the customer"
   }
   quantity_rules {
-    uuid id PK
-    uuid category_id FK
-    numeric per_adult
-    numeric per_child
-    numeric round_step
+    uuid id PK "Rule id"
+    uuid category_id FK "Category the rule applies to (one rule per category)"
+    numeric per_adult "Units needed per adult guest"
+    numeric per_child "Units needed per child guest"
+    numeric round_step "Suggested quantities round up to this step"
   }
   dish_allergens {
-    uuid dish_id PK,FK
-    int allergen_id PK,FK
-    AllergenStatus status
+    uuid dish_id PK,FK "The dish"
+    int allergen_id PK,FK "The allergen"
+    AllergenStatus status "contains, free or unknown; no row = unknown"
   }
   dish_dietary {
-    uuid dish_id PK,FK
-    KashrutClass kashrut_class
-    bool is_vegetarian
-    bool is_vegan
+    uuid dish_id PK,FK "The dish (one dietary row per dish)"
+    KashrutClass kashrut_class "meat, dairy or pareve; empty = unknown"
+    bool is_vegetarian "true, false or empty = unknown"
+    bool is_vegan "true, false or empty = unknown"
+    object verified_at "When the owner last checked this data"
   }
   orders {
-    uuid id PK
-    uuid customer_id FK
-    uuid event_id FK
-    uuid time_slot_id FK
-    uuid delivery_zone_id FK
-    OrderStatus status
-    int version
-    str access_token_hash
+    uuid id PK "Order id"
+    uuid customer_id FK "Customer who placed the order"
+    uuid event_id FK "Event the order is for"
+    OrderStatus status "draft, pending_approval, approved, rejected or cancelled"
+    int version "Increases on every change; stale edits get 409"
+    str access_token_hash "SHA-256 of the private link token (token never stored)"
+    FulfillmentType fulfillment_type "pickup or delivery"
+    uuid time_slot_id FK "Chosen pickup or delivery slot"
+    object requested_at "Event date and slot start time"
+    str delivery_address "Delivery address; never sent to the AI"
+    uuid delivery_zone_id FK "Zone used for the fee on older zone-priced orders"
+    numeric delivery_km "Distance from the kitchen, from geocoding"
+    numeric subtotal "Food total, calculated by the server"
+    numeric delivery_fee "Delivery fee, calculated by the server"
+    numeric total "Subtotal + delivery fee"
+    object submitted_at "When the customer sent it for approval"
+    object decided_at "When the owner approved or rejected it"
+    object cancelled_at "When the owner cancelled it"
   }
   ai_conversations {
-    uuid id PK
-    uuid order_id FK
-    object created_at
+    uuid id PK "Conversation id"
+    uuid order_id FK "Order the chat belongs to (one chat per order)"
+    object created_at "When the chat started"
   }
   order_items {
-    uuid id PK
-    uuid order_id FK
-    uuid dish_id FK
-    numeric quantity
-    str snapshot_name
-    PricingUnit snapshot_pricing_unit
+    uuid id PK "Order line id"
+    uuid order_id FK "Order the line belongs to"
+    uuid dish_id FK "Dish ordered"
+    numeric quantity "Units ordered"
+    str snapshot_name "Dish name frozen at submit time"
+    numeric snapshot_unit_price "Unit price frozen at submit time"
+    numeric snapshot_line_total "Line total frozen at submit time"
   }
   ai_change_proposals {
-    uuid id PK
-    uuid order_id FK
-    uuid conversation_id FK
-    int base_order_version
-    object changes
-    object diff
+    uuid id PK "Proposal id"
+    uuid order_id FK "Order the AI proposes to change"
+    uuid conversation_id FK "Chat the proposal came from"
+    int base_order_version "Order version the proposal was made against"
+    object changes "Proposed item changes as JSON"
+    object diff "Before/after per line, shown to the customer"
+    numeric price_before "Order total before the change"
+    numeric price_after "Order total after the change"
+    ProposalStatus status "pending, approved, rejected, expired or failed"
   }
   ai_messages {
-    uuid id PK
-    uuid conversation_id FK
-    int seq
-    str role
-    object content
+    uuid id PK "Message id"
+    uuid conversation_id FK "Conversation the message belongs to"
+    int seq "Message order within the chat"
+    str role "user or assistant"
+    object content "Message content blocks as JSON"
+    int input_tokens "Tokens sent to the model (cost tracking)"
+    int output_tokens "Tokens the model returned (cost tracking)"
   }
   dish_categories ||--o{ dishes : category_id
   customers ||--o{ events : customer_id
@@ -199,4 +236,4 @@ Schnitzel       gluten    contains
 Schnitzel       eggs      contains
 ```
 
-Regenerate the diagram after changing a model: `cd backend && PYTHONPATH=. uv run python ../scripts/erd.py`.
+Regenerate the diagram after changing a model: `cd backend && PYTHONPATH=.:../scripts uv run python ../scripts/erd.py`.
