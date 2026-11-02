@@ -9,6 +9,7 @@ export async function api(path, options = {}) {
     const error = new Error(body?.error?.message ?? `Request failed (${response.status})`);
     error.code = body?.error?.code ?? "http_error";
     error.status = response.status;
+    error.details = body?.error?.details ?? {};
     throw error;
   }
   return body;
