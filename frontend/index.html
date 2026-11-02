@@ -3,95 +3,168 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Yummai | הזמנות קייטרינג מסודרות לעסק שלכם</title>
-  <meta name="description" content="Yummai נותנת לעסקי קייטרינג לינק הזמנות משלהם. הלקוחות בונים הזמנה בעזרת עוזר חכם, ואתם מאשרים את הצעת המחיר.">
+  <title>Yummai | מהודעה מבולגנת להזמנה מסודרת</title>
+  <meta name="description" content="Yummai נותנת לעסקי קייטרינג לינק הזמנות משלהם. הלקוחות בונים הזמנה בעזרת עוזר חכם, ואתם מקבלים פתק מסודר לאישור.">
+  <link rel="preload" href="/fonts/heebo-hebrew.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/landing.css">
+  <script type="module" src="/js/landing.js"></script>
 </head>
 <body class="landing">
-  <div class="page">
-    <header class="topbar">
-      <a href="/" class="brand"><img src="/img/yummai-logo.svg" alt="Yummai" width="133" height="40"></a>
-      <a href="/admin/" class="login login-small">כניסה לעסקים</a>
-    </header>
+  <header class="topbar">
+    <a href="/" class="brand"><img src="/img/yummai-logo.svg" alt="Yummai" width="133" height="40"></a>
+    <nav class="topnav" aria-label="ניווט בעמוד">
+      <a href="#how">איך זה עובד</a>
+      <a href="#features">מה מקבלים</a>
+    </nav>
+    <a href="/admin/" class="button button-small">כניסה לעסקים</a>
+  </header>
 
-    <main>
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-text">
-          <p class="eyebrow">לעסקי קייטרינג</p>
-          <h1 id="hero-title">הזמנות קייטרינג מסודרות, בלי הלוך ושוב בטלפון</h1>
-          <p class="lead">לינק הזמנות משלכם. הלקוחות בוחרים מנות ומקבלים עזרה מעוזר חכם, ואתם מקבלים הזמנה מסודרת לאישור.</p>
-          <a href="/admin/" class="login">כניסה לעסקים</a>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-text">
+        <p class="eyebrow">לעסקי קייטרינג</p>
+        <h1 id="hero-title">מהודעה מבולגנת להזמנה מסודרת.</h1>
+        <p class="lead">במקום הלוך ושוב בטלפון, הלקוחות בונים הזמנה בלינק שלכם ואתם מקבלים פתק אחד ברור לאישור.</p>
+
+        <form class="controls" id="demo" aria-label="הדגמה של פתק הזמנה">
+          <div class="control">
+            <label for="guests">כמה אורחים?</label>
+            <div class="slider-row">
+              <input id="guests" type="range" min="10" max="200" step="5" value="40">
+              <output id="guests-value" for="guests">40</output>
+            </div>
+          </div>
+          <fieldset class="control">
+            <legend>איזה אירוע?</legend>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="event" value="birthday" checked><span>יום הולדת</span></label>
+              <label class="chip"><input type="radio" name="event" value="brit"><span>ברית</span></label>
+              <label class="chip"><input type="radio" name="event" value="office"><span>אירוע חברה</span></label>
+            </div>
+          </fieldset>
+        </form>
+
+        <div class="actions">
+          <a href="/admin/" class="button">כניסה לעסקים</a>
+          <a href="#how" class="button-quiet">איך זה עובד</a>
         </div>
-        <img class="shot hero-shot" src="/img/landing/customer-menu.png" width="1366" height="860"
-          alt="מסך הזמנה של לקוח: תפריט מנות עם תמונות, מחירים ורשימת ההזמנה">
-      </section>
+      </div>
 
-      <section class="section" aria-labelledby="how-title">
-        <h2 id="how-title">איך זה עובד</h2>
-        <ol class="steps">
-          <li>
-            <h3>משתפים את הלינק</h3>
-            <p>לכל עסק כתובת משלו, עם השם, הצבעים והתפריט שלו.</p>
-          </li>
-          <li>
-            <h3>הלקוח בונה הזמנה</h3>
-            <p>הלקוח ממלא את פרטי האירוע, בוחר מנות ויכול לשאול את העוזר החכם מה מתאים.</p>
-          </li>
-          <li>
-            <h3>אתם מאשרים</h3>
-            <p>הצעת המחיר מגיעה אליכם. אתם מאשרים או דוחים, והלקוח רואה את התשובה בלינק שלו.</p>
-          </li>
-        </ol>
-      </section>
-
-      <section class="section" aria-labelledby="features-title">
-        <h2 id="features-title">מה מקבלים</h2>
-        <ul class="features">
-          <li>
-            <span class="icon icon-bag" aria-hidden="true"></span>
-            <h3>לינק ממותג</h3>
-            <p>הלקוחות מזמינים אצלכם, בלי השוואה לעסקים אחרים.</p>
-          </li>
-          <li>
-            <span class="icon icon-calendar" aria-hidden="true"></span>
-            <h3>לוח זמינות</h3>
-            <p>אתם קובעים שעות, תאריכים חסומים ואזורי משלוח.</p>
-          </li>
-          <li>
-            <span class="icon icon-leaf" aria-hidden="true"></span>
-            <h3>כשרות ואלרגנים</h3>
-            <p>מידע ברור לכל מנה. מה שלא הוזן מוצג כלא ידוע, ולא כתקין.</p>
-          </li>
-          <li>
-            <span class="icon icon-person" aria-hidden="true"></span>
-            <h3>ההחלטה שלכם</h3>
-            <p>העוזר החכם רק מציע. המחירים מחושבים לפי התפריט שלכם, ואף הזמנה לא מאושרת בלעדיכם.</p>
-          </li>
-        </ul>
-      </section>
-
-      <section class="section" aria-labelledby="screens-title">
-        <h2 id="screens-title">ככה זה נראה</h2>
-        <div class="screens">
-          <figure>
-            <img class="shot" src="/img/landing/caterer-orders.png" width="1366" height="860" loading="lazy"
-              alt="לוח הבקרה של העסק: רשימת הזמנות שממתינות לאישור">
-            <figcaption>לוח הבקרה שלכם</figcaption>
-          </figure>
-          <figure class="screen-phone">
-            <img class="shot" src="/img/landing/customer-phone.png" width="390" height="844" loading="lazy"
-              alt="תפריט הזמנה כפי שהוא נראה בטלפון">
-            <figcaption>ההזמנה בטלפון</figcaption>
-          </figure>
+      <div class="printer-area">
+        <div class="printer" aria-hidden="true"><span class="printer-light"></span></div>
+        <div class="ticket-clip">
+          <div class="ticket-shadow">
+            <article class="ticket is-printing" id="ticket" aria-label="פתק הזמנה לדוגמה">
+              <header class="ticket-head">
+                <strong>הזמנה לדוגמה</strong>
+                <span id="ticket-event">יום הולדת · 40 אורחים</span>
+              </header>
+              <ul class="ticket-lines" id="ticket-lines">
+                <li><span class="dish dish-salad" aria-hidden="true"></span><span class="line-name">סלט עונתי</span><span class="line-qty">4 מגשים</span><span class="line-price">₪480</span></li>
+                <li><span class="dish dish-main" aria-hidden="true"></span><span class="line-name">עוף בתנור</span><span class="line-qty">4 מגשים</span><span class="line-price">₪720</span></li>
+                <li><span class="dish dish-side" aria-hidden="true"></span><span class="line-name">אורז עם שקדים</span><span class="line-qty">3 מגשים</span><span class="line-price">₪270</span></li>
+                <li><span class="dish dish-dessert" aria-hidden="true"></span><span class="line-name">מגש עוגות</span><span class="line-qty">2 מגשים</span><span class="line-price">₪260</span></li>
+              </ul>
+              <div class="ticket-total">
+                <span>סה״כ לדוגמה</span>
+                <strong id="ticket-total">₪1,730</strong>
+              </div>
+              <p class="ticket-note">הדגמה בלבד. המחירים והכמויות להמחשה.</p>
+            </article>
+          </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
 
-    <footer class="footer">
-      <span>© Yummai</span>
-      <a href="/admin/">כניסה לעסקים</a>
-    </footer>
-  </div>
+    <section class="story" id="how" aria-labelledby="how-title">
+      <div class="story-inner">
+        <h2 id="how-title">הזמנה אחת, פתק אחד, מההתחלה ועד האישור.</h2>
+        <div class="story-grid">
+          <div class="stage-wrap">
+            <div class="stage" id="stage" data-step="3" aria-hidden="true">
+              <div class="stage-inner">
+                <span class="bubble bubble-1">כמה עולה ל-40 איש?</span>
+                <span class="bubble bubble-2">יש גם צמחוני?</span>
+                <span class="bubble bubble-3">אולי נהיה 50</span>
+                <span class="bubble bubble-4">אפשר ביום שלישי?</span>
+
+                <div class="phone"><span class="phone-title">ההזמנה שלי</span></div>
+
+                <div class="mini-ticket">
+                  <strong class="mini-title">הזמנה לדוגמה</strong>
+                  <ul>
+                    <li><span>סלט עונתי</span><span>₪480</span></li>
+                    <li><span>עוף בתנור</span><span>₪720</span></li>
+                    <li><span>אורז עם שקדים</span><span>₪270</span></li>
+                    <li class="proposal"><span>מגש ירקות</span><span>+₪200</span></li>
+                  </ul>
+                  <p class="mini-hint">הצעה של העוזר. ממתינה לאישור הלקוח</p>
+                  <div class="mini-total">
+                    <span>סה״כ לדוגמה</span>
+                    <strong class="total-before">₪1,470</strong>
+                    <strong class="total-after">₪1,670</strong>
+                  </div>
+                  <p class="signature">אישור בעל העסק</p>
+                  <span class="stamp">אושר</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ol class="steps">
+            <li class="step" data-step="1">
+              <h3>בלי הלוך ושוב</h3>
+              <p>הלקוח מקבל את הלינק שלכם, ממלא את פרטי האירוע ובוחר מנות מהתפריט שלכם. כל השאלות מתכנסות להזמנה אחת.</p>
+            </li>
+            <li class="step" data-step="2">
+              <h3>העוזר מציע, הלקוח מחליט</h3>
+              <p>העוזר החכם עונה על שאלות ומציע שינויים. שום דבר לא נכנס להזמנה בלי שהלקוח אישר.</p>
+            </li>
+            <li class="step" data-step="3">
+              <h3>אתם חותמים</h3>
+              <p>הפתק מגיע ללוח הבקרה שלכם עם כל הפרטים. אתם מאשרים או דוחים, ושום הזמנה לא נסגרת בלעדיכם.</p>
+            </li>
+            <li class="step" data-step="4">
+              <h3>הלקוח רואה את התשובה</h3>
+              <p>התשובה מופיעה בלינק הפרטי של ההזמנה, בלי שיחה נוספת ובלי לרדוף אחרי אף אחד.</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features" aria-labelledby="features-title">
+      <h2 id="features-title">מה מקבלים</h2>
+      <ul class="feature-list">
+        <li>
+          <h3>לינק ממותג</h3>
+          <p>כתובת משלכם, עם השם, הצבעים והתפריט שלכם. הלקוחות מזמינים אצלכם, בלי השוואה לעסקים אחרים.</p>
+        </li>
+        <li>
+          <h3>זמינות בשליטה שלכם</h3>
+          <p>אתם קובעים שעות, תאריכים חסומים ואזורי משלוח.</p>
+        </li>
+        <li>
+          <h3>כשרות ואלרגנים</h3>
+          <p>מידע ברור לכל מנה. מה שלא הוזן מוצג כלא ידוע, ולא כתקין.</p>
+        </li>
+        <li>
+          <h3>מחירים לפי התפריט</h3>
+          <p>המחיר מחושב מהתפריט שלכם ולא על ידי העוזר, ולכן הסכום בפתק מגיע מהמחירים שקבעתם.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <h2 id="closing-title">פחות טלפונים. יותר הזמנות מסודרות.</h2>
+      <a href="/admin/" class="button button-light">כניסה לעסקים</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>© Yummai</span>
+    <a href="/admin/">כניסה לעסקים</a>
+  </footer>
 </body>
 </html>

@@ -109,6 +109,7 @@ def test_security_headers_are_on_every_response(client, path):
     policy = headers["Content-Security-Policy"]
     assert "script-src 'self'" in policy
     assert "default-src 'none'" in policy
+    assert "font-src 'self'" in policy
     assert "unsafe" not in policy
     assert headers["Referrer-Policy"] == "no-referrer"
     assert headers["X-Content-Type-Options"] == "nosniff"
