@@ -8,7 +8,7 @@ from collections.abc import Iterator
 from functools import lru_cache
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, event
+from sqlalchemy import Engine, create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import get_settings
@@ -46,7 +46,14 @@ def init_db(engine: Engine | None = None) -> None:
     """Create all tables that do not exist yet."""
     from app import models  # noqa: F401  (registers tables on Base.metadata)
 
-    Base.metadata.create_all(engine or get_engine())
+    engine = engine or get_engine()
+    Base.metadata.create_all(engine)
+    if engine.dialect.name == "postgresql":
+        # Supabase exposes public tables through its Data API. Enable RLS with no policies so
+        # anon/authenticated roles see nothing; the backend's privileged connection bypasses RLS.
+        with engine.begin() as conn:
+            for table in Base.metadata.sorted_tables:
+                conn.execute(text(f'ALTER TABLE "{table.name}" ENABLE ROW LEVEL SECURITY'))
 
 
 def get_session() -> Iterator[Session]:
