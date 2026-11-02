@@ -11,17 +11,39 @@ CaterKing is an ordering and management web app for **one catering business** th
 
 Both sites run on Render's free plan, which sleeps when idle: the first load after a pause can take about a minute.
 
-## Next: F1 "Pit Wall" redesign (concept)
+## The F1 "Pit Wall" app
 
-![CaterKing F1 redesign walkthrough](docs/design/f1/caterking-f1-pitwall.gif)
+The whole app wears a Formula 1 look (dark, racing red, timing-tower typography). A lights-out intro plays once per browser tab session (tap or any key skips it; `?intro=0` turns it off). The opening page at `/` is the F1 page, and the app is in Hebrew, Arabic and English (`he`/`ar`/`en`), with right-to-left layout for Hebrew and Arabic.
 
-A Formula 1 motorsport look for both sides of the app, designed in Stitch and **not live yet**. Orders move through race stages — Grid Position → Box Box (kitchen) → Flying Lap (delivery) → Chequered Flag — shown as an S1/S2/S3 Sector Times bar. The owner runs the kitchen from the **Pit Wall** timing tower, with a manual Safety Car switch for busy periods; customers rate the order (Driver of the Day) at the flag.
+| Opening page (desktop) | Opening page (narrow) | Customer menu |
+|---|---|---|
+| <img src="docs/screens/home-desktop.png" width="420" alt="Opening page, desktop"> | <img src="docs/screens/home-mobile.png" width="160" alt="Opening page, 500px wide"> | <img src="docs/screens/customer-menu.png" width="420" alt="Customer menu (Pit Menu)"> |
+
+**What the customer does** (no account needed)
+1. **Grid Position:** event type, date, pickup or delivery, time slot, guests and contact details.
+2. **Pit Menu:** pick dishes with suggested quantities and a live server-side price; the Race Engineer assistant can propose changes.
+3. **Formation Lap:** review the summary and send the quote request.
+4. **Live tracker** by private link: the order moves through Grid, Box Box (kitchen), Flying Lap (delivery) or Pit Lane (pickup), then Chequered Flag. A Safety Car notice appears when the owner has switched it on.
+5. **Chequered Flag + Driver of the Day:** after delivery the customer can rate the order once, 1 to 5 stars with an optional comment.
+
+**What the owner does** (login required)
+- **Pit Wall** dashboard: a timing tower of active orders, sector counts and a Race Control timeline for today's events.
+- Approve or reject each quote, then **Advance** the order through the stages (in kitchen, out for delivery or ready for pickup, delivered).
+- **Safety Car** switch: slows the pace with a notice shown to customers.
+- Manage the menu (categories, dishes, images, allergens, serving rules) and the settings (slots, blocked dates, business rules). The owner UI is in Hebrew.
+- **SMS / WhatsApp (opt-in):** customers who opt in get a Flying Lap message and a Safety Car message through Twilio. Sending is **off** until the four `TWILIO_*` keys are set in Render ([docs/DEPLOY.md](docs/DEPLOY.md)).
+
+### Design
+
+The original Stitch concept for the look is kept in `docs/design/f1/`.
+
+![CaterKing F1 design walkthrough](docs/design/f1/caterking-f1-pitwall.gif)
 
 | Customer tracker (phone) | Pit Wall (owner) |
 |---|---|
 | <img src="docs/design/f1/customer-tracker.png" width="260" alt="Customer order tracker"> | <img src="docs/design/f1/pit-wall.png" width="520" alt="Pit Wall dashboard"> |
 
-Full-quality 1080p video: [docs/design/f1/caterking-f1-pitwall.mp4](docs/design/f1/caterking-f1-pitwall.mp4). The walkthrough is an HTML composition in `docs/design/f1/video/` rendered with [HyperFrames](https://hyperframes.heygen.com) (`npx hyperframes render`).
+Full-quality 1080p video: [docs/design/f1/caterking-f1-pitwall.mp4](docs/design/f1/caterking-f1-pitwall.mp4). The walkthrough is an HTML composition in `docs/design/f1/video/` rendered with [HyperFrames](https://hyperframes.heygen.com) (`npx hyperframes render`). Fonts (Plus Jakarta Sans, JetBrains Mono, Heebo, Noto Kufi Arabic) are self-hosted in `frontend/assets/fonts/`.
 
 ## Features
 
@@ -34,7 +56,7 @@ Full-quality 1080p video: [docs/design/f1/caterking-f1-pitwall.mp4](docs/design/
 **Owner (admin, login required)**
 - Manage categories, dishes (with images), allergens and dietary flags.
 - Manage pickup slots, availability and per-category serving rules.
-- Review every quote request: approve, reject, or cancel an order with a reason shown to the customer.
+- Review every quote request: approve, reject, or cancel an order with a reason shown to the customer, then advance it to delivery.
 - Edit the business rules in the Settings tab.
 
 **AI assistant**
@@ -54,11 +76,12 @@ Full-quality 1080p video: [docs/design/f1/caterking-f1-pitwall.mp4](docs/design/
 | Layer | Technology |
 |---|---|
 | Backend | Python 3.12, FastAPI, Pydantic, SQLAlchemy 2 |
-| Database | PostgreSQL 16 on Supabase |
+| Database | PostgreSQL 16 on Supabase (SQLite optional for local dev and tests) |
 | Auth and files | Supabase Auth (owner login), Supabase Storage (dish images) |
 | Frontend | Vanilla HTML, CSS and JavaScript ES modules; no framework, no build step |
 | AI | Claude Opus 5.5 through the Anthropic SDK |
 | Geocoding | OpenStreetMap Nominatim, with Photon as a fallback |
+| Notifications | Twilio SMS/WhatsApp, opt-in, off until keys are set |
 | Hosting | Render (Docker, `render.yaml` blueprint) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -167,7 +190,7 @@ uv run pytest
 - [`render.yaml`](render.yaml) defines two Docker web services: **caterking-dev** (branch `dev`) and **caterking** (branch `main`), both on the free plan today, both with auto-deploy and a `/health` check.
 - Each environment has its own Supabase project (database, auth, storage).
 - On start the container runs `python -m app.migrate`, which applies unapplied migrations once each.
-- Secrets (`DATABASE_URL`, `SUPABASE_*`, `ANTHROPIC_API_KEY`) are `sync: false`: they are set only in the Render dashboard, never in git. `DATABASE_URL` must be Supabase's session-pooler string.
+- Secrets (`DATABASE_URL`, `SUPABASE_*`, `ANTHROPIC_API_KEY`, `TWILIO_*`) are `sync: false`: they are set only in the Render dashboard, never in git. `DATABASE_URL` must be Supabase's session-pooler string.
 - Step-by-step guide: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Security and privacy
@@ -211,6 +234,6 @@ Some specs still carry "draft" status headers from early phases; the code and [C
 
 ## Project status
 
-**Built:** phases 0 to 4 (specs, catalog and admin, customer ordering, business rules, AI assistant), a hardening pass, the cancel and edit-window features, and a UI redesign.
+**Built:** phases 0 to 4 (specs, catalog and admin, customer ordering, business rules, AI assistant), a hardening pass, the cancel and edit-window features, and the F1 Pit Wall redesign (customer app, owner Pit Wall, order stages, ratings, opt-in SMS/WhatsApp).
 
-**Next:** a UX/UI round, real menu content, upgrading Render to the Starter plan (always on), and a custom domain.
+**Next:** real menu content, upgrading Render to the Starter plan (always on), and a custom domain.

@@ -38,3 +38,11 @@ When a decision is made, record it here and move the row out of the table above.
 | 2026-10-30 | 9 | Kashrut: CaterKing is **not certified**; the site shows only meat/dairy/pareve per dish and makes no certification claim | Owner |
 | 2026-10-30 | 7 | Customers may change a submitted or approved order until **4 hours before the event** (configurable in admin Settings); the change sends it back to the owner for approval with prices recalculated | Owner |
 | 2026-10-30 | — | Launch: production on Render Starter (`caterking`, from `main`) with a separate Supabase project `caterking-prod`; go live after the Editorial redesign and the real menu | Owner |
+| 2026-11-02 | — | F1 "Pit Wall" redesign approved for the customer app and the owner dashboard | Owner |
+| 2026-11-02 | — | Fulfilment stages `in_kitchen` → `out_for_delivery` (delivery) / `ready_for_pickup` (pickup) → `delivered`, advanced by the owner (Advance) | Owner |
+| 2026-11-02 | — | Safety Car: a manual owner switch that shows customers a notice while on | Owner |
+| 2026-11-02 | — | Driver of the Day: the customer rates the order 1 to 5 stars with an optional comment, once, after delivery | Owner |
+| 2026-11-02 | 13 | SMS/WhatsApp through Twilio, opt-in per order, for two messages only (Flying Lap and Safety Car); off until the Twilio keys are set. Supersedes "no notifications" for these two messages | Owner |
+| 2026-11-02 | 20 | Crown logo, and the lights-out intro plays once per visit | Owner |
+| 2026-11-02 | 20 | Fonts Plus Jakarta Sans, JetBrains Mono, Heebo and Noto Kufi Arabic, self-hosted | Owner |
+| 2026-11-02 | — | The F1 opening page replaces the yumm.ai page at `/` | Owner |
