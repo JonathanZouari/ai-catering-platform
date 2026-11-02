@@ -1,4 +1,4 @@
-"""Customer side of orders: the draft's event configuration (C1), items (C2), pricing (C3).
+"""Customer side of orders: event (C1), items (C2), pricing (C3), submit and withdraw (C5).
 
 Rules (backend-authoritative, ADR 0003):
 - the customer must have a profile; ownership comes from the token only (ADR 0005)
@@ -9,14 +9,16 @@ Rules (backend-authoritative, ADR 0003):
   so vegetarian + vegan <= total too (OPEN_DECISIONS #4)
 - delivery needs an address; zone and fee wait for OPEN #19
 - edits only while draft, and only against the version the client saw (optimistic lock)
-Slot capacity (OPEN #5) is enforced at submission, in a later slice.
+- submit: everything above is checked again, every dish must still be orderable, and the slot
+  must have room (capacity per slot per event date, OPEN #5); prices are then frozen into the
+  snapshot. Withdraw (OPEN #7) only while awaiting approval; it unfreezes the prices.
 """
 
 import uuid
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core import clock
@@ -28,6 +30,7 @@ from app.models.orders import Customer, Event, Order, OrderItem
 from app.repositories import availability as availability_repo
 from app.repositories import catalog as catalog_repo
 from app.repositories import customers as customers_repo
+from app.repositories import orders as orders_repo
 from app.schemas import customer_orders as s
 from app.services import pricing, recommendations
 from app.services import settings as settings_svc
@@ -92,6 +95,7 @@ def _apply(order: Order, event: Event, data: s.DraftIn, requested_at: datetime) 
     for key, value in data.event.model_dump().items():
         setattr(event, key, value)
     order.fulfillment_type = data.fulfillment_type
+    order.slot_id = data.slot_id
     order.requested_at = requested_at
     order.delivery_address = data.delivery_address if data.fulfillment_type == "delivery" else None
 
@@ -123,16 +127,27 @@ def _editable(db: Session, who: CustomerIdentity, order_id: uuid.UUID, version: 
     return order
 
 
-def _commit_bump(db: Session, who: CustomerIdentity, order_id: uuid.UUID, version: int):
-    """Flush the pending change and bump the version in one transaction.
+def _commit_bump(
+    db: Session,
+    who: CustomerIdentity,
+    order_id: uuid.UUID,
+    version: int,
+    *,
+    from_status: str = "draft",
+    to_status: str | None = None,
+):
+    """Flush the pending change, bump the version (and maybe move status) in one transaction.
 
-    The conditional UPDATE is the lock: it only lands if nobody saved in between.
+    The conditional UPDATE is the lock: it only lands if nobody saved or decided in between.
     """
     db.flush()
+    values = {"version": Order.version + 1}
+    if to_status:
+        values["status"] = to_status
     bumped = db.execute(
         update(Order)
-        .where(Order.id == order_id, Order.version == version, Order.status == "draft")
-        .values(version=Order.version + 1)
+        .where(Order.id == order_id, Order.version == version, Order.status == from_status)
+        .values(**values)
     )
     if bumped.rowcount != 1:
         db.rollback()
@@ -213,3 +228,72 @@ def get_recommendations(
         s.RecommendationOut.model_validate(r)
         for r in recommendations.recommend(order.event, menu, child)
     ]
+
+
+# submit and withdraw (C5)
+
+
+def _as_draft_in(order: Order) -> s.DraftIn:
+    if order.slot_id is None:  # the slot was deleted, or the order predates slot_id
+        raise _invalid("slot_id", "Pick a time again", "slot_unavailable")
+    event = {k: getattr(order.event, k) for k in s.EventIn.model_fields}
+    return s.DraftIn(
+        event=event,
+        fulfillment_type=order.fulfillment_type,
+        slot_id=order.slot_id,
+        delivery_address=order.delivery_address,
+    )
+
+
+def submit(
+    db: Session, who: CustomerIdentity, order_id: uuid.UUID, version: int
+) -> s.CustomerOrderOut:
+    order = _editable(db, who, order_id, version)
+    if not order.items:
+        raise AppError(422, "empty_order", "Add at least one dish")
+    dishes = {i.dish_id: db.get(Dish, i.dish_id) for i in order.items}
+    gone = sorted(d.name for d in dishes.values() if not pricing.orderable(d))
+    if gone:
+        raise AppError(
+            409, "items_unavailable", "Some dishes can't be ordered anymore", {"dishes": gone}
+        )
+    order.requested_at = _validate(db, _as_draft_in(order))  # date, lead time, slot, guests
+
+    # Lock the slot row (Postgres) so two last-minute submits can't both take the last place.
+    slot = db.execute(select(TimeSlot).where(TimeSlot.id == order.slot_id).with_for_update())
+    slot = slot.scalar_one()
+    taken = orders_repo.slot_load(db, slot.id, order.event.event_date, exclude=order.id)
+    if slot.capacity is not None and taken >= slot.capacity:
+        raise AppError(409, "slot_full", "This time is fully booked for that date")
+
+    priced = pricing.price_order(order, dishes)
+    for item in order.items:
+        dish = dishes[item.dish_id]
+        item.snapshot_name = dish.name
+        item.snapshot_pricing_unit = dish.pricing_unit
+        item.snapshot_unit_price = dish.unit_price
+        item.snapshot_line_total = pricing.line_total(item.quantity, dish.unit_price)
+    order.subtotal = priced.subtotal
+    order.delivery_fee = None  # per delivery zone, OPEN #19 slice
+    order.total = priced.total
+    order.submitted_at = datetime.now(UTC)
+    return _commit_bump(db, who, order_id, version, to_status="pending_approval")
+
+
+def withdraw(
+    db: Session, who: CustomerIdentity, order_id: uuid.UUID, version: int
+) -> s.CustomerOrderOut:
+    order = _owned(db, who, order_id)
+    if order.status != "pending_approval":
+        raise AppError(
+            409, "invalid_transition", "Only an order awaiting approval can be withdrawn"
+        )
+    if order.version != version:
+        raise AppError(409, "order_version_conflict", "The order changed; reload it")
+    for item in order.items:  # back to live prices
+        item.snapshot_name = item.snapshot_pricing_unit = None
+        item.snapshot_unit_price = item.snapshot_line_total = None
+    order.subtotal = order.total = order.submitted_at = None
+    return _commit_bump(
+        db, who, order_id, version, from_status="pending_approval", to_status="draft"
+    )

@@ -105,10 +105,9 @@ async function showAccount() {
     const tr = document.createElement("tr");
     const event = document.createElement("th");
     event.scope = "row";
-    // Drafts open in the event planner; submitted orders are read-only for now.
-    event.append(o.status === "draft"
-      ? Object.assign(document.createElement("a"), { href: `/customer/event/?order=${encodeURIComponent(o.id)}`, textContent: o.event_type })
-      : o.event_type);
+    // Drafts open in the event planner; everything else on its status page.
+    const page = o.status === "draft" ? "event" : "order";
+    event.append(Object.assign(document.createElement("a"), { href: `/customer/${page}/?order=${encodeURIComponent(o.id)}`, textContent: o.event_type }));
     const meta = `${day(o.event_date)} · ${o.guests} אורחים`;
     for (const line of [meta, o.decision_note].filter(Boolean)) {
       event.append(Object.assign(document.createElement("span"), { className: "help", textContent: line }));

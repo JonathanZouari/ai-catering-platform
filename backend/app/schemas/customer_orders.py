@@ -62,8 +62,14 @@ class CustomerOrderOut(BaseModel):
     status: OrderStatus
     version: int
     fulfillment_type: Literal["pickup", "delivery"]
+    slot_id: uuid.UUID | None
     requested_at: UtcDatetime
     delivery_address: str | None
+    subtotal: Decimal | None
+    delivery_fee: Decimal | None
+    total: Decimal | None
+    submitted_at: UtcDatetime | None
+    decided_at: UtcDatetime | None
     decision_note: str | None
     event: EventOut
     items: list["OrderItemOut"]
@@ -73,6 +79,10 @@ class ItemIn(_In):
     """Set a dish's quantity. Units: whole units, or kg in 0.5 steps for per_weight dishes."""
 
     quantity: Decimal = Field(gt=0, le=10_000, max_digits=7, decimal_places=2)
+    version: int
+
+
+class VersionIn(_In):
     version: int
 
 

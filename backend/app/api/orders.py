@@ -2,13 +2,15 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
+from app.core import mailer
 from app.core.customer_auth import CustomerIdentity, require_customer
 from app.core.db import get_db
 from app.schemas import customer_orders as s
 from app.services import customer_orders as svc
+from app.services import notifications
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
@@ -79,3 +81,27 @@ def recommendations(
     db: Session = Depends(get_db),
 ):
     return svc.get_recommendations(db, who, order_id)
+
+
+@router.post("/{order_id}/submit", response_model=s.CustomerOrderOut)
+def submit(
+    order_id: uuid.UUID,
+    data: s.VersionIn,
+    background: BackgroundTasks,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    order = svc.submit(db, who, order_id, data.version)
+    if email := notifications.order_submitted(db, order_id):
+        background.add_task(mailer.send, email)  # after the response; never blocks the order
+    return order
+
+
+@router.post("/{order_id}/withdraw", response_model=s.CustomerOrderOut)
+def withdraw(
+    order_id: uuid.UUID,
+    data: s.VersionIn,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    return svc.withdraw(db, who, order_id, data.version)

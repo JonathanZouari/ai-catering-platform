@@ -15,6 +15,16 @@ class Settings(BaseSettings):
     # shortcut: shared owner token; customers already use Supabase Auth (ADR 0005), move the
     # owner there with an admin role next. Unset = every admin route answers 401.
     admin_token: str | None = None
+    # Email notifications (OPEN_DECISIONS #13). No SMTP host = emails are skipped (logged by
+    # subject only), so local dev and tests never send mail.
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_starttls: bool = True
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from: str | None = None
+    owner_email: str | None = None  # where "new order awaiting approval" goes
+    public_base_url: str = "http://127.0.0.1:8000"  # for links inside emails
 
 
 @lru_cache

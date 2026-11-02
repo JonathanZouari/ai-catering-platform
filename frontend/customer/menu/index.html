@@ -60,7 +60,12 @@
         </div>
         <p class="empty" id="no-lines">עוד לא נבחרו מנות.</p>
         <dl class="totals" id="totals"></dl>
-        <p class="fine">המחירים כוללים מע"מ. שליחת ההזמנה לאישור בעל העסק תתווסף בשלב הבא.</p>
+        <p class="fine">המחירים כוללים מע"מ. אחרי השליחה בעל העסק יאשר את ההזמנה, ואפשר יהיה להחזיר אותה לעריכה עד שיאשר.</p>
+        <p class="help error" id="submit-error" role="alert" hidden></p>
+        <div class="actions">
+          <a class="btn ghost" id="edit-event" href="/customer/event/">עריכת פרטי האירוע</a>
+          <button class="btn primary" type="button" id="submit" disabled>שליחה לאישור</button>
+        </div>
       </section>
 
       <div class="menu-bar" id="menu-bar">

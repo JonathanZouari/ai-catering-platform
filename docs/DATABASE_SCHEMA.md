@@ -92,6 +92,7 @@ A missing row = **unknown**.
 | status | order_status not null default `draft` | index |
 | version | int not null default 1 | Incremented on every mutation; optimistic locking for proposals |
 | fulfillment_type | fulfillment_type not null | |
+| slot_id | uuid FK → time_slots null | Chosen slot; on delete set null; capacity counted per slot per event date |
 | requested_at | timestamptz not null | Requested pickup/delivery time |
 | delivery_address | text null | CHECK: required when `delivery` |
 | delivery_zone_id | uuid FK null | |
@@ -134,11 +135,12 @@ While `draft`, prices are read live from `dishes`; on `pending_approval` the sna
 | created_at, decided_at, executed_at | timestamptz | `executed_at` set once → idempotency |
 | PARTIAL UNIQUE | one `pending` per order? **[RECOMMENDATION]** — simplifies UI | |
 
-## Status transitions **[RECOMMENDATION]**
+## Status transitions
 
 | From | To | Actor |
 |---|---|---|
 | draft | pending_approval | Customer (owner of order) |
+| pending_approval | draft | Customer, withdraw (OPEN #7) |
 | pending_approval | approved | Owner |
 | pending_approval | rejected | Owner |
 
