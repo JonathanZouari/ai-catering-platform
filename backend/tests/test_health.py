@@ -12,7 +12,7 @@ def test_health_ok():
 
 
 def test_frontend_pages_served():
-    for path in ("/", "/customer/", "/admin/"):
+    for path in ("/", "/customer/", "/admin/", "/admin/availability/"):
         response = client.get(path)
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
@@ -27,6 +27,8 @@ def test_design_assets_served():
         "/js/motion.js",
         "/js/home.js",
         "/js/admin.js",
+        "/js/admin-common.js",
+        "/js/admin-availability.js",
         "/assets/img/table.jpg",
     )
     for path in paths:

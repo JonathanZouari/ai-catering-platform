@@ -1,73 +1,25 @@
 // Owner screen A2/A3: categories, dishes, pricing, dietary + allergens.
 // All server data is written with textContent only (never innerHTML).
-import { api } from "/js/api.js";
+import { $, call, confirmThen, el, explain, mutate, startAdmin, toast } from "/js/admin-common.js";
 
-const TOKEN_KEY = "yummai_admin_token";
 const UNIT = { per_guest: "לאורח", per_tray: "למגש", per_weight: "לפי משקל", per_item: "ליחידה" };
 const KASHRUT = { meat: ["בשרי", "k-meat"], dairy: ["חלבי", "k-dairy"], pareve: ["פרווה", "k-parve"] };
 const ERRORS = {
   conflict: "השם הזה כבר קיים",
   category_not_empty: "יש מנות בקטגוריה. העבירו או מחקו אותן קודם",
-  validation_error: "יש שדות חסרים או לא תקינים",
-  not_found: "הפריט לא נמצא (אולי נמחק)",
-  database_unavailable: "בסיס הנתונים לא מוגדר בשרת",
 };
 
-const $ = (id) => document.getElementById(id);
 const state = { categories: [], dishes: [], allergens: [], editing: null };
-
-function readToken() {
-  try { return sessionStorage.getItem(TOKEN_KEY); } catch { return null; }
-}
-function writeToken(value) {
-  try { value ? sessionStorage.setItem(TOKEN_KEY, value) : sessionStorage.removeItem(TOKEN_KEY); } catch { /* private mode: token lives for this page only */ }
-}
-let token = readToken();
-
-async function call(path, options = {}) {
-  try {
-    return await api(path, { ...options, headers: { Authorization: `Bearer ${token}` } });
-  } catch (err) {
-    if (err.status === 401) showLogin();
-    throw err;
-  }
-}
-
-function el(tag, props = {}, ...children) {
-  const node = Object.assign(document.createElement(tag), props);
-  node.append(...children);
-  return node;
-}
-
-let toastTimer;
-function toast(text) {
-  const t = $("toast");
-  t.textContent = text;
-  t.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
-}
-const explain = (err) => ERRORS[err.code] ?? "משהו השתבש, נסו שוב";
 
 const money = (value, currency) => {
   try { return new Intl.NumberFormat("he-IL", { style: "currency", currency }).format(value); }
   catch { return `${value} ${currency}`; }
 };
 
-function showLogin() {
-  token = null;
-  writeToken(null);
-  $("catalog").hidden = true;
-  $("login").hidden = false;
-  $("token").focus();
-}
-
 async function load() {
   [state.categories, state.dishes, state.allergens] = await Promise.all([
     call("/api/admin/categories"), call("/api/admin/dishes"), call("/api/admin/allergens"),
   ]);
-  $("login").hidden = true;
-  $("catalog").hidden = false;
   renderCategories();
   renderDishes();
   renderAllergenFields(dietaryPayload().allergens); // keep unsaved choices
@@ -230,35 +182,7 @@ async function saveDish(event) {
   }
 }
 
-// Two-step delete instead of a blocking confirm() dialog.
-function confirmThen(button, action) {
-  if (button.dataset.armed) { delete button.dataset.armed; action(); return; }
-  const label = button.textContent;
-  button.dataset.armed = "1";
-  button.textContent = "ללחוץ שוב למחיקה";
-  setTimeout(() => { delete button.dataset.armed; button.textContent = label; }, 4000);
-}
-
-async function mutate(request, done) {
-  try {
-    await request();
-    await load();
-    toast(done);
-    return true;
-  } catch (err) {
-    if (err.status !== 401) toast(explain(err));
-    return false;
-  }
-}
-
 export function initAdmin() {
-  $("login").addEventListener("submit", (e) => {
-    e.preventDefault();
-    token = $("token").value.trim();
-    writeToken(token);
-    $("token").value = "";
-    load().catch((err) => { if (err.status !== 401) toast(explain(err)); else toast("קוד שגוי"); });
-  });
   $("cat-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const name = $("cat-name");
@@ -278,5 +202,5 @@ export function initAdmin() {
     mutate(() => call("/api/admin/allergens", { method: "POST", body: JSON.stringify({ name: input.value }) }), "האלרגן נוסף")
       .then((ok) => { if (ok) input.value = ""; });
   });
-  token ? load().catch((err) => { if (err.status !== 401) toast(explain(err)); }) : showLogin();
+  startAdmin({ content: "catalog", load, errors: ERRORS });
 }

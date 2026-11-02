@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-route="admin">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>זמינות ושעות · Yummai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/">Yummai<small>לוח העסק</small></a>
+    <nav class="site-nav" aria-label="ניווט ראשי">
+      <a href="/admin/">מנות ותמחור</a><a href="/admin/availability/" aria-current="page">זמינות</a><a href="/customer/">צד הלקוח</a>
+    </nav>
+  </div>
+</header>
+
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/chef.jpg" alt="" width="900" height="1350"><span class="band-note hand"><i data-ill="basket"></i>מתי אפשר להזמין</span></div>
+<div class="app wrap">
+  <main id="screen">
+    <div class="screen-head">
+      <p class="eyebrow">ניהול</p>
+      <h2>זמינות ושעות</h2>
+      <p class="lede">ימים שבהם לא מקבלים הזמנות, ושעות האיסוף והמשלוח. קיבולת נשמרת לתיעוד ועדיין לא נאכפת.</p>
+    </div>
+
+    <form id="login" class="event-form" hidden>
+      <div class="field">
+        <label for="token">קוד גישה לבעלים</label>
+        <input id="token" type="password" autocomplete="current-password" required>
+        <span class="help">זמני, עד שתיבחר שיטת התחברות. נשמר רק בלשונית הזו.</span>
+      </div>
+      <div class="actions"><button class="btn primary" type="submit">כניסה</button></div>
+    </form>
+
+    <div id="availability" class="admin-stack" hidden>
+      <section class="order-detail" aria-labelledby="blocked-h">
+        <div class="detail-head"><h3 id="blocked-h">תאריכים חסומים</h3></div>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">תאריך</th><th scope="col">סיבה</th><th scope="col"><span class="sr-only">פעולות</span></th></tr></thead>
+            <tbody id="blocked-rows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-blocked" hidden>אין תאריכים חסומים.</p>
+        <form id="blocked-form" class="field-row">
+          <div class="field"><label for="b-date">תאריך</label><input id="b-date" type="date" required></div>
+          <div class="field"><label for="b-reason">סיבה (רק לעיניכם)</label><input id="b-reason" maxlength="200"></div>
+          <div class="field"><span class="help" aria-hidden="true">&nbsp;</span><button class="btn ghost" type="submit">חסימה</button></div>
+        </form>
+      </section>
+
+      <section class="order-detail" aria-labelledby="slots-h">
+        <div class="detail-head"><h3 id="slots-h">חלונות זמן</h3></div>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">סוג</th><th scope="col">יום</th><th scope="col">משעה</th><th scope="col">עד שעה</th><th scope="col">קיבולת</th><th scope="col">פעיל</th><th scope="col"><span class="sr-only">פעולות</span></th></tr></thead>
+            <tbody id="slot-rows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-slots" hidden>אין עדיין חלונות זמן.</p>
+        <form id="slot-form" class="field-row">
+          <div class="field"><label for="s-type">סוג</label><select id="s-type"></select></div>
+          <div class="field"><label for="s-day">יום</label><select id="s-day"></select></div>
+          <div class="field"><label for="s-start">משעה</label><input id="s-start" type="time" required></div>
+          <div class="field"><label for="s-end">עד שעה</label><input id="s-end" type="time" required></div>
+          <div class="field"><label for="s-cap">קיבולת (לא חובה)</label><input id="s-cap" type="number" inputmode="numeric" min="1" max="10000"></div>
+          <div class="field"><span class="help" aria-hidden="true">&nbsp;</span><button class="btn ghost" type="submit">הוספה</button></div>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="site-footer wrap"><span>Yummai · לוח העסק</span></footer>
+<script type="module">
+  import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initAvailability } from "/js/admin-availability.js";
+  initMotion();
+  initRouteBand();
+  initAvailability();
+</script>
+</body>
+</html>
