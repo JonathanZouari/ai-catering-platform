@@ -3,7 +3,7 @@ ALTER TABLE orders
   ADD COLUMN dispatched_at timestamptz,
   ADD COLUMN delivered_at timestamptz;
 
--- "Safety car": owner pauses new orders/promises during a rush (read by the public settings).
+-- "Safety Car": the owner's manual switch for busy times; customers see a notice (public settings).
 ALTER TABLE business_settings ADD COLUMN safety_car boolean NOT NULL DEFAULT false;
 
 CREATE TABLE order_ratings (
