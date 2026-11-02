@@ -73,6 +73,24 @@
         </form>
       </section>
 
+      <section class="order-detail" aria-labelledby="zones-h">
+        <div class="detail-head"><h3 id="zones-h">אזורי משלוח</h3></div>
+        <p class="help">כל אזור הוא רשימת ערים עם דמי משלוח אחידים. עיר יכולה להיות רק באזור אחד. ללקוחות מוצגות רק ערים מאזורים פעילים.</p>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">אזור</th><th scope="col">דמי משלוח (₪)</th><th scope="col">ערים</th><th scope="col">פעיל</th><th scope="col"><span class="sr-only">פעולות</span></th></tr></thead>
+            <tbody id="zone-rows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-zones" hidden>אין עדיין אזורי משלוח, ולכן לקוחות יכולים לבחור רק איסוף עצמי.</p>
+        <form id="zone-form" class="field-row" novalidate>
+          <div class="field"><label for="z-name">שם האזור</label><input id="z-name" required minlength="2" maxlength="60"></div>
+          <div class="field"><label for="z-fee">דמי משלוח (₪)</label><input id="z-fee" type="number" inputmode="decimal" min="0" max="10000" step="0.01" required></div>
+          <div class="field"><label for="z-cities">ערים</label><input id="z-cities" required placeholder="תל אביב-יפו, רמת גן, גבעתיים" aria-describedby="z-cities-help"><span class="help" id="z-cities-help">מופרדות בפסיקים</span></div>
+          <div class="field"><span class="help" aria-hidden="true">&nbsp;</span><button class="btn ghost" type="submit">הוספת אזור</button></div>
+        </form>
+      </section>
+
       <form class="order-detail" id="settings-form" aria-labelledby="settings-h" novalidate>
         <div class="detail-head"><h3 id="settings-h">כללי הזמנה</h3></div>
         <div class="field-row">

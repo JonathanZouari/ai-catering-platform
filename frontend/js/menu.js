@@ -17,6 +17,7 @@ const CODES = {
   empty_order: "צריך לבחור לפחות מנה אחת",
   items_unavailable: "חלק מהמנות כבר לא זמינות. הסירו אותן מהסיכום ונסו שוב",
   slot_full: "השעה שבחרתם התמלאה בינתיים. בחרו שעה אחרת בפרטי האירוע",
+  city_not_served: "אין כרגע משלוחים לעיר שבחרתם. עדכנו את פרטי האירוע (עיר אחרת או איסוף עצמי)",
   slot_unavailable: "השעה שבחרתם כבר לא זמינה. בחרו שעה אחרת בפרטי האירוע",
   date_unavailable: "אי אפשר להזמין לתאריך הזה יותר (סגור, או קרוב מדי). עדכנו את פרטי האירוע",
 };
@@ -208,7 +209,7 @@ async function renderSummary() {
   }));
   const rows = [fact("ביניים", money(p.subtotal))];
   if (state.order.fulfillment_type === "delivery") {
-    rows.push(fact("משלוח", p.delivery_fee === null ? "ייקבע לפי האזור" : money(p.delivery_fee)));
+    rows.push(fact("משלוח", p.delivery_fee === null ? "אין משלוח לעיר שנבחרה" : money(p.delivery_fee)));
   }
   rows.push(fact('סה"כ כולל מע"מ', money(p.total), "grand"));
   $("totals").replaceChildren(...rows);

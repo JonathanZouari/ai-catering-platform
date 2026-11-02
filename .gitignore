@@ -32,3 +32,6 @@ Thumbs.db
 # Local SQLite dev database
 *.db
 .playwright-mcp/
+
+# Claude Code plugin session state
+.omc/

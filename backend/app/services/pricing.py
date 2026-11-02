@@ -3,8 +3,8 @@
 - Catalog prices are in ILS and already include VAT, so no VAT is added.
 - Each line = quantity x unit price, rounded half-up to the agora. Total = sum of rounded lines.
 - per_weight prices are per kg; quantity is in kg.
-- While draft, prices are live from the catalog; a dish that is no longer orderable is flagged and
-  left out of the totals. After submission the frozen snapshot is used (later slice).
+- While draft, prices and the delivery fee are live; a dish that is no longer orderable is
+  flagged and left out of the totals. After submission the frozen snapshot is used.
 """
 
 from dataclasses import dataclass
@@ -40,11 +40,12 @@ class Line:
 class Priced:
     lines: list[Line]
     subtotal: Decimal
-    delivery_fee: Decimal | None  # per delivery zone, OPEN #19 slice
+    delivery_fee: Decimal | None  # delivery zone fee (#19); None for pickup
     total: Decimal
 
 
-def price_order(order: Order, dishes: dict) -> Priced:
+def price_order(order: Order, dishes: dict, live_fee: Decimal | None = None) -> Priced:
+    """live_fee: the zone's current fee, used while draft; after submission the frozen one."""
     lines = []
     for item in order.items:
         if order.status == "draft":
@@ -68,5 +69,5 @@ def price_order(order: Order, dishes: dict) -> Priced:
         )
     lines.sort(key=lambda line: line.name)
     subtotal = sum((line.line_total for line in lines if line.available), Decimal("0.00"))
-    fee = order.delivery_fee
+    fee = live_fee if order.status == "draft" else order.delivery_fee
     return Priced(lines, subtotal, fee, subtotal + (fee or 0))

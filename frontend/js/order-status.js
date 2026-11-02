@@ -103,7 +103,7 @@ async function load() {
     ["צמחונים / טבעונים / הגבלות", `${e.vegetarian_guests} / ${e.vegan_guests} / ${e.restricted_guests}`],
     [FULFILLMENT[order.fulfillment_type], when(order.requested_at)],
   ];
-  if (order.delivery_address) facts.push(["כתובת", order.delivery_address]);
+  if (order.delivery_address) facts.push(["כתובת", [order.delivery_address, order.delivery_city].filter(Boolean).join(", ")]);
   if (e.dietary_notes) facts.push(["הערות תזונה", e.dietary_notes]);
   $("facts").replaceChildren(...facts.map(([t, v]) => fact(t, v)));
 
@@ -114,7 +114,7 @@ async function load() {
     el("td", { className: "num", textContent: money(l.line_total) }))));
   const rows = [fact("ביניים", money(pricing.subtotal))];
   if (order.fulfillment_type === "delivery") {
-    rows.push(fact("משלוח", pricing.delivery_fee === null ? "ייקבע לפי האזור" : money(pricing.delivery_fee)));
+    rows.push(fact("משלוח", pricing.delivery_fee === null ? "אין משלוח לעיר שנבחרה" : money(pricing.delivery_fee)));
   }
   rows.push(fact('סה"כ כולל מע"מ', money(pricing.total), "grand"));
   $("totals").replaceChildren(...rows);

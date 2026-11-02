@@ -20,7 +20,8 @@ def fixed_today(monkeypatch):
 
 @pytest.fixture
 def setup(client):
-    """A customer with a profile plus pickup/delivery slots; returns (headers, slots)."""
+    """A customer with a profile, pickup/delivery slots and a delivery zone (רמת גן, 80);
+    returns (headers, slots)."""
     headers = token(uuid.uuid4(), email="dana@example.com")
     client.put("/api/me", json={"full_name": "דנה לוי", "phone": "050-1234567"}, headers=headers)
     slot = lambda kind, day, start="10:00", end="12:00", active=True: client.post(  # noqa: E731
@@ -40,6 +41,8 @@ def setup(client):
         "pickup_other_day": slot("pickup", (WEEKDAY + 1) % 7),
         "inactive": slot("pickup", WEEKDAY, active=False),
     }
+    zone = {"name": "גוש דן", "fee": "80", "cities": ["רמת גן", "תל אביב-יפו"]}
+    client.post("/api/admin/delivery-zones", json=zone, headers=AUTH)
     return headers, slots
 
 
@@ -116,10 +119,14 @@ def test_delivery_needs_address(client, setup):
     body = draft(slots["delivery_any_day"], fulfillment_type="delivery")
     res = client.post("/api/orders", json=body, headers=headers)
     assert res.json()["error"]["details"]["field"] == "delivery_address"
-    res = client.post(
-        "/api/orders", json={**body, "delivery_address": " הרצל 10, רמת גן "}, headers=headers
-    )
-    assert res.status_code == 201 and res.json()["delivery_address"] == "הרצל 10, רמת גן"
+    body = {**body, "delivery_address": " הרצל 10 "}
+    res = client.post("/api/orders", json=body, headers=headers)
+    assert res.json()["error"]["code"] == "city_not_served"  # no city yet
+    res = client.post("/api/orders", json={**body, "delivery_city": "חיפה"}, headers=headers)
+    assert res.json()["error"]["details"]["field"] == "delivery_city"  # not in any zone
+    res = client.post("/api/orders", json={**body, "delivery_city": " רמת  גן "}, headers=headers)
+    assert res.status_code == 201, res.text
+    assert res.json()["delivery_address"] == "הרצל 10" and res.json()["delivery_city"] == "רמת גן"
 
 
 def test_update_with_version(client, setup):
@@ -137,6 +144,7 @@ def test_update_with_version(client, setup):
         slots["delivery_any_day"],
         fulfillment_type="delivery",
         delivery_address="הנשיא 4",
+        delivery_city="תל אביב-יפו",
         version=2,
     )
     assert client.patch(url, json=body, headers=headers).json()["delivery_address"] == "הנשיא 4"

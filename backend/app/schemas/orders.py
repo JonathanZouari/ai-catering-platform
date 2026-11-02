@@ -74,6 +74,7 @@ class OrderDetailOut(_Out):
     fulfillment_type: Literal["pickup", "delivery"]
     requested_at: UtcDatetime
     delivery_address: str | None
+    delivery_city: str | None
     subtotal: Decimal | None
     delivery_fee: Decimal | None
     total: Decimal | None

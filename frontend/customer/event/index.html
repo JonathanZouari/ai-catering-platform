@@ -52,7 +52,7 @@
           <legend>איך מקבלים את האוכל</legend>
           <div class="segmented">
             <label><input type="radio" name="fulfillment" value="pickup" checked><span>איסוף עצמי</span></label>
-            <label><input type="radio" name="fulfillment" value="delivery"><span>משלוח</span></label>
+            <label><input type="radio" name="fulfillment" value="delivery" id="delivery-option"><span>משלוח</span></label>
           </div>
         </fieldset>
       </div>
@@ -63,10 +63,17 @@
           <select id="slot" required></select>
           <span class="help" id="slot-help">בוחרים קודם תאריך.</span>
         </div>
-        <div class="field" id="address-field" hidden>
-          <label for="address">כתובת למשלוח</label>
-          <input id="address" autocomplete="street-address" maxlength="300">
-          <span class="help">דמי המשלוח ייקבעו בהמשך, לפי האזור.</span>
+      </div>
+
+      <div class="field-row" id="address-field" hidden>
+        <div class="field">
+          <label for="city">עיר</label>
+          <select id="city"></select>
+          <span class="help" id="city-help">משלוחים רק לערים שברשימה.</span>
+        </div>
+        <div class="field">
+          <label for="address">רחוב ומספר</label>
+          <input id="address" autocomplete="address-line1" maxlength="300">
         </div>
       </div>
 
