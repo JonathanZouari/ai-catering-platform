@@ -1,0 +1,33 @@
+-- Initial catalog seed. INSERT OR IGNORE: reruns never overwrite later edits.
+
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('salads', 'סלטים ומטבלים', 0);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('mains', 'עיקריות', 1);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('fish', 'דגים', 2);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('sides', 'תוספות ולחמים', 3);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('desserts', 'קינוחים', 4);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('drinks', 'שתייה', 5);
+
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d1', 'salads', 'חומוס ביתי', 'חומוס חם עם טחינה גולמית, שמן זית ופפריקה.', 8500, 'tray', NULL, NULL, 'pareve', 1, 1, '["שומשום"]', 1, 0);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d2', 'salads', 'סלט חצילים קלויים', 'חצילים שרופים על האש עם טחינה, לימון ופטרוזיליה.', 9000, 'tray', NULL, NULL, 'pareve', 1, 1, '[]', 1, 1);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d3', 'salads', 'סלט סלק וגבינת עיזים', 'סלק אפוי, גבינת עיזים, אגוזי מלך וויניגרט הדרים.', 11000, 'tray', NULL, NULL, 'dairy', 1, 0, '["חלב","אגוזים"]', 1, 2);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d4', 'salads', 'טבולה פטרוזיליה', 'פטרוזיליה קצוצה, בורגול, עגבניות ולימון.', 8000, 'tray', NULL, NULL, 'pareve', 1, 1, '["גלוטן"]', 1, 3);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d5', 'mains', 'עוף בתנור בעשבי תיבול', 'ירכי עוף אפויות עם שום, רוזמרין ולימון.', 7400, 'kg', NULL, NULL, 'meat', 0, 0, '[]', 1, 4);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d6', 'mains', 'קציצות בקר ברוטב עגבניות', 'קציצות בקר רכות ברוטב עגבניות וכוסברה.', 24000, 'tray', NULL, NULL, 'meat', 0, 0, '["גלוטן","ביצים"]', 1, 5);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d7', 'mains', 'פשטידת ברוקולי וגבינות', 'פשטידה אפויה עם ברוקולי ושלוש גבינות.', 19000, 'tray', NULL, NULL, 'dairy', 1, 0, '["חלב","גלוטן","ביצים"]', 1, 6);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d8', 'mains', 'תבשיל קדרה צמחי', 'ירקות עונה, חומוס ותבלינים בבישול איטי.', 17000, 'tray', NULL, NULL, 'pareve', 1, 1, NULL, 1, 7);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d9', 'fish', 'פילה סלמון בלימון', 'פילה סלמון אפוי עם לימון, שמיר ושמן זית.', 9800, 'item', 0.6, 1, 'pareve', 0, 0, '["דגים"]', 1, 8);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d10', 'fish', 'דג מושט בצ׳רמולה', 'דג מושט שלם בתנור עם צ׳רמולה ביתית.', 14500, 'kg', NULL, NULL, 'pareve', 0, 0, '["דגים"]', 1, 9);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d11', 'sides', 'אורז בסמטי ושקדים', 'אורז בסמטי עם שקדים קלויים ובצל מקורמל.', 12000, 'tray', NULL, NULL, 'pareve', 1, 1, '["אגוזים"]', 1, 10);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d12', 'sides', 'ירקות שורש קלויים', 'גזר, בטטה וסלק קלויים עם דבש או סילאן.', 10500, 'tray', NULL, NULL, 'pareve', 1, 1, '[]', 1, 11);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d13', 'sides', 'פוקאצ׳ה ביתית', 'פוקאצ׳ה אפויה עם רוזמרין ומלח גס.', 1800, 'item', 1.5, 4, 'pareve', 1, 1, '["גלוטן"]', 1, 12);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d14', 'desserts', 'עוגת שוקולד ללא קמח', 'עוגת שוקולד מריר לחה, 12 פרוסות.', 16000, 'item', 0.1, 1, 'pareve', 1, 0, '["ביצים","אגוזים"]', 1, 13);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d15', 'desserts', 'פלטת פירות העונה', 'פירות טריים חתוכים, לכ-10 סועדים.', 14000, 'item', 0.1, 1, 'pareve', 1, 1, '[]', 1, 14);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d16', 'desserts', 'מיני טארטלטים', 'טארטלטים עם קרם וניל ופירות יער.', 900, 'item', 2, 6, 'dairy', 1, 0, '["חלב","גלוטן","ביצים"]', 1, 15);
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, price_agorot, unit, per_guest, step, kashrut, is_vegetarian, is_vegan, allergens, is_available, sort_order) VALUES ('d17', 'drinks', 'שתייה קלה ומים', 'מבחר שתייה קלה ומים מינרליים לכל אורח.', 1400, 'guest', NULL, NULL, 'pareve', 1, 1, '[]', 1, 16);
+
+INSERT OR IGNORE INTO delivery_zones (city, fee_agorot) VALUES ('תל אביב-יפו', 6000);
+INSERT OR IGNORE INTO delivery_zones (city, fee_agorot) VALUES ('רמת גן', 6000);
+INSERT OR IGNORE INTO delivery_zones (city, fee_agorot) VALUES ('גבעתיים', 6000);
+INSERT OR IGNORE INTO delivery_zones (city, fee_agorot) VALUES ('הרצליה', 9000);
+INSERT OR IGNORE INTO delivery_zones (city, fee_agorot) VALUES ('פתח תקווה', 10000);
+INSERT OR IGNORE INTO delivery_zones (city, fee_agorot) VALUES ('ראשון לציון', 11000);

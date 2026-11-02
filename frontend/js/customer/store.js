@@ -1,5 +1,6 @@
 // Client state for the customer app. Every order mutation bumps `order.version`,
 // matching the optimistic-concurrency contract in docs/API_CONTRACTS.md.
+import { api } from "../api.js";
 import {
   approveProposal, assistantReply, getDish, newOrder, priceOrder, qtyLabel, recommendedQty,
   validateContact, validateEvent,
@@ -88,27 +89,52 @@ export function setContact(patch) {
   commit({ ...state, order: { ...state.order, contact: { ...state.order.contact, ...patch } } });
 }
 
-export function submitOrder() {
+/** Drops items whose dish no longer exists (e.g. a saved draft after a catalog change). */
+export function pruneItems() {
+  const items = Object.fromEntries(Object.entries(state.order.items).filter(([id]) => getDish(id)));
+  if (Object.keys(items).length !== Object.keys(state.order.items).length) mutateOrder({ items });
+}
+
+let submitting = false;
+
+export async function submitOrder() {
   const { order } = state;
   const errors = { ...validateContact(order.contact) };
   if (!Object.keys(order.items).length) errors.items = "הוסיפו לפחות מנה אחת להזמנה";
   if (Object.keys(validateEvent(order.event)).length) errors.event = "פרטי האירוע חסרים או לא תקינים";
   if (Object.keys(errors).length) return { errors };
-  const pricing = priceOrder(order);
-  const snapshot = {
-    submittedAt: new Date().toISOString(),
-    lines: pricing.lines.map((l) => ({ name: l.dish.name, qty: qtyLabel(l.dish, l.qty), unitPrice: l.unitPrice, lineTotal: l.lineTotal })),
-    subtotal: pricing.subtotal,
-    deliveryFee: pricing.deliveryFee,
-    total: pricing.total,
-  };
-  commit({
-    ...state,
-    step: "status",
-    order: { ...order, status: "pending_approval", snapshot, version: order.version + 1 },
-    chat: { ...state.chat, open: false },
-  });
-  return { errors: {} };
+  if (submitting) return { errors: {} };
+  submitting = true;
+  try {
+    const e = order.event;
+    const num = (x) => Number(x) || 0;
+    const event = {
+      ...e, adults: num(e.adults), children: num(e.children),
+      vegetarian: num(e.vegetarian), vegan: num(e.vegan), restricted: num(e.restricted),
+    };
+    const res = await api("/api/orders", {
+      method: "POST",
+      body: JSON.stringify({ event, items: order.items, contact: order.contact }),
+    });
+    const snapshot = {
+      submittedAt: res.submittedAt,
+      lines: res.lines.map((l) => ({ name: l.name, qty: qtyLabel(getDish(l.dishId), l.qty), unitPrice: l.unitPrice, lineTotal: l.lineTotal })),
+      subtotal: res.subtotal,
+      deliveryFee: res.deliveryFee,
+      total: res.total,
+    };
+    commit({
+      ...state,
+      step: "status",
+      order: { ...order, id: res.id, status: "pending_approval", snapshot, version: order.version + 1 },
+      chat: { ...state.chat, open: false },
+    });
+    return { errors: {} };
+  } catch (err) {
+    return { errors: { submit: err.message } };
+  } finally {
+    submitting = false;
+  }
 }
 
 export function startOver() {
