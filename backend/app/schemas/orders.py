@@ -182,6 +182,10 @@ class OrderSummary(BaseModel):
     currency: str
     submitted_at: dt.datetime | None
     created_at: dt.datetime
+    version: int
+    fulfillment_type: FulfillmentType
+    requested_at: dt.datetime
+    delivered_at: dt.datetime | None
 
 
 class RecommendationOut(BaseModel):
