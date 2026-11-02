@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
     app_env: str = "development"
+    sqlite_path: str = "catering.db"
     # Optional until Phase 2 connects the database.
     database_url: str | None = None
     supabase_url: str | None = None

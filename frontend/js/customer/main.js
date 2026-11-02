@@ -1,8 +1,8 @@
 import { play } from "../lib/motion.js";
 import { renderStepper } from "./components/stepper.js";
 import { mountChat } from "./components/chat.js";
-import { EVENT_TYPES, validateEvent } from "./mock-backend.js";
-import { STEPS, canEnter, getState, goto, seedDemo, setEvent, subscribe } from "./store.js";
+import { EVENT_TYPES, loadCatalog, validateEvent } from "./mock-backend.js";
+import { STEPS, canEnter, getState, goto, pruneItems, seedDemo, setEvent, subscribe } from "./store.js";
 import { mountEvent } from "./views/event.js";
 import { mountMenu } from "./views/menu.js";
 import { mountStatus } from "./views/status.js";
@@ -15,6 +15,13 @@ const TITLES = {
   summary: "סיכום ההזמנה",
   status: "מצב הבקשה",
 };
+
+try {
+  await loadCatalog();
+} catch (err) {
+  console.warn("Catalog unavailable, using the built-in list", err);
+}
+pruneItems(); // a saved draft may reference a dish that no longer exists
 
 const app = document.getElementById("app");
 const stepperRoot = document.getElementById("stepper");

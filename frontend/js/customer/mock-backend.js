@@ -1,8 +1,10 @@
-// MOCK BACKEND for UI development only.
-// The real backend is authoritative for prices, quantities and order state (ADR-0003).
-// Everything here mirrors the shapes in docs/API_CONTRACTS.md so views can be switched to
-// api() calls without changing their markup. Values marked PLACEHOLDER are NOT business rules.
+// Catalog data comes from the backend (loadCatalog); the lists below are the built-in fallback
+// used when the API is unreachable. Order submission goes through POST /api/orders (store.js).
+// The rest (assistant, proposals, quantity rules) is still a MOCK for UI development, and the
+// real backend is authoritative for prices, quantities and order state (ADR-0003).
+// Shapes mirror docs/API_CONTRACTS.md. Values marked PLACEHOLDER are NOT business rules.
 
+import { api } from "../api.js";
 import { addDays, toIsoDate } from "../lib/format.js";
 
 export const CATEGORIES = [
@@ -36,6 +38,18 @@ export const DISHES = [
   { id: "d16", categoryId: "desserts", name: "מיני טארטלטים", description: "טארטלטים עם קרם וניל ופירות יער.", price: 9, unit: "item", perGuest: 2, step: 6, kashrut: "dairy", vegetarian: true, vegan: false, allergens: ["חלב", "גלוטן", "ביצים"] },
   { id: "d17", categoryId: "drinks", name: "שתייה קלה ומים", description: "מבחר שתייה קלה ומים מינרליים לכל אורח.", price: 14, unit: "guest", kashrut: "pareve", vegetarian: true, vegan: true, allergens: [] },
 ];
+
+/** Replaces the built-in lists in place so every existing importer sees the backend data. */
+export async function loadCatalog() {
+  const [categories, dishes, zones] = await Promise.all([
+    api("/api/catalog/categories"),
+    api("/api/catalog/dishes"),
+    api("/api/catalog/zones"),
+  ]);
+  CATEGORIES.splice(0, CATEGORIES.length, ...categories);
+  DISHES.splice(0, DISHES.length, ...dishes);
+  ZONES.splice(0, ZONES.length, ...zones);
+}
 
 // "יום נישואין" (anniversary) added for the illustrated occasion picker; the client brief lists it as an occasion.
 export const EVENT_TYPES = ["יום הולדת", "אירוע משפחתי", "בר או בת מצווה", "ארוחת שבת", "יום נישואין", "חגיגה פרטית", "אחר"];
@@ -142,13 +156,13 @@ export function priceOrder(order) {
   const lines = Object.entries(order.items)
     .map(([dishId, qty]) => {
       const dish = getDish(dishId);
-      return { dish, qty, unitPrice: dish.price, lineTotal: round2(dish.price * qty) };
+      return { dish, qty, unitPrice: dish.price, lineTotal: Math.round(dish.price * qty) };
     })
     .sort((a, b) => DISHES.indexOf(a.dish) - DISHES.indexOf(b.dish));
-  const subtotal = round2(lines.reduce((sum, l) => sum + l.lineTotal, 0));
+  const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
   const zone = ZONES.find((z) => z.city === order.event.city);
   const deliveryFee = order.event.fulfillment === "delivery" ? (zone ? zone.fee : null) : 0;
-  return { lines, subtotal, deliveryFee, total: round2(subtotal + (deliveryFee ?? 0)) };
+  return { lines, subtotal, deliveryFee, total: subtotal + (deliveryFee ?? 0) };
 }
 
 export function missingCategories(order) {

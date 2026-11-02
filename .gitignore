@@ -11,6 +11,11 @@ htmlcov/
 dist/
 build/
 
+# SQLite databases
+*.db
+*.db-wal
+*.db-shm
+
 # Secrets — never commit
 .env
 .env.*
