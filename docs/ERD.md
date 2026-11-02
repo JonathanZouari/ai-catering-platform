@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0008` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0009` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -19,6 +19,7 @@ erDiagram
     time_slots |o--o{ orders : "booked in"
     delivery_zones ||--o{ delivery_zone_cities : "covers"
     delivery_zones |o--o{ orders : "fee frozen from"
+    orders ||--o{ order_proposals : "changes proposed in"
     dishes ||--o{ order_items : "is ordered as"
 
     dish_categories {
@@ -125,6 +126,21 @@ erDiagram
         text city PK "normalized; one zone per city"
         uuid zone_id FK "cascade"
     }
+    order_proposals {
+        uuid id PK
+        uuid order_id FK "cascade"
+        text proposed_by "owner or assistant"
+        int base_order_version "must match orders.version on accept"
+        jsonb changes "add_item, set_quantity, remove_item"
+        jsonb lines "proposed items with frozen prices"
+        numeric price_before
+        numeric price_after "incl. delivery fee"
+        text note "null, shown to customer"
+        text status "pending, accepted, declined, cancelled, expired"
+        text customer_note "null, decline reason"
+        timestamptz created_at
+        timestamptz decided_at "null"
+    }
     business_settings {
         smallint id PK "always 1"
         numeric child_portion "0 to 1, default 0.75"
@@ -154,6 +170,7 @@ erDiagram
   - A vegan dish suits everyone. A vegetarian dish suits everyone except vegans. Any other dish, including one with unknown dietary data, excludes vegetarians and vegans.
 - **`business_settings`** is a single, unrelated row of owner-editable settings.
 - **Delivery fee** (#19). While draft, the fee is the current fee of the active zone containing `delivery_city`. At submission it is frozen into `orders.delivery_fee`, and `total` = sum of lines + fee.
+- **Proposals** (#6). At most one `pending` per order (partial unique index). Accepting an owner proposal writes its frozen lines into `order_items`, recomputes the totals with the frozen delivery fee, and sets `orders.status = approved` and `decision_note = note`, all in one transaction guarded by `base_order_version`.
 - **Capacity** (#5). Orders that are `pending_approval` or `approved` hold their slot on their event date. Submitting checks `count < time_slots.capacity` while the slot row is locked (`SELECT … FOR UPDATE`).
 
 ## Planned (not migrated yet)
@@ -162,8 +179,7 @@ erDiagram
 erDiagram
     orders ||--o{ ai_conversations : "discussed in (Phase 4)"
     ai_conversations ||--o{ ai_messages : "has"
-    orders ||--o{ ai_change_proposals : "changed by"
-    ai_conversations ||--o{ ai_change_proposals : "suggests"
+    ai_conversations ||--o{ order_proposals : "suggests (assistant)"
 
     ai_conversations {
         uuid id PK
@@ -176,16 +192,5 @@ erDiagram
         text role "user|assistant|tool"
         jsonb content
         timestamptz created_at
-    }
-    ai_change_proposals {
-        uuid id PK
-        uuid order_id FK
-        uuid conversation_id FK "null"
-        int base_order_version "must equal orders.version to execute"
-        jsonb changes
-        numeric price_before
-        numeric price_after
-        proposal_status status "pending|approved|rejected|expired|failed"
-        timestamptz executed_at "set once, idempotency"
     }
 ```

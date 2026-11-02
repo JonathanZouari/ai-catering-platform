@@ -42,6 +42,8 @@ def my_orders(db: Session, who: CustomerIdentity) -> list[s.MyOrderOut]:
     customer = repo.by_auth_user(db, who.user_id)
     if customer is None:
         return []
+    found = repo.orders_for(db, customer.id)
+    pending = repo.with_pending_proposal(db, [o.id for o in found])
     return [
         s.MyOrderOut(
             id=o.id,
@@ -52,6 +54,7 @@ def my_orders(db: Session, who: CustomerIdentity) -> list[s.MyOrderOut]:
             total=o.total,
             submitted_at=o.submitted_at,
             decision_note=o.decision_note,
+            has_pending_proposal=o.id in pending,
         )
-        for o in repo.orders_for(db, customer.id)
+        for o in found
     ]

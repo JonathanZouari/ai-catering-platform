@@ -28,6 +28,7 @@ from app.core.errors import AppError
 from app.models.availability import TimeSlot
 from app.models.catalog import Dish
 from app.models.orders import Customer, Event, Order, OrderItem
+from app.models.proposals import OrderProposal
 from app.repositories import availability as availability_repo
 from app.repositories import catalog as catalog_repo
 from app.repositories import customers as customers_repo
@@ -176,7 +177,7 @@ def update_draft(
 # items (C2)
 
 
-def _check_quantity(dish: Dish, quantity: Decimal) -> None:
+def check_quantity(dish: Dish, quantity: Decimal) -> None:
     step = HALF if dish.pricing_unit == "per_weight" else Decimal(1)  # kg in 0.5, else whole
     if quantity % step:
         raise _invalid("quantity", "Quantity must be whole units (or 0.5 kg steps by weight)")
@@ -196,7 +197,7 @@ def set_item(
     dish = db.get(Dish, dish_id)
     if dish is None or not pricing.orderable(dish):
         raise _invalid("dish_id", "This dish can't be ordered", "dish_unavailable")
-    _check_quantity(dish, data.quantity)
+    check_quantity(dish, data.quantity)
     item = next((i for i in order.items if i.dish_id == dish_id), None)
     if item is None:
         order.items.append(OrderItem(dish_id=dish_id, quantity=data.quantity))
@@ -316,6 +317,11 @@ def withdraw(
         item.snapshot_unit_price = item.snapshot_line_total = None
     order.subtotal = order.total = order.submitted_at = None
     order.delivery_fee = order.delivery_zone_id = None  # live from the zone again
+    db.execute(  # an open owner proposal was made for the submitted order: it no longer applies
+        update(OrderProposal)
+        .where(OrderProposal.order_id == order_id, OrderProposal.status == "pending")
+        .values(status="expired", decided_at=datetime.now(UTC))
+    )
     return _commit_bump(
         db, who, order_id, version, from_status="pending_approval", to_status="draft"
     )

@@ -40,6 +40,7 @@ class MyOrderOut(BaseModel):
     total: Decimal | None
     submitted_at: UtcDatetime | None
     decision_note: str | None
+    has_pending_proposal: bool = False  # the owner proposed a change awaiting the customer
 
 
 class AuthConfigOut(BaseModel):

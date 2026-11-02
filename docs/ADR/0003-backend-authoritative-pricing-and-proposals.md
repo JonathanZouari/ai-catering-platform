@@ -7,7 +7,7 @@ Decisions 6 and 7: deterministic backend pricing; every AI change needs explicit
 
 ## Decision
 - Pricing and quantities are computed only in `services/`.
-- The AI can only create proposals (`ai_change_proposals`). Execution happens through a customer-only HTTP endpoint, never an AI tool.
+- The AI can only create proposals (`order_proposals` with `proposed_by = assistant`, the same table owner proposals use since migration 0009). Execution happens through a customer-only HTTP endpoint, never an AI tool.
 - Execution is transactional with optimistic locking (`orders.version`) and single-use proposals (`executed_at`).
 - Submission freezes a price snapshot on `order_items`.
 

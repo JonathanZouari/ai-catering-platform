@@ -11,6 +11,7 @@ from app.models import availability as _availability  # noqa: F401  registers ta
 from app.models import catalog as _catalog  # noqa: F401
 from app.models import delivery as _delivery  # noqa: F401
 from app.models import orders as _orders  # noqa: F401
+from app.models import proposals as _proposals  # noqa: F401
 from app.models import settings as _settings  # noqa: F401
 from app.models.base import Base
 

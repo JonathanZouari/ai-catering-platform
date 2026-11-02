@@ -126,18 +126,24 @@ While `draft`, prices are read live from `dishes`; on `pending_approval` the sna
 ### ai_messages
 `id` uuid PK · `conversation_id` FK · `role` text CHECK in (`user`,`assistant`,`tool`) · `content` jsonb · `created_at`
 
-### ai_change_proposals
+### order_proposals
+One table for both proposers (migration 0009, OPEN #6 decided): `owner` proposes on orders awaiting approval, and `assistant` (Phase 4) on drafts. It replaces the planned `ai_change_proposals`.
+
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| order_id | uuid FK not null | index |
-| conversation_id | uuid FK null | |
-| base_order_version | int not null | Must equal `orders.version` at execution |
-| changes | jsonb not null | Validated list of typed operations |
-| price_before, price_after | numeric(10,2) not null | Computed by backend at proposal time |
-| status | proposal_status not null default `pending` | |
-| created_at, decided_at, executed_at | timestamptz | `executed_at` set once → idempotency |
-| PARTIAL UNIQUE | one `pending` per order? **[RECOMMENDATION]** — simplifies UI | |
+| order_id | uuid FK not null, cascade | index |
+| proposed_by | text `owner` or `assistant` | |
+| base_order_version | int not null | Must equal `orders.version` when accepted, else the proposal expires |
+| changes | jsonb not null | `[{op: add_item, set_quantity or remove_item, dish_id, name, from_quantity, to_quantity}]` |
+| lines | jsonb not null | Full proposed item list with frozen prices (existing dishes keep their frozen price, added dishes take the catalog price) |
+| price_before, price_after | numeric(10,2) not null | `price_after` includes the order's delivery fee |
+| note | text null | From the proposer, shown to the customer; becomes the decision note on accept |
+| status | text: pending, accepted, declined, cancelled, expired | |
+| customer_note | text null | Reason when declining |
+| created_at, decided_at | timestamptz | |
+| UNIQUE (order_id) WHERE status = 'pending' | | At most one open proposal per order |
+| conversation_id, executed_at | | Added with the AI assistant in Phase 4 |
 
 ## Status transitions
 
@@ -145,10 +151,10 @@ While `draft`, prices are read live from `dishes`; on `pending_approval` the sna
 |---|---|---|
 | draft | pending_approval | Customer (owner of order) |
 | pending_approval | draft | Customer, withdraw (OPEN #7) |
-| pending_approval | approved | Owner |
+| pending_approval | approved | Owner, or customer accepting an owner proposal |
 | pending_approval | rejected | Owner |
 
-Proposals may only execute while order is `draft`.
+Owner proposals: on `pending_approval`. Accepting one moves the order to `approved` in the same transaction; declining leaves it `pending_approval`. Assistant proposals (Phase 4) apply to `draft`.
 
 ## Business rules storage
 

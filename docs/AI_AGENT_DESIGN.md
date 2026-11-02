@@ -25,11 +25,11 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 
 | Tool | Args | Effect |
 |---|---|---|
-| `propose_order_change` | `changes: list[Change]`, `rationale: str` | Backend validates → computes diff and price impact → stores `ai_change_proposals` row (`pending`) → returned to UI. **No order mutation.** |
+| `propose_order_change` | `changes: list[Change]`, `rationale: str` | Backend validates → computes diff and price impact → stores an `order_proposals` row with `proposed_by = assistant` (`pending`, the same mechanism as owner proposals, migration 0009) → returned to UI. **No order mutation.** |
 
 `Change` is a discriminated union: `add_item{dish_id, quantity}`, `remove_item{dish_id}`, `set_quantity{dish_id, quantity}`, `update_details{fields}` (whitelisted fields only).
 
-**Confirmation is not an AI tool.** `confirm_order_change` from the spec is implemented as the customer-only HTTP endpoint `POST /proposals/{id}/approve`, triggered by a UI button. The model cannot approve its own proposals. **[RECOMMENDATION — strengthens Decision 7]**
+**Confirmation is not an AI tool.** `confirm_order_change` from the spec is implemented as the customer-only HTTP endpoint `POST /api/orders/{id}/proposals/{pid}/accept`, triggered by a UI button. The model cannot approve its own proposals. **[RECOMMENDATION — strengthens Decision 7]**
 
 ## 3. Workflow (spec §7)
 

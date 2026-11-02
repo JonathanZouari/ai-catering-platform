@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.orders import Customer, Event, Order
+from app.models.proposals import OrderProposal
 
 
 def by_auth_user(db: Session, auth_user_id: uuid.UUID) -> Customer | None:
@@ -18,3 +19,12 @@ def orders_for(db: Session, customer_id: uuid.UUID) -> list[Order]:
         .order_by(Event.event_date.desc())
     )
     return list(db.scalars(q).unique())
+
+
+def with_pending_proposal(db: Session, order_ids: list[uuid.UUID]) -> set[uuid.UUID]:
+    if not order_ids:
+        return set()
+    q = select(OrderProposal.order_id).where(
+        OrderProposal.order_id.in_(order_ids), OrderProposal.status == "pending"
+    )
+    return set(db.scalars(q))

@@ -1,6 +1,7 @@
-"""Email content for order events (OPEN_DECISIONS #13): owner on a new submission, customer on
-approval or rejection. Built inside the request (it needs the DB), sent afterwards in the
-background by core.mailer, which never raises.
+"""Email content for order events (OPEN_DECISIONS #13): owner on a new submission and on the
+customer's answer to a proposal; customer on approval, rejection and owner proposals.
+Built inside the request (it needs the DB), sent afterwards in the background by core.mailer,
+which never raises.
 """
 
 import uuid
@@ -13,6 +14,7 @@ from app.core import clock
 from app.core.config import get_settings
 from app.core.mailer import Email
 from app.models.orders import Order
+from app.models.proposals import OrderProposal
 
 FULFILLMENT = {"pickup": "איסוף עצמי", "delivery": "משלוח"}
 
@@ -76,3 +78,59 @@ def order_decided(db: Session, order_id: uuid.UUID) -> Email | None:
 """
     subject = f"{headline}: {e.event_type}, {e.event_date:%d.%m.%Y}"
     return Email(order.customer.email, subject, body, kind="order_decided")
+
+
+OPS = {"add_item": "נוספה", "set_quantity": "שונתה כמות", "remove_item": "הוסרה"}
+
+
+def proposal_created(db: Session, proposal_id: uuid.UUID) -> Email | None:
+    settings = get_settings()
+    proposal = db.get(OrderProposal, proposal_id)
+    order = db.get(Order, proposal.order_id) if proposal else None
+    if order is None or not order.customer.email:
+        return None
+    e = order.event
+    changes = "\n".join(
+        f"- {OPS[c['op']]}: {c['name']}"
+        + (f" ({c['from_quantity']} → {c['to_quantity']})" if c["op"] == "set_quantity" else "")
+        for c in proposal.changes
+    )
+    note = f"\nהודעה מבעל העסק:\n{proposal.note}\n" if proposal.note else ""
+    body = f"""בעל העסק הציע שינוי בהזמנה שלכם.
+
+אירוע: {e.event_type}, {e.event_date:%d.%m.%Y}
+{changes}
+סה"כ: {_money(proposal.price_before)} → {_money(proposal.price_after)}
+{note}
+כדי לאשר או לדחות: {settings.public_base_url}/customer/order/?order={order.id}
+אם תאשרו, ההזמנה מאושרת מיד.
+"""
+    subject = f"הצעת שינוי בהזמנה: {e.event_type}, {e.event_date:%d.%m.%Y}"
+    return Email(order.customer.email, subject, body, kind="proposal_created")
+
+
+def proposal_answered(db: Session, proposal_id: uuid.UUID) -> Email | None:
+    settings = get_settings()
+    proposal = db.get(OrderProposal, proposal_id)
+    order = db.get(Order, proposal.order_id) if proposal else None
+    if order is None or proposal.status not in ("accepted", "declined") or not settings.owner_email:
+        return None
+    e, c = order.event, order.customer
+    accepted = proposal.status == "accepted"
+    headline = "הלקוח אישר את הצעת השינוי" if accepted else "הלקוח דחה את הצעת השינוי"
+    outcome = (
+        f'ההזמנה אושרה. סה"כ: {_money(order.total)}'
+        if accepted
+        else "ההזמנה חזרה להמתין להחלטה שלך (אישור, דחייה או הצעה אחרת)."
+    )
+    reason = f"\nסיבה: {proposal.customer_note}\n" if proposal.customer_note else ""
+    body = f"""{headline}.
+
+לקוח: {c.full_name}
+אירוע: {e.event_type}, {e.event_date:%d.%m.%Y}
+{outcome}
+{reason}
+{settings.public_base_url}/admin/orders/
+"""
+    subject = f"{headline}: {e.event_type}, {e.event_date:%d.%m.%Y}, {c.full_name}"
+    return Email(settings.owner_email, subject, body, kind="proposal_answered")

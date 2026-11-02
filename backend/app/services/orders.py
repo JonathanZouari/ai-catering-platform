@@ -5,14 +5,18 @@ records the owner's decision. Transitions: pending_approval -> approved | reject
 """
 
 import uuid
+from datetime import UTC, datetime
 from typing import get_args
 
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models.orders import Order
+from app.models.proposals import OrderProposal
 from app.repositories import orders as repo
 from app.schemas import orders as s
+from app.services import proposals
 
 OWNER_STATUSES: tuple[str, ...] = get_args(s.OwnerStatus)
 
@@ -66,6 +70,8 @@ def get_order(db: Session, order_id: uuid.UUID) -> s.OrderDetailOut:
 
 def decide(db: Session, order_id: uuid.UUID, approve: bool, data: s.DecisionIn) -> s.OrderDetailOut:
     _get_visible(db, order_id)  # 404 before 409
+    if proposals.has_pending(db, order_id):
+        raise AppError(409, "proposal_pending", "Cancel the open proposal before deciding")
     if not approve and not data.note:
         raise AppError(
             422, "validation_error", "A note is required when rejecting", {"field": "note"}
@@ -73,6 +79,12 @@ def decide(db: Session, order_id: uuid.UUID, approve: bool, data: s.DecisionIn) 
     if not repo.decide(db, order_id, "approved" if approve else "rejected", data.note or None):
         db.rollback()
         raise AppError(409, "invalid_transition", "Only orders awaiting approval can be decided")
+    # A proposal created at the same moment can't apply to a decided order: close it with it.
+    db.execute(
+        update(OrderProposal)
+        .where(OrderProposal.order_id == order_id, OrderProposal.status == "pending")
+        .values(status="expired", decided_at=datetime.now(UTC))
+    )
     db.commit()
     db.expire_all()
     return get_order(db, order_id)
