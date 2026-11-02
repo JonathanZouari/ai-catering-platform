@@ -13,6 +13,7 @@ from app.core import clock
 from app.core.errors import AppError
 from app.models.availability import BlockedDate, TimeSlot
 from app.repositories import availability as repo
+from app.repositories import orders as orders_repo
 from app.schemas import availability as s
 from app.services import settings as settings_svc
 
@@ -101,10 +102,16 @@ def availability(db: Session, start: date, end: date) -> s.AvailabilityOut:
         raise AppError(
             422, "validation_error", "from must be <= to, at most a year apart", {"field": "to"}
         )
+    slots = repo.list_slots(db, active_only=True)
+    capacity = {t.id: t.capacity for t in slots if t.capacity}
+    full = [
+        s.FullSlotOut(slot_id=slot, date=day)
+        for (slot, day), n in orders_repo.slot_loads(db, start, end).items()
+        if slot in capacity and n >= capacity[slot]
+    ]
     return s.AvailabilityOut(
         earliest_date=clock.today() + timedelta(days=settings_svc.get(db).lead_days),
         blocked_dates=[b.date for b in repo.list_blocked(db, start, end)],
-        time_slots=[
-            s.PublicSlotOut.model_validate(t) for t in repo.list_slots(db, active_only=True)
-        ],
+        time_slots=[s.PublicSlotOut.model_validate(t) for t in slots],
+        full_slots=sorted(full, key=lambda f: (f.date, str(f.slot_id))),
     )

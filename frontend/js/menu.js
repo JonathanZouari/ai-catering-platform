@@ -5,6 +5,8 @@ import { call, session } from "/js/customer-session.js";
 
 const KASHRUT = { meat: ["בשרי", "k-meat"], dairy: ["חלבי", "k-dairy"], pareve: ["פרווה", "k-parve"] };
 const UNIT = { per_tray: "מגשים", per_guest: "מנות", per_weight: 'ק"ג', per_item: "יחידות" };
+const UNIT_ONE = { per_tray: "מגש", per_guest: "מנה", per_weight: 'ק"ג', per_item: "יחידה" };
+const units = (quantity, unit) => (Number(quantity) === 1 ? UNIT_ONE : UNIT)[unit] ?? "";
 const PER = { per_tray: "למגש", per_guest: "לאורח", per_weight: 'לק"ג', per_item: "ליחידה" };
 const CODES = {
   below_minimum: "הכמות נמוכה מהמינימום של המנה",
@@ -12,6 +14,11 @@ const CODES = {
   order_version_conflict: "ההזמנה עודכנה בחלון אחר. טענו את הדף מחדש",
   invalid_transition: "ההזמנה כבר נשלחה ולא ניתן לשנות אותה",
   validation_error: "הכמות לא תקינה",
+  empty_order: "צריך לבחור לפחות מנה אחת",
+  items_unavailable: "חלק מהמנות כבר לא זמינות. הסירו אותן מהסיכום ונסו שוב",
+  slot_full: "השעה שבחרתם התמלאה בינתיים. בחרו שעה אחרת בפרטי האירוע",
+  slot_unavailable: "השעה שבחרתם כבר לא זמינה. בחרו שעה אחרת בפרטי האירוע",
+  date_unavailable: "אי אפשר להזמין לתאריך הזה יותר (סגור, או קרוב מדי). עדכנו את פרטי האירוע",
 };
 const DEBOUNCE_MS = 450;
 
@@ -49,14 +56,23 @@ function notice(text) {
 
 // --- server changes go through one queue so each request carries the latest version ---
 let queue = Promise.resolve();
-const pending = new Map(); // dishId -> timer
+const pending = new Map(); // dishId -> { timer, run }
 
 function requestQuantity(dish, quantity) {
-  clearTimeout(pending.get(dish.id));
-  pending.set(dish.id, setTimeout(() => {
+  clearTimeout(pending.get(dish.id)?.timer);
+  const run = () => {
     pending.delete(dish.id);
     queue = queue.then(() => send(dish, quantity)).catch(() => {});
-  }, DEBOUNCE_MS));
+  };
+  pending.set(dish.id, { timer: setTimeout(run, DEBOUNCE_MS), run });
+}
+
+// Send debounced changes now instead of waiting (before submitting).
+function flushPending() {
+  for (const { timer, run } of [...pending.values()]) {
+    clearTimeout(timer);
+    run();
+  }
 }
 
 async function send(dish, quantity) {
@@ -186,7 +202,7 @@ async function renderSummary() {
       }
     }
     return el("tr", {}, name,
-      el("td", { className: "num", textContent: `${num(l.quantity)} ${UNIT[l.pricing_unit]}` }),
+      el("td", { className: "num", textContent: `${num(l.quantity)} ${units(l.quantity, l.pricing_unit)}` }),
       el("td", { className: "num", textContent: money(l.unit_price) }),
       el("td", { className: "num", textContent: money(l.line_total) }));
   }));
@@ -198,6 +214,7 @@ async function renderSummary() {
   $("totals").replaceChildren(...rows);
   const count = p.lines.filter((l) => l.available).length;
   const dishes = count === 1 ? "מנה אחת" : `${count} מנות`;
+  $("submit").disabled = !state.editable || count === 0 || p.lines.some((l) => !l.available);
   $("bar-text").textContent = count ? `${dishes} · ${money(p.total)}` : "עוד לא נבחרו מנות";
 }
 
@@ -208,6 +225,26 @@ async function loadOrder() {
   $("event-line").textContent = `${e.event_type} · ${day(e.event_date)} · ${e.adults + e.children} אורחים`;
   $("nav-event").href = `/customer/event/?order=${encodeURIComponent(state.orderId)}`;
   notice(state.editable ? "" : "ההזמנה הזו כבר נשלחה, ולכן אי אפשר לשנות את המנות.");
+}
+
+async function submit() {
+  const button = $("submit");
+  const error = $("submit-error");
+  button.disabled = true;
+  error.hidden = true;
+  flushPending();
+  try {
+    await queue; // every quantity change has reached the server
+    await call(`/api/orders/${state.orderId}/submit`, { method: "POST", body: JSON.stringify({ version: state.order.version }) });
+    location.href = `/customer/order/?order=${encodeURIComponent(state.orderId)}`;
+  } catch (err) {
+    if (err.status === 401) { location.href = "/customer/"; return; }
+    const names = err.details?.dishes?.length ? ` (${err.details.dishes.join(", ")})` : "";
+    error.textContent = (CODES[err.code] ?? "לא הצלחנו לשלוח. נסו שוב") + names;
+    error.hidden = false;
+    if (err.code === "order_version_conflict") await loadOrder();
+    await renderSummary();
+  }
 }
 
 export async function initMenu() {
@@ -244,6 +281,8 @@ export async function initMenu() {
       renderDishes();
     });
   }
+  $("submit").addEventListener("click", submit);
+  $("edit-event").href = `/customer/event/?order=${encodeURIComponent(state.orderId)}`;
   renderCategories();
   renderDishes();
   await renderSummary();

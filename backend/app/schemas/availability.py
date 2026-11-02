@@ -66,3 +66,9 @@ class AvailabilityOut(BaseModel):
     earliest_date: date  # today (Israel time) + the owner's lead days
     blocked_dates: list[date]
     time_slots: list[PublicSlotOut]
+    full_slots: list["FullSlotOut"]  # only which slot is full on which date, never counts
+
+
+class FullSlotOut(BaseModel):
+    slot_id: uuid.UUID
+    date: date

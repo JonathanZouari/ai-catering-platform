@@ -17,6 +17,7 @@ def test_frontend_pages_served():
         "/customer/",
         "/customer/event/",
         "/customer/menu/",
+        "/customer/order/",
         "/admin/",
         "/admin/availability/",
         "/admin/orders/",
@@ -42,6 +43,7 @@ def test_design_assets_served():
         "/js/customer-session.js",
         "/js/event.js",
         "/js/menu.js",
+        "/js/order-status.js",
         "/assets/img/table.jpg",
     )
     for path in paths:

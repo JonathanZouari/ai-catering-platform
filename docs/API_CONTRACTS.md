@@ -25,7 +25,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | GET | `/api/catalog/categories` | Active categories, ordered |
 | GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`) |
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
-| GET | `/api/availability?from=&to=` | Blocked dates + slots |
+| GET | `/api/availability?from=&to=` | `{earliest_date, blocked_dates, time_slots, full_slots: [{slot_id, date}]}`. Only which slot is full, never booking counts |
 
 ## Customer account (Supabase Auth access token as `Authorization: Bearer`, ADR 0005)
 
@@ -47,7 +47,8 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | DELETE | `/api/orders/{id}/items/{dish_id}?version=N` | Remove dish |
 | GET | `/api/orders/{id}/pricing` | `{currency: ILS, vat_included: true, lines[], subtotal, delivery_fee, total}`. Lines are rounded half-up to the agora; a dish no longer orderable is flagged `available: false` and left out of the total |
 | GET | `/api/orders/{id}/recommendations` | `[{dish_id, quantity, eligible_guests}]` for dishes with `serves_adults` (rules: OPEN_DECISIONS #3, decided) |
-| POST | `/api/orders/{id}/submit` | `draft → pending_approval`; freezes snapshot |
+| POST | `/api/orders/{id}/submit` | `{version}`. `draft → pending_approval`. Re-checks everything: dishes still orderable (`409 items_unavailable`), date and lead time, slot, and capacity (`409 slot_full`); `422 empty_order`. Freezes the price snapshot and totals, and emails the owner |
+| POST | `/api/orders/{id}/withdraw` | `{version}`. `pending_approval → draft` (OPEN #7); unfreezes prices. After a decision → `409 invalid_transition` |
 
 Every mutation returns the full updated order (new `version`). A stale `version` → `409 order_version_conflict`.
 
@@ -119,6 +120,7 @@ Proposal shape:
 | Transition | Endpoint | Allowed actor |
 |---|---|---|
 | draft → pending_approval | `POST /api/orders/{id}/submit` | Order's customer |
+| pending_approval → draft | `POST /api/orders/{id}/withdraw` | Order's customer |
 | pending_approval → approved | `POST /api/admin/orders/{id}/approve` | Owner |
 | pending_approval → rejected | `POST /api/admin/orders/{id}/reject` | Owner |
 

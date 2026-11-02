@@ -83,6 +83,10 @@ class Order(Timestamps, Base):
     )
     version: Mapped[int] = mapped_column(Integer, default=1)
     fulfillment_type: Mapped[str] = mapped_column(FulfillmentType)
+    # The chosen pickup/delivery slot; capacity is counted per slot per event date (OPEN #5).
+    slot_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("time_slots.id", ondelete="SET NULL"), index=True
+    )
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     delivery_address: Mapped[str | None] = mapped_column(Text)
     # shortcut: no delivery_zone_id until zones are defined (OPEN_DECISIONS #19).

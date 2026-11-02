@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0006` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0007` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -16,6 +16,7 @@ erDiagram
     customers ||--o{ orders : "places"
     events ||--|| orders : "is ordered by"
     orders ||--o{ order_items : "contains"
+    time_slots |o--o{ orders : "booked in"
     dishes ||--o{ order_items : "is ordered as"
 
     dish_categories {
@@ -98,7 +99,8 @@ erDiagram
         order_status status "draft|pending_approval|approved|rejected"
         int version "optimistic lock, +1 per mutation"
         fulfillment_type fulfillment_type
-        timestamptz requested_at
+        uuid slot_id FK "null, set null if the slot is deleted"
+        timestamptz requested_at "event date at the slot start"
         text delivery_address "required when delivery"
         numeric subtotal "null until submission"
         numeric delivery_fee "null"
@@ -137,6 +139,7 @@ erDiagram
   - A child counts as `business_settings.child_portion` of an adult.
   - A vegan dish suits everyone. A vegetarian dish suits everyone except vegans. Any other dish, including one with unknown dietary data, excludes vegetarians and vegans.
 - **`business_settings`** is a single, unrelated row of owner-editable settings.
+- **Capacity** (#5). Orders that are `pending_approval` or `approved` hold their slot on their event date. Submitting checks `count < time_slots.capacity` while the slot row is locked (`SELECT … FOR UPDATE`).
 
 ## Planned (not migrated yet)
 

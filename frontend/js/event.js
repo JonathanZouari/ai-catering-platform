@@ -17,6 +17,7 @@ const SUBSETS = ["vegetarian_guests", "vegan_guests", "restricted_guests"];
 const CODES = {
   date_unavailable: "אי אפשר להזמין לתאריך הזה (סגור, או קרוב מדי). בחרו תאריך אחר",
   slot_unavailable: "השעה הזו כבר לא פנויה ביום הזה. בחרו שעה אחרת",
+  slot_full: "השעה הזו כבר מלאה ביום הזה. בחרו שעה אחרת",
   profile_required: "קודם משלימים שם וטלפון באזור האישי",
   order_version_conflict: "הטיוטה עודכנה בחלון אחר. טענו את הדף כדי לראות את הגרסה העדכנית",
   invalid_transition: "ההזמנה כבר נשלחה ולא ניתן לערוך אותה",
@@ -28,13 +29,12 @@ const FIELD_INPUT = {
 };
 
 const $ = (id) => document.getElementById(id);
-const state = { order: null, blocked: new Set(), slots: [], earliest: null };
+const state = { order: null, blocked: new Set(), slots: [], earliest: null, full: new Set() };
 
 // Dates are plain YYYY-MM-DD strings in Israel time; never parsed in the viewer's timezone.
 const isoToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date());
 const addDays = (iso, n) => new Date(Date.parse(`${iso}T00:00Z`) + n * 864e5).toISOString().slice(0, 10);
 const weekday = (iso) => new Date(`${iso}T00:00Z`).getUTCDay(); // 0 = Sunday, like the backend
-const localTime = (instant) => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(instant));
 const hhmm = (t) => t.slice(0, 5);
 const shortDate = (iso) => new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00Z`));
 const tooSoon = () => `צריך להזמין מראש. התאריך הכי מוקדם: ${shortDate(state.earliest)}`;
@@ -83,22 +83,30 @@ function buildCounters() {
 
 const fulfillment = () => document.querySelector('input[name="fulfillment"]:checked').value;
 
-function renderSlots(selectTime = null) {
+// Keeps the chosen slot when date or type changes: same slot id, else same start time.
+function renderSlots(selectId = null) {
   const date = $("event-date").value;
   const select = $("slot");
-  const previous = selectTime ?? state.slots.find((s) => s.id === select.value)?.start_time?.slice(0, 5);
+  const wanted = selectId ?? select.value;
+  const previous = state.slots.find((s) => s.id === wanted)?.start_time?.slice(0, 5);
+  const isFull = (s) => state.full.has(`${s.id}|${date}`);
   const fitting = date && !state.blocked.has(date)
     ? state.slots
       .filter((s) => s.fulfillment_type === fulfillment() && (s.weekday === null || s.weekday === weekday(date)))
       .sort((a, b) => a.start_time.localeCompare(b.start_time))
     : [];
   select.replaceChildren(el("option", { value: "", textContent: fitting.length ? "בחרו שעה" : "—" }),
-    ...fitting.map((s) => el("option", { value: s.id, textContent: `${hhmm(s.start_time)}–${hhmm(s.end_time)}` })));
-  const match = fitting.find((s) => hhmm(s.start_time) === previous);
+    ...fitting.map((s) => el("option", {
+      value: s.id, disabled: isFull(s),
+      textContent: `${hhmm(s.start_time)}–${hhmm(s.end_time)}${isFull(s) ? " · מלא" : ""}`,
+    })));
+  const open = fitting.filter((s) => !isFull(s));
+  const match = open.find((s) => s.id === wanted) ?? open.find((s) => hhmm(s.start_time) === previous);
   if (match) select.value = match.id;
   select.disabled = fitting.length === 0;
   $("slot-help").textContent = !date ? "בוחרים קודם תאריך."
     : state.blocked.has(date) ? "התאריך הזה סגור להזמנות."
+    : !open.length && fitting.length ? "כל השעות ביום הזה מלאות. נסו יום אחר."
     : fitting.length ? (fulfillment() === "pickup" ? "שעת האיסוף ביום האירוע." : "חלון המשלוח ביום האירוע.")
     : "אין שעות פנויות ביום הזה. נסו יום אחר או סוג משלוח אחר.";
 }
@@ -176,7 +184,7 @@ function fill(order) {
   for (const [key] of COUNTERS) $(`c-${key}`).value = e[key];
   $("notes").value = e.dietary_notes ?? "";
   checkDate();
-  renderSlots(localTime(order.requested_at));
+  renderSlots(order.slot_id);
 }
 
 function setOrder(order) {
@@ -231,6 +239,7 @@ export async function initEvent() {
     state.blocked = new Set(availability.blocked_dates);
     state.slots = availability.time_slots;
     state.earliest = availability.earliest_date;
+    state.full = new Set(availability.full_slots.map((f) => `${f.slot_id}|${f.date}`));
   } catch {
     toast("לא הצלחנו לטעון את השעות הפנויות");
   }

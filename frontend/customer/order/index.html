@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-route="status">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>סטטוס הזמנה · Yummai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
+    <nav class="site-nav" aria-label="ניווט ראשי">
+      <a href="/customer/">האזור האישי</a><a href="#" aria-current="page">סטטוס הזמנה</a>
+    </nav>
+  </div>
+</header>
+
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/buffet.jpg" alt="" width="900" height="600"><span class="band-note hand"><i data-ill="basket"></i>איפה ההזמנה עומדת</span></div>
+<div class="app wrap">
+  <main id="screen">
+    <div class="screen-head">
+      <ol class="progress" aria-label="שלבי ההזמנה">
+        <li>האירוע</li><li>המנות</li><li aria-current="step"><strong>סיכום ושליחה</strong></li>
+      </ol>
+      <h2 id="title">סטטוס ההזמנה</h2>
+      <p class="lede" id="lede"></p>
+    </div>
+
+    <p class="notice warn" id="page-notice" role="alert" hidden></p>
+
+    <div id="status" class="admin-stack" hidden>
+      <section aria-labelledby="timeline-h">
+        <h3 id="timeline-h" class="sr-only">שלבי הטיפול</h3>
+        <ol class="timeline" id="timeline"></ol>
+      </section>
+
+      <blockquote class="owner-note" id="owner-note" hidden></blockquote>
+
+      <div class="actions" id="actions"></div>
+      <p class="help error" id="action-error" role="alert" hidden></p>
+
+      <section class="order-detail" aria-labelledby="event-h">
+        <div class="detail-head"><h3 id="event-h">פרטי האירוע</h3></div>
+        <dl class="totals" id="facts"></dl>
+      </section>
+
+      <section class="summary" aria-labelledby="summary-h">
+        <h3 id="summary-h">ההזמנה</h3>
+        <div class="table-scroll">
+          <table class="lines">
+            <thead><tr><th scope="col">מנה</th><th scope="col">כמות</th><th scope="col">מחיר</th><th scope="col">סה"כ</th></tr></thead>
+            <tbody id="lines"></tbody>
+          </table>
+        </div>
+        <dl class="totals" id="totals"></dl>
+        <p class="fine" id="price-note"></p>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="site-footer wrap"><span>Yummai · תל אביב</span></footer>
+<script type="module">
+  import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initOrderStatus } from "/js/order-status.js";
+  initMotion();
+  initRouteBand();
+  initOrderStatus();
+</script>
+</body>
+</html>
