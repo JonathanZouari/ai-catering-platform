@@ -1,0 +1,170 @@
+-- DEV PLACEHOLDER catalog, generated from the UI mock data. NOT real business data.
+-- Prices are in agorot (1/100 shekel). Safe to re-run: every insert is OR IGNORE.
+
+-- Categories
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('salads', 'סלטים ומטבלים', 0);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('mains', 'עיקריות', 1);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('fish', 'דגים', 2);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('sides', 'תוספות ולחמים', 3);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('desserts', 'קינוחים', 4);
+INSERT OR IGNORE INTO dish_categories (id, name, sort_order) VALUES ('drinks', 'שתייה', 5);
+
+-- Allergens
+INSERT OR IGNORE INTO allergens (id, name) VALUES (1, 'שומשום');
+INSERT OR IGNORE INTO allergens (id, name) VALUES (2, 'חלב');
+INSERT OR IGNORE INTO allergens (id, name) VALUES (3, 'אגוזים');
+INSERT OR IGNORE INTO allergens (id, name) VALUES (4, 'גלוטן');
+INSERT OR IGNORE INTO allergens (id, name) VALUES (5, 'ביצים');
+INSERT OR IGNORE INTO allergens (id, name) VALUES (6, 'דגים');
+
+-- Dishes (unit_label = Hebrew label shown next to the price)
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d1', 'salads', 'חומוס ביתי', 'חומוס חם עם טחינה גולמית, שמן זית ופפריקה.', 'per_tray', 8500, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d2', 'salads', 'סלט חצילים קלויים', 'חצילים שרופים על האש עם טחינה, לימון ופטרוזיליה.', 'per_tray', 9000, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d3', 'salads', 'סלט סלק וגבינת עיזים', 'סלק אפוי, גבינת עיזים, אגוזי מלך וויניגרט הדרים.', 'per_tray', 11000, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d4', 'salads', 'טבולה פטרוזיליה', 'פטרוזיליה קצוצה, בורגול, עגבניות ולימון.', 'per_tray', 8000, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d5', 'mains', 'עוף בתנור בעשבי תיבול', 'ירכי עוף אפויות עם שום, רוזמרין ולימון.', 'per_weight', 7400, 'ק״ג');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d6', 'mains', 'קציצות בקר ברוטב עגבניות', 'קציצות בקר רכות ברוטב עגבניות וכוסברה.', 'per_tray', 24000, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d7', 'mains', 'פשטידת ברוקולי וגבינות', 'פשטידה אפויה עם ברוקולי ושלוש גבינות.', 'per_tray', 19000, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d8', 'mains', 'תבשיל קדרה צמחי', 'ירקות עונה, חומוס ותבלינים בבישול איטי.', 'per_tray', 17000, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d9', 'fish', 'פילה סלמון בלימון', 'פילה סלמון אפוי עם לימון, שמיר ושמן זית.', 'per_item', 9800, 'יחידה');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d10', 'fish', 'דג מושט בצ׳רמולה', 'דג מושט שלם בתנור עם צ׳רמולה ביתית.', 'per_weight', 14500, 'ק״ג');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d11', 'sides', 'אורז בסמטי ושקדים', 'אורז בסמטי עם שקדים קלויים ובצל מקורמל.', 'per_tray', 12000, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d12', 'sides', 'ירקות שורש קלויים', 'גזר, בטטה וסלק קלויים עם דבש או סילאן.', 'per_tray', 10500, 'מגש');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d13', 'sides', 'פוקאצ׳ה ביתית', 'פוקאצ׳ה אפויה עם רוזמרין ומלח גס.', 'per_item', 1800, 'יחידה');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d14', 'desserts', 'עוגת שוקולד ללא קמח', 'עוגת שוקולד מריר לחה, 12 פרוסות.', 'per_item', 16000, 'יחידה');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d15', 'desserts', 'פלטת פירות העונה', 'פירות טריים חתוכים, לכ-10 סועדים.', 'per_item', 14000, 'יחידה');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d16', 'desserts', 'מיני טארטלטים', 'טארטלטים עם קרם וניל ופירות יער.', 'per_item', 900, 'יחידה');
+INSERT OR IGNORE INTO dishes (id, category_id, name, description, pricing_unit, unit_price, unit_label) VALUES ('d17', 'drinks', 'שתייה קלה ומים', 'מבחר שתייה קלה ומים מינרליים לכל אורח.', 'per_guest', 1400, 'לאורח');
+
+-- Dietary info (NULL = unknown)
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d1', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d2', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d3', 'dairy', 1, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d4', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d5', 'meat', 0, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d6', 'meat', 0, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d7', 'dairy', 1, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d8', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d9', 'pareve', 0, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d10', 'pareve', 0, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d11', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d12', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d13', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d14', 'pareve', 1, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d15', 'pareve', 1, 1);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d16', 'dairy', 1, 0);
+INSERT OR IGNORE INTO dish_dietary (dish_id, kashrut_class, is_vegetarian, is_vegan) VALUES ('d17', 'pareve', 1, 1);
+
+-- Allergens per dish. No rows at all = unknown (dish d8). Listed = contains, the rest = verified free.
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d1', 1, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d1', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d1', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d1', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d1', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d1', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d2', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d2', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d2', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d2', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d2', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d2', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d3', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d3', 2, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d3', 3, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d3', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d3', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d3', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d4', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d4', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d4', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d4', 4, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d4', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d4', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d5', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d5', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d5', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d5', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d5', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d5', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d6', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d6', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d6', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d6', 4, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d6', 5, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d6', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d7', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d7', 2, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d7', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d7', 4, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d7', 5, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d7', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d9', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d9', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d9', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d9', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d9', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d9', 6, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d10', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d10', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d10', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d10', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d10', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d10', 6, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d11', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d11', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d11', 3, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d11', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d11', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d11', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d12', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d12', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d12', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d12', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d12', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d12', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d13', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d13', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d13', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d13', 4, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d13', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d13', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d14', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d14', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d14', 3, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d14', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d14', 5, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d14', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d15', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d15', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d15', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d15', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d15', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d15', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d16', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d16', 2, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d16', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d16', 4, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d16', 5, 'contains');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d16', 6, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d17', 1, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d17', 2, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d17', 3, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d17', 4, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d17', 5, 'free');
+INSERT OR IGNORE INTO dish_allergens (dish_id, allergen_id, status) VALUES ('d17', 6, 'free');
+
+-- PLACEHOLDER delivery zones (OPEN #19). Fee in agorot; definition shape is undecided.
+INSERT OR IGNORE INTO delivery_zones (id, name, fee, definition) VALUES ('zone1', 'תל אביב-יפו', 6000, '{"city":"תל אביב-יפו"}');
+INSERT OR IGNORE INTO delivery_zones (id, name, fee, definition) VALUES ('zone2', 'רמת גן', 6000, '{"city":"רמת גן"}');
+INSERT OR IGNORE INTO delivery_zones (id, name, fee, definition) VALUES ('zone3', 'גבעתיים', 6000, '{"city":"גבעתיים"}');
+INSERT OR IGNORE INTO delivery_zones (id, name, fee, definition) VALUES ('zone4', 'הרצליה', 9000, '{"city":"הרצליה"}');
+INSERT OR IGNORE INTO delivery_zones (id, name, fee, definition) VALUES ('zone5', 'פתח תקווה', 10000, '{"city":"פתח תקווה"}');
+INSERT OR IGNORE INTO delivery_zones (id, name, fee, definition) VALUES ('zone6', 'ראשון לציון', 11000, '{"city":"ראשון לציון"}');
+
+-- PLACEHOLDER time slots (OPEN #5), any weekday. Fixed ids keep re-runs idempotent.
+INSERT OR IGNORE INTO time_slots (id, fulfillment_type, start_time, end_time) VALUES ('slot1', 'pickup', '10:00', '12:00');
+INSERT OR IGNORE INTO time_slots (id, fulfillment_type, start_time, end_time) VALUES ('slot2', 'pickup', '12:00', '14:00');
+INSERT OR IGNORE INTO time_slots (id, fulfillment_type, start_time, end_time) VALUES ('slot3', 'pickup', '15:00', '17:00');
+INSERT OR IGNORE INTO time_slots (id, fulfillment_type, start_time, end_time) VALUES ('slot4', 'delivery', '09:00', '11:00');
+INSERT OR IGNORE INTO time_slots (id, fulfillment_type, start_time, end_time) VALUES ('slot5', 'delivery', '11:00', '13:00');
+INSERT OR IGNORE INTO time_slots (id, fulfillment_type, start_time, end_time) VALUES ('slot6', 'delivery', '14:00', '16:00');
