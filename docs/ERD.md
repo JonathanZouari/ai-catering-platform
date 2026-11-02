@@ -1,0 +1,170 @@
+# Entity-Relationship Diagram
+
+Status: matches migrations `0001`–`0005` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+
+Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
+
+## Implemented
+
+```mermaid
+erDiagram
+    dish_categories ||--o{ dishes : "groups"
+    dishes ||--o| dish_dietary : "has (0..1)"
+    dishes ||--o{ dish_allergens : "declares"
+    allergens ||--o{ dish_allergens : "appears in"
+    customers ||--o{ events : "plans"
+    customers ||--o{ orders : "places"
+    events ||--|| orders : "is ordered by"
+    orders ||--o{ order_items : "contains"
+    dishes ||--o{ order_items : "is ordered as"
+
+    dish_categories {
+        uuid id PK
+        text name UK
+        int sort_order
+        bool is_active
+    }
+    dishes {
+        uuid id PK
+        uuid category_id FK
+        text name
+        text description "null"
+        text image_path "null, Storage path"
+        pricing_unit pricing_unit "per_guest|per_tray|per_weight|per_item"
+        numeric unit_price ">= 0"
+        text unit_label "null"
+        char3 currency "ILS (OPEN 17)"
+        numeric min_quantity "null, > 0"
+        bool is_available
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    dish_dietary {
+        uuid dish_id PK, FK "cascade"
+        kashrut_class kashrut_class "null = unknown"
+        bool is_vegetarian "null = unknown"
+        bool is_vegan "null = unknown"
+        timestamptz verified_at "null"
+    }
+    allergens {
+        smallint id PK
+        text name UK
+    }
+    dish_allergens {
+        uuid dish_id PK, FK "cascade"
+        smallint allergen_id PK, FK
+        allergen_status status "contains|free; missing row = unknown"
+    }
+    time_slots {
+        uuid id PK
+        fulfillment_type fulfillment_type "pickup|delivery"
+        smallint weekday "0=Sun..6=Sat, null = every day"
+        time start_time
+        time end_time "> start_time"
+        int capacity "null, not enforced (OPEN 5)"
+        bool is_active
+    }
+    blocked_dates {
+        uuid id PK
+        date date UK
+        text reason "null, owner-only"
+    }
+    customers {
+        uuid id PK
+        uuid auth_user_id UK, FK "auth.users, null for non-account rows"
+        text full_name
+        text email "null, verified login email"
+        text phone "null"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    events {
+        uuid id PK
+        uuid customer_id FK
+        text event_type
+        date event_date
+        int adults ">= 0"
+        int children ">= 0, adults + children > 0"
+        int vegetarian_guests "subset: <= adults + children"
+        int vegan_guests "subset: <= adults + children"
+        int restricted_guests "subset: <= adults + children"
+        text dietary_notes "null, free text, never parsed"
+    }
+    orders {
+        uuid id PK
+        uuid customer_id FK
+        uuid event_id FK, UK
+        order_status status "draft|pending_approval|approved|rejected"
+        int version "optimistic lock, +1 per mutation"
+        fulfillment_type fulfillment_type
+        timestamptz requested_at
+        text delivery_address "required when delivery"
+        numeric subtotal "null until submission"
+        numeric delivery_fee "null"
+        numeric total "null until submission"
+        timestamptz submitted_at "null"
+        timestamptz decided_at "null"
+        text decision_note "null, shown to customer"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    order_items {
+        uuid id PK
+        uuid order_id FK "cascade"
+        uuid dish_id FK "dish delete blocked while referenced"
+        numeric quantity "> 0, UK(order_id, dish_id)"
+        text snapshot_name "frozen at submission"
+        pricing_unit snapshot_pricing_unit
+        numeric snapshot_unit_price
+        numeric snapshot_line_total
+    }
+```
+
+### Rules the diagram can't show
+- **Unknown is not "no".** A `null` dietary field or a missing `dish_allergens` row means *unknown*. It is shown as unknown and never treated as safe.
+- **Price snapshot.** While an order is `draft`, prices are read live from `dishes`. From `pending_approval` on, the `snapshot_*` columns are authoritative.
+- **Status transitions** (enforced in services, with atomic conditional updates): `draft → pending_approval` (customer), then `pending_approval → approved | rejected` (owner). Anything else returns `409 invalid_transition`.
+- **Ownership.** Customer access is always resolved from the verified token's `sub` → `customers.auth_user_id` (ADR 0005), never by email.
+- **Guest groups are subsets** (OPEN_DECISIONS #4, decided 2026-11-02). Vegetarian, vegan and restricted guests are counted within adults + children. Whether vegan guests also count as vegetarian is still open.
+
+## Planned (not migrated yet)
+
+```mermaid
+erDiagram
+    delivery_zones ||--o{ orders : "priced by (OPEN 19)"
+    orders ||--o{ ai_conversations : "discussed in (Phase 4)"
+    ai_conversations ||--o{ ai_messages : "has"
+    orders ||--o{ ai_change_proposals : "changed by"
+    ai_conversations ||--o{ ai_change_proposals : "suggests"
+
+    delivery_zones {
+        uuid id PK
+        text name
+        numeric fee ">= 0"
+        jsonb definition "shape depends on OPEN 19"
+        bool is_active
+    }
+    ai_conversations {
+        uuid id PK
+        uuid order_id FK
+        timestamptz created_at
+    }
+    ai_messages {
+        uuid id PK
+        uuid conversation_id FK
+        text role "user|assistant|tool"
+        jsonb content
+        timestamptz created_at
+    }
+    ai_change_proposals {
+        uuid id PK
+        uuid order_id FK
+        uuid conversation_id FK "null"
+        int base_order_version "must equal orders.version to execute"
+        jsonb changes
+        numeric price_before
+        numeric price_after
+        proposal_status status "pending|approved|rejected|expired|failed"
+        timestamptz executed_at "set once, idempotency"
+    }
+```

@@ -1,9 +1,7 @@
 // Customer account (ADR 0005): passwordless sign-in with a 6-digit email code via Supabase Auth,
 // profile completion, and the customer's own orders. Server data goes in via textContent only.
-import { api } from "/js/api.js";
+import { call as authedCall, session, supabase } from "/js/customer-session.js";
 
-// Pinned: supabase-js runs in our origin with the customer's session, so never float the version.
-const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm";
 const STATUS = { draft: "טיוטה", pending_approval: "ממתינה לאישור", approved: "אושרה", rejected: "נדחתה" };
 const RESEND_SECONDS = 60;
 
@@ -39,9 +37,8 @@ function authMessage(error) {
 }
 
 async function call(path, options = {}) {
-  const { data } = await sb.auth.getSession(); // refreshed by supabase-js when needed
   try {
-    return await api(path, { ...options, headers: { Authorization: `Bearer ${data.session?.access_token}` } });
+    return await authedCall(path, options);
   } catch (err) {
     if (err.status === 401) await signOut();
     throw err;
@@ -106,7 +103,12 @@ async function showAccount() {
   $("no-orders").hidden = orders.length > 0;
   $("order-rows").replaceChildren(...orders.map((o) => {
     const tr = document.createElement("tr");
-    const event = Object.assign(document.createElement("th"), { scope: "row", textContent: o.event_type });
+    const event = document.createElement("th");
+    event.scope = "row";
+    // Drafts open in the event planner; submitted orders are read-only for now.
+    event.append(o.status === "draft"
+      ? Object.assign(document.createElement("a"), { href: `/customer/event/?order=${encodeURIComponent(o.id)}`, textContent: o.event_type })
+      : o.event_type);
     const meta = `${day(o.event_date)} · ${o.guests} אורחים`;
     for (const line of [meta, o.decision_note].filter(Boolean)) {
       event.append(Object.assign(document.createElement("span"), { className: "help", textContent: line }));
@@ -200,26 +202,15 @@ function wire() {
 }
 
 export async function initAccount() {
-  let config;
   try {
-    config = await api("/api/auth/config");
+    sb = await supabase();
   } catch {
     $("unavailable").hidden = false;
     for (const id of STEPS) $(id).hidden = true;
     return;
   }
-  try {
-    const { createClient } = await import(SUPABASE_JS);
-    sb = createClient(config.supabase_url, config.supabase_anon_key, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
-    });
-  } catch {
-    $("unavailable").hidden = false;
-    return;
-  }
   wire();
-  const { data } = await sb.auth.getSession();
-  if (data.session) {
+  if (await session()) {
     loadMe().catch((err) => { if (err.status !== 401) toast("משהו השתבש, נסו שוב"); });
   } else {
     showEmail();

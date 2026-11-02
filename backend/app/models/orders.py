@@ -44,6 +44,12 @@ class Event(Base):
             name="events_counts_non_negative",
         ),
         CheckConstraint("adults + children > 0", name="events_has_guests"),
+        # Dietary groups are subsets of adults + children (OPEN_DECISIONS #4, decided 2026-11-02).
+        CheckConstraint(
+            "vegetarian_guests <= adults + children and vegan_guests <= adults + children"
+            " and restricted_guests <= adults + children",
+            name="events_dietary_subsets",
+        ),
     )
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"))
@@ -51,7 +57,6 @@ class Event(Base):
     event_date: Mapped[date] = mapped_column(Date)
     adults: Mapped[int] = mapped_column(Integer)
     children: Mapped[int] = mapped_column(Integer, default=0)
-    # Subset vs. separate counting is OPEN_DECISIONS #4; stored as entered.
     vegetarian_guests: Mapped[int] = mapped_column(Integer, default=0)
     vegan_guests: Mapped[int] = mapped_column(Integer, default=0)
     restricted_guests: Mapped[int] = mapped_column(Integer, default=0)

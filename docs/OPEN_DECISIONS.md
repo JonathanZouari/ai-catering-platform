@@ -8,7 +8,7 @@ Format: **Question** · *Why it matters* · **Blocks**
 |---|---|---|---|---|
 | 2 | Payment & deposit | Is any deposit or payment collected in-app? | Payments are out of scope unless approved | Nothing in MVP unless approved |
 | 3 | Serving & quantity formulas | Per category/dish, how much per adult / child? Rounding (e.g., whole trays)? Different for vegetarian/vegan guests? | Quantity recommendation must use business rules, not AI guesses | Phase 3 quantity engine (schema can hold rules; values unknown) |
-| 4 | Overlapping guest dietary categories | Are vegetarian/vegan/restricted guests counted *within* adults/children (subsets) or separately? Is vegan a subset of vegetarian? | Prevents double-counting | Phase 3 guest composition validation |
+| 4 | Overlapping guest dietary categories | ~~Subsets or separate?~~ **Decided 2026-11-02: subsets of adults + children.** Still open: is vegan a subset of vegetarian (i.e. vegan ≤ vegetarian)? | Prevents double-counting | Phase 3 quantity engine (how vegan and vegetarian portions combine) |
 | 5 | Availability & capacity | Max orders/guests per day or per slot? Lead time? Same-day orders? | Defines date/slot validation | Phase 2 availability rules, Phase 3 date picker |
 | 6 | Quote modification & negotiation | Can the owner edit or counter-propose a quote, or only approve/reject? | Adds states and UI | Out of MVP until decided |
 | 7 | Cancellation & revision | Can a customer cancel or edit after submission or approval? Deadlines? | Adds states and rules | Out of MVP until decided |
@@ -32,4 +32,5 @@ When a decision is made, record it here and move the row out of the table above.
 
 | Date | # | Decision | Decided by |
 |---|---|---|---|
+| 2026-11-02 | 4 | Vegetarian, vegan and restricted guests are counted **within** adults + children (each ≤ the total), enforced in the service and by a DB check (migration 0005). Vegan-within-vegetarian remains open. | Business owner |
 | 2026-11-02 | 1 | Customers must create an account. Passwordless email login only: a 6-digit code sent by email (no password, no guest checkout, no phone OTP for now). Implemented with Supabase Auth (ADR 0005). | Business owner |

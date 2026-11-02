@@ -1,11 +1,11 @@
 import uuid
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
-from app.schemas.orders import OrderStatus
+from app.schemas.orders import OrderStatus, UtcDatetime
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=120)]
 # Lenient on format (local or +972...), strict on characters: digits, +, -, spaces, parentheses.
@@ -38,7 +38,7 @@ class MyOrderOut(BaseModel):
     event_date: date
     guests: int
     total: Decimal | None
-    submitted_at: datetime | None
+    submitted_at: UtcDatetime | None
     decision_note: str | None
 
 
