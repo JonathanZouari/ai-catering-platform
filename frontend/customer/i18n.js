@@ -163,3 +163,38 @@ export const S = {
     asTooLarge: "That message is too long. Please shorten it and try again.",
   },
 };
+
+// F1 stage features. Racing terms stay in English in every language.
+Object.assign(S.he, {
+  sub1: "פרטי האירוע", sub2: "התפריט", sub3: "סיכום ההזמנה",
+  stageSub: { pending_approval: "ממתינה לאישור", approved: "אושרה", in_kitchen: "ההזמנה במטבח", out_for_delivery: "בדרך אליך", ready_for_pickup: "מוכנה לאיסוף", delivered: "נמסר" },
+  stageHeading: "שלבי ההזמנה", sectors: "מקטעים", s1: "מטבח", s2: "בדרך", s2p: "איסוף", s3: "הגעה", sCurrent: "נוכחי",
+  safetyLine: "עומס במטבח — אנחנו מקפידים על כל מנה, והמסירה עשויה להתעכב מעט.",
+  rateTitle: "הדרג את היום", rateHelp: "איך היה? דרגו מ-1 עד 5 כוכבים.", starLabel: "{n} מתוך 5 כוכבים", rateGroup: "דירוג בכוכבים",
+  rateComment: "הערה (לא חובה)", rateSend: "שליחת דירוג", rateSending: "שולח...", thanks: "תודה על הדירוג!", yourRating: "הדירוג שלכם",
+  closing: "נתראה בגרנד פרי הבא!",
+  redLine: "תקלת מנוע בפיט-ליין. המכונאים כבר שורפים גומי כדי להחזיר את המערכות.", retry: "ניסיון חוזר",
+  radioSub: "ערוץ רדיו פתוח למהנדס המרוץ", lights: "טוענים",
+});
+Object.assign(S.ar, {
+  sub1: "تفاصيل المناسبة", sub2: "القائمة", sub3: "ملخص الطلب",
+  stageSub: { pending_approval: "بانتظار الموافقة", approved: "تمت الموافقة", in_kitchen: "طلبك في المطبخ", out_for_delivery: "في الطريق إليك", ready_for_pickup: "جاهز للاستلام", delivered: "تم التسليم" },
+  stageHeading: "مراحل الطلب", sectors: "القطاعات", s1: "المطبخ", s2: "في الطريق", s2p: "الاستلام", s3: "الوصول", sCurrent: "الحالي",
+  safetyLine: "ضغط في المطبخ — نحرص على كل طبق، وقد يتأخر التسليم قليلًا.",
+  rateTitle: "قيّم اليوم", rateHelp: "كيف كان؟ قيّم من 1 إلى 5 نجوم.", starLabel: "{n} من 5 نجوم", rateGroup: "التقييم بالنجوم",
+  rateComment: "ملاحظة (اختياري)", rateSend: "إرسال التقييم", rateSending: "جارٍ الإرسال...", thanks: "شكرًا على تقييمك!", yourRating: "تقييمك",
+  closing: "نراكم في الجائزة الكبرى القادمة!",
+  redLine: "عطل في المحرك داخل الـ Pit Lane. الميكانيكيون يعملون بسرعة لإعادة تشغيل الأنظمة.", retry: "إعادة المحاولة",
+  radioSub: "قناة اللاسلكي مفتوحة مع مهندس السباق", lights: "جارٍ التحميل",
+});
+Object.assign(S.en, {
+  sub1: "Event details", sub2: "Menu", sub3: "Order summary",
+  stageSub: { pending_approval: "Awaiting approval", approved: "Approved", in_kitchen: "Your order is in the kitchen", out_for_delivery: "On its way to you", ready_for_pickup: "Ready for pickup", delivered: "Delivered" },
+  stageHeading: "Order stages", sectors: "Sectors", s1: "Kitchen", s2: "On track", s2p: "Pickup", s3: "Arrival", sCurrent: "Current",
+  safetyLine: "The kitchen is busy. We are taking care over every dish, so delivery may run a little late.",
+  rateTitle: "Rate the day", rateHelp: "How was it? Rate from 1 to 5 stars.", starLabel: "{n} of 5 stars", rateGroup: "Star rating",
+  rateComment: "Comment (optional)", rateSend: "Send rating", rateSending: "Sending...", thanks: "Thanks for your rating!", yourRating: "Your rating",
+  closing: "Until the next Grand Prix!",
+  redLine: "Engine trouble in the pit lane. The mechanics are burning rubber to get the systems back.", retry: "Try again",
+  radioSub: "Radio channel open to your race engineer", lights: "Loading",
+});
