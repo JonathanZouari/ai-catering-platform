@@ -1,5 +1,9 @@
 # CaterKing database: ERD
 
+![CaterKing database at a glance: five groups of tables and how they connect](caterking-db-illustration.png)
+
+*Overview illustration (source: `caterking-db-illustration.svg`). The detailed diagram with every column follows below.*
+
 18 tables in five groups. The diagram is generated from the SQLAlchemy models by `scripts/erd.py`, so it always matches the code. Every column in it has a short description (from `scripts/erd_columns.py`); key columns must be described, and technical columns (timestamps, cached coordinates…) are left out to keep it readable. Full columns are in [DATABASE_SCHEMA.md](../DATABASE_SCHEMA.md).
 
 | Group | Tables |
