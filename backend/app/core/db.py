@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
 from app.core.errors import AppError
-from app.models import catalog as _catalog  # noqa: F401  registers tables on Base
+from app.models import availability as _availability  # noqa: F401  registers tables on Base
+from app.models import catalog as _catalog  # noqa: F401
 from app.models.base import Base
 
 _init_lock = threading.Lock()
