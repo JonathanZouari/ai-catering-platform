@@ -348,9 +348,7 @@ async function showWall(tabs) {
   const list = await api("/api/admin/orders");
   const today = todayStr();
   const near = (o) => Math.abs((new Date(o.event_date) - new Date(today)) / 864e5) <= 1;
-  // The list has no version or time, so open the active orders (and recent deliveries) for the details.
-  const wanted = list.filter((o) => ACTIVE.includes(o.status) || (o.status === "delivered" && near(o)));
-  const full = await Promise.all(wanted.map((o) => api(`/api/admin/orders/${o.id}`)));
+  const full = list.filter((o) => ACTIVE.includes(o.status) || (o.status === "delivered" && near(o)));
   const active = full.filter((o) => ACTIVE.includes(o.status)).sort((a, b) => parseTs(a.requested_at) - parseTs(b.requested_at));
   const doneToday = full.filter((o) => o.status === "delivered" && localDay(o.delivered_at) === today).length;
   const count = (...st) => active.filter((o) => st.includes(o.status)).length;
@@ -369,22 +367,22 @@ async function showWall(tabs) {
       h("li", { class: "row th", "aria-hidden": "true" }, ...["POS", "לקוח / תאריך", "אורחים", "סך הזמנה", "שלב", ""].map((t) => h("span", { class: "label" }, t))),
       ...active.map((o, i) => h("li", { class: `row tone-${STAGES[o.status].tone}` },
         h("span", { class: "pos" }, `P${i + 1}`),
-        h("span", { class: "who" }, h("button", { type: "button", class: "link", onclick: () => goOrder(o.id) }, firstName(o.customer.full_name)),
-          h("small", {}, `${fmtDate(o.event.event_date)} · ${fmtTime(o.requested_at)}`)),
-        h("span", { class: "guests" }, `${o.event.adults + o.event.children} אורחים`),
+        h("span", { class: "who" }, h("button", { type: "button", class: "link", onclick: () => goOrder(o.id) }, firstName(o.customer_name)),
+          h("small", {}, `${fmtDate(o.event_date)} · ${fmtTime(o.requested_at)}`)),
+        h("span", { class: "guests" }, `${o.guests} אורחים`),
         h("span", { class: "total num" }, shekel(o.total)),
         stageChip(o.status),
         canAdvance(o) ? advanceButton(o, refresh)
           : h("button", { type: "button", class: "ghost", onclick: () => goOrder(o.id) }, o.status === "pending_approval" ? "לאישור" : "פתיחה"))))
       : h("p", { class: "hint" }, "אין הזמנות פעילות."));
-  const todays = full.filter((o) => o.event.event_date === today)
+  const todays = full.filter((o) => o.event_date === today)
     .sort((a, b) => parseTs(a.requested_at) - parseTs(b.requested_at));
   const race = h("section", { class: "panel race" },
     h("div", { class: "head" }, h("h2", {}, "RACE CONTROL"), h("p", { class: "hint" }, "האירועים של היום לפי שעה")),
     todays.length ? h("ol", { class: "timeline" }, ...todays.map((o) => h("li", { class: `tone-${STAGES[o.status].tone}` },
       h("time", { class: "num" }, fmtTime(o.requested_at)),
       h("div", {}, h("span", { class: `chip chip-${STAGES[o.status].tone}` }, STAGES[o.status].en),
-        h("strong", {}, firstName(o.customer.full_name)), h("small", {}, `${o.event.adults + o.event.children} אורחים`))))) 
+        h("strong", {}, firstName(o.customer_name)), h("small", {}, `${o.guests} אורחים`))))) 
       : h("p", { class: "hint" }, "אין אירועים להיום."));
   app.replaceChildren(tabs, tiles, h("div", { class: "wall" }, tower, race));
 }

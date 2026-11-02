@@ -408,7 +408,9 @@ def list_orders(db: Session, status: OrderStatus | None) -> list[OrderSummary]:
             id=o.id, status=o.status, customer_name=o.customer.full_name,
             event_type=o.event.event_type, event_date=o.event.event_date,
             guests=o.event.adults + o.event.children, total=o.total, currency=o.currency,
-            submitted_at=o.submitted_at, created_at=o.created_at,
+            submitted_at=o.submitted_at, created_at=o.created_at, version=o.version,
+            fulfillment_type=o.fulfillment_type, requested_at=o.requested_at,
+            delivered_at=o.delivered_at,
         )
         for o in repo.list_orders(db, status)
     ]  # fmt: skip
