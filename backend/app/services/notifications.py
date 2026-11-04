@@ -115,6 +115,8 @@ def proposal_answered(db: Session, proposal_id: uuid.UUID) -> Email | None:
     order = db.get(Order, proposal.order_id) if proposal else None
     if order is None or proposal.status not in ("accepted", "declined") or not settings.owner_email:
         return None
+    if proposal.proposed_by != "owner":  # the customer and the assistant, nothing for the owner
+        return None
     e, c = order.event, order.customer
     accepted = proposal.status == "accepted"
     headline = "הלקוח אישר את הצעת השינוי" if accepted else "הלקוח דחה את הצעת השינוי"

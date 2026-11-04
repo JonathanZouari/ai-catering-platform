@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
 from app.core.errors import AppError
-from app.models import availability as _availability  # noqa: F401  registers tables on Base
+from app.models import assistant as _assistant  # noqa: F401  registers tables on Base
+from app.models import availability as _availability  # noqa: F401
 from app.models import catalog as _catalog  # noqa: F401
 from app.models import delivery as _delivery  # noqa: F401
 from app.models import orders as _orders  # noqa: F401

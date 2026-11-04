@@ -5,11 +5,14 @@ import uuid
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
+from app.agents import assistant
 from app.core import mailer
 from app.core.customer_auth import CustomerIdentity, require_customer
 from app.core.db import get_db
+from app.schemas import assistant as cs
 from app.schemas import customer_orders as s
 from app.schemas import proposals as ps
+from app.services import assistant as chat
 from app.services import customer_orders as svc
 from app.services import notifications, proposals
 
@@ -144,3 +147,26 @@ def decline_proposal(
     if email := notifications.proposal_answered(db, proposal_id):
         background.add_task(mailer.send, email)
     return proposal
+
+
+# AI assistant (Phase 4)
+
+
+@router.get("/{order_id}/chat", response_model=cs.ChatOut)
+def get_chat(
+    order_id: uuid.UUID,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    return chat.chat_view(db, who, order_id)
+
+
+@router.post("/{order_id}/chat", response_model=cs.ChatOut)
+def send_chat(
+    order_id: uuid.UUID,
+    data: cs.ChatIn,
+    who: CustomerIdentity = Depends(require_customer),
+    db: Session = Depends(get_db),
+):
+    assistant.reply(db, who, order_id, data.message)
+    return chat.chat_view(db, who, order_id)

@@ -174,10 +174,11 @@ legend { padding: 0; margin-block-end: 10px; }
 .ai-head h3 { font-size: 1.5rem; }
 .ai-close { width: 44px; height: 44px; border: 0; background: transparent; color: var(--fg); font-size: 1.1rem; cursor: pointer; }
 .ai-log { display: grid; gap: 10px; align-content: start; overflow-y: auto; min-height: 0; }
-.msg { padding: 10px 14px; border-radius: var(--radius-sm); font-size: .95rem; max-width: 92%; }
-.msg.ai { background: var(--bg); justify-self: start; }
+.msg { margin: 0; padding: 10px 14px; border-radius: var(--radius-sm); font-size: .95rem; max-width: 92%; white-space: pre-line; overflow-wrap: anywhere; }
+.msg.bot { background: var(--bg); justify-self: start; }
 .msg.me { background: var(--fg); color: var(--bg); justify-self: end; }
 .ai-input { display: flex; gap: 8px; }
+.ai-input input { flex: 1; min-width: 0; }
 .ai-input .btn { padding-inline: 14px; }
 .ai-fine { font-size: .8rem; color: var(--muted); }
 .ai-fab { position: fixed; z-index: 15; inset-block-end: calc(84px + env(safe-area-inset-bottom, 0px)); inset-inline-start: max(16px, env(safe-area-inset-left, 0px)); box-shadow: 0 6px 20px rgb(0 0 0 / .18); }

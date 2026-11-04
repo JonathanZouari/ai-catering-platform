@@ -1,6 +1,6 @@
 # AI Agent Design
 
-Status: **Draft v0.1** — implementation in Phase 4. LLM provider **[OPEN #16]**.
+Status: **v1.0, implemented in Phase 4** (`backend/app/agents/`). LLM provider: Anthropic Claude, model `claude-sonnet-5-5` (OPEN #16 decided 2026-11-04).
 
 ## 1. Scope
 
@@ -12,22 +12,21 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 
 ### Read tools
 
+The menu is small, so one `get_menu` call replaces the planned category, dish-list and dish-detail tools, and pricing is part of `get_current_order`.
+
 | Tool | Args | Returns |
 |---|---|---|
-| `get_menu_categories` | — | Active categories |
-| `get_available_dishes` | `category_id?`, `vegetarian?`, `vegan?`, `kashrut?` | Dishes with price, unit, dietary fields (null = unknown) |
-| `get_dish_details` | `dish_id` | Full dish incl. allergen statuses |
-| `get_current_order` | — | Order, items, guest composition, `version` |
-| `get_order_pricing` | — | Backend-computed itemized pricing |
-| `get_quantity_recommendations` | — | Backend-computed recommendations (unavailable until rules confirmed) |
+| `get_menu` | — | Orderable dishes with category, price, unit, minimum, servings per unit, kashrut, vegetarian/vegan (null = unknown) and allergens (missing = unknown) |
+| `get_current_order` | — | Status, event and guest composition, fulfillment, backend-computed itemized pricing |
+| `get_quantity_recommendations` | — | Backend-computed recommendations (OPEN #3 rules) |
 
 ### Action tool
 
 | Tool | Args | Effect |
 |---|---|---|
-| `propose_order_change` | `changes: list[Change]`, `rationale: str` | Backend validates → computes diff and price impact → stores an `order_proposals` row with `proposed_by = assistant` (`pending`, the same mechanism as owner proposals, migration 0009) → returned to UI. **No order mutation.** |
+| `propose_order_change` | `changes: list[Change]`, `rationale: str` | Backend validates → computes diff and price impact at live catalog prices → stores an `order_proposals` row with `proposed_by = assistant` (`pending`, the same table as owner proposals, migration 0009) → shown as a card under the reply. A new proposal cancels the open one. **No order mutation.** |
 
-`Change` is a discriminated union: `add_item{dish_id, quantity}`, `remove_item{dish_id}`, `set_quantity{dish_id, quantity}`, `update_details{fields}` (whitelisted fields only).
+`Change` is `{op, dish_id, quantity}` with `op` in `add_item`, `set_quantity` (quantity required) or `remove_item` (quantity null). Event details are not changed by the assistant (the customer edits them in the event form); `update_details` was dropped.
 
 **Confirmation is not an AI tool.** `confirm_order_change` from the spec is implemented as the customer-only HTTP endpoint `POST /api/orders/{id}/proposals/{pid}/accept`, triggered by a UI button. The model cannot approve its own proposals. **[RECOMMENDATION — strengthens Decision 7]**
 
@@ -40,9 +39,18 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 5. Backend validates: dishes exist & available, quantities > 0 and within rules, fields whitelisted, order is `draft`.
 6. UI shows a diff card: current vs proposed, price difference, Approve / Reject.
 7. Customer clicks Approve or Reject.
-8. On approve, in **one transaction**: lock order row (`SELECT … FOR UPDATE`), check `proposal.status == pending` and `proposal.base_order_version == order.version`, apply changes, `order.version += 1`, set `executed_at`, `status = approved`.
+8. On approve, in **one transaction**: check `proposal.status == pending` and `proposal.base_order_version == order.version`, apply changes, then a conditional `UPDATE` bumps `order.version` only if it is still at the base version and the order is still a draft (the order stays `draft`), and the proposal moves to `accepted`. Otherwise the proposal expires (`409 proposal_expired`).
 9. Backend recalculates pricing.
 10. Frontend re-renders from the returned persisted order.
+
+### Loop (implemented)
+
+- Claude Messages API through the official `anthropic` SDK, manual tool loop, at most 8 model calls per customer message. Adaptive thinking, `effort: medium`, prompt caching (`cache_control`), and the server-side refusal fallback (`fallbacks: "default"`).
+- Tools are `strict` JSON schemas and are validated again with Pydantic before any service call. Errors (validation or `AppError`) go back to the model as `is_error` tool results.
+- History is stored per order in `ai_conversations` / `ai_messages` exactly as exchanged (thinking blocks included) and only appended. A turn's model messages are stored together when it finishes, so a failed call never leaves a tool call without its result.
+- `refusal`, `max_tokens` or the round limit end the turn with a fixed Hebrew fallback reply.
+- Budget: `business_settings.assistant_daily_limit` messages per customer in any 24 hours (default 30, 0 = off) → `429 assistant_limit`. No API key → `503 assistant_unavailable` and the panel stays hidden.
+- On accept, an assistant proposal writes the items, bumps `version` and keeps the order a draft (prices stay live). Submitting the order expires an open proposal.
 
 ## 4. Safety guarantees
 
@@ -67,7 +75,7 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 - Every change → `propose_order_change`; tell the customer to approve in the card.
 - Cannot approve, submit, or reject orders.
 - Unknown dietary/allergen data → say it is unknown.
-- Language: **[OPEN #12]**.
+- Language: Hebrew (OPEN #12 decided).
 
 ## 6. Tests (Phase 4, required by spec §11)
 

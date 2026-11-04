@@ -136,7 +136,7 @@ async function load() {
   const [pricing, proposals] = await Promise.all([
     call(`/api/orders/${order.id}/pricing`), call(`/api/orders/${order.id}/proposals`),
   ]);
-  const pending = proposals.find((p) => p.status === "pending");
+  const pending = proposals.find((p) => p.status === "pending" && p.proposed_by === "owner"); // assistant ones live in the chat
   $("proposal-area").replaceChildren(...(pending ? [proposalCard(pending)] : []));
   const e = order.event;
   $("title").textContent = `${e.event_type}, ${day(e.event_date)}`;

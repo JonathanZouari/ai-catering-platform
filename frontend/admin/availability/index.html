@@ -104,6 +104,11 @@
             <input id="child-portion" type="number" inputmode="decimal" min="0.05" max="1" step="0.05" required>
             <span class="help">0.75 = שלושת רבעי מנה. משמש להמלצת כמויות.</span>
           </div>
+          <div class="field">
+            <label for="assistant-limit">הודעות לעוזר ה-AI, ללקוח ביממה</label>
+            <input id="assistant-limit" type="number" inputmode="numeric" min="0" max="1000" step="1" required>
+            <span class="help">שומר על עלות העוזר. 0 = העוזר כבוי.</span>
+          </div>
         </div>
         <div class="actions"><button class="btn primary" type="submit">שמירת הכללים</button></div>
       </form>

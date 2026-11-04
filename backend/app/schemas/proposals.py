@@ -2,7 +2,7 @@ import uuid
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 from app.schemas.orders import UtcDatetime
 
@@ -24,6 +24,20 @@ class ProposalCreate(_In):
 
     items: list[ProposedItem] = Field(min_length=1, max_length=100)
     note: Note | None = None
+
+
+class ChangeIn(_In):
+    """One change the assistant proposes on a draft."""
+
+    op: Literal["add_item", "set_quantity", "remove_item"]
+    dish_id: uuid.UUID
+    quantity: Quantity | None = None
+
+    @model_validator(mode="after")
+    def _quantity_fits_op(self):
+        if (self.op == "remove_item") != (self.quantity is None):
+            raise ValueError("add_item and set_quantity need a quantity; remove_item takes none")
+        return self
 
 
 class DeclineIn(_In):

@@ -265,6 +265,15 @@ def _as_draft_in(order: Order) -> s.DraftIn:
     )
 
 
+def _expire_proposals(db: Session, order_id: uuid.UUID) -> None:
+    """The order changes stage: an open proposal no longer applies (same transaction)."""
+    db.execute(
+        update(OrderProposal)
+        .where(OrderProposal.order_id == order_id, OrderProposal.status == "pending")
+        .values(status="expired", decided_at=datetime.now(UTC))
+    )
+
+
 def submit(
     db: Session, who: CustomerIdentity, order_id: uuid.UUID, version: int
 ) -> s.CustomerOrderOut:
@@ -299,6 +308,7 @@ def submit(
     order.delivery_fee = priced.delivery_fee  # frozen with the prices
     order.total = priced.total
     order.submitted_at = datetime.now(UTC)
+    _expire_proposals(db, order_id)  # an assistant proposal was for the draft
     return _commit_bump(db, who, order_id, version, to_status="pending_approval")
 
 
@@ -317,11 +327,7 @@ def withdraw(
         item.snapshot_unit_price = item.snapshot_line_total = None
     order.subtotal = order.total = order.submitted_at = None
     order.delivery_fee = order.delivery_zone_id = None  # live from the zone again
-    db.execute(  # an open owner proposal was made for the submitted order: it no longer applies
-        update(OrderProposal)
-        .where(OrderProposal.order_id == order_id, OrderProposal.status == "pending")
-        .values(status="expired", decided_at=datetime.now(UTC))
-    )
+    _expire_proposals(db, order_id)  # an owner proposal was for the submitted order
     return _commit_bump(
         db, who, order_id, version, from_status="pending_approval", to_status="draft"
     )

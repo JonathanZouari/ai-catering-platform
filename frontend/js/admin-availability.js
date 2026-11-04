@@ -34,6 +34,7 @@ async function load() {
   renderZones(zones);
   $("lead-days").value = settings.lead_days;
   $("child-portion").value = Number(settings.child_portion);
+  $("assistant-limit").value = settings.assistant_daily_limit;
 }
 
 function renderBlocked(blocked) {
@@ -153,11 +154,17 @@ export function initAvailability() {
     e.preventDefault();
     const lead = $("lead-days");
     const child = $("child-portion");
-    const bad = [lead, child].filter((i) => !i.checkValidity() || i.value === "");
-    for (const i of [lead, child]) i.setAttribute("aria-invalid", String(bad.includes(i)));
+    const limit = $("assistant-limit");
+    const fields = [lead, child, limit];
+    const bad = fields.filter((i) => !i.checkValidity() || i.value === "");
+    for (const i of fields) i.setAttribute("aria-invalid", String(bad.includes(i)));
     if (bad.length) { bad[0].reportValidity(); return; }
     mutate(() => call("/api/admin/settings", {
-      method: "PUT", body: JSON.stringify({ lead_days: Number(lead.value), child_portion: Number(child.value).toFixed(2) }),
+      method: "PUT",
+      body: JSON.stringify({
+        lead_days: Number(lead.value), child_portion: Number(child.value).toFixed(2),
+        assistant_daily_limit: Number(limit.value),
+      }),
     }), "הכללים נשמרו");
   });
 

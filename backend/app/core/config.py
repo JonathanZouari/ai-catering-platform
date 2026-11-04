@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     smtp_from: str | None = None
     owner_email: str | None = None  # where "new order awaiting approval" goes
     public_base_url: str = "http://127.0.0.1:8000"  # for links inside emails
+    # AI ordering assistant (OPEN_DECISIONS #16: Anthropic Claude). No key = chat answers 503.
+    anthropic_api_key: str | None = None
+    anthropic_base_url: str | None = None  # local fake for E2E only; unset in real envs
+    assistant_model: str = "claude-sonnet-5-5"
 
 
 @lru_cache

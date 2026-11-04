@@ -101,26 +101,33 @@ A closed proposal returns `409 proposal_not_pending`. Withdrawing the order expi
 
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/api/orders/{id}/chat` | `{message}` → `{reply, proposals:[...]}` |
-| POST | `/api/orders/{id}/proposals/{pid}/accept` | Same endpoint as owner proposals (above); assistant proposals use `proposed_by = assistant` |
-| POST | `/api/orders/{id}/proposals/{pid}/reject` | No mutation |
+| GET | `/api/orders/{id}/chat` | Customer's own order → `{available, messages:[{role, text}], proposal, remaining_today}`. `proposal` is the assistant's open proposal or null |
+| POST | `/api/orders/{id}/chat` | `{message}` (1–2000 chars) → same shape after the assistant answers. Draft only (`409 invalid_transition`); `429 assistant_limit` with `{limit}`; `503 assistant_unavailable` without an API key; `502 assistant_failed` when the model call fails |
+| POST | `/api/orders/{id}/proposals/{pid}/accept` | Same endpoint as owner proposals (above). An assistant proposal applies the items and keeps the order a draft (version + 1) |
+| POST | `/api/orders/{id}/proposals/{pid}/decline` | No mutation |
 
-Proposal shape:
+`/api/admin/settings` now also takes and returns `assistant_daily_limit` (0–1000, required on PUT).
+
+Proposal shape (`ProposalOut`, shared with owner proposals):
 
 ```json
 {
   "id": "uuid",
+  "proposed_by": "assistant",
+  "status": "pending",
   "base_order_version": 7,
   "changes": [
-    {"op": "add_item", "dish_id": "uuid", "quantity": 2},
-    {"op": "set_quantity", "dish_id": "uuid", "quantity": 4},
-    {"op": "remove_item", "dish_id": "uuid"},
-    {"op": "update_details", "fields": {"requested_at": "..."}}
+    {"op": "add_item", "dish_id": "uuid", "name": "...", "from_quantity": null, "to_quantity": "2"},
+    {"op": "set_quantity", "dish_id": "uuid", "name": "...", "from_quantity": "3.00", "to_quantity": "4"},
+    {"op": "remove_item", "dish_id": "uuid", "name": "...", "from_quantity": "2.00", "to_quantity": null}
   ],
-  "diff": [{"label": "...", "current": "...", "proposed": "..."}],
+  "lines": [{"dish_id": "uuid", "name": "...", "pricing_unit": "per_tray", "quantity": "4", "unit_price": "120.00", "line_total": "480.00"}],
   "price_before": "1200.00",
   "price_after": "1350.00",
-  "status": "pending"
+  "note": "the assistant's rationale",
+  "customer_note": null,
+  "created_at": "...",
+  "decided_at": null
 }
 ```
 
