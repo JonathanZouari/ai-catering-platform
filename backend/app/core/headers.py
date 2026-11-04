@@ -13,7 +13,10 @@ def content_security_policy(supabase_url: str | None) -> str:
             "default-src 'none'",
             "script-src 'self'",
             "style-src 'self'",
+            "font-src 'self'",
             f"img-src 'self'{supabase}",
+            # The homepage video plays from our own file, held in memory as a blob: URL.
+            "media-src 'self' blob:",
             f"connect-src 'self'{supabase}",
             "base-uri 'none'",
             "form-action 'self'",

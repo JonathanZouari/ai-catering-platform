@@ -26,7 +26,7 @@ def other_shop(client, make_tenant):
 def deployed(monkeypatch):
     settings = get_settings()
     monkeypatch.setattr(settings, "app_env", "staging")
-    monkeypatch.setattr(settings, "database_url", settings.database_url or "postgresql://x/y")
+    monkeypatch.setattr(settings, "database_url", "sqlite:////data/test.db")
     monkeypatch.setattr(settings, "supabase_url", "https://project.supabase.co")
     monkeypatch.setattr(settings, "supabase_anon_key", "anon")
     monkeypatch.setattr(settings, "supabase_service_role_key", "service")
@@ -103,12 +103,13 @@ def test_a_duplicate_forwarded_header_does_not_change_the_address(shop, deployed
 # Security headers
 
 
-@pytest.mark.parametrize("path", ["/health", "/admin/", "/c/any/", "/api/allergens"])
+@pytest.mark.parametrize("path", ["/health", "/", "/admin/", "/c/any/", "/api/allergens"])
 def test_security_headers_are_on_every_response(client, path):
     headers = client.get(path).headers
     policy = headers["Content-Security-Policy"]
     assert "script-src 'self'" in policy
     assert "default-src 'none'" in policy
+    assert "font-src 'self'" in policy
     assert "unsafe" not in policy
     assert headers["Referrer-Policy"] == "no-referrer"
     assert headers["X-Content-Type-Options"] == "nosniff"
@@ -118,6 +119,25 @@ def test_security_headers_are_on_every_response(client, path):
 @pytest.mark.parametrize("path", ["/c/any/", "/js/customer/main.js", "/css/base.css"])
 def test_browsers_recheck_frontend_files(client, path):
     assert client.get(path).headers["Cache-Control"] == "no-cache"
+
+
+def test_policy_plays_video_only_from_our_own_files():
+    # The homepage video is our own file, played from an in-memory blob: URL. No other media.
+    policy = content_security_policy("https://project.supabase.co/")
+    assert "media-src 'self' blob:;" in policy
+    assert "media-src 'self' blob: " not in policy
+
+
+def test_homepage_is_the_customer_site(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert '<script type="module" src="/js/customer/main.js">' in response.text
+    assert response.text == client.get("/c/any/").text
+
+
+def test_hero_video_and_its_still_photo_are_served(client):
+    assert client.get("/media/hero.mp4").headers["content-type"] == "video/mp4"
+    assert client.get("/media/hero-poster.jpg").headers["content-type"] == "image/jpeg"
 
 
 def test_policy_allows_only_the_project_supabase():

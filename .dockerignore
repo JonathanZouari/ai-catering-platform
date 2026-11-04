@@ -6,3 +6,8 @@
 **/.pytest_cache
 **/.ruff_cache
 docs
+**/*.db
+**/*.db-shm
+**/*.db-wal
+backend/scripts/demo_photos
+stitch_catering_website_ux_design

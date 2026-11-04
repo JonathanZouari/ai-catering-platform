@@ -47,3 +47,7 @@ Where a working default is listed, engineering may build on it, but it stays ope
 | 2026-11-01 | 20 | The platform is named Yummai, with its logo on every page; domain still open | Product owner |
 | 2026-11-01 | — | Rate limits live in server memory for the pilot, so the app runs as one instance | Engineering default |
 | 2026-11-01 | — | Migrations are applied by hand, never automatically on deploy | Engineering default |
+| 2026-11-04 | — | The site belongs to one caterer, טעם של יחד, served at `/` (`SITE_CATERER`); multi-caterer code stays (ADR 0008) | Product owner |
+| 2026-11-04 | — | The Stitch designs are the primary design reference, replacing the earlier example-based design; the homepage keeps `hero.mp4` as agreed on the Stitch site | Product owner |
+| 2026-11-04 | — | Customers can browse the menu before entering event details; the first add asks for details, then adds the dish | Product owner |
+| 2026-11-04 | — | Admin features shown only in the mockups (kitchen statuses, manual orders, printing, revenue) are not built | Product owner |

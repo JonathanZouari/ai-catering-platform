@@ -31,7 +31,7 @@ def seeded_menu(base_url):
 
 
 def total(page: Page):
-    return page.locator(".total-bar strong")
+    return page.locator(".total-bar .total-sum strong")
 
 
 def ask(page: Page, text: str) -> None:
@@ -41,13 +41,14 @@ def ask(page: Page, text: str) -> None:
 
 def test_customer_opens_the_chat_from_the_menu(page: Page):
     page.goto("/c/taamim/")
+    page.get_by_role("button", name="לתכנון האירוע שלכם").click()
     page.get_by_label("שם מלא", exact=True).fill("דנה לוי")
-    page.get_by_label("טלפון", exact=True).fill("050-1234567")
+    page.get_by_label("טלפון ליצירת קשר", exact=True).fill("050-1234567")
     page.get_by_label("מבוגרים", exact=True).fill("10")
-    page.get_by_label("תאריך", exact=True).fill("2031-01-07")
-    page.get_by_label("שעה", exact=True).select_option(label="09:00–12:00")
+    page.get_by_label("תאריך האירוע", exact=True).fill("2031-01-07")
+    page.get_by_label("שעת איסוף או הגשה", exact=True).select_option(label="09:00–12:00")
     expect(page.get_by_role("button", name="שאלו את העוזר")).to_be_hidden()
-    page.get_by_role("button", name="המשך לתפריט").click()
+    page.get_by_role("button", name="המשך לבחירת תפריט").click()
 
     page.get_by_role("button", name="שאלו את העוזר").click()
     expect(page.get_by_text("העוזר מציע, ואתם מאשרים")).to_be_visible()
@@ -90,8 +91,8 @@ def test_pending_card_survives_reload(page: Page):
 
 
 def test_stale_card_is_refused(page: Page):
-    page.get_by_role("button", name="סגירה").click()
-    page.get_by_role("button", name="עוד טבולה").click()
+    page.get_by_role("button", name="סגירת העוזר").click()
+    page.locator("article.dish").get_by_role("button", name="עוד טבולה").click()
     expect(total(page)).to_have_text("₪90.00".replace("90", "270"))
 
     page.get_by_role("button", name="שאלו את העוזר").click()
@@ -118,8 +119,8 @@ def test_limit_turns_chat_off_and_ordering_continues(page: Page):
             break
     expect(page.get_by_text("העוזר אינו זמין כרגע. אפשר להמשיך להזמין בתפריט")).to_be_visible()
 
-    page.get_by_role("button", name="סגירה").click()
-    page.get_by_role("button", name="עוד טבולה").click()
+    page.get_by_role("button", name="סגירת העוזר").click()
+    page.locator("article.dish").get_by_role("button", name="עוד טבולה").click()
     expect(total(page)).to_have_text("₪360.00")
 
 

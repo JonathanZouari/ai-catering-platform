@@ -5,13 +5,14 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
+from app.core.db import read_only
 from app.core.tenancy import CatererScope
 from app.main import app
 from app.models import DishCategory
 from app.repositories.catalog import CategoryRepository
 
 # Tables with no caterer_id, and why they're safe.
-PLATFORM_TABLES = {"allergens", "caterers", "quantity_rules"}
+PLATFORM_TABLES = {"allergens", "caterers", "quantity_rules", "schema_migrations"}
 PARENT_SCOPED_TABLES = {
     "dish_allergens",
     "dish_dietary",
@@ -221,7 +222,7 @@ def test_database_rejects_order_item_with_another_caterers_dish(session, make_te
         text(
             "insert into orders (caterer_id, access_token_hash, customer_id, event_id, "
             "fulfillment_type, requested_at) "
-            "values (:c, 'hash', :cu, :e, 'pickup', now()) returning id"
+            "values (:c, 'hash', :cu, :e, 'pickup', '2027-01-01 10:00:00.000000') returning id"
         ),
         {"c": a.id, "cu": customer, "e": event},
     )
@@ -238,23 +239,22 @@ def test_database_rejects_order_item_with_another_caterers_dish(session, make_te
     session.rollback()
 
 
-def test_schema_covers_every_table_with_tenancy_and_rls(session):
-    tables = session.execute(
-        text("select tablename, rowsecurity from pg_tables where schemaname = 'public'")
+def test_schema_covers_every_table_with_tenancy(session):
+    tables = session.scalars(
+        text("select name from sqlite_master where type = 'table' and name not like 'sqlite_%'")
     ).all()
-    with_caterer_id = set(
-        session.scalars(
-            text(
-                "select table_name from information_schema.columns "
-                "where table_schema = 'public' and column_name = 'caterer_id' "
-                "and is_nullable = 'NO'"
-            )
-        )
-    )
 
     assert tables
-    for table, has_rls in tables:
-        assert has_rls, f"{table} has no RLS"
-        assert table in with_caterer_id | PLATFORM_TABLES | PARENT_SCOPED_TABLES, (
+    for table in tables:
+        columns = session.execute(text(f"pragma table_info({table})")).all()
+        required = {column.name for column in columns if column.notnull or column.pk}
+        assert "caterer_id" in required or table in PLATFORM_TABLES | PARENT_SCOPED_TABLES, (
             f"{table} has no tenant scope"
         )
+
+
+def test_foreign_keys_are_enforced_on_every_connection(engine):
+    reader = read_only(engine)
+    with reader.connect() as first, reader.connect() as second:
+        for connection in (first, second):
+            assert connection.execute(text("pragma foreign_keys")).scalar() == 1

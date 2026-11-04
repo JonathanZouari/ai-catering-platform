@@ -57,7 +57,10 @@ def submit_order(
     email = notifications.new_order_email(session, scope, order) if mailer else None
     if email:
         background.add_task(notifications.deliver, mailer, email, order.id)
-    return orders.view(session, scope, order)
+    view = orders.view(session, scope, order)
+    # The email goes out with the session still open, so it must not hold the write lock.
+    session.commit()
+    return view
 
 
 def _decision(session, scope, proposal, order) -> ProposalDecision:

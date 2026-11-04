@@ -1,79 +1,98 @@
-# UX/UI Specification (initial structure)
+# UX/UI Specification
 
-Status: **Draft v0.2**. High-fidelity prototypes (Claude Artifacts) come in the UI phase. The UI is Hebrew and RTL. Platform brand is **[OPEN #20]**; caterer branding is per caterer.
+Status: **v1.0, the Stitch redesign** (ADR 0008). The site belongs to one caterer, טעם של יחד. The UI is Hebrew and RTL. The design reference is the Stitch export in `stitch_catering_website_ux_design/` (kept out of git); its tokens are in `culinary_elegance/DESIGN.md`.
 
 ## 1. Principles
 
-- Hebrew RTL throughout: `<html lang="he" dir="rtl">`, Hebrew-capable fonts, prices and phone numbers isolated so they read correctly in RTL text. The sketch below is in English for this doc only.
-- Each customer page carries the caterer's logo and color. The Yummai logo (a smiling serving dome) appears on every page, small and above the caterer's own logo. The app floats on the blue backdrop with a margin of 5% of the width and 7% of the height on computers. A caterer color that fails contrast is not applied to text.
-- Mobile-first; breakpoints 640 / 1024 px **[RECOMMENDATION]**.
-- Accessibility target WCAG 2.2 AA: 4.5:1 text contrast, visible focus, 44×44 px touch targets, labels on all inputs, `aria-live` for price totals and chat replies, full keyboard use.
-- CSS uses logical properties only (`margin-inline-start`, etc.).
-- Premium but calm: generous whitespace, one accent color, restrained motion, `prefers-reduced-motion` respected.
-- Never show a pending quotation as a confirmed booking — status badges use explicit text ("ממתין לאישור הקייטרינג").
+- Hebrew RTL throughout: `<html lang="he" dir="rtl">`, prices and phone numbers in `<bdi>` so they read correctly.
+- One responsive application: phones under 768 px, tablets 768–1179 px, computers from 1180 px.
+- Accessibility target WCAG 2.2 AA: 4.5:1 text contrast, visible focus, 44×44 px touch targets, a label on every input, errors linked to their field (`aria-invalid`, `aria-describedby`), `aria-live` for status and filter results, full keyboard use, a skip link.
+- CSS uses logical properties only. `prefers-reduced-motion` is respected.
+- Never show a pending quotation as a confirmed booking. Status uses explicit text ("ממתין לאישור הקייטרינג").
+- Data the site doesn't have is never invented: no ratings, no "chef recommended" badges, no preparation times. Unknown dietary facts and calories show "לא צוין"; filters match only confirmed values.
+- The URL fragment holds the private order token, so in-page navigation never uses `#` links. Steps are kept in browser history, so Back and Forward move between steps.
 
-## 2. Design tokens (neutral placeholders)
+## 2. Design system
 
-Defined in `frontend/css/base.css` as CSS custom properties: color (`--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, `--color-accent`, `--color-success`, `--color-danger`, `--color-warning`), spacing scale (4-px based), radius, font stack (system fonts until brand fonts chosen), shadow levels. Dark mode not in scope unless requested.
+Defined in `frontend/css/base.css`, from Stitch "Culinary Elegance":
 
-### Visual direction
+| Token | Value | Use |
+|---|---|---|
+| `--primary` | `#00162d` | Main buttons, headings, selected states |
+| `--secondary` | `#8b5000` | Accent text, links, icons (6:1 on white). The caterer's brand colour replaces it when readable on white |
+| `--secondary-container` | `#fd9d2b` | Warm fills: the hero's main button, step markers, counters. Text on it uses `--on-secondary-container` |
+| `--tertiary` / success | `#00513b` | Vegetarian and vegan tags, approved status |
+| Surfaces | `#f9f9ff`, `#f1f3ff`, `#e8eeff`, white cards | Page, fields, chips, cards |
+| Font | Rubik 300–800, self-hosted (`frontend/fonts/`) | All text |
+| Radius | 8 / 12 / 16 / 24 px, pills for chips and steppers | |
 
-The look follows the product owner's example: one frame with three columns on computers.
-
-- The page background is deep blue with soft shapes and a dot pattern, in CSS only. The app floats on it as one rounded card.
-- Side column: logo in a circle, a welcome line, the steps, and the menu categories. Without a logo the circle shows the caterer's initial.
-- Middle column: large horizontal dish cards with the photo filling one side, price in the opposite corner, and a small quantity control with a bag icon.
-- Order column: customer name, event date (which returns to the details step), order tiles, totals, and a wide black button. On phones it opens from the bottom bar.
-- Main buttons are black. Blue `#2563eb` is only for accents, and a caterer's brand colour replaces it on customer pages if it is readable on white.
-- Icons are same-origin SVG masks in `frontend/img/`. No icon library and no third-party fonts.
-- Without a photo, dish cards show a grey block with the dish's first letter.
-- A dish card opens a detail sheet with the large photo, allergens and quantity. Allergen information stays one tap from every card.
-- No star ratings or preparation times: the app has no such data.
-- Category navigation scrolls by script, never by a `#` link, because the URL fragment holds the private token.
+Icons are Material Symbols SVGs in `frontend/img/icons/` (Apache 2.0), drawn as CSS masks (`css/icons.css`). There's no icon font and nothing from a CDN.
 
 ## 3. Customer screens
 
-| # | Screen | Key elements |
-|---|---|---|
-| C1 | Event configuration | Caterer header with kashrut status; stepper; name and phone; event type, date (blocked dates disabled), time slot, guest composition counters with helper text (subset rule **[OPEN #4]**), dietary notes, pickup/delivery toggle, address + zone fee preview |
-| C2 | Dish catalog | Category tabs/chips, dish cards (image, name, price + unit, kashrut badge, veg/vegan badges, calories or "לא צוין", "allergen info" link), filters, add/quantity stepper |
-| C3 | Order summary & pricing | Itemized lines (qty × unit price = line), recommendation hints, meat + dairy warning or block per the caterer's rule, delivery fee, total, `version`-safe edits |
-| C4 | AI assistant | Desktop: side panel next to C2/C3. Mobile: bottom sheet opened by a persistent button. Message list, input, proposal cards inline. Draft orders only; shown as unavailable when no key is set or a limit is reached |
-| C5 | Quote submission & status | Review, explicit "Submit quotation request", status page: Draft / Awaiting approval / Approved / Rejected + caterer note. Shows the private link with a copy and WhatsApp share action and a notice to keep it private. Phase 5 shows dishes grouped by category with vegetarian and vegan filters, and a warning that must be ticked, or a block, when the order mixes meat and dairy |
+All at `/` (and `/c/{slug}/`), one page with JS-driven views.
 
-### Proposal diff card (C4)
+| # | Screen | Stitch reference | Key elements |
+|---|---|---|---|
+| C0 | Homepage | `_9` | Full-height hero with `media/hero.mp4` (behaviour below), kashrut chip from data, headline, "לצפייה בתפריט" and "לתכנון האירוע שלכם". Feature strip, three real dishes from the menu, "מתכננים אירוע בקרוב?" card |
+| C1 | Event details | `_3`, `_5` | Step 1 of 3. Customer, guests (counters for adults and children, diet counts out of them), notes, when and how. Inline Hebrew errors, focus moves to the first error. What's typed is kept when leaving the step; with an order, leaving saves it |
+| C2 | Menu | `_8`, `_7`, `_1` | Category tabs (single choice, "הכל" first), diet chips combined with AND: בשרי, חלבי, פרווה, צמחוני, טבעוני, ללא גלוטן (only an allergen marked "free"). Live result count, empty state with "ניקוי הסינון". Every category uses the dessert page's card layout |
+| C2a | Dish card | `_8`, `_1` | Photo on the outer edge with kashrut and unit badges, name, price per unit, description, tags (vegan / vegetarian, kashrut, calories), "מידע על אלרגנים", recommended quantity, "הוסף להזמנה" or a stepper with "בהזמנה" |
+| C2b | Dish sheet | none | Large photo, facts, quantity, allergens (contains / free / unknown with a warning) |
+| C3 | Live order | `_8`, `_4` | Customer and pickup/delivery, event date (opens C1), lines with photo, stepper and remove, totals from the backend, main action, the assistant button. Phones: bottom bar with total and "ההזמנה שלי (n)", opening a bottom sheet |
+| C4 | Summary | `_4` | Step 3 of 3. Chosen dishes, event facts with "עריכה", meat + dairy warning (tick to continue) or block, private link with copy and WhatsApp, "not a final order" notice, submit |
+| C5 | Status | none | Pending / approved / rejected with icon, help text, the caterer's note, refresh, phone, event facts, frozen lines, private link |
+| C6 | AI assistant | none | Bottom sheet on phones, floating panel on computers. Proposal cards; Approve is the only path to a change |
+| C7 | Not available | none | Hebrew message and "ניסיון נוסף" |
 
-```
-┌ Suggested change ───────────────────────┐
-│ Add  Roasted vegetables        × 2 trays │
-│ Hummus             3 → 5 trays           │
-│ ─────────────────────────────────────── │
-│ Total   1,200.00  →  1,350.00  (+150.00) │
-│ [ Reject ]                   [ Approve ] │
-└──────────────────────────────────────────┘
-```
-States: pending, applying, applied, rejected, expired ("Your order changed; ask again"). Approve is the only path to mutation.
+Browsing the menu needs no details. Pressing "הוסף להזמנה" before there's an order opens C1 with a notice; after saving, that dish is added.
+
+### Layout
+
+- Header on every view: logo, name, kashrut status, navigation ("תפריט ואירוע", "ההזמנה שלי", "אודות"), phone pill when a phone is set.
+- Computers: three columns. The side column on the right (welcome, steps, categories, a help card with the phone), the menu or form in the middle, the live order on the left (DESIGN.md). Both side columns stick below the header.
+- Tablets: a steps strip above two columns, the content and the live order.
+- Phones: a steps strip, one column, the bottom bar.
+
+### Homepage video
+
+`frontend/js/customer/hero.js`. The source footage ends in a bright streak, so it never loops natively.
+
+- Speed 0.6. Two layers of the same in-memory copy (one download) take turns: just before the streak (`CUT = 4.15 s`) the waiting layer starts and fades in over 0.6 s on top of the playing one, so the picture never dips to a blank or solid colour.
+- Text and buttons sit above the video and never move. A gradient behind the text keeps it readable.
+- The still photo shows until the video can play, with reduced motion, when the codec isn't supported, and if loading fails. Leaving the homepage stops the loop and frees the memory.
 
 ## 4. Admin screens
 
-| # | Screen | Key elements |
-|---|---|---|
-| A1 | Order management | First screen after login. Filter by status (waiting first), list with event date/guests/total, detail with frozen snapshot, customer phone, Approve / Reject + note (required to reject). Drafts aren't shown |
-| A2 | Dishes & categories | Table/cards, create/edit form, image upload, dietary + allergen editor with explicit Unknown option, calories per portion |
-| A3 | Pricing configuration | Pricing unit, unit price, unit label per dish; bulk view |
-| A4 | Availability | Calendar of blocked dates; capacity **[OPEN #5]** |
-| A5 | Pickup & delivery | Time slots per weekday and type; delivery zones with fees |
-| A6 | Business profile | Name, logo, color, customer link with copy action, kashrut status and certificate, meat + dairy rule (block / warn) |
-| A7 | Quantity rules | Platform defaults per category, editable, with a revert-to-default action |
+At `/admin/`. A sidebar on computers (logo, name, kashrut, navigation with a count of orders waiting, "צפייה באתר", "יציאה"), a top bar with scrolling navigation on phones.
+
+| # | Screen | Stitch reference | Key elements |
+|---|---|---|---|
+| A0 | Login | none | The site's logo and name, email and password, Hebrew error, link back to the site |
+| A1 | Orders | `_2` | Today's date, a status filter with counts, counters (waiting, guests in waiting orders, approved, rejected), order cards with status colour, date, guests, total, "פתיחה". Detail: customer and event, lines, total, Approve / Reject with a note (required to reject) |
+| A2 | Menu | none | Categories as cards, dishes with price, kashrut and calories, edit and delete, dish form with photo, dietary facts and allergens with an explicit Unknown |
+| A4 | Availability | none | Time slots per weekday and type, blocked dates |
+| A5 | Delivery | none | Zones with fees and cities |
+| A6 | Business profile | none | Site link with copy, name, phone, alert email, brand colour, kashrut status and certificate, meat + dairy rule, logo |
+| A7 | Quantity rules | none | Defaults per category, editable, with revert |
+
+`_2` also shows kitchen statuses, revenue, manual orders, printing and search. The app has none of these, so they aren't shown.
 
 ## 5. Frontend structure
 
 ```
 frontend/
-  customer/index.html   # C1–C5, served at /c/{slug}/ (single page, JS-driven steps)
-  admin/index.html      # A1–A7
-  css/base.css          # tokens, reset, primitives
-  js/api.js             # fetch wrapper, error format handling
-  assets/
+  customer/index.html   # C0–C7, served at / and /c/{slug}/
+  admin/index.html      # A0–A7
+  css/base.css          # design system: tokens, fonts, buttons, fields, cards, steppers, dialogs
+  css/icons.css         # one class per icon
+  css/customer.css      # header, hero, layout, menu, live order, summary, chat
+  css/admin.css         # sidebar, orders, dashboard forms
+  js/customer/main.js   # views and order flow
+  js/customer/hero.js   # homepage video loop
+  js/customer/chat.js   # assistant
+  fonts/                # Rubik (OFL)
+  img/brand/logo.jpg    # the site's logo, used when the caterer hasn't uploaded one
+  img/icons/            # Material Symbols (Apache 2.0)
+  media/                # hero.mp4 and its still photo
 ```
-Reusable components as small ES modules (e.g., `js/components/dish-card.js`) added in later phases.

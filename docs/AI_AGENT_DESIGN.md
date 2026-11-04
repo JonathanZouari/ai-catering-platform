@@ -41,7 +41,7 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 5. Backend validates: dishes exist, are available, and belong to the order's caterer; quantities > 0 and within rules; fields whitelisted; order is `draft`. A proposal that would create a meat + dairy mix under a `block` rule is rejected.
 6. UI shows a diff card: current vs proposed, price difference, Approve / Reject.
 7. Customer clicks Approve or Reject.
-8. On approve, in **one transaction**: lock order row (`SELECT … FOR UPDATE`), check `proposal.status == pending` and `proposal.base_order_version == order.version`, apply changes, `order.version += 1`, set `executed_at`, `status = approved`.
+8. On approve, in **one transaction**: take the write lock (`BEGIN IMMEDIATE`), check `proposal.status == pending` and `proposal.base_order_version == order.version`, apply changes, `order.version += 1`, set `executed_at`, `status = approved`.
 9. Backend recalculates pricing.
 10. Frontend re-renders from the returned persisted order.
 

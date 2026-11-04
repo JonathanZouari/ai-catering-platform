@@ -17,7 +17,7 @@ export const chatButton = () => h("button", {
   className: "chat-toggle secondary",
   hidden: true,
   onclick: () => setOpen(panel.hidden),
-}, "שאלו את העוזר");
+}, h("span", { className: "icon icon-smart_toy", "aria-hidden": "true" }), "שאלו את העוזר");
 let orderApi;
 let onOrder;
 let chat = null;
@@ -64,7 +64,8 @@ function draw() {
     chat.messages.map(({ role, text }) => h("p", { className: `bubble ${role}` }, text)),
     chat.proposals.map(card));
   const input = h("input", { maxLength: 1000, required: true, "aria-label": "הודעה לעוזר", disabled: !chat.available });
-  const send = h("button", { type: "submit", disabled: !chat.available }, "שליחה");
+  const send = h("button", { type: "submit", disabled: !chat.available }, "שליחה",
+    h("span", { className: "icon icon-send flip", "aria-hidden": "true" }));
   const form = h("form", {
     className: "chat-form",
     onsubmit: async (event) => {
@@ -89,9 +90,11 @@ function draw() {
   }, input, send);
 
   panel.replaceChildren(
-    h("header", { className: "screen-header" },
+    h("header", { className: "chat-header" },
+      h("span", { className: "icon-tile" }, h("span", { className: "icon icon-smart_toy", "aria-hidden": "true" })),
       h("h2", {}, "עוזר להזמנה"),
-      h("button", { className: "secondary", onclick: () => setOpen(false) }, "סגירה")),
+      h("button", { type: "button", className: "icon-button", "aria-label": "סגירת העוזר", onclick: () => setOpen(false) },
+        h("span", { className: "icon icon-close", "aria-hidden": "true" }))),
     messages,
     h("p", { className: "muted" }, chat.available
       ? "העוזר מציע, ואתם מאשרים. התשובות נוצרות על ידי AI. אל תכתבו כאן פרטים אישיים."

@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     resend_api_key: str | None = None
     email_from: str | None = None
     public_base_url: str | None = None
+    # The one caterer this site belongs to (ADR 0008). "/" shows its homepage.
+    site_caterer: str | None = None
 
     @property
     def is_deployed(self) -> bool:
@@ -39,6 +41,9 @@ class Settings(BaseSettings):
         missing = [name for name, value in required.items() if not value]
         if missing:
             raise RuntimeError(f"Missing settings: {', '.join(missing)}")
+        # A relative path lands inside the container and is lost on the next deploy.
+        if not self.database_url.startswith("sqlite:////"):
+            raise RuntimeError("DATABASE_URL must be an absolute path on the mounted volume")
 
 
 @lru_cache

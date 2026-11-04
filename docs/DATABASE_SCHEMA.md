@@ -1,8 +1,10 @@
-# Preliminary Database Schema (PostgreSQL / Supabase)
+# Preliminary Database Schema
+
+> The database is now SQLite (ADR 0007). The tables below still describe the model; `database/migrations/` is the exact schema and ADR 0007 lists how each type is stored.
 
 Status: **Draft v0.2** — not yet migrated. First migration is planned for Phase 3.
 
-Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
+Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as text with `CHECK` constraints, snake_case, `STRICT` tables.
 
 **Tenancy (ADR 0005):** every table below `caterer_users` has a non-null `caterer_id` FK → `caterers`, indexed, unless the table is marked *scoped through parent*. Unique constraints include `caterer_id`. Tables marked *platform* are shared across caterers. Hebrew text is stored in the existing `name`/`description` columns; there are no per-language columns.
 
