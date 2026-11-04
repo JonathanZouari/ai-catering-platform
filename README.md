@@ -16,17 +16,17 @@ Sample menu and made-up names. Design based on the Stitch mockups.
 |---|---|
 | ![Homepage](docs/screenshots/1-home.png) | ![Menu with category tabs and diet filters](docs/screenshots/2-menu.png) |
 
-| 3. Dish details | 4. Event details |
+| 3. Desserts | 4. Dish details |
 |---|---|
-| ![Dish details with allergens](docs/screenshots/3-dish.png) | ![Event details form](docs/screenshots/4-event-details.png) |
+| ![The desserts category](docs/screenshots/desserts.png) | ![Dish details with allergens](docs/screenshots/3-dish.png) |
 
-| 5. Order summary | 6. Order status |
+| 5. Event details | 6. Order summary |
 |---|---|
-| ![Order summary](docs/screenshots/5-summary.png) | ![Order waiting for the caterer's approval](docs/screenshots/6-status.png) |
+| ![Event details form](docs/screenshots/4-event-details.png) | ![Order summary](docs/screenshots/5-summary.png) |
 
-**7. Phone: my order**
-
-<img src="docs/screenshots/7-phone-order.png" alt="The order as a bottom sheet on a phone" width="280">
+| 7. Order status | 8. Phone: my order |
+|---|---|
+| ![Order waiting for the caterer's approval](docs/screenshots/6-status.png) | <img src="docs/screenshots/7-phone-order.png" alt="The order as a bottom sheet on a phone" width="280"> |
 
 ## Phases
 
@@ -44,7 +44,7 @@ Sample menu and made-up names. Design based on the Stitch mockups.
 | Design | New look with food photos, and the Yummai logo on every page (replaced by the Stitch redesign) | Done |
 | Emails | Email to the caterer on a new order, with no customer details | Done |
 | Test site | Online test version on Supabase and Railway | Skipped for now |
-| Stitch redesign | One caterer's site with the Stitch design and the homepage video | Done, not merged |
+| Stitch redesign | One caterer's site with the Stitch design and the homepage video | Done |
 | Pilot | First real caterer | Not started |
 
 ## Stack

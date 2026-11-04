@@ -103,7 +103,7 @@ Worked in order. Don't build features of a later phase early.
 | Emails | New-order email to caterers, not yet tested with the real provider | Done |
 | SQLite | Replaced Postgres everywhere (ADR 0007) | Done |
 | Test site | Supabase Auth and Storage plus Railway with a volume, needs the user's accounts and approval | Skipped for now |
-| Stitch redesign | One caterer's site, Stitch design, homepage video (ADR 0008) | Done, on `feat/redesign`, not merged |
+| Stitch redesign | One caterer's site, Stitch design, homepage video (ADR 0008) | Done |
 | Pilot | First real caterer, needs its own approval | Not started |
 
-Everything before SQLite is merged into `dev` and `main` on `origin`; SQLite is on `feat/sqlite-database`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.
+Everything up to the Stitch redesign is merged into `dev` and `main` on `origin`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.
