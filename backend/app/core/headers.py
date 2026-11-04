@@ -13,6 +13,7 @@ def content_security_policy(supabase_url: str | None) -> str:
             "default-src 'none'",
             "script-src 'self'",
             "style-src 'self'",
+            "font-src 'self'",
             f"img-src 'self'{supabase}",
             f"connect-src 'self'{supabase}",
             "base-uri 'none'",
