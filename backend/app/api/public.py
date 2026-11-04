@@ -35,6 +35,7 @@ def get_client_config():
         supabase_url=settings.supabase_url.rstrip("/") if settings.supabase_url else None,
         supabase_anon_key=settings.supabase_anon_key,
         storage_public_url=public_storage_url(),
+        site_caterer=settings.site_caterer,
     )
 
 

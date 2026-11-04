@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-A Hebrew (RTL) catering platform for many caterers. Each caterer has a branded customer link at `/c/{slug}/`. Customers build an order with a text AI assistant and submit a quote; the caterer approves or rejects it. No payments, no marketplace.
+A Hebrew (RTL) catering site. Since ADR 0008 it is the site of one caterer, טעם של יחד, served at `/` (the `SITE_CATERER` setting); the multi-caterer code and `/c/{slug}/` links stay. The design follows the Stitch export in `stitch_catering_website_ux_design/` (local, git-ignored); see `docs/UX_UI_SPEC.md`. Customers build an order with a text AI assistant and submit a quote; the caterer approves or rejects it. No payments, no marketplace.
 
 Language rule: UI strings, API error `message`s, and AI replies are Hebrew. Code, API error `code`s, and `docs/` are English. Chat with the user in English.
 
@@ -68,6 +68,8 @@ This is the most important invariant. Isolation is enforced by the code and the 
 - Errors are raised as `AppError` (`core/errors.py`) and render as `{"error": {"code", "message", "details"}}`.
 - Sessions don't auto-commit. Services commit explicitly so database errors reach the response.
 - Frontend CSS uses logical properties only (`margin-inline-start`, not `margin-left`), since the UI is RTL.
+- Fonts and icons are our own files (`frontend/fonts/`, `frontend/img/icons/` via `css/icons.css`); the security policy blocks CDNs.
+- The customer page's URL fragment holds the order token, so in-page navigation never uses `#` links.
 
 ## Branches
 
@@ -101,6 +103,7 @@ Worked in order. Don't build features of a later phase early.
 | Emails | New-order email to caterers, not yet tested with the real provider | Done |
 | SQLite | Replaced Postgres everywhere (ADR 0007) | Done |
 | Test site | Supabase Auth and Storage plus Railway with a volume, needs the user's accounts and approval | Skipped for now |
+| Stitch redesign | One caterer's site, Stitch design, homepage video (ADR 0008) | Done, on `feat/redesign`, not merged |
 | Pilot | First real caterer, needs its own approval | Not started |
 
 Everything before SQLite is merged into `dev` and `main` on `origin`; SQLite is on `feat/sqlite-database`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.

@@ -17,33 +17,58 @@ const timeText = (value) => new Date(value).toLocaleTimeString("he-IL", {
   hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jerusalem",
 });
 
+const STATUS_ICON = { pending_approval: "hourglass_empty", approved: "check_circle", rejected: "cancel" };
+
 export async function renderOrders(view) {
-  const query = filter ? `?status=${filter}` : "";
-  const orders = await adminApi(`/api/admin/orders${query}`);
-  const status = select(FILTERS, filter);
+  // All orders once: the counters and the filtered list come from the same answer.
+  const all = await adminApi("/api/admin/orders");
+  const orders = filter ? all.filter((order) => order.status === filter) : all;
+  const counts = (status) => all.filter((order) => order.status === status).length;
+  const status = select(FILTERS.map(([value, label]) => [value, value ? `${label} (${counts(value)})` : `${label} (${all.length})`]), filter);
   status.addEventListener("change", () => {
     filter = status.value;
     attempt(() => renderOrders(view));
   });
+  const pendingGuests = all.filter((order) => order.status === "pending_approval").reduce((sum, order) => sum + order.guests, 0);
+  const stat = (iconName, label, value, tone) => h("li", { className: `stat ${tone}` },
+    h("div", {}, h("span", { className: "stat-label" }, label), h("strong", {}, String(value))),
+    h("span", { className: "icon-tile" }, h("span", { className: `icon icon-${iconName}`, "aria-hidden": "true" })));
+  const today = new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   view.replaceChildren(
-    h("h1", {}, "הזמנות"),
-    h("section", { className: "card" },
-      field("סינון", status),
-      orders.length
-        ? h("ul", { className: "rows" }, orders.map((order) => h("li", { className: `order-row ${order.status}` },
-          h("div", {},
+    h("div", { className: "page-head" },
+      h("div", {}, h("p", { className: "eyebrow" }, "ניהול הזמנות"), h("h1", {}, "הזמנות")),
+      h("span", { className: "date-chip" }, h("span", { className: "icon icon-calendar_month", "aria-hidden": "true" }), `היום, ${today}`)),
+    h("div", { className: "card filter-bar" }, field("הצגת הזמנות", status)),
+    h("ul", { className: "stats", "aria-label": "סיכום הזמנות" },
+      stat("hourglass_empty", "ממתינות לאישור", counts("pending_approval"), "warn"),
+      stat("group", "סועדים בהזמנות ממתינות", pendingGuests, "info"),
+      stat("check_circle", "אושרו", counts("approved"), "ok"),
+      stat("cancel", "נדחו", counts("rejected"), "bad")),
+    h("div", { className: "list-head" },
+      h("h2", {}, "רשימת הזמנות"),
+      h("span", { className: "muted" }, `מציג ${orders.length} מתוך ${all.length} הזמנות`)),
+    orders.length
+      ? h("ul", { className: "order-cards" }, orders.map((order) => h("li", { className: `order-card ${order.status}` },
+        h("span", { className: "avatar", "aria-hidden": "true" }, order.customer_name[0]),
+        h("div", { className: "order-main" },
+          h("div", { className: "order-name" },
             h("strong", {}, order.customer_name),
-            h("span", { className: `badge ${order.status}` }, STATUS[order.status]),
-            h("div", { className: "muted" },
-              `${dateText(order.event_date)} · ${order.guests} סועדים · `, shekel(order.total))),
-          h("div", { className: "actions" },
-            h("button", {
-              className: order.status === "pending_approval" ? "" : "secondary",
-              "aria-label": `פתיחת ההזמנה של ${order.customer_name}`,
-              onclick: () => attempt(() => renderDetail(view, order.id)),
-            }, "פתיחה")))))
-        : h("p", { className: "empty" }, "אין הזמנות להצגה.")),
+            h("span", { className: `badge dot ${order.status}` }, STATUS[order.status])),
+          h("p", { className: "order-meta" },
+            h("span", {}, h("span", { className: "icon icon-calendar_month", "aria-hidden": "true" }), dateText(order.event_date)),
+            h("span", {}, h("span", { className: "icon icon-group", "aria-hidden": "true" }), `${order.guests} סועדים`),
+            h("strong", {}, "סה״כ ", shekel(order.total)))),
+        h("div", { className: "actions" },
+          h("button", {
+            className: order.status === "pending_approval" ? "" : "secondary",
+            "aria-label": `פתיחת ההזמנה של ${order.customer_name}`,
+            onclick: () => attempt(() => renderDetail(view, order.id)),
+          }, "פתיחה")))))
+      : h("div", { className: "card empty-state" },
+        h("span", { className: "icon-tile" }, h("span", { className: `icon icon-${STATUS_ICON[filter] ?? "receipt_long"}`, "aria-hidden": "true" })),
+        h("p", { className: "empty" }, "אין הזמנות להצגה."),
+        h("p", { className: "muted" }, "הזמנות חדשות יופיעו כאן ברגע שלקוח שולח בקשה להצעת מחיר.")),
   );
 }
 
@@ -76,9 +101,11 @@ async function renderDetail(view, id) {
   const delivery = order.fulfillment_type === "delivery";
 
   const sections = [
-    h("button", { className: "secondary", onclick: () => attempt(() => renderOrders(view)) }, "חזרה לרשימה"),
-    h("h1", {}, `הזמנה של ${customer.full_name}`),
-    h("p", {}, h("span", { className: `badge ${order.status}` }, STATUS[order.status])),
+    h("button", { className: "secondary", onclick: () => attempt(() => renderOrders(view)) },
+      h("span", { className: "icon icon-arrow_back", "aria-hidden": "true" }), "חזרה לרשימה"),
+    h("div", { className: "page-head" },
+      h("div", {}, h("p", { className: "eyebrow" }, "פרטי הזמנה"), h("h1", {}, `הזמנה של ${customer.full_name}`)),
+      h("span", { className: `badge dot ${order.status}` }, STATUS[order.status])),
     h("section", { className: "card" },
       h("h2", {}, "פרטי לקוח ואירוע"),
       h("p", {}, h("strong", {}, "טלפון: "), h("a", { href: `tel:${customer.phone.replace(/\s/g, "")}` }, h("bdi", {}, customer.phone))),
@@ -103,7 +130,8 @@ async function renderDetail(view, id) {
     order.decision_note ? h("section", { className: "card" }, h("h2", {}, "ההערה שנשלחה ללקוח"), h("p", {}, order.decision_note)) : null,
     order.status === "pending_approval"
       ? h("div", { className: "actions" },
-        h("button", { onclick: () => decide(view, order, "approve", "אישור ההזמנה", false) }, "אישור ההזמנה"),
+        h("button", { className: "saffron", onclick: () => decide(view, order, "approve", "אישור ההזמנה", false) },
+          h("span", { className: "icon icon-done", "aria-hidden": "true" }), "אישור ההזמנה"),
         h("button", { className: "secondary danger", onclick: () => decide(view, order, "reject", "דחיית ההזמנה", true) }, "דחיית ההזמנה"))
       : null,
   ];

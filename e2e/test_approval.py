@@ -74,7 +74,7 @@ def see_customer_page(page: Page, link: str) -> None:
 
 def back_to_dashboard(page: Page) -> None:
     page.goto("/admin/")
-    expect(page.get_by_role("heading", name="הזמנות")).to_be_visible()
+    expect(page.get_by_role("heading", name="הזמנות", exact=True)).to_be_visible()
 
 
 def test_customer_waits_for_the_caterer(page: Page, links):
@@ -87,10 +87,10 @@ def test_caterer_lands_on_waiting_orders_after_login(page: Page):
     page.get_by_label("אימייל", exact=True).fill("owner@example.com")
     page.get_by_label("סיסמה", exact=True).fill("right")
     page.get_by_role("button", name="כניסה").click()
-    row = page.locator(".rows li", has_text="דנה לוי")
+    row = page.locator(".order-cards li", has_text="דנה לוי")
     expect(row).to_contain_text("24 סועדים")
     expect(row).to_contain_text("₪400.00")
-    expect(page.locator(".rows li", has_text="יוסי כהן")).to_be_visible()
+    expect(page.locator(".order-cards li", has_text="יוסי כהן")).to_be_visible()
     page.screenshot(path=SHOTS / "orders-list.png", full_page=True)
 
 
@@ -113,7 +113,7 @@ def test_approval_moves_the_order_out_of_waiting(page: Page):
     expect(page.get_by_role("button", name="דחיית ההזמנה")).to_have_count(0)
 
     page.get_by_role("button", name="חזרה לרשימה").click()
-    expect(page.locator(".rows li", has_text="דנה לוי")).to_have_count(0)
+    expect(page.locator(".order-cards li", has_text="דנה לוי")).to_have_count(0)
 
 
 def test_customer_sees_approval_with_note_and_contact(page: Page, links):
@@ -121,7 +121,7 @@ def test_customer_sees_approval_with_note_and_contact(page: Page, links):
     expect(page.locator(".status")).to_have_text("ההזמנה אושרה")
     expect(page.get_by_text("נתראה באירוע")).to_be_visible()
     expect(page.get_by_text("התשלום מתואם ישירות מול העסק")).to_be_visible()
-    expect(page.get_by_role("link", name="03-1234567")).to_be_visible()
+    expect(page.locator(".status-card").get_by_role("link", name="03-1234567")).to_be_visible()
     expect(page.get_by_role("button", name="הוספת עוף בתנור")).to_have_count(0)
     page.screenshot(path=SHOTS / "customer-approved.png", full_page=True)
 
@@ -148,7 +148,7 @@ def test_customer_refreshes_to_see_the_answer(page: Page, links):
 
 def test_decided_orders_stay_readable_and_final(page: Page):
     back_to_dashboard(page)
-    page.get_by_label("סינון", exact=True).select_option("")
+    page.get_by_label("הצגת הזמנות", exact=True).select_option("")
     open_order(page, "יוסי כהן")
     expect(page.get_by_text("התאריך תפוס")).to_be_visible()
     expect(page.get_by_role("button", name="אישור ההזמנה")).to_have_count(0)

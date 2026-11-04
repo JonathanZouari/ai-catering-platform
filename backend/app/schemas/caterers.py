@@ -46,3 +46,4 @@ class ClientConfig(BaseModel):
     supabase_url: str | None
     supabase_anon_key: str | None
     storage_public_url: str | None
+    site_caterer: str | None

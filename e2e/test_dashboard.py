@@ -1,5 +1,6 @@
 """Walks a caterer through the dashboard in a real browser. Tests run in order on one session."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -154,7 +155,9 @@ def test_quantity_rule_can_be_changed_and_reverted(page: Page):
 
 def test_profile_saves_kashrut_settings(page: Page):
     page.get_by_role("link", name="פרופיל העסק").click()
-    expect(page.get_by_text("/c/taamim/")).to_be_visible()
+    # The site's own caterer (SITE_CATERER) lives at the root address.
+    link = page.locator("section", has_text="הקישור לאתר").locator("bdi")
+    expect(link).to_have_text(re.compile(r"^http://127\.0\.0\.1:\d+/$"))
     save(page, "סטטוס כשרות", "כשר בהשגחת הרבנות")
     page.get_by_label("הזמנה שמערבת בשר וחלב").select_option("block")
     page.get_by_role("button", name="שמירה").click()
@@ -184,4 +187,4 @@ def test_no_javascript_errors(page: Page):
 
 def test_logout_returns_to_login(page: Page):
     page.get_by_role("button", name="יציאה").click()
-    expect(page.get_by_role("heading", name="כניסה לניהול העסק")).to_be_visible()
+    expect(page.get_by_role("heading", name="ניהול טעמים קייטרינג")).to_be_visible()
