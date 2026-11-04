@@ -63,3 +63,14 @@ hero.addEventListener("pointerleave", () => { px = py = 0; kick(); });
 addEventListener("scroll", kick, { passive: true });
 addEventListener("resize", kick);
 kick();
+
+// Kashrut certificate from the owner's settings (OPEN_DECISIONS #9); the footer stays as is if missing.
+fetch("/api/catalog/business")
+  .then((r) => (r.ok ? r.json() : null))
+  .then((b) => {
+    const line = document.getElementById("kashrut-line");
+    if (!b?.kashrut_certificate || !line) return;
+    line.textContent = `כשר · ${b.kashrut_certificate}`;
+    line.hidden = false;
+  })
+  .catch(() => {});

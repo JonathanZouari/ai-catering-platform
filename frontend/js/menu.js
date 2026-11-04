@@ -4,7 +4,7 @@ import { api } from "/js/api.js";
 import { initAssistant } from "/js/assistant.js";
 import { call, session } from "/js/customer-session.js";
 
-const KASHRUT = { meat: ["בשרי", "k-meat"], dairy: ["חלבי", "k-dairy"], pareve: ["פרווה", "k-parve"] };
+const KASHRUT = { meat: ["בשרי", "k-meat"], pareve: ["פרווה", "k-parve"] }; // no dairy (OPEN #9)
 const UNIT = { per_tray: "מגשים", per_guest: "מנות", per_weight: 'ק"ג', per_item: "יחידות" };
 const UNIT_ONE = { per_tray: "מגש", per_guest: "מנה", per_weight: 'ק"ג', per_item: "יחידה" };
 const units = (quantity, unit) => (Number(quantity) === 1 ? UNIT_ONE : UNIT)[unit] ?? "";
@@ -95,8 +95,8 @@ async function send(dish, quantity) {
 
 // --- rendering ---
 function badges(d) {
-  const k = KASHRUT[d.dietary.kashrut_class];
-  const out = [k ? el("span", { className: `badge ${k[1]}`, textContent: k[0] }) : el("span", { className: "badge unknown", textContent: "כשרות: לא ידוע" })];
+  const k = KASHRUT[d.dietary.kashrut_class] ?? KASHRUT.pareve;
+  const out = [el("span", { className: `badge ${k[1]}`, textContent: k[0] })];
   if (d.dietary.is_vegan) out.push(el("span", { className: "badge diet", textContent: "טבעוני" }));
   else if (d.dietary.is_vegetarian) out.push(el("span", { className: "badge diet", textContent: "צמחוני" }));
   return el("div", { className: "badges" }, ...out);
@@ -264,10 +264,12 @@ export async function initMenu() {
   }
   try {
     await loadOrder();
-    const [dishes, categories, recs] = await Promise.all([
+    const [dishes, categories, recs, business] = await Promise.all([
       api("/api/catalog/dishes"), api("/api/catalog/categories"),
-      call(`/api/orders/${state.orderId}/recommendations`),
+      call(`/api/orders/${state.orderId}/recommendations`), api("/api/catalog/business"),
     ]);
+    const cert = business.kashrut_certificate;
+    $("kashrut-line").textContent = `המטבח כשר${cert ? ` (${cert})` : ""}: מנות בשריות ופרווה בלבד, בלי חלבי.`;
     state.dishes = dishes;
     state.categories = categories;
     state.recs = new Map(recs.map((r) => [r.dish_id, r]));

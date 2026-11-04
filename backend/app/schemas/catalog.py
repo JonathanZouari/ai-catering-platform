@@ -10,7 +10,7 @@ LongText = Annotated[str, StringConstraints(strip_whitespace=True, max_length=20
 Money = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=2)]
 Quantity = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
 PricingUnit = Literal["per_guest", "per_tray", "per_weight", "per_item"]
-Kashrut = Literal["meat", "dairy", "pareve"]
+Kashrut = Literal["meat", "pareve"]  # kosher meat kitchen, no dairy (OPEN_DECISIONS #9)
 
 
 class _In(BaseModel):
@@ -83,14 +83,14 @@ class AllergenStatusIn(_In):
 class DietaryUpdate(_In):
     """Full replacement. null / "unknown" / an omitted allergen all mean unknown."""
 
-    kashrut_class: Kashrut | None = None
+    kashrut_class: Kashrut = "pareve"
     is_vegetarian: bool | None = None
     is_vegan: bool | None = None
     allergens: list[AllergenStatusIn] = Field(default_factory=list, max_length=100)
 
 
 class DietaryOut(_Out):
-    kashrut_class: Kashrut | None = None
+    kashrut_class: Kashrut = "pareve"
     is_vegetarian: bool | None = None
     is_vegan: bool | None = None
     verified_at: datetime | None = None

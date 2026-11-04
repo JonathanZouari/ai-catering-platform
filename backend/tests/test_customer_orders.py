@@ -192,11 +192,29 @@ def test_settings_defaults_and_update(client):
         "child_portion": "0.75",
         "lead_days": 3,
         "assistant_daily_limit": 30,
+        "kashrut_certificate": None,
     }
-    new = {"child_portion": "0.5", "lead_days": 5, "assistant_daily_limit": 10}
+    new = {
+        "child_portion": "0.5",
+        "lead_days": 5,
+        "assistant_daily_limit": 10,
+        "kashrut_certificate": "  כשר בהשגחת רבנות תל אביב ",
+    }
     res = client.put("/api/admin/settings", json=new, headers=AUTH)
-    assert res.json() == {**new, "child_portion": "0.50"}
-    bad = {"child_portion": "1.5", "lead_days": 3, "assistant_daily_limit": 30}
+    assert res.json() == {
+        **new,
+        "child_portion": "0.50",
+        "kashrut_certificate": "כשר בהשגחת רבנות תל אביב",
+    }
+    public = client.get("/api/catalog/business").json()
+    assert public == {"kashrut_certificate": "כשר בהשגחת רבנות תל אביב"}
+    cleared = client.put(
+        "/api/admin/settings", json={**new, "kashrut_certificate": ""}, headers=AUTH
+    )
+    assert cleared.json()["kashrut_certificate"] is None
+    missing = {k: v for k, v in new.items() if k != "kashrut_certificate"}
+    assert client.put("/api/admin/settings", json=missing, headers=AUTH).status_code == 422
+    bad = {**new, "child_portion": "1.5"}
     assert client.put("/api/admin/settings", json=bad, headers=AUTH).status_code == 422
 
 
@@ -215,7 +233,12 @@ def test_lead_time_and_earliest_date(client, setup):
     assert res.status_code == 422 and res.json()["error"]["code"] == "date_unavailable"
     client.put(
         "/api/admin/settings",
-        json={"child_portion": "0.75", "lead_days": 0, "assistant_daily_limit": 30},
+        json={
+            "child_portion": "0.75",
+            "lead_days": 0,
+            "assistant_daily_limit": 30,
+            "kashrut_certificate": None,
+        },
         headers=AUTH,
     )
     assert client.post("/api/orders", json=body, headers=headers).status_code == 201

@@ -8,9 +8,17 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.schemas import catalog as s
+from app.schemas.settings import BusinessOut
 from app.services import catalog as svc
+from app.services import settings as settings_svc
 
 router = APIRouter(prefix="/api/catalog", tags=["catalog"])
+
+
+@router.get("/business", response_model=BusinessOut)
+def business(db: Session = Depends(get_db)):
+    """Public facts shown with the menu: the kashrut certificate (OPEN_DECISIONS #9)."""
+    return settings_svc.get(db)
 
 
 @router.get("/categories", response_model=list[s.CategoryOut])
@@ -23,7 +31,7 @@ def dishes(
     category_id: uuid.UUID | None = None,
     vegan: bool | None = None,
     vegetarian: bool | None = None,
-    kashrut: Literal["meat", "dairy", "pareve"] | None = None,
+    kashrut: Literal["meat", "pareve"] | None = None,
     db: Session = Depends(get_db),
 ):
     found = svc.list_dishes(

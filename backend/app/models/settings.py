@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, Integer, Numeric, SmallInteger
+from sqlalchemy import CheckConstraint, Integer, Numeric, SmallInteger, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -25,3 +25,5 @@ class BusinessSettings(Base):
     lead_days: Mapped[int] = mapped_column(Integer, default=3)
     # Messages a customer may send the AI assistant in any 24 hours; 0 = assistant off.
     assistant_daily_limit: Mapped[int] = mapped_column(Integer, default=30)
+    # Who certifies the kitchen, shown to customers (OPEN_DECISIONS #9); null = not shown.
+    kashrut_certificate: Mapped[str | None] = mapped_column(Text)

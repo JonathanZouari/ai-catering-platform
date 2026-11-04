@@ -32,9 +32,10 @@ def test_admin_fails_closed_without_configured_token(client, monkeypatch):
 def test_dish_crud_and_unknown_dietary(client):
     _, dish = make_dish(client)
     assert dish["unit_price"] == "120.50" and dish["currency"] == "ILS"
-    # Nothing entered yet → every dietary field is unknown (null), never false.
+    # Nothing entered yet → diet fields are unknown (null), never false; kashrut is pareve
+    # until marked meat (kosher meat kitchen, OPEN_DECISIONS #9).
     assert dish["dietary"] == {
-        "kashrut_class": None,
+        "kashrut_class": "pareve",
         "is_vegetarian": None,
         "is_vegan": None,
         "verified_at": None,
@@ -77,7 +78,7 @@ def test_dietary_and_allergens(client):
     assert out["allergens"] == [{"allergen_id": nuts["id"], "name": "אגוזים", "status": "contains"}]
     # Replacing clears what is no longer listed.
     res = client.put(f"/api/admin/dishes/{dish['id']}/dietary", json={}, headers=AUTH)
-    assert res.json()["allergens"] == [] and res.json()["dietary"]["kashrut_class"] is None
+    assert res.json()["allergens"] == [] and res.json()["dietary"]["kashrut_class"] == "pareve"
     bad = {"allergens": [{"allergen_id": 999, "status": "free"}]}
     res = client.put(f"/api/admin/dishes/{dish['id']}/dietary", json=bad, headers=AUTH)
     assert res.status_code == 422
@@ -107,3 +108,17 @@ def test_public_catalog_dietary_filter(client):
     assert client.get("/api/catalog/dishes?vegan=true").json() == []  # unknown ≠ vegan
     client.put(f"/api/admin/dishes/{dish['id']}/dietary", json={"is_vegan": True}, headers=AUTH)
     assert len(client.get("/api/catalog/dishes?vegan=true").json()) == 1
+
+
+def test_kosher_meat_kitchen_has_no_dairy(client):
+    """OPEN_DECISIONS #9: every dish is meat or pareve; dairy is refused everywhere."""
+    _, dish = make_dish(client)
+    url = f"/api/admin/dishes/{dish['id']}/dietary"
+    res = client.put(url, json={"kashrut_class": "dairy"}, headers=AUTH)
+    assert res.status_code == 422
+    assert client.put(url, json={"kashrut_class": None}, headers=AUTH).status_code == 422
+    assert client.put(url, json={"kashrut_class": "meat"}, headers=AUTH).status_code == 200
+    meat = client.get("/api/catalog/dishes?kashrut=meat").json()
+    assert [d["id"] for d in meat] == [dish["id"]]
+    assert client.get("/api/catalog/dishes?kashrut=pareve").json() == []
+    assert client.get("/api/catalog/dishes?kashrut=dairy").status_code == 422

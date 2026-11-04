@@ -127,6 +127,7 @@ def test_reads_then_proposes_without_touching_the_order(client, order, claude):
     assert current["pricing"]["total"] == "360.00" and current["event"]["adults"] == 40
     names = {d["name"]: d for d in menu_out["dishes"]}
     assert "טופו" not in names  # unavailable dishes are not on the menu
+    assert "no dairy" in menu_out["kashrut"] and menu_out["kashrut_certificate"] is None
     brisket = names["בריסקט"]
     assert brisket["vegetarian"] is None and brisket["allergens"] == {}  # unknown, not "no"
     # the model's thinking block went back exactly as it came
@@ -248,7 +249,12 @@ def test_scope_access_and_limits(client, order, claude):
     assert client.post(o["chat"], json={"message": "היי"}).status_code == 401
     assert claude.requests == []
 
-    limit = {"child_portion": "0.75", "lead_days": 3, "assistant_daily_limit": 1}
+    limit = {
+        "child_portion": "0.75",
+        "lead_days": 3,
+        "assistant_daily_limit": 1,
+        "kashrut_certificate": None,
+    }
     client.put("/api/admin/settings", json=limit, headers=AUTH)
     claude.script = [say("שלום!")]
     assert chat(client, o, "שלום").json()["remaining_today"] == 0

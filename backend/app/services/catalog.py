@@ -87,7 +87,7 @@ def _check_category(db: Session, category_id: uuid.UUID) -> None:
 
 def create_dish(db: Session, data: s.DishCreate) -> Dish:
     _check_category(db, data.category_id)
-    dish = Dish(**data.model_dump())
+    dish = Dish(**data.model_dump(), dietary=DishDietary())  # pareve until the owner says meat
     db.add(dish)
     db.commit()
     db.refresh(dish)
