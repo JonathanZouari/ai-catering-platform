@@ -1,6 +1,29 @@
 # API Contracts (preliminary)
 
-Status: **Draft v0.1**. Only `GET /health` is implemented (Phase 1). Everything else is a design target and may change.
+Status: **Customer submission implemented; remaining lifecycle is a draft target**.
+
+## Implemented customer flow
+
+- `GET /api/catalog`: dishes and delivery zones from SQLite, using the existing demonstration prices.
+- `POST /api/orders`: submits the complete quotation (not a draft). Body: `contact`, `event`,
+  `items` (dish ID to quantity), `expected_total_minor`. Returns the persisted UI order shape.
+  The server validates data, prices from its catalog and saves everything in one transaction.
+  Price mismatch returns 409 instead of silently accepting a changed total.
+- `GET /api/orders/{id}`: retrieve a submitted order.
+- `GET /api/orders/receipt`: recover by credential when the submission response was lost.
+- All order calls require `X-Order-Token`, 32 random bytes encoded as 64 lowercase hexadecimal
+  characters. The browser persists it before sending; the database stores only its SHA-256 hash.
+  It is a bearer capability for one order, not a customer login. Never put it in URLs/logs.
+  Clearing browser storage loses access; cross-device/account recovery remains future work.
+- Repeated submission with the same token and same normalized body returns the existing order
+  (200); a changed body returns 409. Initial creation returns 201 only after commit.
+- Reads return `Cache-Control: no-store`. Missing/wrong credentials cannot enumerate order details.
+- Current errors use FastAPI's `detail` format, handled by the frontend wrapper.
+
+The lifecycle tables below describe future endpoints. Their draft `POST /api/orders` semantics
+are superseded by the complete-submission flow above for this increment. Drafts remain local;
+submission freezes item names, units, quantities and prices. No owner approval or AI endpoint
+is implemented by this increment. Dates/slots/fees are still demonstration business rules.
 
 Base: same origin as the frontend. JSON only. All bodies validated with Pydantic.
 

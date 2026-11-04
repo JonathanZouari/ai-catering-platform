@@ -1,6 +1,6 @@
 # Database Schema (SQLite)
 
-Status: **v1.1 — migrations 0001 and 0002** (`database/migrations/`). The database is SQLite
+Status: **v1.2 — migrations 0001 through 0003** (`database/migrations/`). The database is SQLite
 ([ADR 0005](ADR/0005-sqlite-database.md)), which supersedes the earlier Supabase Postgres draft
 ([ADR 0002](ADR/0002-supabase-postgres-sqlalchemy.md)). The migration file is the source of truth. This
 page explains it.
@@ -162,16 +162,30 @@ on hand per ingredient, judged against today's UTC date).
 Python API: `app.repositories.inventory.consume_ingredient` draws first-expired-first-out across
 usable batches, all or nothing. `expiring_batches(conn, on_or_before)` lists batches to use or discard.
 
+## Customer quotations (migration 0003)
+
+- `dishes`: menu metadata, integer price in agorot, quantity step in thousandths.
+- `delivery_zones`: city and fee in agorot. Seed values preserve the UI demonstration menu/rates.
+- `order_items`: ordered dish, name/unit snapshot, quantity in thousandths and frozen prices.
+- `order_submissions`: unique hash of the private retrieval/retry credential, order reference,
+  and validated original payload for historical contact/event details and retry comparison.
+  The original local date and full time slot are retained. `orders.requested_at` is the start
+  of that slot converted from Asia/Jerusalem to UTC.
+
+The submission transaction creates customer, optional delivery address, event, order, items and
+receipt together. It does not identify returning customers by phone/name, reserve inventory,
+record income or create a dispatch: a quotation is still awaiting business approval.
+Existing rows remain unchanged. The migration adds four tables and seeds only menu/rate data.
+
 ## Planned tables (not migrated yet)
 
-The catalog, order lines, and AI tables from the draft are still planned for their phases. They will
+The remaining normalized catalog and AI tables from the draft are still planned. They will
 follow the conventions above (money in `*_minor`, enums as CHECK lists, JSON as `TEXT` checked with
 `json_valid`):
 
-- `dish_categories`, `dishes`, `dish_dietary`, `allergens`, `dish_allergens` (missing row = unknown,
+- `dish_categories`, `dish_dietary`, `allergens`, `dish_allergens` (missing row = unknown,
   never "free")
-- `order_items` with price snapshot columns frozen at submission
-- `delivery_zones` (**[OPEN #19]**), `time_slots`, `blocked_dates`
+- `time_slots`, `blocked_dates`; business confirmation of delivery rates (**[OPEN #19]**)
 - `ai_conversations`, `ai_messages`, `ai_change_proposals` (`base_order_version` must equal
   `orders.version` at execution, `executed_at` set once for idempotency)
 - `quantity_rules` once formulas are known (**[OPEN #3]**)

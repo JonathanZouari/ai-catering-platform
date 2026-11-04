@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.orders import router as orders_router
 from app.core.config import get_settings
 from app.db import get_db, migrate
 from app.db.migrations import applied_versions
@@ -47,4 +48,5 @@ def health(conn: Annotated[sqlite3.Connection, Depends(get_db)]) -> Any:
 
 
 # Mounted last so API routes take precedence.
+app.include_router(orders_router)
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

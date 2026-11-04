@@ -2,7 +2,7 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Phase 2 — data layer**. Customer UI runs on a mock backend; the SQLite database and migrations are in place. See `docs/` for the specs.
+> Status: **Customer quotation persistence connected**. The customer form loads the catalog from SQLite, submits a priced quotation atomically, and retrieves its receipt after restart. The assistant and availability rules remain demonstrations; owner approval/admin workflows are not implemented. See `docs/` for the specs.
 
 ## Stack
 
@@ -54,6 +54,8 @@ cd backend
 uv run ruff check .
 uv run ruff format --check .
 uv run pytest
+# From repository root, with Node 22+:
+node --test frontend/tests/order-store.test.mjs
 ```
 
 ## Dependencies and why
@@ -63,6 +65,7 @@ uv run pytest
 | `fastapi` | Mandated web framework |
 | `uvicorn[standard]` | ASGI server for FastAPI |
 | `pydantic-settings` | Typed config from environment variables |
+| `tzdata` | Convert Israel event times correctly on Windows and Linux |
 | `pytest` (dev) | Mandated test runner |
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |

@@ -38,7 +38,7 @@ def test_upgrade_preserves_existing_delivery_and_backfills_snapshot(tmp_path):
         conn.commit()
     finally:
         conn.close()
-    assert migrate(database) == ["0002"]
+    assert migrate(database) == ["0002", "0003"]
     conn = connect(database)
     try:
         assert (

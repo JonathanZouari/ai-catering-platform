@@ -11,6 +11,10 @@ from app.db.migrations import MIGRATIONS_DIR, discover
 EXPECTED_VERSIONS = [m.version for m in discover()]
 
 EXPECTED_TABLES = {
+    "dishes",
+    "delivery_zones",
+    "order_items",
+    "order_submissions",
     "schema_migrations",
     "customers",
     "employees",
