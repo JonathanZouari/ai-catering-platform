@@ -44,6 +44,7 @@ def test_design_assets_served():
         "/js/event.js",
         "/js/menu.js",
         "/js/order-status.js",
+        "/js/assistant.js",
         "/assets/img/table.jpg",
     )
     for path in paths:

@@ -191,12 +191,12 @@ def test_settings_defaults_and_update(client):
     assert client.get("/api/admin/settings", headers=AUTH).json() == {
         "child_portion": "0.75",
         "lead_days": 3,
+        "assistant_daily_limit": 30,
     }
-    res = client.put(
-        "/api/admin/settings", json={"child_portion": "0.5", "lead_days": 5}, headers=AUTH
-    )
-    assert res.json() == {"child_portion": "0.50", "lead_days": 5}
-    bad = {"child_portion": "1.5", "lead_days": 3}
+    new = {"child_portion": "0.5", "lead_days": 5, "assistant_daily_limit": 10}
+    res = client.put("/api/admin/settings", json=new, headers=AUTH)
+    assert res.json() == {**new, "child_portion": "0.50"}
+    bad = {"child_portion": "1.5", "lead_days": 3, "assistant_daily_limit": 30}
     assert client.put("/api/admin/settings", json=bad, headers=AUTH).status_code == 422
 
 
@@ -213,7 +213,11 @@ def test_lead_time_and_earliest_date(client, setup):
     body = draft(sunday_slot, event={"event_date": too_soon.isoformat()})
     res = client.post("/api/orders", json=body, headers=headers)
     assert res.status_code == 422 and res.json()["error"]["code"] == "date_unavailable"
-    client.put("/api/admin/settings", json={"child_portion": "0.75", "lead_days": 0}, headers=AUTH)
+    client.put(
+        "/api/admin/settings",
+        json={"child_portion": "0.75", "lead_days": 0, "assistant_daily_limit": 30},
+        headers=AUTH,
+    )
     assert client.post("/api/orders", json=body, headers=headers).status_code == 201
 
 

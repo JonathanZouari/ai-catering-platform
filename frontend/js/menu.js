@@ -1,6 +1,7 @@
 // Screens C2 (dish selection) and C3 (summary). Quantities are only requests: the backend checks
 // steps, minimums and availability, and computes every price (ADR 0003). Text via textContent only.
 import { api } from "/js/api.js";
+import { initAssistant } from "/js/assistant.js";
 import { call, session } from "/js/customer-session.js";
 
 const KASHRUT = { meat: ["בשרי", "k-meat"], dairy: ["חלבי", "k-dairy"], pareve: ["פרווה", "k-parve"] };
@@ -288,4 +289,10 @@ export async function initMenu() {
   renderDishes();
   await renderSummary();
   $("menu").hidden = false;
+  if (state.editable) {
+    initAssistant(state.orderId, {
+      beforeAnswer: async () => { flushPending(); await queue; }, // own edits land first
+      afterAccept: async () => { await loadOrder(); renderDishes(); await renderSummary(); },
+    });
+  }
 }

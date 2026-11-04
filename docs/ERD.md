@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0009` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0010` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -20,6 +20,8 @@ erDiagram
     delivery_zones ||--o{ delivery_zone_cities : "covers"
     delivery_zones |o--o{ orders : "fee frozen from"
     orders ||--o{ order_proposals : "changes proposed in"
+    orders ||--o| ai_conversations : "discussed in"
+    ai_conversations ||--o{ ai_messages : "has"
     dishes ||--o{ order_items : "is ordered as"
 
     dish_categories {
@@ -145,6 +147,20 @@ erDiagram
         smallint id PK "always 1"
         numeric child_portion "0 to 1, default 0.75"
         int lead_days "0 to 60, default 3"
+        int assistant_daily_limit "0 to 1000, default 30, per 24h"
+    }
+    ai_conversations {
+        uuid id PK
+        uuid order_id FK,UK "cascade, one per order"
+        timestamptz created_at
+    }
+    ai_messages {
+        bigint id PK "identity, keeps the order"
+        uuid conversation_id FK "cascade"
+        text role "user, assistant"
+        jsonb content "API content blocks, append-only"
+        text customer_text "null, the customer's own words"
+        timestamptz created_at
     }
     order_items {
         uuid id PK
@@ -171,26 +187,10 @@ erDiagram
 - **`business_settings`** is a single, unrelated row of owner-editable settings.
 - **Delivery fee** (#19). While draft, the fee is the current fee of the active zone containing `delivery_city`. At submission it is frozen into `orders.delivery_fee`, and `total` = sum of lines + fee.
 - **Proposals** (#6). At most one `pending` per order (partial unique index). Accepting an owner proposal writes its frozen lines into `order_items`, recomputes the totals with the frozen delivery fee, and sets `orders.status = approved` and `decision_note = note`, all in one transaction guarded by `base_order_version`.
+- **Assistant proposals** (Phase 4) use the same table with `proposed_by = assistant`, only on drafts, at live catalog prices. A new one cancels the open one; accepting one writes the items and bumps `version` but keeps the order `draft`. Submitting or withdrawing an order expires any open proposal.
+- **Assistant messages** are stored exactly as exchanged with the model and never edited. The daily limit counts `ai_messages` with `customer_text` across the customer's orders in the last 24 hours.
 - **Capacity** (#5). Orders that are `pending_approval` or `approved` hold their slot on their event date. Submitting checks `count < time_slots.capacity` while the slot row is locked (`SELECT … FOR UPDATE`).
 
 ## Planned (not migrated yet)
 
-```mermaid
-erDiagram
-    orders ||--o{ ai_conversations : "discussed in (Phase 4)"
-    ai_conversations ||--o{ ai_messages : "has"
-    ai_conversations ||--o{ order_proposals : "suggests (assistant)"
-
-    ai_conversations {
-        uuid id PK
-        uuid order_id FK
-        timestamptz created_at
-    }
-    ai_messages {
-        uuid id PK
-        uuid conversation_id FK
-        text role "user|assistant|tool"
-        jsonb content
-        timestamptz created_at
-    }
-```
+Nothing at the moment.

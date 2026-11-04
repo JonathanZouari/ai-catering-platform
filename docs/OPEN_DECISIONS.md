@@ -10,7 +10,6 @@ Format: **Question** · *Why it matters* · **Blocks**
 | 10 | Disposable serving equipment | Are utensils/disposables orderable? Priced how? | Could be catalog items or separate | Out of MVP until decided |
 | 11 | Alcohol | Offered at all? Age verification? | Legal implications | Out of MVP until decided |
 | 12 | Interface languages | ~~Hebrew only, English only, or both? RTL required?~~ **Decided 2026-11-01: Hebrew, RTL** (chosen with the "Table Journal" design). English is not planned. | Layout, copy, and AI response language | Resolved (AI response language follows: Hebrew) |
-| 16 | LLM provider | Which model provider (e.g., Anthropic Claude) and budget? | API keys, tool-calling format, cost | Phase 4 |
 | 20 | Brand | Business name, logo, colors, fonts. **Decided 2026-11-01: name "Yummai", colors and fonts per the "Table Journal" direction (UX_UI_SPEC §2).** Still open: logo, real food photography | Visual identity | Logo and photos only (Unsplash placeholders until then) |
 
 ## Decision log
@@ -19,6 +18,7 @@ When a decision is made, record it here and move the row out of the table above.
 
 | Date | # | Decision | Decided by |
 |---|---|---|---|
+| 2026-11-04 | 16 | LLM provider: **Anthropic Claude**, model Claude Sonnet 5.5 (`claude-sonnet-5-5`, balanced cost). Budget control: a per-customer limit of messages to the assistant in any 24 hours, default **30**, owner-editable (0 turns the assistant off). | Business owner |
 | 2026-11-02 | 4 (rest) | Vegetarian and vegan guests are **separate** groups (a vegan is not also counted as vegetarian); vegetarian + vegan ≤ adults + children (migration 0006). | Business owner |
 | 2026-11-02 | 14 | Catalog prices **include VAT**; no VAT is added. Each line = quantity × unit price rounded half-up to the agora; total = sum of the rounded lines. | Business owner |
 | 2026-11-02 | 17 | ILS (₪) only, Hebrew number format. | Business owner |

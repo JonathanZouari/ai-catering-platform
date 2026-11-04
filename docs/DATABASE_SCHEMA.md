@@ -120,11 +120,11 @@ A missing row = **unknown**.
 
 While `draft`, prices are read live from `dishes`; on `pending_approval` the snapshot columns become authoritative.
 
-### ai_conversations
-`id` uuid PK · `order_id` FK not null · `created_at` · index on `order_id`
+### ai_conversations (migration 0010)
+`id` uuid PK · `order_id` FK not null, **unique** (one conversation per order), cascade · `created_at`
 
-### ai_messages
-`id` uuid PK · `conversation_id` FK · `role` text CHECK in (`user`,`assistant`,`tool`) · `content` jsonb · `created_at`
+### ai_messages (migration 0010)
+`id` bigint identity PK (keeps the order) · `conversation_id` FK cascade, indexed · `role` text CHECK in (`user`,`assistant`) · `content` jsonb (Claude API content blocks, incl. thinking and tool_use/tool_result; tool results are `user` messages, as the API sends them) · `customer_text` text null (the customer's own words; counted for the daily limit and shown in the chat) · `created_at`. Append-only.
 
 ### order_proposals
 One table for both proposers (migration 0009, OPEN #6 decided): `owner` proposes on orders awaiting approval, and `assistant` (Phase 4) on drafts. It replaces the planned `ai_change_proposals`.
@@ -158,4 +158,4 @@ Owner proposals: on `pending_approval`. Accepting one moves the order to `approv
 
 ## Business rules storage
 
-Quantity rules (OPEN #3, decided) need no rules table: `dishes.serves_adults` per dish plus `business_settings` (single row: `child_portion` 0.75, `lead_days` 3). See ERD.md for the formula.
+Quantity rules (OPEN #3, decided) need no rules table: `dishes.serves_adults` per dish plus `business_settings` (single row: `child_portion` 0.75, `lead_days` 3, and `assistant_daily_limit` 30 messages per customer in any 24 hours, migration 0010). See ERD.md for the formula.

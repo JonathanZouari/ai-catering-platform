@@ -25,6 +25,8 @@ def with_pending_proposal(db: Session, order_ids: list[uuid.UUID]) -> set[uuid.U
     if not order_ids:
         return set()
     q = select(OrderProposal.order_id).where(
-        OrderProposal.order_id.in_(order_ids), OrderProposal.status == "pending"
+        OrderProposal.order_id.in_(order_ids),
+        OrderProposal.status == "pending",
+        OrderProposal.proposed_by == "owner",  # assistant ones live inside the chat
     )
     return set(db.scalars(q))

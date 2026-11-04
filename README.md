@@ -2,7 +2,7 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Phase 1 — scaffolding**. No business features yet. See `docs/` for the specs.
+> Status: **Phase 4 — AI assistant**. Owner screens (Phase 2), customer ordering (Phase 3) and the ordering assistant are built and run locally; deployment (Railway, Supabase) is Phase 6. See `docs/` for the specs.
 
 ## Stack
 
