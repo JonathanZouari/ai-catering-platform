@@ -135,3 +135,19 @@ def test_client_config_never_exposes_the_service_key(client, monkeypatch):
 
     assert response.json()["supabase_anon_key"] == "anon-key"
     assert "service-secret" not in response.text
+
+
+def test_client_config_names_the_sites_caterer(client, monkeypatch):
+    get_settings.cache_clear()
+    monkeypatch.setenv("SITE_CATERER", "taam")
+    response = client.get("/api/config")
+    get_settings.cache_clear()
+    assert response.json()["site_caterer"] == "taam"
+
+
+def test_without_a_site_caterer_the_config_says_so(client, monkeypatch):
+    get_settings.cache_clear()
+    monkeypatch.delenv("SITE_CATERER", raising=False)
+    response = client.get("/api/config")
+    get_settings.cache_clear()
+    assert response.json()["site_caterer"] is None

@@ -9,13 +9,14 @@ const MIXING = [
 const DEFAULT_COLOR = "#7a4f2a";
 
 export async function renderProfile(view) {
-  const [profile, { storage_public_url: storageUrl }] = await Promise.all([
+  const [profile, { storage_public_url: storageUrl, site_caterer: siteCaterer }] = await Promise.all([
     adminApi("/api/admin/profile"),
     getConfig(),
   ]);
   const refresh = () => renderProfile(view);
 
-  const link = `${location.origin}/c/${profile.slug}/`;
+  // The site's own caterer lives at "/"; any other caterer at its own link.
+  const link = siteCaterer === profile.slug ? `${location.origin}/` : `${location.origin}/c/${profile.slug}/`;
   const name = h("input", { required: true, maxLength: 120, value: profile.name });
   const phone = h("input", { type: "tel", dir: "ltr", maxLength: 30, value: profile.contact_phone ?? "" });
   const alertEmail = h("input", { type: "email", dir: "ltr", maxLength: 254, value: profile.notification_email ?? "" });
@@ -36,9 +37,10 @@ export async function renderProfile(view) {
   };
 
   view.replaceChildren(
-    h("h1", {}, "פרופיל העסק"),
+    h("div", { className: "page-head" },
+      h("div", {}, h("p", { className: "eyebrow" }, "הגדרות"), h("h1", {}, "פרופיל העסק"))),
     h("section", { className: "card" },
-      h("h2", {}, "הקישור ללקוחות"),
+      h("h2", {}, "הקישור לאתר"),
       h("p", {}, h("bdi", { dir: "ltr" }, link)),
       h("button", {
         className: "secondary",

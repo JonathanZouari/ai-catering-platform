@@ -17,6 +17,7 @@ os.environ.update(
     SUPABASE_ANON_KEY="anon",
     SUPABASE_SERVICE_ROLE_KEY="service",
     AI_MONTHLY_MESSAGE_LIMIT="9",
+    SITE_CATERER="taamim",
 )
 
 import jwt  # noqa: E402

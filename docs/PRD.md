@@ -34,7 +34,7 @@ A web platform for **many catering businesses**. Each caterer gets a branded lin
 | 8 | Pickup & delivery | Dates/times, delivery zones, delivery fees; no staff/on-site service |
 | 9 | Dietary info | Meat/dairy/pareve, vegetarian, vegan, known allergens, calories per portion; unknown ≠ allergen-free, and an empty calorie value is shown as unknown |
 | 10 | Full caterer dashboard | Dishes, categories, prices, units, descriptions, images, dietary info, orders, approvals, availability, blocked dates, time slots, delivery zones/fees, business profile |
-| 11 | Branded link per caterer | Customers enter at `/c/{slug}/`. No marketplace, directory, or caterer comparison |
+| 11 | Branded link per caterer | Customers enter at `/c/{slug}/`. No marketplace, directory, or caterer comparison. Since ADR 0008 the site serves one caterer (טעם של יחד) at `/`; `/c/{slug}/` still works |
 | 12 | Manual onboarding | Pilot caterers are created by us. No self-serve signup or subscription billing in the MVP |
 | 13 | Text chat only | Voice comes after the MVP |
 | 14 | Hebrew product | UI and AI are Hebrew with RTL layout. Code and technical docs stay in English |

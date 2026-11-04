@@ -10,6 +10,7 @@ from app.core.errors import register_error_handlers
 from app.core.headers import register_security_headers
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+CUSTOMER_PAGE = FRONTEND_DIR / "customer" / "index.html"
 
 
 def create_app() -> FastAPI:
@@ -28,11 +29,16 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    @app.get("/", include_in_schema=False)
+    def homepage() -> FileResponse:
+        # The site's caterer (SITE_CATERER). The page asks /api/config which one it is.
+        return FileResponse(CUSTOMER_PAGE)
+
     @app.get("/c/{slug}", include_in_schema=False)
     @app.get("/c/{slug}/", include_in_schema=False)
     def customer_page(slug: str) -> FileResponse:
         # One page for every caterer. It loads the caterer from the slug in its URL.
-        return FileResponse(FRONTEND_DIR / "customer" / "index.html")
+        return FileResponse(CUSTOMER_PAGE)
 
     # Mounted last so API routes take precedence.
     app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

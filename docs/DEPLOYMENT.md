@@ -35,6 +35,7 @@ You need three accounts: [GitHub](https://github.com) (you have this), [Supabase
    | `SUPABASE_URL` | from step 1 |
    | `SUPABASE_ANON_KEY` | from step 1 |
    | `SUPABASE_SERVICE_ROLE_KEY` | from step 1 |
+   | `SITE_CATERER` | the slug of the caterer whose site is at `/` (ADR 0008), e.g. `taam` |
    | `ANTHROPIC_API_KEY` | optional |
    | `RESEND_API_KEY` | optional, turns on new-order emails |
    | `EMAIL_FROM` | needed with the Resend key; a sender on a domain verified with Resend |

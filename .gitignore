@@ -31,3 +31,6 @@ Thumbs.db
 .vscode/
 .idea/
 e2e/screenshots/
+
+# Stitch design export, a local design reference (ADR 0008)
+stitch_catering_website_ux_design/
