@@ -7,7 +7,9 @@ import { call, session } from "/js/customer-session.js";
 const KASHRUT = { meat: ["בשרי", "k-meat"], pareve: ["פרווה", "k-parve"] }; // no dairy (OPEN #9)
 const UNIT = { per_tray: "מגשים", per_guest: "מנות", per_weight: 'ק"ג', per_item: "יחידות" };
 const UNIT_ONE = { per_tray: "מגש", per_guest: "מנה", per_weight: 'ק"ג', per_item: "יחידה" };
-const units = (quantity, unit) => (Number(quantity) === 1 ? UNIT_ONE : UNIT)[unit] ?? "";
+// per-guest lines read "for N guests": the unit is a guest, whether food or a place setting
+const qtyText = (q, unit) => unit === "per_guest" ? (Number(q) === 1 ? "לאורח אחד" : `ל-${num(q)} אורחים`)
+  : `${num(q)} ${(Number(q) === 1 ? UNIT_ONE : UNIT)[unit] ?? ""}`;
 const PER = { per_tray: "למגש", per_guest: "לאורח", per_weight: 'לק"ג', per_item: "ליחידה" };
 const CODES = {
   below_minimum: "הכמות נמוכה מהמינימום של המנה",
@@ -96,9 +98,9 @@ async function send(dish, quantity) {
 
 // --- rendering ---
 function badges(d) {
-  const k = KASHRUT[d.dietary.kashrut_class] ?? KASHRUT.pareve;
-  const out = [el("span", { className: `badge ${k[1]}`, textContent: k[0] })];
-  if (d.dietary.is_vegan) out.push(el("span", { className: "badge diet", textContent: "טבעוני" }));
+  const k = KASHRUT[d.dietary.kashrut_class]; // null = not food (disposables): no food badges
+  const out = k ? [el("span", { className: `badge ${k[1]}`, textContent: k[0] })] : [];
+  if (!k) { /* not food */ } else if (d.dietary.is_vegan) out.push(el("span", { className: "badge diet", textContent: "טבעוני" }));
   else if (d.dietary.is_vegetarian) out.push(el("span", { className: "badge diet", textContent: "צמחוני" }));
   if (d.contains_alcohol) out.push(el("span", { className: "badge diet", textContent: "אלכוהול 18+" }));
   return el("div", { className: "badges" }, ...out);
@@ -152,6 +154,7 @@ function recommendation(d) {
 
 function visible(d) {
   if (state.category && d.category_id !== state.category) return false;
+  if (d.dietary.kashrut_class === null) return true; // not food: diet filters don't apply
   if (state.diet === "vegan") return d.dietary.is_vegan === true;
   if (state.diet === "vegetarian") return d.dietary.is_vegetarian === true || d.dietary.is_vegan === true;
   return true;
@@ -206,7 +209,7 @@ async function renderSummary() {
       }
     }
     return el("tr", {}, name,
-      el("td", { className: "num", textContent: `${num(l.quantity)} ${units(l.quantity, l.pricing_unit)}` }),
+      el("td", { className: "num", textContent: qtyText(l.quantity, l.pricing_unit) }),
       el("td", { className: "num", textContent: money(l.unit_price) }),
       el("td", { className: "num", textContent: money(l.line_total) }));
   }));

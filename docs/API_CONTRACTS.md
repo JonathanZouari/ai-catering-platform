@@ -23,7 +23,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/catalog/categories` | Active categories, ordered |
-| GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`; `kashrut` is `meat` or `pareve`) |
+| GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`; `kashrut` is `meat` or `pareve`; `dietary.kashrut_class` null = not food, e.g. disposables) |
 | GET | `/api/catalog/business` | `{kashrut_certificate}` (null = not shown). Public |
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
 | GET | `/api/delivery/cities` | `[{city, fee}]` for active zones |

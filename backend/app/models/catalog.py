@@ -65,7 +65,7 @@ class Dish(Timestamps, Base):
 
 
 class DishDietary(Base):
-    """Null = unknown, never "no" (DATABASE_SCHEMA.md). Kashrut is always known: meat or pareve."""
+    """Null = unknown, never "no" (DATABASE_SCHEMA). Kashrut: meat, pareve or null (not food)."""
 
     __tablename__ = "dish_dietary"
     __table_args__ = (
@@ -74,7 +74,7 @@ class DishDietary(Base):
     dish_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("dishes.id", ondelete="CASCADE"), primary_key=True
     )
-    kashrut_class: Mapped[str] = mapped_column(
+    kashrut_class: Mapped[str | None] = mapped_column(
         Enum(*KASHRUT_CLASSES, name="kashrut_class"), default="pareve", server_default="pareve"
     )
     is_vegetarian: Mapped[bool | None] = mapped_column(Boolean)

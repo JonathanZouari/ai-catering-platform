@@ -68,7 +68,7 @@ function renderDishes() {
     if (!d.is_available) title.append(el("span", { className: "pill s-rejected", textContent: "לא זמינה" }));
     const price = el("td", { className: "num" }, money(d.unit_price, d.currency), " ",
       el("span", { className: "help", textContent: d.unit_label || UNIT[d.pricing_unit] }));
-    const k = KASHRUT[d.dietary.kashrut_class] ?? KASHRUT.pareve;
+    const k = KASHRUT[d.dietary.kashrut_class] ?? ["לא מזון", "diet"];
     const kashrut = el("td", {}, el("span", { className: `badge ${k[1]}`, textContent: k[0] }));
     const edit = el("button", { type: "button", className: "btn ghost", textContent: "עריכה" });
     edit.setAttribute("aria-label", `עריכת ${d.name}`);
@@ -112,7 +112,7 @@ function openEditor(dish) {
     $("d-serves").value = dish.serves_adults ?? "";
     $("d-avail").checked = dish.is_available;
     $("d-alcohol").checked = dish.contains_alcohol;
-    $("d-kashrut").value = dish.dietary.kashrut_class ?? "pareve";
+    $("d-kashrut").value = dish.dietary.kashrut_class ?? "";
     $("d-veg").value = triState(dish.dietary.is_vegetarian);
     $("d-vegan").value = triState(dish.dietary.is_vegan);
   } else if ($("filter").value) {
@@ -141,7 +141,7 @@ function dishPayload() {
 
 function dietaryPayload() {
   return {
-    kashrut_class: $("d-kashrut").value,
+    kashrut_class: $("d-kashrut").value || null,
     is_vegetarian: fromTriState($("d-veg").value),
     is_vegan: fromTriState($("d-vegan").value),
     allergens: [...$("allergen-fields").querySelectorAll("select")]
