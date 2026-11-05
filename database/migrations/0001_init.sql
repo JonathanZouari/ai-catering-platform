@@ -1,108 +1,121 @@
--- SQLite schema, first cut of docs/DATABASE_SCHEMA.md.
--- Differences from the Postgres draft, forced by SQLite:
---   * ids are INTEGER PRIMARY KEY instead of uuid
---   * enums are CHECK constraints
---   * money is INTEGER in minor units (agorot), so sums never hit float rounding
---   * timestamps are ISO-8601 TEXT in UTC
--- Not here yet: delivery zones, time slots, blocked dates and the AI tables.
+-- Postgres schema for Supabase, first cut of docs/DATABASE_SCHEMA.md.
+-- dish_dietary is folded into dishes, since it is 1:1.
+-- Not here yet: the AI tables and quantity_rules.
+
+CREATE TYPE pricing_unit AS ENUM ('per_guest', 'per_tray', 'per_weight', 'per_item');
+CREATE TYPE kashrut_class AS ENUM ('meat', 'dairy', 'pareve');
+CREATE TYPE fulfillment_type AS ENUM ('pickup', 'delivery');
+CREATE TYPE order_status AS ENUM ('draft', 'pending_approval', 'approved', 'rejected');
+CREATE TYPE allergen_status AS ENUM ('contains', 'free', 'unknown');
 
 CREATE TABLE dish_categories (
-  id         INTEGER PRIMARY KEY,
-  name       TEXT    NOT NULL UNIQUE,
-  sort_order INTEGER NOT NULL DEFAULT 0,
-  is_active  INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))
+  id         uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       text    NOT NULL UNIQUE,
+  sort_order integer NOT NULL DEFAULT 0,
+  is_active  boolean NOT NULL DEFAULT true
 );
 
 CREATE TABLE dishes (
-  id               INTEGER PRIMARY KEY,
-  category_id      INTEGER NOT NULL REFERENCES dish_categories (id),
-  name             TEXT    NOT NULL,
-  description      TEXT,
-  image_path       TEXT,
-  pricing_unit     TEXT    NOT NULL
-                   CHECK (pricing_unit IN ('per_guest', 'per_tray', 'per_weight', 'per_item')),
-  unit_price_minor INTEGER NOT NULL CHECK (unit_price_minor >= 0),
-  unit_label       TEXT,
-  currency         TEXT    NOT NULL DEFAULT 'ILS',
-  is_available     INTEGER NOT NULL DEFAULT 1 CHECK (is_available IN (0, 1)),
+  id            uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+  category_id   uuid          NOT NULL REFERENCES dish_categories (id),
+  name          text          NOT NULL,
+  description   text,
+  image_path    text,
+  pricing_unit  pricing_unit  NOT NULL,
+  unit_price    numeric(10,2) NOT NULL CHECK (unit_price >= 0),
+  unit_label    text,
+  currency      char(3)       NOT NULL DEFAULT 'ILS',
+  is_available  boolean       NOT NULL DEFAULT true,
   -- Dietary fields: NULL means unknown and must never be shown as "no" (decision 9).
-  kashrut_class    TEXT    CHECK (kashrut_class IN ('meat', 'dairy', 'pareve')),
-  is_vegetarian    INTEGER CHECK (is_vegetarian IN (0, 1)),
-  is_vegan         INTEGER CHECK (is_vegan IN (0, 1)),
-  created_at       TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-  updated_at       TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  kashrut_class kashrut_class,
+  is_vegetarian boolean,
+  is_vegan      boolean,
+  created_at    timestamptz   NOT NULL DEFAULT now(),
+  updated_at    timestamptz   NOT NULL DEFAULT now()
 );
 CREATE INDEX dishes_category_idx ON dishes (category_id);
 
 CREATE TABLE allergens (
-  id   INTEGER PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE
+  id   smallint PRIMARY KEY,
+  name text     NOT NULL UNIQUE
 );
 
 -- A missing row means unknown.
 CREATE TABLE dish_allergens (
-  dish_id     INTEGER NOT NULL REFERENCES dishes (id) ON DELETE CASCADE,
-  allergen_id INTEGER NOT NULL REFERENCES allergens (id),
-  status      TEXT    NOT NULL CHECK (status IN ('contains', 'free', 'unknown')),
+  dish_id     uuid            NOT NULL REFERENCES dishes (id) ON DELETE CASCADE,
+  allergen_id smallint        NOT NULL REFERENCES allergens (id),
+  status      allergen_status NOT NULL,
   PRIMARY KEY (dish_id, allergen_id)
 );
+CREATE INDEX dish_allergens_allergen_idx ON dish_allergens (allergen_id);
 
 CREATE TABLE customers (
-  id         INTEGER PRIMARY KEY,
-  full_name  TEXT NOT NULL,
-  email      TEXT,
-  phone      TEXT,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name  text        NOT NULL,
+  email      text,
+  phone      text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE events (
-  id                INTEGER PRIMARY KEY,
-  customer_id       INTEGER NOT NULL REFERENCES customers (id),
-  event_type        TEXT    NOT NULL,
-  event_date        TEXT    NOT NULL,
-  adults            INTEGER NOT NULL CHECK (adults >= 0),
-  children          INTEGER NOT NULL CHECK (children >= 0),
-  vegetarian_guests INTEGER NOT NULL DEFAULT 0 CHECK (vegetarian_guests >= 0),
-  vegan_guests      INTEGER NOT NULL DEFAULT 0 CHECK (vegan_guests >= 0),
-  restricted_guests INTEGER NOT NULL DEFAULT 0 CHECK (restricted_guests >= 0),
-  dietary_notes     TEXT,
+  id                uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id       uuid    NOT NULL REFERENCES customers (id),
+  event_type        text    NOT NULL,
+  event_date        date    NOT NULL,
+  adults            integer NOT NULL CHECK (adults >= 0),
+  children          integer NOT NULL CHECK (children >= 0),
+  vegetarian_guests integer NOT NULL DEFAULT 0 CHECK (vegetarian_guests >= 0),
+  vegan_guests      integer NOT NULL DEFAULT 0 CHECK (vegan_guests >= 0),
+  restricted_guests integer NOT NULL DEFAULT 0 CHECK (restricted_guests >= 0),
+  dietary_notes     text,
   CHECK (adults + children > 0)
 );
+CREATE INDEX events_customer_idx ON events (customer_id);
 
 CREATE TABLE orders (
-  id                   INTEGER PRIMARY KEY,
-  customer_id          INTEGER NOT NULL REFERENCES customers (id),
-  event_id             INTEGER NOT NULL UNIQUE REFERENCES events (id),
-  status               TEXT    NOT NULL DEFAULT 'draft'
-                       CHECK (status IN ('draft', 'pending_approval', 'approved', 'rejected')),
-  version              INTEGER NOT NULL DEFAULT 1,
-  fulfillment_type     TEXT    NOT NULL CHECK (fulfillment_type IN ('pickup', 'delivery')),
-  requested_at         TEXT    NOT NULL,
-  delivery_address     TEXT,
-  subtotal_minor       INTEGER,
-  delivery_fee_minor   INTEGER,
-  total_minor          INTEGER,
-  submitted_at         TEXT,
-  decided_at           TEXT,
-  decision_note        TEXT,
-  created_at           TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-  updated_at           TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+  id               uuid             PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id      uuid             NOT NULL REFERENCES customers (id),
+  event_id         uuid             NOT NULL UNIQUE REFERENCES events (id),
+  status           order_status     NOT NULL DEFAULT 'draft',
+  version          integer          NOT NULL DEFAULT 1,
+  fulfillment_type fulfillment_type NOT NULL,
+  requested_at     timestamptz      NOT NULL,
+  delivery_address text,
+  subtotal         numeric(10,2),
+  delivery_fee     numeric(10,2),
+  total            numeric(10,2),
+  submitted_at     timestamptz,
+  decided_at       timestamptz,
+  decision_note    text,
+  created_at       timestamptz      NOT NULL DEFAULT now(),
+  updated_at       timestamptz      NOT NULL DEFAULT now(),
   CHECK (fulfillment_type = 'pickup' OR delivery_address IS NOT NULL)
 );
 CREATE INDEX orders_customer_idx ON orders (customer_id);
 CREATE INDEX orders_status_idx ON orders (status);
 
 CREATE TABLE order_items (
-  id                        INTEGER PRIMARY KEY,
-  order_id                  INTEGER NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
-  dish_id                   INTEGER NOT NULL REFERENCES dishes (id),
-  quantity                  REAL    NOT NULL CHECK (quantity > 0),
+  id                    uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id              uuid          NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
+  dish_id               uuid          NOT NULL REFERENCES dishes (id),
+  quantity              numeric(10,2) NOT NULL CHECK (quantity > 0),
   -- Price snapshot, filled on submission; authoritative from pending_approval on.
-  snapshot_name             TEXT,
-  snapshot_pricing_unit     TEXT,
-  snapshot_unit_price_minor INTEGER,
-  snapshot_line_total_minor INTEGER,
+  snapshot_name         text,
+  snapshot_pricing_unit pricing_unit,
+  snapshot_unit_price   numeric(10,2),
+  snapshot_line_total   numeric(10,2),
   UNIQUE (order_id, dish_id)
 );
-CREATE INDEX order_items_order_idx ON order_items (order_id);
+CREATE INDEX order_items_dish_idx ON order_items (dish_id);
+
+-- With no policies, Supabase's public Data API can read nothing here.
+-- The backend connects as the table owner, which RLS does not restrict.
+ALTER TABLE dish_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dishes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE allergens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dish_allergens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;

@@ -1,5 +1,6 @@
 from decimal import Decimal
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -8,14 +9,14 @@ KashrutClass = Literal["meat", "dairy", "pareve"]
 
 
 class Category(BaseModel):
-    id: int
+    id: UUID
     name: str
     sort_order: int
 
 
 class Dish(BaseModel):
-    id: int
-    category_id: int
+    id: UUID
+    category_id: UUID
     name: str
     description: str | None
     image_path: str | None

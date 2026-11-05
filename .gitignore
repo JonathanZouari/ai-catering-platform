@@ -16,10 +16,6 @@ build/
 .env.*
 !.env.example
 
-# Local SQLite database (rebuilt from database/migrations and database/seeds)
-database/*.db
-database/*.db-journal
-
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/

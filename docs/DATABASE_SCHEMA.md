@@ -1,6 +1,6 @@
 # Preliminary Database Schema (PostgreSQL / Supabase)
 
-Status: **Draft v0.1** — the Postgres target. A SQLite subset now runs locally (`database/migrations/`): catalog, customers, events, orders, order items, delivery zones, time slots and blocked dates, with integer ids, money in agorot and CHECK constraints for enums. Not in SQLite yet: the AI tables and `quantity_rules`.
+Status: **Draft v0.1**. Built in `database/migrations/`: catalog, customers, events, orders, order items, delivery zones, time slots and blocked dates. Differences from this draft: `dish_dietary` is folded into `dishes`, without `verified_at`, and `customers.auth_user_id` is not added yet. Not built yet: the AI tables and `quantity_rules`.
 
 Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
 

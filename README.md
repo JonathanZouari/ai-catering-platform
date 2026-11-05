@@ -10,7 +10,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 |---|---|
 | Backend | Python 3.12+, FastAPI, Pydantic |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | SQLite now (Python's built-in `sqlite3`); Supabase (Postgres, Storage, Auth) planned |
+| Data | Supabase Postgres through SQLAlchemy and psycopg; Supabase Storage and Auth planned |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -19,7 +19,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQLite schema) and seeds/ (sample data); catering.db is created here
+database/       migrations/ (Postgres schema) and seeds/ (sample data)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -45,7 +45,7 @@ uv run uvicorn app.main:app --reload
 
 ### Database
 
-On startup the app creates `database/catering.db` and runs every SQL file in `database/migrations/`, then `database/seeds/`, that has not run yet. Each file runs once, in name order, and is recorded in the `schema_migrations` table. Set `SQLITE_PATH` to use another file. To start over, stop the app and delete `database/catering.db`.
+The app needs `DATABASE_URL` in `.env` and does not start without it (see `.env.example`). On startup it runs every SQL file in `database/migrations/`, then `database/seeds/`, that has not run yet. Each file runs once, in name order, and is recorded in the `schema_migrations` table. All pending files run in one transaction, so a failure leaves nothing behind.
 
 Add a schema change as a new numbered file (`0002_….sql`); never edit a file that has already run.
 
@@ -58,6 +58,8 @@ uv run ruff format --check .
 uv run pytest
 ```
 
+Database tests need `DATABASE_URL` and are skipped without it. Each test builds its own throwaway schema and drops it afterwards, so existing tables are not touched.
+
 ## Dependencies and why
 
 | Package | Why |
@@ -65,11 +67,13 @@ uv run pytest
 | `fastapi` | Mandated web framework |
 | `uvicorn[standard]` | ASGI server for FastAPI |
 | `pydantic-settings` | Typed config from environment variables |
+| `sqlalchemy` | Database connections and pooling (ADR 0002) |
+| `psycopg[binary]` | Postgres driver for SQLAlchemy (ADR 0002) |
 | `pytest` (dev) | Mandated test runner |
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-The SQLite database uses Python's built-in `sqlite3`, so it needs no package. `sqlalchemy`, `psycopg`, and the Supabase client are added when the app moves to Supabase.
+The Supabase client is added when the app needs Storage or Auth.
 
 ## Branches and environments
 

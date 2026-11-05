@@ -1,41 +1,37 @@
-import sqlite3
-
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 
-from app.core.db import connect, get_db, init_db
+from app.core.db import get_db, init_db
 from app.main import app
 
 
-@pytest.fixture
-def db_path(tmp_path):
-    path = tmp_path / "test.db"
-    init_db(path)
-    return path
+def dish_id(number: int) -> str:
+    """The fixed id of a sample dish (database/seeds/0001_sample_catalog.sql)."""
+    return f"d0000000-0000-4000-8000-{number:012d}"
+
+
+def category_id(number: int) -> str:
+    return f"c0000000-0000-4000-8000-{number:012d}"
 
 
 @pytest.fixture
-def client(db_path):
+def client(engine):
     def test_db():
-        conn = connect(db_path)
-        try:
+        with engine.connect() as conn:
             yield conn
-        finally:
-            conn.close()
 
     app.dependency_overrides[get_db] = test_db
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
-def test_init_db_is_idempotent(db_path):
-    init_db(db_path)
-    conn = connect(db_path)
-    try:
-        assert conn.execute("SELECT COUNT(*) FROM dishes").fetchone()[0] == 17
-        names = [r[0] for r in conn.execute("SELECT name FROM schema_migrations ORDER BY name")]
-    finally:
-        conn.close()
+def test_init_db_is_idempotent(engine):
+    init_db(engine)
+    with engine.connect() as conn:
+        assert conn.scalar(text("SELECT COUNT(*) FROM dishes")) == 17
+        names = list(conn.scalars(text("SELECT name FROM schema_migrations ORDER BY name")))
     assert names == [
         "migrations/0001_init.sql",
         "migrations/0002_availability.sql",
@@ -44,16 +40,29 @@ def test_init_db_is_idempotent(db_path):
     ]
 
 
-def test_schema_rejects_unknown_enum_value(db_path):
-    conn = connect(db_path)
-    try:
-        with pytest.raises(sqlite3.IntegrityError):
-            conn.execute(
-                "INSERT INTO dishes (category_id, name, pricing_unit, unit_price_minor) "
-                "VALUES (1, 'x', 'per_bucket', 100)"
+def test_schema_rejects_unknown_enum_value(engine):
+    with engine.connect() as conn, pytest.raises(DBAPIError):
+        conn.execute(
+            text(
+                "INSERT INTO dishes (category_id, name, pricing_unit, unit_price) "
+                "VALUES (:category_id, 'x', 'per_bucket', 1)"
+            ),
+            {"category_id": category_id(1)},
+        )
+
+
+def test_every_table_has_row_level_security(engine):
+    with engine.connect() as conn:
+        unprotected = list(
+            conn.scalars(
+                text(
+                    "SELECT relname FROM pg_class "
+                    "WHERE relkind = 'r' AND relnamespace = current_schema()::regnamespace "
+                    "AND NOT relrowsecurity"
+                )
             )
-    finally:
-        conn.close()
+        )
+    assert unprotected == []
 
 
 def test_categories_in_sort_order(client):
@@ -65,56 +74,55 @@ def test_categories_in_sort_order(client):
 def test_dishes_return_price_as_exact_string(client):
     dishes = client.get("/api/catalog/dishes").json()
     assert len(dishes) == 17
-    hummus = next(d for d in dishes if d["id"] == 1)
+    hummus = next(d for d in dishes if d["id"] == dish_id(1))
     assert hummus["unit_price"] == "85.00"
     assert hummus["is_vegan"] is True
 
 
 def test_dishes_filter_by_kashrut_and_category(client):
     dairy = client.get("/api/catalog/dishes", params={"kashrut": "dairy"}).json()
-    assert {d["id"] for d in dairy} == {3, 7, 16}
-    fish = client.get("/api/catalog/dishes", params={"category_id": 3}).json()
-    assert {d["id"] for d in fish} == {9, 10}
+    assert {d["id"] for d in dairy} == {dish_id(3), dish_id(7), dish_id(16)}
+    fish = client.get("/api/catalog/dishes", params={"category_id": category_id(3)}).json()
+    assert {d["id"] for d in fish} == {dish_id(9), dish_id(10)}
 
 
 def test_invalid_filter_is_rejected(client):
     assert client.get("/api/catalog/dishes", params={"kashrut": "halal"}).status_code == 422
 
 
-def test_unknown_dietary_value_never_passes_a_filter(client, db_path):
-    conn = connect(db_path)
-    conn.execute("UPDATE dishes SET is_vegan = NULL WHERE id = 1")
-    conn.commit()
-    conn.close()
+def test_unknown_dietary_value_never_passes_a_filter(client, engine):
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE dishes SET is_vegan = NULL WHERE id = :id"), {"id": dish_id(1)})
 
     vegan = client.get("/api/catalog/dishes", params={"vegan": True}).json()
     not_vegan = client.get("/api/catalog/dishes", params={"vegan": False}).json()
-    assert 1 not in {d["id"] for d in vegan} | {d["id"] for d in not_vegan}
-    assert client.get("/api/catalog/dishes/1").json()["is_vegan"] is None
+    assert dish_id(1) not in {d["id"] for d in vegan} | {d["id"] for d in not_vegan}
+    assert client.get(f"/api/catalog/dishes/{dish_id(1)}").json()["is_vegan"] is None
 
 
-def test_unavailable_dish_is_hidden(client, db_path):
-    conn = connect(db_path)
-    conn.execute("UPDATE dishes SET is_available = 0 WHERE id = 2")
-    conn.commit()
-    conn.close()
+def test_unavailable_dish_is_hidden(client, engine):
+    with engine.begin() as conn:
+        conn.execute(
+            text("UPDATE dishes SET is_available = false WHERE id = :id"), {"id": dish_id(2)}
+        )
 
-    assert 2 not in {d["id"] for d in client.get("/api/catalog/dishes").json()}
-    assert client.get("/api/catalog/dishes/2").status_code == 404
+    assert dish_id(2) not in {d["id"] for d in client.get("/api/catalog/dishes").json()}
+    assert client.get(f"/api/catalog/dishes/{dish_id(2)}").status_code == 404
 
 
 def test_dish_detail_allergen_statuses(client):
     allergens = {
-        a["name"]: a["status"] for a in client.get("/api/catalog/dishes/1").json()["allergens"]
+        a["name"]: a["status"]
+        for a in client.get(f"/api/catalog/dishes/{dish_id(1)}").json()["allergens"]
     }
     assert allergens["שומשום"] == "contains"
     assert allergens["גלוטן"] == "free"
 
 
 def test_dish_without_allergen_info_is_unknown_not_free(client):
-    detail = client.get("/api/catalog/dishes/8").json()
+    detail = client.get(f"/api/catalog/dishes/{dish_id(8)}").json()
     assert {a["status"] for a in detail["allergens"]} == {"unknown"}
 
 
 def test_missing_dish_returns_404(client):
-    assert client.get("/api/catalog/dishes/999").status_code == 404
+    assert client.get(f"/api/catalog/dishes/{dish_id(999)}").status_code == 404

@@ -1,64 +1,63 @@
-import sqlite3
 from collections.abc import Iterator
+from functools import lru_cache
 from pathlib import Path
+
+from sqlalchemy import Connection, Engine, create_engine, text
 
 from app.core.config import get_settings
 
 DATABASE_DIR = Path(__file__).resolve().parents[3] / "database"
 MIGRATIONS_DIR = DATABASE_DIR / "migrations"
 SEEDS_DIR = DATABASE_DIR / "seeds"
+MIGRATION_LOCK_KEY = 20261105
 
 
-def connect(path: Path) -> sqlite3.Connection:
-    # One connection per request, so it is safe to use from FastAPI's worker threads.
-    conn = sqlite3.connect(path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+def make_engine(url: str) -> Engine:
+    # Supabase hands out postgresql:// URLs, which SQLAlchemy would send to psycopg2.
+    url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+    # max_overflow=0 keeps the app inside the small connection limit of Supabase's shared pooler.
+    return create_engine(url, pool_size=5, max_overflow=0, pool_pre_ping=True)
 
 
-def init_db(path: Path) -> None:
-    """Create the database file if needed and apply every migration and seed not applied yet.
+@lru_cache
+def get_engine() -> Engine:
+    url = get_settings().database_url
+    if not url:
+        raise RuntimeError("DATABASE_URL is not set. See .env.example.")
+    return make_engine(url)
 
-    Each SQL file runs once, in name order, inside its own transaction.
-    Seeds hold sample data and run after all migrations.
+
+def init_db(engine: Engine) -> None:
+    """Apply every migration and seed not applied yet.
+
+    Each SQL file runs once, in name order. Seeds hold sample data and run after all
+    migrations. Everything runs in one transaction: a failing file leaves nothing behind.
     """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    conn = connect(path)
-    try:
+    files = [*sorted(MIGRATIONS_DIR.glob("*.sql")), *sorted(SEEDS_DIR.glob("*.sql"))]
+    with engine.begin() as conn:
+        # Two containers can start together during a deploy; only one applies files at a time.
+        conn.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": MIGRATION_LOCK_KEY})
         conn.execute(
-            "CREATE TABLE IF NOT EXISTS schema_migrations ("
-            "name TEXT PRIMARY KEY, "
-            "applied_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))"
+            text(
+                "CREATE TABLE IF NOT EXISTS schema_migrations ("
+                "name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())"
+            )
         )
-        conn.commit()
-        applied = {row["name"] for row in conn.execute("SELECT name FROM schema_migrations")}
-        files = [*sorted(MIGRATIONS_DIR.glob("*.sql")), *sorted(SEEDS_DIR.glob("*.sql"))]
+        conn.execute(text("ALTER TABLE schema_migrations ENABLE ROW LEVEL SECURITY"))
+        applied = set(conn.scalars(text("SELECT name FROM schema_migrations")))
         for file in files:
             name = f"{file.parent.name}/{file.name}"
             if name not in applied:
-                _apply(conn, name, file.read_text(encoding="utf-8"))
-    finally:
-        conn.close()
+                # psycopg runs a multi-statement string only when no parameters are bound.
+                conn.exec_driver_sql(
+                    file.read_text(encoding="utf-8"), execution_options={"no_parameters": True}
+                )
+                conn.execute(
+                    text("INSERT INTO schema_migrations (name) VALUES (:name)"), {"name": name}
+                )
 
 
-def _apply(conn: sqlite3.Connection, name: str, sql: str) -> None:
-    try:
-        # executescript cannot bind parameters, so the file and its record are two calls
-        # inside one explicit transaction: a failing file leaves no tables and no record.
-        conn.executescript(f"BEGIN;\n{sql}")
-        conn.execute("INSERT INTO schema_migrations (name) VALUES (?)", (name,))
-        conn.execute("COMMIT")
-    except sqlite3.Error:
-        if conn.in_transaction:
-            conn.execute("ROLLBACK")
-        raise
-
-
-def get_db() -> Iterator[sqlite3.Connection]:
+def get_db() -> Iterator[Connection]:
     """FastAPI dependency: a connection for the current request."""
-    conn = connect(get_settings().sqlite_path)
-    try:
+    with get_engine().connect() as conn:
         yield conn
-    finally:
-        conn.close()

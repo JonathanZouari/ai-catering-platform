@@ -7,14 +7,14 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api import catalog
 from app.core.config import get_settings
-from app.core.db import init_db
+from app.core.db import get_engine, init_db
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    init_db(get_settings().sqlite_path)
+    init_db(get_engine())
     yield
 
 

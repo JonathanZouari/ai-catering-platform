@@ -1,6 +1,6 @@
 # API Contracts (preliminary)
 
-Status: **Draft v0.1**. Implemented: `GET /health` and the three catalog reads (`/api/catalog/categories`, `/api/catalog/dishes`, `/api/catalog/dishes/{id}`), on SQLite. Everything else is a design target and may change.
+Status: **Draft v0.1**. Implemented: `GET /health` and the three catalog reads (`/api/catalog/categories`, `/api/catalog/dishes`, `/api/catalog/dishes/{id}`), on Supabase Postgres. Everything else is a design target and may change.
 
 Base: same origin as the frontend. JSON only. All bodies validated with Pydantic.
 
