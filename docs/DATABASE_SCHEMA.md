@@ -23,7 +23,8 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| auth_user_id | uuid null unique | FK `auth.users` if accounts are chosen **[OPEN #1]** |
+| auth_user_id | uuid null unique | Supabase Auth user id; NULL = guest. Deliberately **no FK** to `auth.users`: local and test Postgres have no `auth` schema (decision #1) |
+| avatar_path | text null | Object path in the private `customer-avatars` bucket |
 | full_name | text not null | |
 | email | text null | |
 | phone | text null | |
@@ -45,7 +46,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | CHECK | `adults + children > 0` | |
 
 ### dish_categories
-`id` uuid PK · `name` text not null unique · `sort_order` int not null default 0 · `is_active` bool default true
+`id` uuid PK · `name` text not null unique · `sort_order` int not null default 0 · `is_active` bool default true · `image_path` text null (public `dish-images` bucket, `categories/` prefix)
 
 ### dishes
 | Column | Type | Notes |
@@ -161,3 +162,8 @@ Phase 3 also adds `orders.access_token_hash` (sha256 of the guest token), `order
 Phase 3.1: `business_settings` (single row, `id boolean PK CHECK (id)`): lead time, edit cutoff hours (`edit_cutoff_hours`, default 4, 0-168), food minimum, delivery base/per-km/max-km, kitchen address + lat/lon. `orders` adds `delivery_km`, `delivery_lat`, `delivery_lon`, `delivery_fee_estimated`; the zone requirement is replaced by `orders_delivery_needs_address`. `geocode_cache` (`address_norm` PK, lat, lon, found) caches Nominatim answers, including not-found; lookup failures are never cached.
 
 F1 stages: `order_status` adds `in_kitchen`, `out_for_delivery`, `ready_for_pickup`, `delivered`; `orders` adds `kitchen_at`, `dispatched_at`, `delivered_at`. `business_settings.safety_car` boolean (default false). `order_ratings` (`order_id` PK/FK cascade, `stars` 1-5, `comment` ≤500, `created_at`) holds one customer rating per delivered order; RLS on, no policies.
+
+Customer accounts (migration `20261105000001_customer_accounts`): `customers` adds `auth_user_id` (unique, nullable, no FK) and `avatar_path`; `dish_categories` adds `image_path`. `order_files` (`id` PK, `order_id` FK cascade, `path` ≤300, `original_name` ≤100, `content_type` in jpeg/png/webp/pdf, `size_bytes` > 0, `uploaded_by` customer|admin, `created_at`; index on `order_id`; RLS on) holds private order attachments, at most 10 per order, in the `order-files` bucket. Files are never exposed to the AI assistant.
+
+### Supabase-only RLS and Realtime (applied by hand)
+`database/supabase/rls_realtime.sql` and `demo_seed.sql` are **not migrations**. They are applied by hand, only to the dedicated `cateringproject` Supabase project, because local and test Postgres have no `auth` schema or `anon`/`authenticated` roles. The browser has read-only access: anon reads active menu and logistics rows; a signed-in customer reads their own customers/events/orders/order_items/order_ratings rows; the admin (`app_metadata.role = 'admin'`) reads everything. Nobody writes directly; the backend does. `orders.access_token_hash` has no column grant and is left out of the Realtime column list. Because of the column grants, `select *` on `orders` fails for browser roles: list columns.

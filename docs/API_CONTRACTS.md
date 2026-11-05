@@ -102,6 +102,22 @@ Proposal shape:
 
 Order responses also carry `kitchen_at`, `dispatched_at`, `delivered_at` and `rating {stars, comment, created_at}` or `null`.
 
+## Customer accounts (decision #1)
+Bearer = a non-anonymous Supabase user JWT (same ES256/RS256, `aud`, `iss`, `exp` checks as the owner's). Anonymous Supabase users get 401; customer tokens get 403 on `/api/admin/*`.
+
+| Endpoint | Notes |
+|---|---|
+| `GET /api/me` | The signed-in user's customer row (created on first call): `id, full_name, email, phone, avatar_url`. `avatar_url` is a signed link valid 5 minutes, or `null` |
+| `PATCH /api/me` | `full_name`, `phone` |
+| `GET /api/me/orders` | Order summaries, newest first. Only orders created while signed in; guest orders are never auto-linked |
+| `POST /api/me/avatar` | multipart `file`; JPEG/PNG/WebP, 5 MB. Replaces and deletes the old object |
+| `DELETE /api/me/avatar` | Deletes the object, then clears the column (a storage failure gives 502 and keeps the row) |
+| `POST /api/orders` | Optional bearer: the order joins the account. Without it, unchanged guest checkout |
+| `GET /api/orders/{id}` and `/pricing` | `X-Order-Token` **or** the bearer of the customer who owns the order. Anyone else gets the same `404` as an unknown id. Edits still need the token |
+| `GET/POST /api/orders/{id}/files`, `DELETE /api/orders/{id}/files/{file_id}` | Token or owner. Upload: JPEG/PNG/WebP/PDF by magic bytes, 10 MB, 10 files per order (`409 file_limit`), SVG/HTML/empty rejected (`415`). Returns `{id, original_name, content_type, size_bytes, uploaded_by, created_at, url}` with a 5-minute signed `url` |
+| `POST /api/admin/categories/{id}/image` | Category photo (public `dish-images`, `categories/` prefix), JPEG/PNG/WebP, 5 MB |
+| `GET/POST /api/admin/orders/{id}/files`, `DELETE .../files/{file_id}` | Owner view of the same files |
+
 ## Order status transitions
 
 | Transition | Endpoint | Allowed actor |

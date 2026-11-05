@@ -1,6 +1,6 @@
 // Customer ordering UI. All DOM is built with h() (createElement/textContent); server data is never
 // parsed as HTML. Totals shown are always the server's OrderOut values, never computed here.
-import { api } from "/js/api.js";
+import { customerApi as api } from "/js/api.js"; // never the owner's token
 import { h, svg } from "/js/dom.js";
 import { beep, chirp, muteToggle } from "/js/radio.js";
 import { S, DIR, LANGS } from "./i18n.js";
@@ -38,7 +38,7 @@ const withLang = (path) => `${path}${path.includes("?") ? "&" : "?"}lang=${st.la
 const pub = (path) => api(withLang(path));
 const orderApi = (path = "", options = {}) =>
   api(withLang(`/api/orders/${st.cred.id}${path}`), {
-    ...options, headers: { ...options.headers, "X-Order-Token": st.cred.token },
+    ...options, auth: false, headers: { ...options.headers, "X-Order-Token": st.cred.token },
   });
 
 // kind "flag" = Red Flag panel (system failure, optional retry); "error" = plain note; "load" = start-lights skeleton.
@@ -772,6 +772,7 @@ function render() {
   document.documentElement.lang = st.lang;
   document.documentElement.dir = DIR[st.lang];
   document.title = "CaterKing";
+  $("account-link").textContent = t().account;
   $("langs").replaceChildren(h("div", { class: "pills", role: "group", "aria-label": t().lang },
     Object.entries(LANGS).map(([k, label]) => h("button", { type: "button", lang: k, "aria-pressed": String(k === st.lang), onclick: () => setLang(k) }, label))),
     muteToggle({ on: "RADIO ON", off: "MUTE RADIO", aria: t().radio }));

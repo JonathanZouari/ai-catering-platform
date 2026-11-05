@@ -272,3 +272,13 @@ body.as-lock { overflow: hidden; }
 .radio-toggle .radio-wave { opacity: 0.35; transition: opacity 120ms; }
 .radio-toggle.on .radio-wave { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .radio-toggle .radio-wave { transition: none; } }
+
+/* account page */
+.account .hint { color: var(--fg-muted, inherit); font-size: 0.875rem; margin-block: var(--space-1); }
+.account label { display: block; margin-block-end: var(--space-3); }
+.account input:not([type="file"]) { display: block; inline-size: 100%; }
+.account .avatar { display: block; border-radius: 50%; object-fit: cover; margin-block-end: var(--space-2); }
+.account .order-list { list-style: none; padding: 0; margin: 0; }
+.account .file-row { display: flex; justify-content: space-between; gap: var(--space-2); align-items: center; overflow-wrap: anywhere; }
+.account-link { margin-inline-start: auto; color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+.account .primary-link { display: inline-block; margin-block: var(--space-2); color: var(--fg); }

@@ -22,7 +22,8 @@ When a decision is made, record it here and move the row out of the table above.
 | 2026-10-29 | 12 | (Upstream, from the merged yumm.ai design PR #24) Interface language is **Hebrew only, RTL**; AI responses in Hebrew. Superseded in this fork by the he/ar/en decision above | Upstream project owner (chat) |
 | 2026-10-29 | 13 | No notifications; quote requests are viewed on the admin page | Owner |
 | 2026-10-29 | 17 | ILS (₪) | Owner |
-| 2026-10-29 | 1 | Guest checkout, no accounts: customer leaves name + email or phone and gets a private link (token in the URL fragment). Provisional; can move to Supabase Auth later | Owner |
+| 2026-10-29 | 1 | Guest checkout, no accounts: customer leaves name + email or phone and gets a private link (token in the URL fragment). Provisional; can move to Supabase Auth later. **Superseded 2026-11-05 (below)** | Owner |
+| 2026-11-05 | 1 | Customer accounts via Supabase Auth (email + password, sign-up, password reset, order history, profile photo, order files). **Guest checkout stays**; guest orders are not auto-linked to an account by email or phone. Real sign-ups and reset emails need the owner's own SMTP provider; account self-deletion is not built yet (needed before a wide launch under privacy rules) | Owner |
 | 2026-10-29 | 3 | Mechanism only: owner sets per-category rules (per adult, per child, round-up step) in admin; no rule → no suggestion. Values not yet entered. Even split across selected dishes in a category is an engineering call | Owner |
 | 2026-10-29 | 4 | Vegetarian/vegan/restricted guests are counted within adults + children (each ≤ total). They don't change quantities yet | Owner |
 | 2026-10-29 | 14 | Catalog prices include VAT; no VAT line. Lines rounded half-up to 0.01 | Owner |

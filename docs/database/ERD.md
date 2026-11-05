@@ -42,6 +42,8 @@ erDiagram
     str full_name "Customer name; never sent to the AI"
     str email "Contact email (email or phone is required)"
     str phone "Contact phone"
+    uuid auth_user_id "Supabase Auth user; empty for guests (no FK: auth schema is Supabase-only)"
+    str avatar_path "Private object path in customer-avatars"
   }
   delivery_zones {
     uuid id PK "Zone id"
@@ -57,6 +59,7 @@ erDiagram
     str name_en "Name in English (falls back to Hebrew)"
     int sort_order "Position on the menu"
     bool is_active "Shown to customers"
+    str image_path "Photo path in the public dish-images bucket"
   }
   geocode_cache {
     str address_norm PK "Address, lower-cased with spaces collapsed"
@@ -141,6 +144,18 @@ erDiagram
     uuid order_id FK "Order the chat belongs to (one chat per order)"
     object created_at "When the chat started"
   }
+  notifications {
+    uuid order_id PK,FK "Order the SMS/WhatsApp update was sent for"
+    str kind PK "flying_lap or safety_car"
+    str channel PK "sms or whatsapp"
+  }
+  order_files {
+    uuid id PK "File id"
+    uuid order_id FK "Order the file belongs to (deleted with it)"
+    str original_name "Sanitised display name, at most 100 characters"
+    str content_type "image/jpeg, image/png, image/webp or application/pdf"
+    str uploaded_by "customer or admin"
+  }
   order_items {
     uuid id PK "Order line id"
     uuid order_id FK "Order the line belongs to"
@@ -149,6 +164,11 @@ erDiagram
     str snapshot_name "Dish name frozen at submit time"
     numeric snapshot_unit_price "Unit price frozen at submit time"
     numeric snapshot_line_total "Line total frozen at submit time"
+  }
+  order_ratings {
+    uuid order_id PK,FK "Delivered order that was rated (one rating per order)"
+    int stars "1 to 5 stars"
+    str comment "Optional comment, at most 500 characters"
   }
   ai_change_proposals {
     uuid id PK "Proposal id"
@@ -173,16 +193,19 @@ erDiagram
   dish_categories ||--o{ dishes : category_id
   customers ||--o{ events : customer_id
   dish_categories ||--|o quantity_rules : category_id
-  dishes ||--o{ dish_allergens : dish_id
   allergens ||--o{ dish_allergens : allergen_id
+  dishes ||--o{ dish_allergens : dish_id
   dishes ||--|o dish_dietary : dish_id
   time_slots |o--o{ orders : time_slot_id
-  customers ||--o{ orders : customer_id
   delivery_zones |o--o{ orders : delivery_zone_id
+  customers ||--o{ orders : customer_id
   events ||--o{ orders : event_id
   orders ||--|o ai_conversations : order_id
+  orders ||--o{ notifications : order_id
+  orders ||--o{ order_files : order_id
   dishes ||--o{ order_items : dish_id
   orders ||--o{ order_items : order_id
+  orders ||--|o order_ratings : order_id
   orders ||--o{ ai_change_proposals : order_id
   ai_conversations |o--o{ ai_change_proposals : conversation_id
   ai_conversations ||--o{ ai_messages : conversation_id

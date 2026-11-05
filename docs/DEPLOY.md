@@ -12,7 +12,11 @@ The site runs on **Render** (from `render.yaml`) with **Supabase** for the datab
    - Render needs the pooler: Supabase's direct host is IPv6-only.
    - Change the start from `postgresql://` to `postgresql+psycopg://` and put your database password in place of `[YOUR-PASSWORD]`. The result looks like:
      `postgresql+psycopg://postgres.<ref>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`
-4. In **Storage**, create a bucket named `dish-images` and set it to **Public**.
+4. In **Storage**, create three buckets (the backend uploads with the service-role key; add no browser write policies):
+   - `dish-images`: **Public**, 5 MB, JPEG/PNG/WebP (dish and category photos)
+   - `customer-avatars`: **Private**, 5 MB, JPEG/PNG/WebP
+   - `order-files`: **Private**, 10 MB, JPEG/PNG/WebP/PDF
+   The private buckets are read through 5-minute signed links the backend creates. Names can be changed with `STORAGE_BUCKET`, `AVATAR_BUCKET` and `ORDER_FILES_BUCKET`.
 5. **Create your owner login.**
    1. Go to **Authentication → Users → Add user** and enter your email and a password.
    2. Make that user an admin. Open the **SQL editor** and run this with your email:
@@ -21,6 +25,12 @@ The site runs on **Render** (from `render.yaml`) with **Supabase** for the datab
       set raw_app_meta_data = raw_app_meta_data || '{"role": "admin"}'
       where email = 'you@example.com';
       ```
+
+### Customer sign-up and SMTP
+Customer accounts use Supabase Auth email + password. Supabase's built-in email only reliably reaches your own team's addresses, so for real customers configure your own SMTP provider (for example Resend) under **Authentication -> Emails -> SMTP Settings**; until then public sign-up and password-reset emails will not arrive. Under **Authentication -> URL Configuration** add `<your site>/customer/account.html` to the redirect URLs (the reset link lands there). Anonymous sign-ins stay off (the backend rejects them anyway).
+
+### Optional: row-level security and realtime (hand-applied)
+`database/supabase/rls_realtime.sql` (and `demo_seed.sql` for fake demo data) are applied by hand with `psql`, and only to the dedicated `cateringproject` project. They are not migrations and the test suite never runs them.
 
 ## 2. Render web service (free)
 1. Go to https://dashboard.render.com and choose **New → Blueprint**.

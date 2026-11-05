@@ -129,6 +129,7 @@ const RESOURCES = {
       { name: "sort_order", label: "סדר מיון", type: "number", step: "1", def: 0 },
       { name: "is_active", label: "פעיל", type: "checkbox", def: true }],
     columns: ["name_he", "name_en", "sort_order", "is_active"],
+    extras: categoryExtras, detail: false,
   },
   dishes: {
     title: "מנות", one: "מנה", path: "/api/admin/dishes",
@@ -229,7 +230,7 @@ async function showResource(key, tabs, openId = null) {
 
   async function edit(id) {
     // Only dishes have a detail endpoint (dietary and allergens come with it).
-    const row = !id ? null : cfg.extras ? await api(`${cfg.path}/${id}`) : rows.find((r) => r.id === id);
+    const row = !id ? null : cfg.extras && cfg.detail !== false ? await api(`${cfg.path}/${id}`) : rows.find((r) => r.id === id);
     holder.replaceChildren(await renderForm(row));
     holder.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -258,6 +259,25 @@ async function showResource(key, tabs, openId = null) {
   const view = h("section", {}, h("h2", {}, cfg.title), h("div", { class: "card" }, table), holder);
   app.replaceChildren(tabs, view);
   if (openId) await edit(openId);
+}
+
+// ---- category extras: photo (public dish-images bucket, uploaded through the backend)
+function categoryExtras(cat, reload) {
+  const file = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp", required: true });
+  const preview = cat.image_path && state.config?.supabase_url
+    ? h("img", { class: "thumb", alt: "", src: `${state.config.supabase_url}/storage/v1/object/public/dish-images/${cat.image_path.split("/").map(encodeURIComponent).join("/")}` })
+    : null;
+  return h("form", { class: "card", onsubmit: (ev) => {
+    ev.preventDefault();
+    run(async () => {
+      const data = new FormData();
+      data.append("file", file.files[0]);
+      await api(`/api/admin/categories/${cat.id}/image`, { method: "POST", body: data });
+      say("התמונה הועלתה.");
+      reload();
+    });
+  } }, h("h2", {}, "תמונת קטגוריה (JPEG, PNG או WebP, עד 5MB)"), preview,
+  h("label", {}, "קובץ", file), h("button", { class: "primary", type: "submit" }, "העלאה"));
 }
 
 // ---- dish extras: dietary info, allergens, image
@@ -481,6 +501,9 @@ async function orderDetail(id, refresh) {
   why.addEventListener("input", idleCancel);
   idleCancel();
   const ai = await api(`/api/admin/orders/${id}/assistant`);
+  const files = await api(`/api/admin/orders/${id}/files`).catch(() => []);
+  const filesPanel = h("section", { class: "panel" }, h("h3", {}, "קבצי הלקוח"),
+    files.length ? h("ul", {}, ...files.map((f) => h("li", {}, h("a", { href: f.url, target: "_blank", rel: "noopener noreferrer" }, f.original_name)))) : h("p", { class: "hint" }, "אין קבצים."));
   const diffText = (d) => `${d.name}: ${d.current == null ? "—" : d.current} → ${d.proposed == null ? "הוסר" : d.proposed}`;
   const assistant = h("div", { class: "assistant" },
     h("p", {}, `${ai.message_count} הודעות · אחרונה ב-${fmtDT(ai.last_message_at)}`),
@@ -523,6 +546,7 @@ async function orderDetail(id, refresh) {
             ["אורחים צמחוניים (מתוך הסך)", ev.vegetarian_guests], ["אורחים טבעוניים (מתוך הסך)", ev.vegan_guests],
             ["אורחים עם הגבלות תזונה (מתוך הסך)", ev.restricted_guests], ["הערות תזונה", ev.dietary_notes]]),
           h("h3", {}, "אספקה"), dl([["סוג", FULFIL_TEXT[o.fulfillment_type] ?? o.fulfillment_type], ["זמן מבוקש", fmtDT(o.requested_at)], ["כתובת", o.delivery_address]])),
+        filesPanel,
         h("section", { class: "panel" }, h("h3", {}, "LOCKED SNAPSHOT MANIFEST"),
           h("div", { class: "table-wrap" }, h("table", {}, h("tbody", {}, ...o.items.map((i) => h("tr", {},
             h("td", {}, i.name),
