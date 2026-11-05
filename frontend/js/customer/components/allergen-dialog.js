@@ -1,4 +1,5 @@
 import { fill, h, icon } from "../../lib/dom.js";
+import { allergenSummary } from "../allergens.js";
 
 let dialog;
 
@@ -12,18 +13,15 @@ export function showAllergenInfo(dish) {
     document.body.append(dialog);
   }
 
-  let body;
-  if (dish.allergens === null) {
-    body = h("p", { class: "callout callout-warning" }, icon("warning"),
-      h("span", { text: "אין לעסק מידע על אלרגנים במנה הזו. אי אפשר להניח שהיא נקייה מאלרגנים." }));
-  } else if (dish.allergens.length === 0) {
-    body = h("p", { text: "לא סומנו אלרגנים נפוצים במנה הזו." });
-  } else {
-    body = h("div", {},
-      h("p", { text: "המנה מכילה או עלולה להכיל:" }),
-      h("ul", { class: "chip-list" }, dish.allergens.map((a) => h("li", { class: "badge badge-warning", text: a }))),
-    );
-  }
+  const info = allergenSummary(dish);
+  const body = h("div", {},
+    info.contains.length ? h("p", {text: `מכיל: ${info.contains.join(", ")}`}) : null,
+    info.free.length ? h("p", {text: `סומן שאינו מכיל: ${info.free.join(", ")}`}) : null,
+    info.incomplete ? h("p", {class: "callout callout-warning"}, icon("warning"),
+      h("span", {text: info.unknown.length
+        ? `לא ידוע: ${info.unknown.join(", ")}. אין להסיק שהמנה נקייה מאלרגנים.`
+        : "מידע האלרגנים אינו מלא. אין להסיק שהמנה נקייה מאלרגנים."})) : null,
+  );
 
   fill(dialog, 
     h("div", { class: "dialog-body" },

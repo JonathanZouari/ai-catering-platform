@@ -2,11 +2,13 @@
 
 Each ``NNNN_name.sql`` file in ``database/migrations`` is applied once, in order, inside its own
 transaction, and recorded in ``schema_migrations`` with a checksum. Running ``migrate`` again only
-applies files that are new; it never drops or rewrites existing data. A changed checksum or an
-applied version that no longer exists on disk stops the run instead of guessing.
+applies files that are new; it never resets the database. Explicit migrations may transform
+catalog keys while preserving history. Changed checksums or unknown missing versions stop the
+run; exact historical course migrations are recognized through the checked-in checksum list.
 """
 
 import hashlib
+import json
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -16,6 +18,7 @@ from app.db.connection import connect
 
 MIGRATIONS_DIR = Path(__file__).resolve().parents[3] / "database" / "migrations"
 FILENAME_RE = re.compile(r"^(?P<version>\d{4})_(?P<name>[a-z0-9_]+)\.sql$")
+LEGACY_CHECKSUMS = json.loads(Path(__file__).with_name("legacy_checksums.json").read_text())
 
 _LEDGER_DDL = """
 CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -85,11 +88,18 @@ def migrate(db_path: str | Path, directory: Path = MIGRATIONS_DIR) -> list[str]:
     conn = connect(db_path, autocommit=True)
     try:
         conn.execute(_LEDGER_DDL)
-        unknown = sorted(
-            row[0]
-            for row in conn.execute("SELECT version FROM schema_migrations")
-            if row[0] not in known
-        )
+        # PR scope split: old course migrations live on the separate operations branch.
+        # Only their exact, reviewed checksums are recognized; never rewrite the ledger
+        # or silently accept arbitrary missing/modified migrations. New installations
+        # create only the MVP schema. Existing optional tables and rows are left intact.
+        unknown = []
+        for version, checksum in conn.execute("SELECT version, checksum FROM schema_migrations"):
+            if version not in known:
+                if version not in LEGACY_CHECKSUMS:
+                    unknown.append(version)
+                elif checksum != LEGACY_CHECKSUMS[version]:
+                    raise MigrationError(f"legacy migration {version} has an unrecognized checksum")
+        unknown.sort()
         if unknown:
             raise MigrationError(
                 f"database has migrations this code does not know about: {', '.join(unknown)}"

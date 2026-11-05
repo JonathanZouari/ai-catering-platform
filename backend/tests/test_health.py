@@ -9,7 +9,7 @@ def test_health_reports_database():
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    assert body["database"] == {"engine": "sqlite", "schema_version": "0003", "foreign_keys": True}
+    assert body["database"] == {"engine": "sqlite", "schema_version": "0005", "foreign_keys": True}
 
 
 def test_health_is_503_when_schema_missing(monkeypatch):

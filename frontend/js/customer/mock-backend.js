@@ -4,6 +4,7 @@
 // api() calls without changing their markup. Values marked PLACEHOLDER are NOT business rules.
 
 import { addDays, toIsoDate } from "../lib/format.js";
+import { allergenStatus, allergenSummary } from "./allergens.js";
 
 export const CATEGORIES = [
   { id: "salads", name: "סלטים ומטבלים" },
@@ -16,7 +17,7 @@ export const CATEGORIES = [
 
 export const UNIT_LABELS = { tray: "מגש", kg: "ק״ג", item: "יחידה", guest: "לאורח" };
 
-// allergens: array = verified list ([] means verified none); null = unknown, never shown as safe.
+// Legacy allergen lists establish contains only; omissions remain unknown.
 export const DISHES = [];
 
 // "יום נישואין" (anniversary) added for the illustrated occasion picker; the client brief lists it as an occasion.
@@ -197,8 +198,8 @@ export function assistantReply(order, rawText) {
   const allergen = ALLERGEN_WORDS.find((a) => text.includes(a));
   if (allergen) {
     if (!inOrder.length) return reply(`ההזמנה עדיין ריקה. אפשר לבדוק לגבי ${allergen} אחרי שתבחרו מנות.`);
-    const contains = inOrder.map(getDish).filter((d) => d.allergens?.includes(allergen));
-    const unknown = inOrder.map(getDish).filter((d) => d.allergens === null);
+    const contains = inOrder.map(getDish).filter((d) => allergenStatus(d, allergen) === 'contains');
+    const unknown = inOrder.map(getDish).filter((d) => allergenStatus(d, allergen) === 'unknown');
     const parts = [contains.length ? `לפי המידע שהוזן לעסק, ${allergen} מופיע ב: ${contains.map((d) => d.name).join(", ")}.` : `אין בהזמנה מנות שמסומנות כמכילות ${allergen}.`];
     if (unknown.length) parts.push(`אין מידע על אלרגנים עבור: ${unknown.map((d) => d.name).join(", ")}. אי אפשר להניח שהן בטוחות.`);
     parts.push("מומלץ לוודא מול העסק לפני האירוע.");
@@ -216,7 +217,7 @@ export function assistantReply(order, rawText) {
     const candidates = DISHES.filter((d) => d.vegan && ["mains", "sides"].includes(d.categoryId) && !(d.id in order.items));
     if (!candidates.length) return reply("כל המנות הטבעוניות מהקטגוריות העיקריות כבר בהזמנה.");
     const dish = candidates[0];
-    const note = dish.allergens === null ? " שימו לב: אין לעסק מידע על אלרגנים במנה הזו." : "";
+    const note = allergenSummary(dish).incomplete ? " שימו לב: מידע האלרגנים במנה הזו אינו מלא." : "";
     return reply(`${dish.name} מסומנת כטבעונית ומתאימה כמנה עיקרית.${note}`, [{ op: "add_item", dish_id: dish.id, quantity: recommendedQty(dish, order.event) }]);
   }
 

@@ -1,6 +1,6 @@
 """Cloud order backend against a fake PostgREST. No credentials and no network.
 
-The SQL behind these RPCs (atomicity, grants, denial) runs in supabase/tests/local-postgres.mjs.
+SQL atomicity, grants and denial run in supabase/tests/catalog-normalization.mjs.
 """
 
 import copy
@@ -24,17 +24,19 @@ from tests.test_customer_orders import payload
 
 SECRET = "sb_secret_unit-test-value"  # noqa: S105 - not a real credential
 MIGRATIONS = Path(__file__).resolve().parents[2] / "supabase" / "migrations"
+STATUSES = [{"name": "חלב", "status": "contains"}, {"name": "דגים", "status": "unknown"}]
+# metadata is what customer_catalog projects from the normalized tables; it holds no price.
 CATALOG = {
     "dishes": [
         {
             "id": "d1",
-            "metadata": {"id": "d1", "name": "חומוס", "unit": "tray", "price": 85},
+            "metadata": {"id": "d1", "name": "חומוס", "unit": "tray", "allergenStatuses": STATUSES},
             "price_minor": 8500,
             "step_milli": 1000,
         },
         {
             "id": "d5",
-            "metadata": {"id": "d5", "name": "עוף", "unit": "kg", "price": 74},
+            "metadata": {"id": "d5", "name": "עוף", "unit": "kg", "allergenStatuses": STATUSES},
             "price_minor": 7400,
             "step_milli": 500,
         },
@@ -191,6 +193,7 @@ def test_catalog_has_the_public_shape(cloud):
         "id": "d5",
         "name": "עוף",
         "unit": "kg",
+        "allergenStatuses": STATUSES,
         "price": 74.0,
         "step": 0.5,
     }
@@ -393,12 +396,12 @@ def test_denied_call_logs_only_the_sqlstate(cloud, caplog):
     assert "permission denied" not in caplog.text
 
 
-# ---- Migration contract; behaviour is proven in supabase/tests/local-postgres.mjs ----
+# ---- Migration contract; behaviour is proven in supabase/tests/catalog-normalization.mjs ----
 
 
 @pytest.fixture
 def migration():
-    files = list(MIGRATIONS.glob("*_customer_order_rpc.sql"))
+    files = list(MIGRATIONS.glob("*_catalog_normalization.sql"))
     assert len(files) == 1
     return re.sub(r"--[^\n]*", "", files[0].read_text(encoding="utf-8"))
 
@@ -412,25 +415,32 @@ SIGNATURES = (
 
 def test_migration_keeps_rpcs_invoker_and_service_role_only(migration):
     assert "security definer" not in migration.lower()
-    assert migration.lower().count("security invoker set search_path = ''") == 3
+    assert "user_metadata" not in migration
+    # The three RPCs and the dish code trigger.
+    assert migration.lower().count("security invoker set search_path = ''") == 4
     for signature in SIGNATURES:
         assert f"revoke all on function {signature} from public, anon, authenticated" in migration
         assert f"grant execute on function {signature} to service_role" in migration
-    assert not re.search(r"grant[^;]*\bto\b[^;]*\b(anon|authenticated|public)\b", migration, re.I)
+    roles = re.findall(r"grant execute on function [^;]* to (\w+);", migration)
+    assert roles == ["service_role"] * 3
 
 
-def test_migration_grants_service_role_what_the_invoker_rpcs_touch(migration):
+def test_migration_gives_the_backend_read_only_catalog_access(migration):
     grants = re.sub(r"\s+", " ", migration)
-    assert "grant usage on schema public to service_role" in grants
-    assert "grant select on public.dishes, public.delivery_zones to service_role" in grants
     assert (
-        "grant select, insert on public.customers, public.addresses, public.events, "
-        "public.orders, public.order_items, public.order_submissions to service_role"
+        "grant select on public.dish_categories, public.dish_dietary, public.allergens, "
+        "public.dish_allergens to service_role"
     ) in grants
-    assert (
-        "grant usage on sequence public.customers_id_seq, public.addresses_id_seq, "
-        "public.events_id_seq, public.orders_id_seq to service_role"
-    ) in grants
+    assert not re.search(r"grant[^;]*\b(insert|update|delete)\b[^;]*\bto service_role\b", grants)
+    assert not re.search(r"grant[^;]*\bto\b[^;]*\b(anon|public)\b", grants)
+
+
+def test_migration_stores_no_metadata_or_second_price(migration):
+    assert "drop column metadata" in migration
+    assert "add column metadata" not in migration
+    assert "'price'" not in migration
+    assert "where d.is_available" in migration
+    assert "and d.is_available" in migration
 
 
 def test_migration_serializes_a_token_before_checking_it(migration):

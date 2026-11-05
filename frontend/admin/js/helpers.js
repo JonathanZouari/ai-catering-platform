@@ -1,6 +1,7 @@
 // Pure helpers with no DOM or network access, covered by tests/helpers.test.mjs.
+import { DISH_KASHRUT, DISH_UNITS } from "./schema.js";
 
-export const STAFF_ROLES = ["catering_owner", "catering_manager"];
+export const STAFF_ROLES = ["catering_owner"];
 export const ROLE_LABELS = { catering_owner: "בעלים", catering_manager: "מנהל" };
 export const PAGE_SIZES = [25, 50, 100];
 
@@ -170,102 +171,99 @@ export function escapeLike(text) {
 
 /* ---------- dishes ---------- */
 
-export const DISH_CATEGORIES = {
-  salads: "סלטים ומטבלים",
-  mains: "עיקריות",
-  fish: "דגים",
-  sides: "תוספות ולחמים",
-  desserts: "קינוחים",
-  drinks: "שתייה",
-};
-export const DISH_UNITS = { tray: "מגש", kg: "ק״ג", item: "יחידה", guest: "לאורח" };
-export const DISH_KASHRUT = { meat: "בשרי", dairy: "חלבי", pareve: "פרווה" };
-export const ALLERGEN_STATES = { unknown: "לא ידוע", known: "ידוע" };
+const YES_NO_UNKNOWN = { yes: "כן", no: "לא" };
 
 export const DISH_FIELDS = [
-  { name: "id", label: "מזהה מנה", type: "text", identifier: true, hint: "אותיות לועזיות, ספרות, מקף וקו תחתון. לא ניתן לשינוי לאחר היצירה." },
+  { name: "legacy_code", label: "קוד מנה", type: "text", identifier: true, hint: "אותיות לועזיות, ספרות, מקף וקו תחתון. לא ניתן לשינוי לאחר היצירה." },
   { name: "name", label: "שם המנה", type: "text" },
   { name: "description", label: "תיאור", type: "longtext", nullable: true },
-  { name: "categoryId", label: "קטגוריה", type: "enum", options: DISH_CATEGORIES },
-  { name: "unit", label: "יחידת מכירה", type: "enum", options: DISH_UNITS },
-  { name: "kashrut", label: "כשרות", type: "enum", options: DISH_KASHRUT },
+  { name: "category_id", label: "קטגוריה", type: "fk", fk: { table: "dish_categories", column: "id" } },
+  { name: "pricing_unit", label: "יחידת מכירה", type: "enum", options: DISH_UNITS },
   { name: "price_minor", label: "מחיר ליחידה", type: "money" },
   { name: "step_milli", label: "צעד כמות", type: "milli", hint: "לדוגמה: 0.5 לחצי קילו, 1 ליחידה אחת." },
-  { name: "perGuest", label: "כמות לכל אורח", type: "text", nullable: true, hint: "לא חובה. מספר גדול מאפס." },
-  { name: "vegetarian", label: "צמחוני", type: "bool" },
-  { name: "vegan", label: "טבעוני", type: "bool" },
-  { name: "allergenState", label: "מידע על אלרגנים", type: "enum", options: ALLERGEN_STATES, hint: "״לא ידוע״ אינו מוצג ללקוח כבטוח." },
-  { name: "allergens", label: "רשימת אלרגנים", type: "text", nullable: true, hint: "מופרדים בפסיק. ריק עם ״ידוע״ פירושו שאין אלרגנים." },
+  { name: "per_guest", label: "כמות לכל אורח", type: "text", nullable: true, hint: "לא חובה. מספר גדול מאפס." },
+  { name: "is_available", label: "זמינה להזמנה", type: "bool" },
 ];
 
-export function isSafeDishId(id) {
-  return typeof id === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(id);
+// An empty choice here means "not provided", which is stored as NULL and shown as unknown.
+export const DIETARY_FIELDS = [
+  { name: "kashrut_class", label: "כשרות", type: "enum", nullable: true, options: DISH_KASHRUT, emptyLabel: "לא ידוע" },
+  { name: "is_vegetarian", label: "צמחונית", type: "enum", nullable: true, options: YES_NO_UNKNOWN, emptyLabel: "לא ידוע" },
+  { name: "is_vegan", label: "טבעונית", type: "enum", nullable: true, options: YES_NO_UNKNOWN, emptyLabel: "לא ידוע" },
+];
+
+export function isSafeDishCode(code) {
+  return typeof code === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(code);
 }
 
 export function dishToFields(row) {
-  const meta = row?.metadata ?? {};
   return {
-    id: row?.id ?? "",
-    name: meta.name ?? "",
-    description: meta.description ?? "",
-    categoryId: meta.categoryId ?? "",
-    unit: meta.unit ?? "",
-    kashrut: meta.kashrut ?? "",
+    legacy_code: row?.legacy_code ?? "",
+    name: row?.name ?? "",
+    description: row?.description ?? "",
+    category_id: row ? String(row.category_id) : "",
+    pricing_unit: row?.pricing_unit ?? "",
     price_minor: row ? minorToInput(row.price_minor) : "",
     step_milli: row ? milliToInput(row.step_milli) : "1",
-    perGuest: meta.perGuest === undefined || meta.perGuest === null ? "" : String(meta.perGuest),
-    vegetarian: meta.vegetarian === true,
-    vegan: meta.vegan === true,
-    allergenState: Array.isArray(meta.allergens) ? "known" : "unknown",
-    allergens: Array.isArray(meta.allergens) ? meta.allergens.join(", ") : "",
+    per_guest: row?.per_guest === undefined || row?.per_guest === null ? "" : String(row.per_guest),
+    is_available: row ? row.is_available : true,
   };
 }
 
-// Validates the dish form and returns the full row. Unknown metadata keys are preserved.
+// Validates the dish form and returns the dishes columns to write. The code is set only on creation.
 export function validateDishForm(raw, original) {
-  const fields = original ? DISH_FIELDS.filter((field) => field.name !== "id") : DISH_FIELDS;
+  const fields = original ? DISH_FIELDS.filter((field) => field.name !== "legacy_code") : DISH_FIELDS;
   const { values, errors } = validateColumns(fields, raw);
 
-  if (!original && values.id !== undefined && !isSafeDishId(values.id)) {
-    errors.id = "מותרות אותיות לועזיות, ספרות, מקף וקו תחתון בלבד.";
+  if (!original && values.legacy_code !== undefined && !isSafeDishCode(values.legacy_code)) {
+    errors.legacy_code = "מותרות אותיות לועזיות, ספרות, מקף וקו תחתון בלבד.";
   }
-  let perGuest = null;
-  if (values.perGuest) {
-    perGuest = Number(values.perGuest);
-    if (!Number.isFinite(perGuest) || perGuest <= 0) errors.perGuest = "יש להזין מספר גדול מאפס.";
+  if (values.per_guest) {
+    values.per_guest = Number(values.per_guest);
+    if (!Number.isFinite(values.per_guest) || values.per_guest <= 0) errors.per_guest = "יש להזין מספר גדול מאפס.";
   }
-  if (values.vegan && !values.vegetarian) errors.vegetarian = "מנה טבעונית היא גם צמחונית.";
   if (Object.keys(errors).length > 0) return { errors };
+  return { errors: {}, row: values };
+}
 
-  const id = original?.id ?? values.id;
-  const allergens = values.allergenState === "known"
-    ? (values.allergens ?? "").split(",").map((item) => item.trim()).filter(Boolean)
-    : null;
-  const existing = original?.metadata ?? {};
-  const metadata = {
-    ...existing,
-    id,
-    categoryId: values.categoryId,
-    name: values.name,
-    description: values.description ?? "",
-    price: values.price_minor / 100,
-    unit: values.unit,
-    kashrut: values.kashrut,
-    vegetarian: values.vegetarian,
-    vegan: values.vegan,
-    allergens,
+const toYesNo = (value) => (value === true ? "yes" : value === false ? "no" : "");
+const fromYesNo = (value) => (value === "yes" ? true : value === "no" ? false : null);
+
+export function dietaryToFields(dietary) {
+  return {
+    kashrut_class: dietary?.kashrut_class ?? "",
+    is_vegetarian: toYesNo(dietary?.is_vegetarian),
+    is_vegan: toYesNo(dietary?.is_vegan),
   };
-  // The backend derives the step from step_milli, so an implicit step stays implicit until changed.
-  if ("step" in existing || !original || values.step_milli !== original.step_milli) {
-    metadata.step = values.step_milli / 1000;
-  }
-  if (perGuest === null) delete metadata.perGuest;
-  else metadata.perGuest = perGuest;
+}
 
+// Unknown stays NULL: a blank choice must never be saved as "no".
+export function validateDietary(raw) {
+  const { values, errors } = validateColumns(DIETARY_FIELDS, raw);
+  if (Object.keys(errors).length > 0) return { errors };
+  if (values.is_vegan === "yes" && values.is_vegetarian === "no") {
+    return { errors: { is_vegetarian: "מנה טבעונית היא גם צמחונית." } };
+  }
   return {
     errors: {},
-    row: { id, metadata, price_minor: values.price_minor, step_milli: values.step_milli },
+    values: {
+      kashrut_class: values.kashrut_class,
+      is_vegetarian: fromYesNo(values.is_vegetarian),
+      is_vegan: fromYesNo(values.is_vegan),
+    },
   };
+}
+
+// The rows to upsert after an edit. A missing row already means unknown, so choosing unknown for an
+// allergen with no row writes nothing, and only a changed status is sent.
+export function allergenUpserts(dishId, savedStatuses, chosenStatuses) {
+  const rows = [];
+  for (const [allergenId, status] of Object.entries(chosenStatuses)) {
+    if ((savedStatuses[allergenId] ?? "unknown") !== status) {
+      rows.push({ dish_id: dishId, allergen_id: Number(allergenId), status });
+    }
+  }
+  return rows;
 }
 
 /* ---------- dish images ---------- */
@@ -298,9 +296,10 @@ export function sniffImageType(bytes) {
   return null;
 }
 
-export function buildDishImagePath(dishId, extension, uuid) {
-  if (!isSafeDishId(dishId)) throw new Error("unsafe dish id");
-  return `dishes/${dishId}/${uuid}.${extension}`;
+// The folder is the dish code, not its numeric key: existing objects and the storage policies use it.
+export function buildDishImagePath(dishCode, extension, uuid) {
+  if (!isSafeDishCode(dishCode)) throw new Error("unsafe dish code");
+  return `dishes/${dishCode}/${uuid}.${extension}`;
 }
 
 /* ---------- display ---------- */

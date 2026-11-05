@@ -11,31 +11,22 @@ from app.db.migrations import MIGRATIONS_DIR, applied_versions, discover
 EXPECTED_VERSIONS = [m.version for m in discover()]
 
 EXPECTED_TABLES = {
+    "dish_categories",
+    "dish_dietary",
+    "allergens",
+    "dish_allergens",
+    "legacy_catalog_snapshot",
     "dishes",
     "delivery_zones",
     "order_items",
     "order_submissions",
     "schema_migrations",
     "customers",
-    "employees",
     "addresses",
     "events",
     "orders",
-    "deliveries",
-    "payments",
-    "equipment_items",
-    "equipment_movements",
-    "ingredients",
-    "ingredient_batches",
-    "ingredient_movements",
 }
-EXPECTED_VIEWS = {
-    "order_payment_summary",
-    "equipment_stock",
-    "equipment_out_by_order",
-    "ingredient_batch_stock",
-    "ingredient_stock",
-}
+EXPECTED_VIEWS = set()
 
 
 def _objects(conn: sqlite3.Connection, kind: str) -> set[str]:
@@ -110,7 +101,7 @@ def _copy_migrations(tmp_path: Path) -> Path:
 
 def test_edited_migration_is_refused(tmp_path: Path, db_path: Path):
     migrations = _copy_migrations(tmp_path)
-    path = migrations / "0001_initial_schema.sql"
+    path = migrations / "0004_mvp_baseline.sql"
     path.write_text(path.read_text(encoding="utf-8") + "\n-- edited\n", encoding="utf-8")
     with pytest.raises(MigrationError, match="edited after it was applied"):
         migrate(db_path, migrations)
@@ -118,7 +109,7 @@ def test_edited_migration_is_refused(tmp_path: Path, db_path: Path):
 
 def test_crlf_checkout_has_same_checksum(tmp_path: Path, db_path: Path):
     migrations = _copy_migrations(tmp_path)
-    path = migrations / "0001_initial_schema.sql"
+    path = migrations / "0004_mvp_baseline.sql"
     path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
     assert migrate(db_path, migrations) == []
 
@@ -202,12 +193,55 @@ def test_concurrent_initialisation_applies_once(isolated_settings: Path):
 def test_cli_migrate_and_status(tmp_path: Path, capsys: pytest.CaptureFixture[str]):
     target = tmp_path / "cli" / "db.sqlite3"
     assert cli(["status", "--path", str(target)]) == 0
-    assert "pending  0001_initial_schema" in capsys.readouterr().out
+    assert "pending  0004_mvp_baseline" in capsys.readouterr().out
     assert not target.exists()  # status never creates a database
 
     assert cli(["--path", str(target)]) == 0
-    assert "applied 0001" in capsys.readouterr().out
+    assert "applied 0004" in capsys.readouterr().out
     assert cli(["--path", str(target)]) == 0
     assert "up to date" in capsys.readouterr().out
     assert cli(["status", "--path", str(target)]) == 0
-    assert "applied  0001_initial_schema" in capsys.readouterr().out
+    assert "applied  0004_mvp_baseline" in capsys.readouterr().out
+
+
+def test_legacy_course_database_keeps_rows_and_exact_history(tmp_path):
+    from app.db.migrations import LEGACY_CHECKSUMS
+
+    baseline_dir = tmp_path / "baseline"
+    baseline_dir.mkdir()
+    (baseline_dir / "0004_mvp_baseline.sql").write_bytes(
+        (MIGRATIONS_DIR / "0004_mvp_baseline.sql").read_bytes()
+    )
+    db_path = tmp_path / "legacy.sqlite3"
+    migrate(db_path, baseline_dir)
+    conn = connect(db_path)
+    conn.execute("INSERT INTO customers(full_name,phone) VALUES ('Historical customer','1')")
+    conn.execute("CREATE TABLE optional_old_data(id INTEGER PRIMARY KEY, note TEXT) STRICT")
+    conn.execute("INSERT INTO optional_old_data VALUES (1,'preserve')")
+    conn.execute("DELETE FROM schema_migrations")
+    for version, checksum in LEGACY_CHECKSUMS.items():
+        conn.execute(
+            "INSERT INTO schema_migrations(version,name,checksum) VALUES (?,?,?)",
+            (version, "legacy", checksum),
+        )
+    conn.commit()
+    conn.close()
+    assert migrate(db_path) == EXPECTED_VERSIONS
+    assert migrate(db_path) == []
+    with connect(db_path) as conn:
+        assert (
+            conn.execute("SELECT full_name FROM customers").fetchone()[0] == "Historical customer"
+        )
+        assert conn.execute("SELECT note FROM optional_old_data").fetchone()[0] == "preserve"
+        assert conn.execute("SELECT count(*) FROM schema_migrations").fetchone()[0] == 3 + len(
+            EXPECTED_VERSIONS
+        )
+
+
+def test_unrecognized_legacy_checksum_is_refused(db_path):
+    with connect(db_path) as conn:
+        conn.execute(
+            "INSERT INTO schema_migrations(version,name,checksum) VALUES ('0001','legacy','bad')"
+        )
+    with pytest.raises(MigrationError, match="unrecognized checksum"):
+        migrate(db_path)

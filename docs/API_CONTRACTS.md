@@ -4,7 +4,7 @@ Status: **Customer submission implemented; remaining lifecycle is a draft target
 
 ## Implemented customer flow
 
-- `GET /api/catalog`: dishes and delivery zones from SQLite, using the existing demonstration prices.
+- `GET /api/catalog`: normalized dishes and delivery zones from the configured database (Supabase or SQLite). Legacy dish codes remain API aliases. Per-allergen statuses distinguish contains/free/unknown; missing relations are unknown. Demonstration prices still require business confirmation.
 - `POST /api/orders`: submits the complete quotation (not a draft). Body: `contact`, `event`,
   `items` (dish ID to quantity), `expected_total_minor`. Returns the persisted UI order shape.
   The server validates data, prices from its catalog and saves everything in one transaction.

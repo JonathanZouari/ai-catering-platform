@@ -1,23 +1,27 @@
-// Create and edit dialogs for the six editable tables. Success is reported only after the
+// Create and edit dialogs for the editable tables. Success is reported only after the
 // database returns the saved row. There is no delete anywhere in this interface.
 import { clear, errorBlock, h, ident, showToast } from "./dom.js";
 import { replaceDishImage } from "./dish-images.js";
 import {
+  DIETARY_FIELDS,
   DISH_BUCKET,
   DISH_FIELDS,
   SIGNED_URL_SECONDS,
+  allergenUpserts,
   buildPatch,
   describeError,
+  dietaryToFields,
   dishToFields,
   escapeLike,
   sniffImageType,
   toInputValue,
   validateColumns,
+  validateDietary,
   validateDishForm,
   validateImageFile,
   validateTableRules,
 } from "./helpers.js";
-import { formColumns, getTable, labelSelect, primaryKey, selectList } from "./schema.js";
+import { ALLERGEN_STATUSES, formColumns, getTable, labelSelect, primaryKey, selectList } from "./schema.js";
 
 const PICKER_LIMIT = 50;
 
@@ -123,7 +127,7 @@ function fieldControl(column, value, id, describedBy) {
       return h(
         "select",
         common,
-        h("option", { value: "" }, "יש לבחור"),
+        !column.noEmptyOption && h("option", { value: "" }, column.emptyLabel ?? "יש לבחור"),
         Object.entries(column.options).map(([key, label]) => h("option", { value: key, selected: key === value }, label)),
       );
     case "longtext":
@@ -185,6 +189,87 @@ function renderField({ client, column, value, isAlive, locked }) {
       error.hidden = !message;
       if (message) control.setAttribute("aria-invalid", "true");
       else control.removeAttribute("aria-invalid");
+    },
+  };
+}
+
+/* ---------- dish dietary and allergen fields ---------- */
+
+// Only the owner can read or write these tables. Anything that cannot be loaded stays out of the
+// form and out of the save, so a failed read can never be saved over real data as unknown.
+function dishSafetySection({ client, row, isAlive }) {
+  const body = h("div", { "aria-live": "polite" }, h("p", { class: "muted" }, "טוען מידע תזונתי ואלרגנים…"));
+  let saved = null;
+  let dietaryFields = null;
+  let allergenFields = null;
+
+  const readDietary = () => Object.fromEntries([...dietaryFields].map(([name, field]) => [name, field.read()]));
+  const readAllergens = () => Object.fromEntries([...allergenFields].map(([allergenId, field]) => [allergenId, field.read()]));
+  const snapshot = () => (saved ? JSON.stringify([readDietary(), readAllergens()]) : "");
+  let initial = "";
+
+  async function load() {
+    const [allergens, dietary, statuses] = await Promise.all([
+      client.from("allergens").select("id,name").order("id"),
+      row ? client.from("dish_dietary").select("kashrut_class,is_vegetarian,is_vegan").eq("dish_id", row.id).maybeSingle() : { data: null },
+      row ? client.from("dish_allergens").select("allergen_id,status").eq("dish_id", row.id) : { data: [] },
+    ]);
+    if (!isAlive()) return;
+    const error = allergens.error ?? dietary.error ?? statuses.error;
+    if (error || (allergens.data ?? []).length === 0) {
+      clear(body).append(h("p", { class: "notice" }, "מידע תזונתי ואלרגנים נערך בידי הבעלים בלבד. המידע לא נטען, והשמירה לא תשנה אותו."));
+      return;
+    }
+    saved = {
+      dietary: dietary.data,
+      statuses: Object.fromEntries((statuses.data ?? []).map((item) => [String(item.allergen_id), item.status])),
+    };
+    const fields = dietaryToFields(dietary.data);
+    dietaryFields = new Map(DIETARY_FIELDS.map((column) => [column.name, renderField({ client, column, value: fields[column.name], isAlive })]));
+    allergenFields = new Map(allergens.data.map((allergen) => {
+      const column = { name: `allergen-${allergen.id}`, label: allergen.name, type: "enum", options: ALLERGEN_STATUSES, noEmptyOption: true };
+      return [String(allergen.id), renderField({ client, column, value: saved.statuses[String(allergen.id)] ?? "unknown", isAlive })];
+    }));
+    clear(body).append(
+      h("p", { class: "hint" }, "״לא ידוע״ לעולם אינו מוצג ללקוח כבטוח."),
+      h("div", { class: "form-grid" }, [...dietaryFields.values(), ...allergenFields.values()].map((field) => field.wrapper)),
+    );
+    initial = snapshot();
+  }
+
+  load().catch(() => {
+    if (isAlive()) clear(body).append(h("p", { class: "notice" }, "לא ניתן לטעון מידע תזונתי ואלרגנים. השמירה לא תשנה אותו."));
+  });
+
+  return {
+    wrapper: h("section", { class: "field field-wide" }, h("h3", {}, "מידע תזונתי ואלרגנים"), body),
+    isDirty: () => snapshot() !== initial,
+    validate() {
+      if (!saved) return true;
+      const { errors } = validateDietary(readDietary());
+      for (const [name, field] of dietaryFields) field.setError(errors[name]);
+      return Object.keys(errors).length === 0;
+    },
+    // Each table is marked saved as it succeeds, so a retry after a failure sends only what is left.
+    async save(dishId) {
+      if (!saved) return { changed: false };
+      let changed = false;
+      const { values } = validateDietary(readDietary());
+      if (Object.keys(buildPatch(saved.dietary ?? {}, values)).length > 0) {
+        const written = await client.from("dish_dietary").upsert({ dish_id: dishId, ...values }, { onConflict: "dish_id" });
+        if (written.error) return { changed, error: written.error };
+        saved.dietary = values;
+        changed = true;
+      }
+      const chosen = readAllergens();
+      const rows = allergenUpserts(dishId, saved.statuses, chosen);
+      if (rows.length > 0) {
+        const written = await client.from("dish_allergens").upsert(rows, { onConflict: "dish_id,allergen_id" });
+        if (written.error) return { changed, error: written.error };
+        saved.statuses = chosen;
+        changed = true;
+      }
+      return { changed };
     },
   };
 }
@@ -302,9 +387,10 @@ export function openRowForm({ client, table, row, isSessionAlive, onSaved, regis
       column,
       value: initial[column.name],
       isAlive,
-      locked: isDish && column.name === "id" && Boolean(row),
+      locked: isDish && column.name === "legacy_code" && Boolean(row),
     }));
   }
+  const safety = isDish ? dishSafetySection({ client, row, isAlive }) : null;
   const image = isDish ? dishImageField({ client, row, isAlive }) : null;
 
   const formMessage = h("div", { class: "form-message" });
@@ -314,7 +400,7 @@ export function openRowForm({ client, table, row, isSessionAlive, onSaved, regis
   const form = h(
     "form",
     { novalidate: true, onsubmit: onSubmit },
-    h("div", { class: "form-grid" }, [...rendered.values()].map((field) => field.wrapper), image?.wrapper),
+    h("div", { class: "form-grid" }, [...rendered.values()].map((field) => field.wrapper), safety?.wrapper, image?.wrapper),
     formMessage,
     h("div", { class: "form-actions" }, saveButton, cancelButton),
   );
@@ -337,7 +423,7 @@ export function openRowForm({ client, table, row, isSessionAlive, onSaved, regis
   const initialRaw = JSON.stringify(readRaw());
 
   function isDirty() {
-    return JSON.stringify(readRaw()) !== initialRaw || Boolean(image?.getSelection());
+    return JSON.stringify(readRaw()) !== initialRaw || Boolean(image?.getSelection()) || Boolean(safety?.isDirty());
   }
 
   function close() {
@@ -396,9 +482,9 @@ export function openRowForm({ client, table, row, isSessionAlive, onSaved, regis
     let values;
     if (isDish) {
       const result = validateDishForm(readRaw(), original);
-      if (showFieldErrors(result.errors)) return;
+      const invalid = showFieldErrors(result.errors);
+      if (!safety.validate() || invalid) return;
       values = result.row;
-      if (original) delete values.id;
     } else {
       const result = validateColumns(fields, readRaw());
       validateTableRules(table.name, result.values, result.errors);
@@ -416,14 +502,28 @@ export function openRowForm({ client, table, row, isSessionAlive, onSaved, regis
       }
       const wasNew = !original;
       original = written.data;
+      // From here the row exists, so a retry after a later failure must update it, not insert again.
+      if (wasNew && isDish) rendered.get("legacy_code").control.disabled = true;
+
+      const safetySaved = safety ? await safety.save(original.id) : { changed: false };
+      if (!isAlive()) return;
+      if (safetySaved.error) {
+        onSaved();
+        const description = describeError(safetySaved.error);
+        const saved = written.unchanged ? "" : "פרטי המנה נשמרו. ";
+        formMessage.append(errorBlock({
+          message: `${saved}המידע התזונתי או מידע האלרגנים לא נשמר במלואו. ${description.message}`,
+          detail: description.detail,
+        }));
+        return;
+      }
 
       const selection = image?.getSelection();
       if (selection) {
-        // From here the row exists, so a retry after an image failure must update it, not insert again.
-        if (wasNew) rendered.get("id").control.disabled = true;
         const result = await replaceDishImage({
           client,
           dishId: original.id,
+          dishCode: original.legacy_code,
           oldPath: original.image_path,
           file: selection.file,
           info: selection.info,
@@ -433,7 +533,7 @@ export function openRowForm({ client, table, row, isSessionAlive, onSaved, regis
         if (!result.ok) {
           onSaved();
           const description = describeError(result.error);
-          const saved = written.unchanged ? "" : "פרטי המנה נשמרו. ";
+          const saved = written.unchanged && !safetySaved.changed ? "" : "פרטי המנה נשמרו. ";
           const outcome = result.stage === "upload"
             ? "התמונה לא הוחלפה, והתמונה הקודמת נשארה במקומה."
             : "לא התקבל אישור לקישור התמונה, וייתכן שהיא כבר נשמרה. הקובץ שהועלה לא נמחק. יש לטעון מחדש את הרשימה ולבדוק את המנה לפני ניסיון נוסף.";
@@ -449,7 +549,7 @@ export function openRowForm({ client, table, row, isSessionAlive, onSaved, regis
         return;
       }
 
-      if (written.unchanged) {
+      if (written.unchanged && !safetySaved.changed) {
         formMessage.append(h("div", { class: "notice", role: "status" }, "לא בוצעו שינויים, לכן לא נשלח דבר לענן."));
         return;
       }

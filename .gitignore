@@ -33,3 +33,4 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+.claude/task-skills/

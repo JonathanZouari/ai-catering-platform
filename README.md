@@ -2,7 +2,7 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Customer quotation persistence connected**. The customer form loads the catalog from SQLite, submits a priced quotation atomically, and retrieves its receipt after restart. The assistant and availability rules remain demonstrations; owner approval/admin workflows are not implemented. See `docs/` for the specs.
+> Status: **Customer quotations connected to Supabase or explicit local SQLite**. The form loads a normalized catalog, submits a priced quotation atomically and retrieves its receipt after restart. The owner admin reads the same cloud orders. AI execution, scheduling enforcement and order approval workflows remain unfinished. Operations/inventory are a separate optional extension. See `docs/DATABASE_SCHEMA.md` for review corrections and upgrade boundaries.
 
 ## Stack
 
@@ -10,7 +10,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 |---|---|
 | Backend | Python 3.12+, FastAPI, Pydantic, standard-library `sqlite3` |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | **SQLite** ([ADR 0005](docs/ADR/0005-sqlite-database.md)). Supabase Storage/Auth optional, if approved |
+| Data | **Supabase Postgres** for cloud orders/admin; **SQLite** for explicit local mode. Auth, private Storage and Realtime support the owner interface. |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -70,7 +70,7 @@ node --test frontend/tests/order-store.test.mjs
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-The database needs no extra package: SQLite (3.37+) ships with Python. The Supabase client is added only if Storage/Auth are adopted.
+SQLite (3.37+) ships with Python. Cloud mode uses the pinned server HTTP client and a vendored browser SDK. Set `ORDER_DATABASE_BACKEND=supabase`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` and the server-only `SUPABASE_SECRET_KEY` in an ignored environment file. Never expose the secret key to the browser. Follow the reviewed migration procedure in `docs/DATABASE_SCHEMA.md` before connecting a fresh cloud database.
 
 ## Branches and environments
 

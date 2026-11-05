@@ -84,7 +84,7 @@ Details: `AI_AGENT_DESIGN.md`.
 
 Multi-business marketplace · admin AI agent · corporate customers · staff/waiter management · advanced inventory · supplier procurement · accounting/invoicing · payment gateway · calorie/nutrition database · automated dish generation · autonomous order approval · native mobile apps.
 
-**Data layer only (course assignment, 2026-11-02):** the SQLite schema includes employees, deliveries, income receipts and refunds, reusable equipment (tables and serving utensils), and ingredient batches and inventory movements (`DATABASE_SCHEMA.md`). No UI, API, or business workflow uses them yet. Building those still follows the rules below and the open decisions (#2 payments, #7 cancellation/refunds, #10 equipment).
+**Review scope correction (2026-11-05):** employees, dispatch execution, income receipts/refunds, equipment and ingredient inventory belong to a separate optional operations change. They are not installed or displayed by the MVP. Existing historical data is preserved; splitting the code is not permission to delete it. Building those workflows still requires the decisions below (#2 payments, #7 cancellation/refunds, #10 equipment).
 
 Unresolved and **not** to be built until decided: serving utensils/disposables, alcohol, voice AI, customer auth method, notifications, cancellation/refund, owner-proposed revisions, post-submission customer edits.
 

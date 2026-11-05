@@ -4,10 +4,12 @@ import { test } from "node:test";
 import { replaceDishImage } from "../js/dish-images.js";
 import {
   MAX_IMAGE_BYTES,
+  allergenUpserts,
   buildDishImagePath,
   buildPatch,
   createRequestGuard,
   describeError,
+  dietaryToFields,
   dishToFields,
   edgePath,
   escapeLike,
@@ -27,6 +29,7 @@ import {
   tokenHasStaffRole,
   validateColumn,
   validateColumns,
+  validateDietary,
   validateDishForm,
   validateImageFile,
   validateTableRules,
@@ -37,7 +40,7 @@ const jwt = (payload) => `h.${Buffer.from(JSON.stringify(payload)).toString("bas
 
 test("only a server-set staff role in app_metadata passes the gate", () => {
   assert.equal(staffRoleOf({ app_metadata: { role: "catering_owner" } }), "catering_owner");
-  assert.equal(staffRoleOf({ app_metadata: { role: "catering_manager" } }), "catering_manager");
+  assert.equal(staffRoleOf({ app_metadata: { role: "catering_manager" } }), null);
   assert.equal(staffRoleOf({ app_metadata: { role: "admin" } }), null);
   assert.equal(staffRoleOf({ app_metadata: {} }), null);
   assert.equal(staffRoleOf(null), null);
@@ -151,55 +154,66 @@ test("search terms cannot inject wildcards", () => {
 });
 
 const seed = {
-  id: "d8",
-  metadata: { id: "d8", categoryId: "mains", name: "תבשיל", description: "ירקות", price: 170, unit: "tray", kashrut: "pareve", vegetarian: true, vegan: true, allergens: null, futureKey: "keep" },
+  id: 8,
+  legacy_code: "d8",
+  name: "תבשיל",
+  description: "ירקות",
+  category_id: 2,
+  pricing_unit: "tray",
+  per_guest: null,
   price_minor: 17000,
   step_milli: 1000,
+  is_available: true,
   image_path: null,
 };
 
 test("an untouched dish form produces no change at all", () => {
   const result = validateDishForm(dishToFields(seed), seed);
   assert.deepEqual(result.errors, {});
-  const { id, ...values } = result.row;
-  assert.equal(id, "d8");
-  assert.deepEqual(buildPatch(seed, values), {});
+  assert.deepEqual(buildPatch(seed, result.row), {});
 });
 
-test("unknown allergens stay unknown and are never turned into an empty list", () => {
-  const fields = dishToFields(seed);
-  assert.equal(fields.allergenState, "unknown");
-  assert.equal(validateDishForm(fields, seed).row.metadata.allergens, null);
-  const known = validateDishForm({ ...fields, allergenState: "known", allergens: "" }, seed);
-  assert.deepEqual(known.row.metadata.allergens, []);
-  const listed = validateDishForm({ ...fields, allergenState: "known", allergens: "חלב, אגוזים," }, seed);
-  assert.deepEqual(listed.row.metadata.allergens, ["חלב", "אגוזים"]);
+test("editing a dish writes typed columns only, and never its code", () => {
+  const result = validateDishForm({ ...dishToFields(seed), price_minor: "180.50", step_milli: "0.5", per_guest: "1.5", is_available: false }, seed);
+  assert.deepEqual(buildPatch(seed, result.row), { per_guest: 1.5, price_minor: 18050, step_milli: 500, is_available: false });
+  assert.ok(!("legacy_code" in result.row) && !("metadata" in result.row) && !("id" in result.row));
+  const cleared = validateDishForm({ ...dishToFields({ ...seed, per_guest: 2 }), per_guest: "" }, { ...seed, per_guest: 2 });
+  assert.equal(cleared.row.per_guest, null);
+  assert.ok(validateDishForm({ ...dishToFields(seed), per_guest: "-1" }, seed).errors.per_guest);
 });
 
-test("dish edits keep unknown keys and sync price and step into the document", () => {
-  const result = validateDishForm({ ...dishToFields(seed), price_minor: "180.50", step_milli: "0.5", perGuest: "1.5" }, seed);
-  assert.equal(result.row.price_minor, 18050);
-  assert.equal(result.row.metadata.price, 180.5);
-  assert.equal(result.row.step_milli, 500);
-  assert.equal(result.row.metadata.step, 0.5);
-  assert.equal(result.row.metadata.perGuest, 1.5);
-  assert.equal(result.row.metadata.futureKey, "keep");
-  const cleared = validateDishForm({ ...dishToFields({ ...seed, metadata: { ...seed.metadata, perGuest: 2 } }), perGuest: "" }, seed);
-  assert.equal("perGuest" in cleared.row.metadata, false);
-});
-
-test("new dish ids must be safe storage path segments", () => {
-  const fields = { ...dishToFields(null), id: "../x", name: "ש", categoryId: "mains", unit: "kg", kashrut: "meat", price_minor: "1", allergenState: "unknown" };
-  assert.ok(validateDishForm(fields, null).errors.id);
-  const created = validateDishForm({ ...fields, id: "new-dish_1" }, null);
+test("new dish codes must be safe storage path segments and the database assigns the key", () => {
+  const fields = { ...dishToFields(null), legacy_code: "../x", name: "ש", category_id: "2", pricing_unit: "kg", price_minor: "1" };
+  assert.equal(fields.is_available, true);
+  assert.ok(validateDishForm(fields, null).errors.legacy_code);
+  const created = validateDishForm({ ...fields, legacy_code: "new-dish_1" }, null);
   assert.deepEqual(created.errors, {});
-  assert.equal(created.row.metadata.id, "new-dish_1");
-  assert.equal(created.row.metadata.step, 1);
+  assert.equal(created.row.legacy_code, "new-dish_1");
+  assert.equal(created.row.category_id, 2);
+  assert.equal(created.row.step_milli, 1000);
+  assert.ok(!("id" in created.row));
 });
 
-test("a vegan dish must also be vegetarian", () => {
-  const result = validateDishForm({ ...dishToFields(seed), vegetarian: false, vegan: true }, seed);
-  assert.ok(result.errors.vegetarian);
+test("unknown dietary facts stay NULL and are never saved as no", () => {
+  assert.deepEqual(dietaryToFields(null), { kashrut_class: "", is_vegetarian: "", is_vegan: "" });
+  assert.deepEqual(validateDietary(dietaryToFields(null)).values, { kashrut_class: null, is_vegetarian: null, is_vegan: null });
+  const stored = { kashrut_class: "dairy", is_vegetarian: true, is_vegan: false };
+  assert.deepEqual(dietaryToFields(stored), { kashrut_class: "dairy", is_vegetarian: "yes", is_vegan: "no" });
+  assert.deepEqual(validateDietary(dietaryToFields(stored)).values, stored);
+});
+
+test("a vegan dish cannot be marked as not vegetarian", () => {
+  assert.ok(validateDietary({ kashrut_class: "", is_vegetarian: "no", is_vegan: "yes" }).errors.is_vegetarian);
+  assert.deepEqual(validateDietary({ kashrut_class: "", is_vegetarian: "", is_vegan: "yes" }).errors, {});
+});
+
+test("allergen edits send only changes, and an untouched unknown writes no row", () => {
+  const saved = { 1: "contains", 2: "free" };
+  assert.deepEqual(allergenUpserts(8, saved, { 1: "contains", 2: "free", 3: "unknown" }), []);
+  assert.deepEqual(allergenUpserts(8, saved, { 1: "unknown", 2: "free", 3: "free" }), [
+    { dish_id: 8, allergen_id: 1, status: "unknown" },
+    { dish_id: 8, allergen_id: 3, status: "free" },
+  ]);
 });
 
 test("image rules: type, extension and size", () => {
@@ -309,7 +323,7 @@ function fakeClient({ uploadError = null, linkError = null, linkRejects = null }
   };
 }
 
-const imageArgs = { dishId: "d1", file: {}, info: { extension: "png", contentType: "image/png" }, uuid: "u1" };
+const imageArgs = { dishId: 1, dishCode: "d1", file: {}, info: { extension: "png", contentType: "image/png" }, uuid: "u1" };
 const names = (client) => client.calls.map((call) => call[0]);
 
 test("image save uploads, then links, and deletes nothing", async () => {
@@ -320,6 +334,8 @@ test("image save uploads, then links, and deletes nothing", async () => {
   assert.equal(client.calls[0][1], "dish-images");
   assert.equal(client.calls[0][3].upsert, false);
   assert.ok(client.calls.some((c) => c[0] === "eq" && c[1] === "image_path" && c[2] === "dishes/d1/old.png"));
+  // The path uses the code, while the row is found by its numeric key.
+  assert.ok(client.calls.some((c) => c[0] === "eq" && c[1] === "id" && c[2] === 1));
 });
 
 test("a failed upload never touches the row or any object", async () => {

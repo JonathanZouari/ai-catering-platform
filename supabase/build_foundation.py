@@ -2,8 +2,8 @@
 
 The foundation migration was generated once from SQLite migrations 0001-0003 and then fixed by hand
 (runner-owned transactions, text payload, TRUNCATE guards, lock modes, fail-closed checks). Change
-supabase/migrations/20261105103436_catering_postgres_foundation.sql directly while it is unapplied,
-and add a new migration once it has been applied anywhere.
+supabase/migrations through new forward migrations. The MVP baseline and normalization
+now replace the original bootstrap for new installations; existing data is preserved.
 """
 
 import sys

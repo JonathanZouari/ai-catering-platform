@@ -94,12 +94,48 @@ class SqliteOrders:
         return {
             "dishes": [
                 {
-                    "id": row["id"],
-                    "metadata": json.loads(row["metadata"]),
+                    "id": row["legacy_code"],
+                    "metadata": {
+                        "id": row["legacy_code"],
+                        "categoryId": row["category_code"],
+                        "name": row["name"],
+                        "description": row["description"],
+                        "unit": row["unit"],
+                        "perGuest": row["per_guest"],
+                        "kashrut": row["kashrut_class"],
+                        "vegetarian": None
+                        if row["is_vegetarian"] is None
+                        else bool(row["is_vegetarian"]),
+                        "vegan": None if row["is_vegan"] is None else bool(row["is_vegan"]),
+                        "allergens": [
+                            a["name"]
+                            for a in self.conn.execute(
+                            "SELECT a.name FROM allergens a "
+                            "JOIN dish_allergens da ON da.allergen_id=a.id "
+                                "WHERE da.dish_id=? AND da.status='contains' ORDER BY a.id",
+                                (row["id"],),
+                            )
+                        ],
+                        "allergenStatuses": [
+                            dict(a)
+                            for a in self.conn.execute(
+                            "SELECT a.name,coalesce(da.status,'unknown') AS status "
+                            "FROM allergens a LEFT JOIN dish_allergens da "
+                            "ON da.allergen_id=a.id AND da.dish_id=? ORDER BY a.id",
+                                (row["id"],),
+                            )
+                        ],
+                    },
                     "price_minor": row["price_minor"],
                     "step_milli": row["step_milli"],
                 }
-                for row in self.conn.execute("SELECT * FROM dishes ORDER BY rowid")
+                for row in self.conn.execute(
+                    "SELECT d.*, c.code AS category_code, dd.kashrut_class, "
+                    "dd.is_vegetarian, dd.is_vegan "
+                    "FROM dishes d JOIN dish_categories c ON c.id=d.category_id "
+                    "LEFT JOIN dish_dietary dd ON dd.dish_id=d.id "
+                    "WHERE d.is_available=1 AND c.is_active=1 ORDER BY d.id"
+                )
             ],
             "zones": [
                 {"city": row["city"], "fee_minor": row["fee_minor"]}
@@ -174,7 +210,9 @@ class SqliteOrders:
             [
                 (
                     order_id,
-                    line["dish_id"],
+                    conn.execute(
+                        "SELECT id FROM dishes WHERE legacy_code=?", (line["dish_id"],)
+                    ).fetchone()[0],
                     line["name"],
                     line["unit"],
                     line["quantity_milli"],

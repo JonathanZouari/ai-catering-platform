@@ -16,7 +16,7 @@ def embed_asset(match):
 css = re.sub(r'url\("(/assets/[^\"]+)"\)', embed_asset, css)
 css += "\n" + (admin / "admin.css").read_text(encoding="utf-8")
 scripts = []
-for name in ["schema.js", "helpers.js", "dom.js", "schema-views.js"]:
+for name in ["schema-additions.js", "schema.js", "helpers.js", "dom.js", "schema-views.js"]:
     code = (admin / "js" / name).read_text(encoding="utf-8")
     code = re.sub(r'^import[\s\S]*?from ["\'][^"\']+["\'];\s*', '', code, flags=re.M)
     code = re.sub(r'^export ', '', code, flags=re.M)

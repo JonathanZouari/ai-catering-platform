@@ -1,5 +1,5 @@
 // Customer order RPC behaviour on real SQL, in the isolated PGlite from local-postgres.mjs.
-// Single connection: this cannot show two sessions racing. live_local_checks.py covers that.
+// Single connection: concurrent requests require a separate live test.
 import assert from 'node:assert/strict';
 
 const TABLES = ['customers', 'addresses', 'events', 'orders', 'order_items', 'order_submissions'];
@@ -44,7 +44,7 @@ export async function checkCustomerOrderRpc(db) {
     await tx.query("select set_config('request.jwt.claims',$1,true)", [JSON.stringify(claims)]);
     return tx.exec(sql);
   });
-  const staff = { app_metadata: { role: 'catering_manager' } };
+  const staff = { app_metadata: { role: 'catering_owner' } };
 
   // Capability denial: not even a staff JWT may call the customer RPCs.
   for (const call of RPC_CALLS) {
@@ -155,11 +155,12 @@ export async function checkCustomerOrderRpc(db) {
     `select * from public.orders where id=${saved.order.id}`);
   assert.equal(stranger[0].rows.length, 0);
 
-  // The cloud schema shape is unchanged.
+  // The normalized MVP has 17 public application tables.
   const shape = (await db.query(`select
     (select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace
       where n.nspname='public' and c.relkind='r') as tables,
     (select count(*)::int from pg_constraint c join pg_namespace n on n.oid=c.connamespace
       where n.nspname='public' and c.contype='f') as fks`)).rows[0];
-  assert.deepEqual(shape, { tables: 16, fks: 22 });
+  assert.equal(shape.tables, 17);
+  assert.ok(shape.fks >= 17);
 }

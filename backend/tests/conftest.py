@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.db import connect, migrate
 
 
@@ -12,6 +12,7 @@ from app.db import connect, migrate
 def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
     """Every test gets its own SQLite file; the developer's database is never touched."""
     db_file = tmp_path / "test.sqlite3"
+    monkeypatch.setitem(Settings.model_config, "env_file", None)
     monkeypatch.setenv("SQLITE_PATH", str(db_file))
     monkeypatch.setenv("DB_AUTO_MIGRATE", "true")
     # A developer's .env may select the cloud; tests must never reach it.
@@ -100,10 +101,6 @@ class Factory:
             customer_id, fulfillment_type="delivery", delivery_address_id=address_id, **overrides
         )
         return order_id, address_id
-
-    def employee(self, **overrides: object) -> int:
-        values = {"full_name": "יוסי לוי", "role": "driver"} | overrides
-        return self.insert("employees", **values)
 
     _counter = 0
 

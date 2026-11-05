@@ -1,90 +1,22 @@
-// Compares the static schema with the real migration, so the offline explorer cannot drift.
-// Set CATERING_MIGRATIONS_DIR to read the migration from another checkout.
+// Column/FK drift is checked against real migrated Postgres in supabase/tests/mvp-postgres.mjs.
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
-
 import { GROUPS, RELATIONS, TABLES, formColumns, getTable, labelSelect, primaryKey } from "../js/schema.js";
-
-const here = dirname(fileURLToPath(import.meta.url));
-const migrationsDir = process.env.CATERING_MIGRATIONS_DIR ?? resolve(here, "../../../supabase/migrations");
-const hasMigrations = existsSync(migrationsDir);
-const skip = hasMigrations ? false : `migrations not found at ${migrationsDir}`;
-
-function foundationSql() {
-  const file = readdirSync(migrationsDir).find((name) => name.endsWith("foundation.sql"));
-  return readFileSync(join(migrationsDir, file), "utf8");
-}
-
-// Splits a CREATE TABLE body on commas that are not inside parentheses.
-function splitTopLevel(body) {
-  const parts = [];
-  let depth = 0;
-  let current = "";
-  for (const char of body) {
-    if (char === "(") depth += 1;
-    if (char === ")") depth -= 1;
-    if (char === "," && depth === 0) {
-      parts.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  if (current.trim()) parts.push(current.trim());
-  return parts;
-}
-
-function parseMigration(sql) {
-  sql = sql.replace(/^\s*--[^\n]*/gm, "");
-  const tables = new Map();
-  const relations = [];
-  for (const match of sql.matchAll(/CREATE TABLE public\.(\w+) \(([\s\S]*?)\n\);/g)) {
-    const [, name, body] = match;
-    const columns = [];
-    for (const part of splitTopLevel(body)) {
-      const composite = /^FOREIGN KEY \(([^)]+)\)\s+REFERENCES public\.(\w+)\s*\(([^)]+)\)/.exec(part);
-      if (composite) {
-        relations.push({
-          from: name,
-          columns: composite[1].split(",").map((text) => text.trim()),
-          to: composite[2],
-          toColumns: composite[3].split(",").map((text) => text.trim()),
-        });
-        continue;
-      }
-      if (/^(CHECK|UNIQUE|PRIMARY KEY)\b/.test(part)) continue;
-      const column = /^(\w+)\s/.exec(part)[1];
-      columns.push(column);
-      const inline = /REFERENCES public\.(\w+)\s*\((\w+)\)/.exec(part);
-      if (inline) relations.push({ from: name, columns: [column], to: inline[1], toColumns: [inline[2]] });
-    }
-    tables.set(name, columns);
-  }
-  return { tables, relations };
-}
-
-const relationKey = (relation) => `${relation.from}(${relation.columns})->${relation.to}(${relation.toColumns})`;
-
-test("the static schema lists the same 16 tables as the migration", { skip }, () => {
-  const { tables } = parseMigration(foundationSql());
-  assert.equal(tables.size, 16);
-  assert.deepEqual(TABLES.map((table) => table.name).sort(), [...tables.keys()].sort());
-});
-
-test("every table has the same columns as the migration", { skip }, () => {
-  const { tables } = parseMigration(foundationSql());
-  for (const table of TABLES) {
-    const known = table.columns.filter((column) => !column.addedByLaterMigration).map((column) => column.name);
-    assert.deepEqual([...known].sort(), [...tables.get(table.name)].sort(), table.name);
+const OUT_OF_SCOPE = /^(employees|deliveries|payments|equipment_|ingredient)/;
+test("the schema describes all 17 MVP tables", () => {
+  assert.equal(TABLES.length,17);
+  assert.equal(new Set(TABLES.map(t=>t.name)).size,17);
+  for (const name of ['ai_conversations','ai_messages','ai_change_proposals']) {
+    assert.equal(getTable(name).hiddenFromData,true);
   }
 });
-
-test("every foreign key in the migration is described, with no extras", { skip }, () => {
-  const { relations } = parseMigration(foundationSql());
-  assert.deepEqual(RELATIONS.map(relationKey).sort(), relations.map(relationKey).sort());
+test("out-of-scope tables are gone and credential rows are not browsable", () => {
+  for (const table of TABLES) assert.doesNotMatch(table.name, OUT_OF_SCOPE);
+  assert.equal(getTable("order_submissions").hiddenFromData, true);
+  assert.deepEqual(primaryKey(getTable("order_submissions")), ["order_id"]);
+  assert.deepEqual(primaryKey(getTable("delivery_zones")), ["id"]);
+  assert.equal(getTable("dishes").columns.find((column) => column.name === "id").type, "id");
+  assert.ok(!getTable("dishes").columns.some((column) => column.name === "metadata"));
 });
 
 test("relations and foreign key columns point at real tables and columns", () => {
@@ -115,10 +47,10 @@ test("labels are Hebrew only, so English never mixes into a Hebrew line", () => 
   for (const group of GROUPS) assert.ok(!latin.test(group.label));
 });
 
-test("only the six agreed tables are editable, never the append-only ones", () => {
+test("only the agreed tables are editable, never order history", () => {
   const editable = TABLES.filter((table) => table.editable).map((table) => table.name).sort();
-  assert.deepEqual(editable, ["addresses", "customers", "dishes", "employees", "equipment_items", "ingredients"]);
-  for (const name of ["payments", "equipment_movements", "ingredient_movements", "order_items", "order_submissions"]) {
+  assert.deepEqual(editable, ["addresses", "allergens", "customers", "dishes"]);
+  for (const name of ["order_items", "order_submissions", "dish_dietary", "dish_allergens"]) {
     assert.ok(!getTable(name).editable, name);
     assert.ok(getTable(name).readOnlyReason, name);
   }
@@ -141,8 +73,8 @@ test("the submission payload is text holding a document", () => {
   assert.equal(payload.type, "jsontext");
 });
 
-test("lookups alias the readable column, including inside the dish document", () => {
+test("lookups alias the readable column", () => {
   assert.equal(labelSelect(getTable("customers")), "id,label:full_name");
-  assert.equal(labelSelect(getTable("dishes")), "id,label:metadata->>name");
+  assert.equal(labelSelect(getTable("dishes")), "id,label:name");
   assert.equal(labelSelect(getTable("orders")), null);
 });

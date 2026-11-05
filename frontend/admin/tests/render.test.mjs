@@ -62,19 +62,19 @@ function count(root, predicate) {
   return total;
 }
 
-test("the schema view renders all 16 table cards as elements", () => {
+test("the schema view renders all 17 table cards as elements", () => {
   const container = new FakeNode("div");
   renderSchemaView(container);
   assertNoStrayText(container);
-  assert.equal(count(container, (node) => node.attrs.class === "schema-card"), 16);
+  assert.equal(count(container, (node) => node.attrs.class === "schema-card"), 17);
 });
 
-test("the diagram renders 16 tables and 22 relationships", () => {
+test("the diagram renders 17 tables and 17 relationships", () => {
   const container = new FakeNode("div");
   renderErdView(container, { onOpenTable() {} });
   assertNoStrayText(container);
-  assert.equal(count(container, (node) => node.attrs.class === "erd-node"), 16);
-  assert.equal(count(container, (node) => node.tag === "path" && String(node.attrs.class).startsWith("erd-edge")), 22);
+  assert.equal(count(container, (node) => node.attrs.class === "erd-node"), 17);
+  assert.equal(count(container, (node) => node.tag === "path" && String(node.attrs.class).startsWith("erd-edge")), 17);
 });
 
 test("the data view toolbar prints no stray values", async () => {

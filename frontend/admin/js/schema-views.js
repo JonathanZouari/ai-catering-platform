@@ -22,12 +22,6 @@ const TYPE_LABELS = {
   jsontext: "טקסט בתבנית מסמך מובנה",
 };
 
-function typeLabel(column) {
-  // Text keys such as dishes.id are references too, so the label follows the column's real type.
-  if (column.type === "fk" && column.name === "dish_id") return "מזהה מנה מקושרת";
-  return TYPE_LABELS[column.type];
-}
-
 const relationIdent = (relation) =>
   `${relation.from} (${relation.columns.join(", ")}) → ${relation.to} (${relation.toColumns.join(", ")})`;
 
@@ -65,7 +59,6 @@ function tableCard(table) {
       h("h3", {}, table.label),
       ident(table.name),
       h("p", { class: "muted" }, table.description),
-      table.appendOnly && h("span", { class: "badge badge-warning" }, "יומן הוספה בלבד"),
     ),
     h(
       "div",
@@ -82,7 +75,7 @@ function tableCard(table) {
               "tr",
               {},
               h("th", { scope: "row" }, h("span", { class: "cell-title" }, column.label), ident(column.name)),
-              h("td", {}, typeLabel(column)),
+              h("td", {}, TYPE_LABELS[column.type]),
               h("td", {}, column.nullable ? "לא" : "כן"),
               h("td", { class: "muted" }, columnNotes(column)),
             ),
@@ -144,9 +137,9 @@ export function focusSchemaCard(tableName) {
 /* ---------- relationship diagram ---------- */
 
 const NODE = { width: 200, height: 68 };
-const COLUMN_X = [1040, 740, 440, 140]; // Right to left, matching the reading direction.
+const COLUMN_X = [1340, 1040, 740, 440, 140]; // Right to left, matching the reading direction.
 const ROW_Y = [60, 190, 320, 450, 580];
-const VIEW = { width: 1280, height: 680 };
+const VIEW = { width: 1580, height: 700 };
 const MIN_DIAGRAM_WIDTH = 980;
 const ZOOM_STEPS = [0.75, 1, 1.25, 1.5, 2];
 
@@ -154,20 +147,21 @@ const ZOOM_STEPS = [0.75, 1, 1.25, 1.5, 2];
 export const ERD_LAYOUT = {
   customers: [0, 0],
   addresses: [0, 1],
-  dishes: [0, 2],
-  delivery_zones: [0, 3],
   events: [1, 0],
   orders: [1, 1],
   order_items: [1, 2],
   order_submissions: [1, 3],
-  deliveries: [2, 0],
-  payments: [2, 1],
-  equipment_movements: [2, 2],
-  ingredient_movements: [2, 3],
-  employees: [3, 0],
-  equipment_items: [3, 2],
-  ingredient_batches: [3, 3],
-  ingredients: [3, 4],
+  delivery_zones: [3, 0],
+  dish_categories: [2, 1],
+  dish_dietary: [3, 1],
+  dishes: [2, 2],
+  dish_allergens: [2, 3],
+  allergens: [3, 3],
+  time_slots: [0, 3],
+  blocked_dates: [0, 4],
+  ai_conversations: [4, 0],
+  ai_messages: [4, 1],
+  ai_change_proposals: [4, 2],
 };
 
 function nodeBox(name) {

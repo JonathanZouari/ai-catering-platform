@@ -50,7 +50,7 @@ Status: **Draft v0.1** · Phase 0 deliverable
 | `api/` | Routers: `health`, `catalog`, `orders`, `proposals`, `admin/*` | 1 (health) → 2–4 |
 | `services/` | `pricing`, `quantities`, `orders`, `proposals`, `catalog`, `availability`, `delivery` | 2–4 |
 | `db/` | `connect()` (foreign keys on), forward-only migration runner, money/timestamp helpers | 2 (done) |
-| `repositories/` | One per aggregate; plain SQL over a `sqlite3` connection (`finance`, `inventory` done) | 2 |
+| `repositories/` | Supabase order adapter; finance/inventory belong to the separate operations extension | 2 |
 | `models/` | Typed row dataclasses where useful. No ORM (ADR 0005) | 2 |
 | `schemas/` | Pydantic DTOs and AI tool argument schemas | 2–4 |
 | `agents/` | Conversation loop, tool registry, system prompt | 4 |
@@ -59,18 +59,18 @@ Status: **Draft v0.1** · Phase 0 deliverable
 
 ## 4. Data access **[RECOMMENDATION]**
 
-**[CONFIRMED]** SQLite, per [ADR 0005](ADR/0005-sqlite-database.md), which supersedes the Supabase Postgres plan.
+**Current implementation:** explicit database selection. Supabase Postgres is used for cloud customer orders and the owner interface. SQLite remains the local fallback selected by configuration, never by a cloud-error fallback. See `DATABASE_SCHEMA.md` for the MVP scope split and normalized catalog.
 
 - Backend uses the standard-library `sqlite3` module. One connection per request via the `get_db` dependency (commit on success, rollback on error). Every connection comes from `app.db.connect()`, which turns on and verifies `PRAGMA foreign_keys`.
 - Database file: `SQLITE_PATH` (default `data/catering.sqlite3`, git-ignored). On Railway it must be on a mounted volume.
 - Schema changes: forward-only SQL migrations in `database/migrations/NNNN_name.sql`, applied on startup and by `uv run python -m app.db`. Non-destructive and checksummed. See `DATABASE_SCHEMA.md`.
 - Integrity rules live in the schema (STRICT tables, CHECKs, composite FKs, triggers), so no caller can bypass them, including the AI agent.
 - Authorization is enforced in services. There is no RLS in SQLite.
-- Supabase Storage (optional) may still hold dish images, accessed server-side only.
+- Supabase mode uses backend-only transactional invoker RPCs. The browser owner interface uses a publishable key, authenticated owner claims and RLS; the secret key remains server-side. Private dish images use Storage policies. Realtime refreshes the owner lists.
 
 ## 5. Authentication **[OPEN]**
 
-- Admin: one owner account. Recommended: Supabase Auth email login, backend verifies the JWT and checks an `admin` role.
+- Admin: one owner account through Supabase Auth. Authorization uses server-controlled `app_metadata.role = catering_owner`; editable user metadata never grants ownership.
 - Customer: undecided (account vs guest link). Backend dependencies will be written so either option plugs in.
 
 ## 6. Environments and branches **[CONFIRMED]**

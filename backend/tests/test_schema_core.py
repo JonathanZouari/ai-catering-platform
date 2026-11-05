@@ -1,4 +1,4 @@
-"""Customers, addresses, events, orders, employees: constraints the database itself enforces."""
+"""MVP customers, addresses, events and orders: database-enforced constraints."""
 
 import sqlite3
 
@@ -125,11 +125,3 @@ def test_updated_at_is_maintained(conn, make):
     conn.execute("UPDATE customers SET full_name = 'New Name' WHERE id = ?", (customer_id,))
     updated = conn.execute("SELECT updated_at FROM customers WHERE id = ?", (customer_id,))
     assert updated.fetchone()[0] > "2000-01-01T00:00:00Z"
-
-
-def test_employee_role_and_flags(make):
-    make.employee(role="chef", hired_on="2025-01-15")
-    with pytest.raises(IntegrityError, match="CHECK"):
-        make.employee(role="astronaut")
-    with pytest.raises(IntegrityError, match="CHECK"):
-        make.employee(is_active=2)

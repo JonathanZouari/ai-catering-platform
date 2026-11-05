@@ -78,7 +78,7 @@ def test_submit_read_retry_and_privacy(isolated_settings, delivery):
             db.execute("SELECT token_hash FROM order_submissions").fetchone()[0]
             != headers["X-Order-Token"]
         )
-        db.execute("UPDATE dishes SET price_minor=999999 WHERE id='d1'")
+        db.execute("UPDATE dishes SET price_minor=999999 WHERE legacy_code='d1'")
     with TestClient(app) as client:
         assert client.get(url, headers=headers).json() == saved
 

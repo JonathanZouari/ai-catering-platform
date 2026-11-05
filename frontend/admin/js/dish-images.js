@@ -4,8 +4,8 @@ import { DISH_BUCKET, buildDishImagePath } from "./helpers.js";
 // Uploads a new object, then points dishes.image_path at it. Nothing is ever deleted here: a failed
 // link response can arrive after the row committed, so the new path may already be the live image.
 // Superseded and unlinked objects stay in the bucket until someone cleans them up deliberately.
-export async function replaceDishImage({ client, dishId, oldPath, file, info, uuid }) {
-  const path = buildDishImagePath(dishId, info.extension, uuid);
+export async function replaceDishImage({ client, dishId, dishCode, oldPath, file, info, uuid }) {
+  const path = buildDishImagePath(dishCode, info.extension, uuid);
 
   const upload = await client.storage.from(DISH_BUCKET).upload(path, file, { contentType: info.contentType, upsert: false });
   if (upload.error) return { ok: false, stage: "upload", error: upload.error };

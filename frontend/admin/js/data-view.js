@@ -55,7 +55,7 @@ export function createDataView({ client, container, onSessionLost }) {
         "div",
         { class: "table-nav-group" },
         h("h2", { class: "group-title" }, group.label),
-        TABLES.filter((table) => table.group === group.id).map((table) => {
+        TABLES.filter((table) => table.group === group.id && !table.hiddenFromData).map((table) => {
           const button = h(
             "button",
             { type: "button", class: "table-link", onclick: () => selectTable(table.name) },
@@ -223,21 +223,17 @@ export function createDataView({ client, container, onSessionLost }) {
     const value = row[column.name];
     if (value === null || value === undefined) {
       if (column.name === "image_path") return h("span", { class: "muted" }, "אין תמונה");
+      if (column.nullLabel) return h("span", { class: "badge badge-warning" }, column.nullLabel);
       return h("span", { class: "muted", "aria-label": "ריק" }, "—");
     }
     if (column.name === "image_path") {
       const url = state.images[value];
       return url
-        ? h("img", { class: "thumb", src: url, alt: `תמונת המנה ${row.metadata?.name ?? ""}`, loading: "lazy" })
+        ? h("img", { class: "thumb", src: url, alt: `תמונת המנה ${row.name ?? ""}`, loading: "lazy" })
         : h("span", { class: "muted" }, "התמונה לא נטענה");
     }
     if (column.type === "jsonb" || column.type === "jsontext") {
-      return h(
-        "div",
-        {},
-        column.name === "metadata" && value?.name && h("span", { class: "cell-title" }, value.name),
-        h("details", { class: "json-cell" }, h("summary", {}, "הצגת התוכן"), h("pre", { dir: "ltr" }, jsonCellText(column, value))),
-      );
+      return h("details", { class: "json-cell" }, h("summary", {}, "הצגת התוכן"), h("pre", { dir: "ltr" }, jsonCellText(column, value)));
     }
     if (column.fk) {
       const label = state.lookups[column.name]?.[value];
