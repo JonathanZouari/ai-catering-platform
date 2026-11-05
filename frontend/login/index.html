@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff9ed">
+  <title>כניסה | yumm.ai</title>
+  <link rel="preload" href="/assets/fonts/heebo-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/customer.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <p class="brand wordmark"><a class="brand-link" href="/" aria-label="yumm.ai, לעמוד הבית"><bdi>yumm<span class="dot">.</span>ai</bdi></a></p>
+    </div>
+  </header>
+
+  <main id="app" class="app" tabindex="-1">
+    <section class="stack" style="max-width: 28rem">
+      <h1 class="page-title">כניסה</h1>
+
+      <form id="login-form" class="stack" novalidate>
+        <p class="page-lead">נשלח לך קישור למייל. לוחצים עליו ונכנסים, בלי סיסמה.</p>
+        <div class="field" id="email-field">
+          <label for="email">כתובת מייל</label>
+          <input class="input" id="email" name="email" type="email" autocomplete="email" inputmode="email" dir="ltr" required aria-describedby="email-error">
+          <p class="error" id="email-error" hidden></p>
+        </div>
+        <div class="field" id="password-field" hidden>
+          <label for="password">סיסמה</label>
+          <input class="input" id="password" name="password" type="password" autocomplete="current-password" dir="ltr">
+        </div>
+        <button class="btn btn-primary btn-block" id="submit" type="submit">שליחת קישור</button>
+        <button class="btn btn-ghost" id="toggle-password" type="button" aria-controls="password-field" aria-expanded="false">כניסה עם סיסמה</button>
+      </form>
+
+      <div id="sent" class="stack" hidden>
+        <p>שלחנו קישור אל <bdi id="sent-email"></bdi>.</p>
+        <p class="muted">אפשר לסגור את הדף ולפתוח את הקישור מהמייל.</p>
+      </div>
+
+      <div id="signed-in" class="stack" hidden>
+        <p>נכנסת בתור <bdi id="user-email"></bdi>.</p>
+        <a class="btn btn-primary btn-block" href="/customer/">להזמנה שלי</a>
+        <button class="btn btn-secondary btn-block" id="sign-out" type="button">יציאה</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="announce" class="visually-hidden" aria-live="polite" role="status"></div>
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>
