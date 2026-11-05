@@ -12,6 +12,18 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_anon_key: str | None = None
     supabase_service_role_key: str | None = None
+    test_database_url: str | None = None
+    default_currency: str = "ILS"
+    business_timezone: str = "Asia/Jerusalem"
+    storage_bucket: str = "dish-images"  # public: dish and category photos
+    avatar_bucket: str = "customer-avatars"  # private, signed URLs
+    order_files_bucket: str = "order-files"  # private, signed URLs
+    anthropic_api_key: str | None = None
+    # Twilio SMS/WhatsApp; all empty = sending off. Server-side only.
+    twilio_account_sid: str | None = None
+    twilio_auth_token: str | None = None
+    twilio_sms_from: str | None = None
+    twilio_whatsapp_from: str | None = None
 
 
 @lru_cache

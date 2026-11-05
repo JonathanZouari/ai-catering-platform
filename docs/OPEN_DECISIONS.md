@@ -6,25 +6,10 @@ Format: **Question** · *Why it matters* · **Blocks**
 
 | # | Topic | Question | Why it matters | Blocks |
 |---|---|---|---|---|
-| 1 | Customer authentication / guest checkout | Must customers create an account? Email magic link, OTP by phone, password, or guest checkout with a tokenized link? | Determines ownership model, RLS policies, and how a customer returns to a draft/quote | Phase 3 order ownership, Phase 4 chat history |
 | 2 | Payment & deposit | Is any deposit or payment collected in-app? | Payments are out of scope unless approved | Nothing in MVP unless approved |
-| 3 | Serving & quantity formulas | Per category/dish, how much per adult / child? Rounding (e.g., whole trays)? Different for vegetarian/vegan guests? | Quantity recommendation must use business rules, not AI guesses | Phase 3 quantity engine (schema can hold rules; values unknown) |
-| 4 | Overlapping guest dietary categories | Are vegetarian/vegan/restricted guests counted *within* adults/children (subsets) or separately? Is vegan a subset of vegetarian? | Prevents double-counting | Phase 3 guest composition validation |
-| 5 | Availability & capacity | Max orders/guests per day or per slot? Lead time? Same-day orders? | Defines date/slot validation | Phase 2 availability rules, Phase 3 date picker |
 | 6 | Quote modification & negotiation | Can the owner edit or counter-propose a quote, or only approve/reject? | Adds states and UI | Out of MVP until decided |
-| 7 | Cancellation & revision | Can a customer cancel or edit after submission or approval? Deadlines? | Adds states and rules | Out of MVP until decided |
-| 8 | Allergen verification & cross-contamination | What disclaimer text is shown? Is there a "may contain" level? Who verifies allergen data? | Safety and liability wording | Phase 2 allergen fields' semantics, Phase 4 agent wording |
-| 9 | Kashrut certification | Which certification(s)? Shown per dish or business-wide? Mixing meat & dairy dishes in one order allowed? | Affects data model and validation | Phase 2 dish fields, Phase 3 conflict checks |
 | 10 | Disposable serving equipment | Are utensils/disposables orderable? Priced how? | Could be catalog items or separate | Out of MVP until decided |
 | 11 | Alcohol | Offered at all? Age verification? | Legal implications | Out of MVP until decided |
-| 13 | Notification channels | Email, SMS, WhatsApp, none? For which events (submitted, approved, rejected)? | Third-party providers and cost | Out of MVP until decided |
-| 14 | VAT & rounding | Are catalog prices VAT-inclusive? VAT rate handling? Rounding rules for totals and weight-based prices? | Deterministic pricing correctness | Phase 3 pricing engine final rules |
-| 15 | Minimum order quantities | Minimum per dish, per order, or minimum guests? Minimum for delivery? | Validation rules | Phase 2/3 validation |
-| 16 | LLM provider | Which model provider (e.g., Anthropic Claude) and budget? | API keys, tool-calling format, cost | Phase 4 |
-| 17 | Currency | Single currency (e.g., ILS)? Display format? | Money formatting and storage | Phase 2 pricing fields (stored as numeric + currency code until decided) |
-| 18 | Weight unit | kg, 100 g, or configurable per dish? | Per-weight pricing math | Phase 2 pricing units |
-| 19 | Delivery zone definition | Zones by city list, postal code, or radius/polygon? | Address → zone lookup method | Phase 2 delivery zones |
-| 20 | Brand | Business name, logo, colors, fonts | Visual identity | Phase 3 UI polish (neutral tokens until then) |
 
 ## Decision log
 
@@ -32,4 +17,33 @@ When a decision is made, record it here and move the row out of the table above.
 
 | Date | # | Decision | Decided by |
 |---|---|---|---|
-| 2026-10-29 | 12 | Interface language is **Hebrew only, RTL**. AI responses must also be in Hebrew. | Project owner (chat) |
+| 2026-10-30 | 7 (partial) | Owner-only cancel of orders awaiting approval or approved, from the admin; a reason is required and shown to the customer. Customers cannot cancel themselves. Customers may edit until 4 hours before the event (configurable, `edit_cutoff_hours`); an approved order goes back to the owner for approval. Other deadlines still open | Owner |
+| 2026-10-29 | 12 | Interface languages: Arabic, Hebrew and English; RTL for ar/he | Owner |
+| 2026-10-29 | 12 | (Upstream, from the merged yumm.ai design PR #24) Interface language is **Hebrew only, RTL**; AI responses in Hebrew. Superseded in this fork by the he/ar/en decision above | Upstream project owner (chat) |
+| 2026-10-29 | 13 | No notifications; quote requests are viewed on the admin page | Owner |
+| 2026-10-29 | 17 | ILS (₪) | Owner |
+| 2026-10-29 | 1 | Guest checkout, no accounts: customer leaves name + email or phone and gets a private link (token in the URL fragment). Provisional; can move to Supabase Auth later. **Superseded 2026-11-05 (below)** | Owner |
+| 2026-11-05 | 1 | Customer accounts via Supabase Auth (email + password, sign-up, password reset, order history, profile photo, order files). **Guest checkout stays**; guest orders are not auto-linked to an account by email or phone. Real sign-ups and reset emails need the owner's own SMTP provider; account self-deletion is not built yet (needed before a wide launch under privacy rules) | Owner |
+| 2026-10-29 | 3 | Mechanism only: owner sets per-category rules (per adult, per child, round-up step) in admin; no rule → no suggestion. Values not yet entered. Even split across selected dishes in a category is an engineering call | Owner |
+| 2026-10-29 | 4 | Vegetarian/vegan/restricted guests are counted within adults + children (each ≤ total). They don't change quantities yet | Owner |
+| 2026-10-29 | 14 | Catalog prices include VAT; no VAT line. Lines rounded half-up to 0.01 | Owner |
+| 2026-10-29 | 5 | Lead time: events need at least 7 days' notice. No daily capacity cap; the owner rejects requests they can't take | Owner |
+| 2026-10-29 | 9 | Mixing meat and dairy dishes in one order: warn the customer, don't block. (Certification display still open) | Owner |
+| 2026-10-29 | 15 | Minimum order: ₪500 of food (delivery fee excluded) before a quote can be submitted | Owner |
+| 2026-10-29 | 8 | Allergen disclaimer: "Our kitchen handles nuts, gluten, milk, eggs, sesame and more. We can't guarantee any dish is allergen-free. Contact us about severe allergies." No "may contain" level | Owner |
+| 2026-10-29 | 19 | Delivery fee by distance: ₪50 base + ₪4/km from the kitchen (starting point Jerusalem until an exact address is set), max 40 km; geocoding via free OpenStreetMap; values editable in admin | Owner |
+| 2026-10-29 | 16 | AI assistant (Phase 4): Anthropic Claude, no hard budget cap; track cost | Owner |
+| 2026-10-29 | 18 | Weight unit: price per kg | Owner |
+| 2026-10-29 | 20 | Business name: CaterKing (logo, colors: Stitch "Haute Epicure" style; logo still open) | Owner |
+| 2026-10-30 | — | Hosting: Render (web, from `render.yaml`) + Supabase (Postgres, Auth, Storage) instead of Railway. Render was already connected to GitHub; Render's free Postgres expires after 30 days, and Supabase is needed for Auth/Storage anyway | Owner ("use what's better and more efficient") |
+| 2026-10-30 | 9 | Kashrut: CaterKing is **not certified**; the site shows only meat/dairy/pareve per dish and makes no certification claim | Owner |
+| 2026-10-30 | 7 | Customers may change a submitted or approved order until **4 hours before the event** (configurable in admin Settings); the change sends it back to the owner for approval with prices recalculated | Owner |
+| 2026-10-30 | — | Launch: production on Render Starter (`caterking`, from `main`) with a separate Supabase project `caterking-prod`; go live after the Editorial redesign and the real menu | Owner |
+| 2026-11-02 | — | F1 "Pit Wall" redesign approved for the customer app and the owner dashboard | Owner |
+| 2026-11-02 | — | Fulfilment stages `in_kitchen` → `out_for_delivery` (delivery) / `ready_for_pickup` (pickup) → `delivered`, advanced by the owner (Advance) | Owner |
+| 2026-11-02 | — | Safety Car: a manual owner switch that shows customers a notice while on | Owner |
+| 2026-11-02 | — | Driver of the Day: the customer rates the order 1 to 5 stars with an optional comment, once, after delivery | Owner |
+| 2026-11-02 | 13 | SMS/WhatsApp through Twilio, opt-in per order, for two messages only (Flying Lap and Safety Car); off until the Twilio keys are set. Supersedes "no notifications" for these two messages | Owner |
+| 2026-11-02 | 20 | Crown logo, and the lights-out intro plays once per visit | Owner |
+| 2026-11-02 | 20 | Fonts Plus Jakarta Sans, JetBrains Mono, Heebo and Noto Kufi Arabic, self-hosted | Owner |
+| 2026-11-02 | — | The F1 opening page replaces the yumm.ai page at `/` | Owner |
