@@ -36,4 +36,7 @@ The new migration sequence has **not** been applied to the hosted project. Brows
 
 The previous complete implementation remains recoverable at commit `f34cb219efcb8f71007be9980cfdfa1c60a99036`.
 
+The optional operations package is now isolated in draft [PR #56](https://github.com/JonathanZouari/ai-catering-platform/pull/56).
+It does not automatically install tables; activation and operations UI integration remain separate.
+
 ![Reviewed MVP schema](evidence/reviewed-mvp-schema.png)
