@@ -288,3 +288,18 @@ The contract predates PR #24 and should be reconciled before Phase 2:
 - Money is integer agorot, not decimal strings (`"1200.00"`).
 - Add `GET /api/availability` fields for `lead_days`, delivery zones with fees, and `unit: guest`.
 - Add `POST /api/admin/login` and `POST /api/admin/logout`, and the admin CRUD for `event_types`.
+
+## Supabase implementation (`supabase/`)
+
+`supabase/migrations/` holds the Postgres version of this schema, running on a Supabase project. `database/schema.sql` stays as the SQLite proposal. The two differ in these places:
+
+- **Owner login uses Supabase Auth.** `admin_users` and `admin_sessions` do not exist in Postgres. `orders.decided_by` and `order_status_events.admin_user_id` are `uuid` references to `auth.users(id)`. An admin is a user with `app_metadata.role = 'admin'` (never `user_metadata`, which users can edit). No owner is seeded: create one in the dashboard and set that claim.
+- **Native types** replace the SQLite encodings: `timestamptz`, `date`, `time`, `boolean`, `jsonb` for `ai_proposals.changes`, `numeric` for `quantity`, `qty_per_guest` and `step`. Money is still integer agorot. Ids exposed by the API stay `text`.
+- **Row Level Security is on for every table.**
+  - Menu and configuration tables (`dishes`, `dish_categories`, `allergens`, `dish_allergens`, `event_types`, `delivery_zones`, `time_slots`, `blocked_dates`, `business_settings`): anyone can read; only admins can insert, update or delete.
+  - `orders`, `order_items`, `order_status_events`, `ai_messages`, `ai_proposals`: no policy for `anon`. Admins can read them, update `orders` and insert `order_status_events`. Customers reach these tables only through the backend with the secret key.
+  - Customer-ownership policies (a customer reading or editing their own order from the browser) are not written. They depend on how customers are identified (OPEN #1).
+- **Storage:** public bucket `dish-images` (5 MB, jpeg/png/webp). Only admins can upload, replace or delete.
+- **Realtime:** `orders`, `order_items`, `order_status_events`, `ai_proposals` and `dishes` are in the `supabase_realtime` publication. Subscribers only receive rows their RLS policy lets them read.
+- **Auth settings** (`supabase/config.toml`): public sign-up is off, passwords need at least 10 characters with upper case, lower case and digits.
+- **Demo data:** `supabase/seed.sql` adds sample event types, zones, slots, four dishes and one pending order (`demo-order-1`). It runs on `supabase db reset` and is not applied to the hosted project automatically.
