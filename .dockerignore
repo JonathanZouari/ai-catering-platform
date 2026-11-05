@@ -6,3 +6,8 @@
 **/.pytest_cache
 **/.ruff_cache
 docs
+# secrets and local databases from any folder (e.g. backend/.env, backend/dev.db)
+**/.env
+**/.env.*
+!**/.env.example
+**/*.db
