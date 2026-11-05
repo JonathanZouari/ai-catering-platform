@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>התחברות</title>
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+  <main>
+    <h1>התחברות</h1>
+    <form id="form">
+      <p><label>אימייל<br><input id="email" type="email" autocomplete="username" required dir="ltr"></label></p>
+      <p><label>סיסמה<br><input id="password" type="password" autocomplete="current-password" required dir="ltr"></label></p>
+      <p><button type="submit">התחבר</button></p>
+      <p id="error" role="alert"></p>
+    </form>
+    <p id="who" hidden><span id="whoText"></span> <button id="logout" type="button">התנתק</button></p>
+  </main>
+  <script type="module">
+    import { supabase, roleOf } from "/js/supabase.js";
+    const $ = (id) => document.getElementById(id);
+    const go = (user) => { location.href = roleOf(user) === "owner" ? "/admin/" : "/customer/"; };
+
+    $("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      $("error").textContent = "";
+      const { data, error } = await supabase.auth.signInWithPassword({ email: $("email").value, password: $("password").value });
+      if (error) { $("error").textContent = "האימייל או הסיסמה שגויים."; return; }
+      go(data.user);
+    });
+
+    $("logout").addEventListener("click", async () => { await supabase.auth.signOut(); location.reload(); });
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      $("form").hidden = true;
+      $("who").hidden = false;
+      $("whoText").textContent = `מחובר כ-${session.user.email}`;
+    }
+  </script>
+</body>
+</html>

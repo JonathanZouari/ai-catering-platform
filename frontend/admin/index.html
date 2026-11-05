@@ -9,13 +9,43 @@
 <body>
   <main>
     <h1>ממשק העסק</h1>
-    <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
+    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span> · <button id="logout" type="button">התנתק</button></p>
+    <h2>הזמנות (מתעדכן בזמן אמת)</h2>
+    <ul id="orders" aria-live="polite"></ul>
   </main>
   <script type="module">
     import { api } from "/js/api.js";
+    import { supabase, roleOf } from "/js/supabase.js";
+
     const el = document.getElementById("status");
     api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || roleOf(session.user) !== "owner") location.replace("/login/");
+
+    document.getElementById("logout").onclick = async () => { await supabase.auth.signOut(); location.replace("/login/"); };
+
+    const STATUS = { draft: "טיוטה", pending_approval: "ממתינה לאישור", approved: "אושרה", rejected: "נדחתה" };
+    const list = document.getElementById("orders");
+    const rows = new Map();
+    const render = () => {
+      list.replaceChildren(...[...rows.values()].map((o) => {
+        const li = document.createElement("li");
+        li.textContent = `${o.id.slice(0, 8)} · ${STATUS[o.status] ?? o.status} · ${o.total ?? "-"} ₪`;
+        return li;
+      }));
+    };
+
+    const { data } = await supabase.from("orders").select("id,status,total,created_at").order("created_at", { ascending: false });
+    (data ?? []).forEach((o) => rows.set(o.id, o));
+    render();
+
+    supabase.channel("orders-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (p) => {
+        if (p.eventType === "DELETE") rows.delete(p.old.id); else rows.set(p.new.id, p.new);
+        render();
+      })
+      .subscribe();
   </script>
 </body>
 </html>
