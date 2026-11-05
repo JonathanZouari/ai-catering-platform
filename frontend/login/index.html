@@ -27,7 +27,12 @@
           <input class="input" id="email" name="email" type="email" autocomplete="email" inputmode="email" dir="ltr" required aria-describedby="email-error">
           <p class="error" id="email-error" hidden></p>
         </div>
-        <button class="btn btn-primary btn-block" type="submit">שליחת קישור</button>
+        <div class="field" id="password-field" hidden>
+          <label for="password">סיסמה</label>
+          <input class="input" id="password" name="password" type="password" autocomplete="current-password" dir="ltr">
+        </div>
+        <button class="btn btn-primary btn-block" id="submit" type="submit">שליחת קישור</button>
+        <button class="btn btn-ghost" id="toggle-password" type="button" aria-controls="password-field" aria-expanded="false">כניסה עם סיסמה</button>
       </form>
 
       <div id="sent" class="stack" hidden>

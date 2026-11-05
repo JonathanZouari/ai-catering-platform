@@ -26,6 +26,16 @@ function fail(message) {
   $("email").focus();
 }
 
+let usePassword = false;
+$("toggle-password").addEventListener("click", (e) => {
+  usePassword = !usePassword;
+  $("password-field").hidden = !usePassword;
+  $("submit").textContent = usePassword ? "כניסה" : "שליחת קישור";
+  e.currentTarget.textContent = usePassword ? "כניסה עם קישור במייל" : "כניסה עם סיסמה";
+  e.currentTarget.setAttribute("aria-expanded", String(usePassword));
+  if (usePassword) $("password").focus();
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = $("email").value.trim();
@@ -33,8 +43,15 @@ form.addEventListener("submit", async (e) => {
   field.classList.remove("invalid");
   error.hidden = true;
 
-  const button = form.querySelector("button");
+  const button = $("submit");
   button.disabled = true;
+  if (usePassword) {
+    // Password sign-in exists for the demo users; customers normally use the magic link.
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: $("password").value });
+    button.disabled = false;
+    if (signInError) return fail("המייל או הסיסמה לא נכונים.");
+    return;
+  }
   const { error: sendError } = await supabase.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: `${location.origin}/login/` },
