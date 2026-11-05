@@ -28,6 +28,7 @@ supabase/.temp/
 supabase/.branches/
 
 # OS / editors
+.claude/worktrees/
 .DS_Store
 Thumbs.db
 .vscode/

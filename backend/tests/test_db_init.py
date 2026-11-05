@@ -6,7 +6,7 @@ import pytest
 
 from app.db import MigrationError, connect, migrate
 from app.db.__main__ import main as cli
-from app.db.migrations import MIGRATIONS_DIR, discover
+from app.db.migrations import MIGRATIONS_DIR, applied_versions, discover
 
 EXPECTED_VERSIONS = [m.version for m in discover()]
 
@@ -188,7 +188,15 @@ def test_concurrent_initialisation_applies_once(isolated_settings: Path):
     for t in threads:
         t.join()
     assert errors == []
-    assert sorted(results) == [[], [], [], EXPECTED_VERSIONS]
+    # Each migration owns its transaction; different starters may apply different
+    # versions. The invariant is that every version is applied exactly once.
+    assert sorted(version for result in results for version in result) == EXPECTED_VERSIONS
+    conn = connect(isolated_settings)
+    try:
+        assert applied_versions(conn) == EXPECTED_VERSIONS
+        assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+    finally:
+        conn.close()
 
 
 def test_cli_migrate_and_status(tmp_path: Path, capsys: pytest.CaptureFixture[str]):

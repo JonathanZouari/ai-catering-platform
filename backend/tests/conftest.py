@@ -14,6 +14,8 @@ def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterat
     db_file = tmp_path / "test.sqlite3"
     monkeypatch.setenv("SQLITE_PATH", str(db_file))
     monkeypatch.setenv("DB_AUTO_MIGRATE", "true")
+    # A developer's .env may select the cloud; tests must never reach it.
+    monkeypatch.setenv("ORDER_DATABASE_BACKEND", "sqlite")
     get_settings.cache_clear()
     yield db_file
     get_settings.cache_clear()
