@@ -332,3 +332,38 @@ Object.assign(S.en, {
   "newOrder": "Plan an event",
   "statusWord": "Status"
 });
+
+// Review fixes: session, file rules.
+Object.assign(S.he, {
+  "sessionExpired": "תוקף ההתחברות פג ולא ניתן לחדש אותו, ולכן ההזמנה לא נשלחה. הפרטים שלכם נשארו כאן. פתחו את החשבון שלי בלשונית חדשה, היכנסו ושלחו שוב.",
+  "sessionExpiredShort": "תוקף ההתחברות פג. היכנסו שוב.",
+  "filesClosed": "ההזמנה סגורה, ולכן אי אפשר לשנות את הקבצים שלה.",
+  "filesLimit": "אפשר לצרף עד 10 קבצים להזמנה.",
+  "filesOwnerOnly": "רק CaterKing יכולה להסיר את הקובץ הזה.",
+  "filesLoadFail": "לא ניתן לטעון את הקבצים.",
+  "filesRetry": "ניסיון חוזר",
+  "linkRefreshed": "הקישור פג ורוענן. לחצו עליו שוב.",
+  "filesLoading": "טוען..."
+});
+Object.assign(S.ar, {
+  "sessionExpired": "انتهت صلاحية تسجيل الدخول وتعذّر تجديدها، لذلك لم يُرسل الطلب. بياناتك ما زالت هنا. افتح حسابي في تبويب جديد وسجّل الدخول ثم أرسل مجددًا.",
+  "sessionExpiredShort": "انتهت صلاحية تسجيل الدخول. سجّل الدخول مجددًا.",
+  "filesClosed": "الطلب مغلق، لذلك لا يمكن تغيير ملفاته.",
+  "filesLimit": "يمكن إرفاق 10 ملفات كحد أقصى لكل طلب.",
+  "filesOwnerOnly": "CaterKing فقط يمكنها إزالة هذا الملف.",
+  "filesLoadFail": "تعذّر تحميل الملفات.",
+  "filesRetry": "إعادة المحاولة",
+  "linkRefreshed": "انتهت صلاحية الرابط وتم تحديثه. اضغط عليه مجددًا.",
+  "filesLoading": "جارٍ التحميل..."
+});
+Object.assign(S.en, {
+  "sessionExpired": "Your sign-in expired and could not be renewed, so the order was not sent. Your details are still here. Open My account in a new tab, sign in, then send again.",
+  "sessionExpiredShort": "Your sign-in expired. Please sign in again.",
+  "filesClosed": "This order is closed, so its files can no longer be changed.",
+  "filesLimit": "An order can have at most 10 files.",
+  "filesOwnerOnly": "Only CaterKing can remove this file.",
+  "filesLoadFail": "Could not load the files.",
+  "filesRetry": "Try again",
+  "linkRefreshed": "The link had expired and was refreshed. Click it again.",
+  "filesLoading": "Loading..."
+});

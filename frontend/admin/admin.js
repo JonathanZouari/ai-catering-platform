@@ -253,7 +253,7 @@ async function showResource(key, tabs, openId = null) {
         : h("label", {}, f.label, input(f, row ? row[f.name] : f.def)))),
       h("button", { class: "primary", type: "submit" }, "שמירה"));
     const box = h("div", {}, form);
-    if (row && cfg.extras) box.append(await cfg.extras(row, () => edit(row.id)));
+    if (row && cfg.extras) box.append(await cfg.extras(row, () => (cfg.detail === false ? showResource(key, tabs, row.id) : edit(row.id))));
     return box;
   }
 
@@ -429,6 +429,7 @@ async function showWall(tabs) {
 }
 
 async function showOrders(tabs, filter = "", openId = null) {
+  ordersFilter = filter;
   const rows = await api(`/api/admin/orders${filter ? `?status=${encodeURIComponent(filter)}` : ""}`);
   const holder = h("div");
   const select = h("select", { onchange: () => run(() => showOrders(tabs, select.value)) },
@@ -451,6 +452,27 @@ async function showOrders(tabs, filter = "", openId = null) {
     h("label", { class: "filter" }, "סטטוס", select),
     h("div", { class: "card" }, rows.length ? table : h("p", { class: "hint" }, "אין הזמנות.")), holder));
   if (openId) holder.replaceChildren(await orderDetail(openId, refresh));
+}
+
+// Files are listed (and signed) after the panel appears; an error is shown, never "no files".
+function adminFilesPanel(id) {
+  const box = h("div");
+  let loadedAt = 0;
+  const load = async () => {
+    try {
+      const files = await api(`/api/admin/orders/${id}/files`);
+      loadedAt = Date.now();
+      box.replaceChildren(files.length ? h("ul", {}, ...files.map((f) => h("li", {},
+        f.url ? h("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", onclick: (ev) => {
+          if (Date.now() - loadedAt > 240000) { ev.preventDefault(); load(); say("הקישור פג ורוענן. לחצו עליו שוב."); } // signed links last 5 minutes
+        } }, f.original_name) : f.original_name))) : h("p", { class: "hint" }, "אין קבצים."));
+    } catch (e) {
+      if (e.status === 401) return logout("פג תוקף ההתחברות. התחברו שוב.");
+      box.replaceChildren(h("p", { role: "alert" }, "טעינת הקבצים נכשלה."), h("button", { type: "button", onclick: load }, "נסו שוב"));
+    }
+  };
+  load();
+  return h("section", { class: "panel" }, h("h3", {}, "קבצי הלקוח"), box);
 }
 
 async function orderDetail(id, refresh) {
@@ -503,9 +525,7 @@ async function orderDetail(id, refresh) {
   why.addEventListener("input", idleCancel);
   idleCancel();
   const ai = await api(`/api/admin/orders/${id}/assistant`);
-  const files = await api(`/api/admin/orders/${id}/files`).catch(() => []);
-  const filesPanel = h("section", { class: "panel" }, h("h3", {}, "קבצי הלקוח"),
-    files.length ? h("ul", {}, ...files.map((f) => h("li", {}, h("a", { href: f.url, target: "_blank", rel: "noopener noreferrer" }, f.original_name)))) : h("p", { class: "hint" }, "אין קבצים."));
+  const filesPanel = adminFilesPanel(id);
   const diffText = (d) => `${d.name}: ${d.current == null ? "—" : d.current} → ${d.proposed == null ? "הוסר" : d.proposed}`;
   const assistant = h("div", { class: "assistant" },
     h("p", {}, `${ai.message_count} הודעות · אחרונה ב-${fmtDT(ai.last_message_at)}`),
@@ -633,7 +653,25 @@ const GROUPS = {
 const SUB = { categories: "קטגוריות", dishes: "מנות", "serving-rules": "כללי כמויות", settings: "הגדרות", "time-slots": "חלונות זמן", "blocked-dates": "תאריכים חסומים" };
 const groupOf = (key) => (GROUPS[key] ? key : Object.keys(GROUPS).find((g) => GROUPS[g].keys.includes(key)));
 
-let currentKey = null, stopLive = () => {};
+let currentKey = null, currentTabs = null, ordersFilter = "", stopLive = () => {}, livePending = false;
+// Background refresh: keeps the status filter and scroll, never clears messages, and waits while the
+// owner is using a control or has an order open.
+async function liveRefresh() {
+  if (currentKey !== "wall" && currentKey !== "orders") return;
+  const el = document.activeElement;
+  if (app.querySelector(".order-detail") || (el && el !== document.body && app.contains(el) && el.matches("select, input, textarea"))) {
+    livePending = true;
+    return;
+  }
+  livePending = false;
+  const y = scrollY;
+  try {
+    if (currentKey === "wall") await showWall(currentTabs);
+    else await showOrders(currentTabs, ordersFilter);
+    scrollTo(0, y);
+  } catch (e) { if (e.status === 401) logout("פג תוקף ההתחברות. התחברו שוב."); }
+}
+document.addEventListener("focusout", () => { if (livePending) setTimeout(liveRefresh, 300); });
 async function showDashboard() {
   state.config ??= await api("/api/public-config");
   try { setSafety((await api("/api/public-settings")).safety_car); } catch { /* the switch stays off */ }
@@ -643,6 +681,7 @@ async function showDashboard() {
     for (const b of topTabs.children) b.setAttribute("aria-current", String(b.dataset.key === g));
     const sub = h("nav", { class: "subnav", "aria-label": "תתי-אזורים" });
     for (const k of GROUPS[g].keys) sub.append(h("button", { type: "button", "aria-pressed": String(k === key), onclick: () => run(() => openSection(k)) }, SUB[k]));
+    currentTabs = sub;
     if (key === "wall") await showWall(sub);
     else if (key === "orders") await showOrders(sub, "", arg);
     else if (key === "serving-rules") await showRules(sub);
@@ -655,10 +694,7 @@ async function showDashboard() {
   await openSection("wall");
   stopLive();
   // New orders and status changes (RLS gives the owner every order) re-render the wall or the list.
-  stopLive = watch({ config: state.config, token: auth.get(), tables: ["orders", "order_items"], onChange: () => {
-    const busy = app.querySelector(".order-detail, form") || document.activeElement?.closest?.("form, textarea");
-    if (!busy && (currentKey === "wall" || currentKey === "orders")) run(() => openSection(currentKey));
-  } });
+  stopLive = watch({ config: state.config, token: auth.get(), tables: ["orders", "order_items"], onChange: liveRefresh });
 }
 
 if (auth.get()) run(showDashboard); else showLogin();

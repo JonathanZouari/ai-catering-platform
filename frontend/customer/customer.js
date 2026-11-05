@@ -1,6 +1,6 @@
 // Customer ordering UI. All DOM is built with h() (createElement/textContent); server data is never
 // parsed as HTML. Totals shown are always the server's OrderOut values, never computed here.
-import { customerApi as api, customerAuth } from "/js/api.js"; // never the owner's token
+import { customerApi, customerAuth } from "/js/api.js"; // never the owner's token
 import { watch } from "/js/live.js";
 import { h, svg } from "/js/dom.js";
 import { beep, chirp, muteToggle } from "/js/radio.js";
@@ -9,6 +9,8 @@ import { S, DIR, LANGS } from "./i18n.js";
 const STORE = "catering_order";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LOCALES = { he: "he-IL", ar: "ar-IL-u-nu-latn", en: "en-IL" };
+// Only order creation carries the customer's bearer; everything else is public or uses the order link.
+const api = (path, options = {}) => customerApi(path, { auth: false, ...options });
 const $ = (id) => document.getElementById(id);
 const app = $("app");
 
@@ -76,6 +78,8 @@ function pyWeekday(dateStr) {
 
 // ---- errors
 async function handle(e) {
+  // Signed in but the session could not be renewed: keep the form, never turn this into a guest order.
+  if (e.code === "session_expired") { say(t().sessionExpired, "error"); return render(); }
   if (e.status === 404 && st.cred) return resetOrder(t().notFound);
   if (e.code === "order_version_conflict") {
     await reloadOrder().catch(() => {});
@@ -318,7 +322,7 @@ async function submitEvent(f) {
     st.order = await orderApi("", { method: "PATCH", body: JSON.stringify({ version: st.order.version, event, ...common }) });
   } else {
     const body = { customer: { full_name: f.name.trim(), email: f.email.trim() || null, phone: f.phone.trim() || null }, event, ...common };
-    const created = await api(withLang("/api/orders"), { method: "POST", body: JSON.stringify(body) });
+    const created = await api(withLang("/api/orders"), { method: "POST", auth: true, body: JSON.stringify(body) });
     setCred({ id: created.id, token: created.access_token });
     st.order = created;
   }
@@ -821,25 +825,23 @@ function syncPoll(on) {
     stopLive = watch({ config: st.config, token: customerAuth.get(), tables: [{ table: "orders", filter: `id=eq.${st.cred.id}` }], onChange: refreshOrder });
   }
 }
-let stopLive = () => {}, liveFor = null;
+let stopLive = () => {}, liveFor = null, stopMenu = () => {};
 async function refreshOrder() {
-  {
-    if (document.visibilityState !== "visible" || polling || st.busy || !st.cred) return;
-    polling = true;
-    const cred = st.cred;
-    // A user action, order switch or stop during the request wins over its (now stale) answer.
-    const stale = (o) => st.busy || st.cred !== cred || !pollTimer || (o && st.order && o.version < st.order.version);
-    try {
-      const [o, s2] = await Promise.all([orderApi(), api("/api/public-settings").catch(() => null)]);
-      if (stale(o)) return;
-      const changed = o.status !== st.order?.status || o.version !== st.order?.version || (s2 && s2.safety_car !== st.settings.safety_car);
-      if (s2) Object.assign(st.settings, s2);
-      const stage = o.status !== st.order?.status;
-      st.order = o;
-      if (changed) render();
-      if (stage) chirp();
-    } catch (e) { if (e.status === 404 && !stale()) resetOrder(t().notFound); } finally { polling = false; }
-  }
+  if (document.visibilityState !== "visible" || polling || st.busy || !st.cred) return;
+  polling = true;
+  const cred = st.cred;
+  // A user action, order switch or stop during the request wins over its (now stale) answer.
+  const stale = (o) => st.busy || st.cred !== cred || !pollTimer || (o && st.order && o.version < st.order.version);
+  try {
+    const [o, s2] = await Promise.all([orderApi(), api("/api/public-settings").catch(() => null)]);
+    if (stale(o)) return;
+    const changed = o.status !== st.order?.status || o.version !== st.order?.version || (s2 && s2.safety_car !== st.settings.safety_car);
+    if (s2) Object.assign(st.settings, s2);
+    const stage = o.status !== st.order?.status;
+    st.order = o;
+    if (changed) render();
+    if (stage) chirp();
+  } catch (e) { if (e.status === 404 && !stale()) resetOrder(t().notFound); } finally { polling = false; }
 }
 
 async function setLang(lang) {
@@ -873,7 +875,8 @@ async function boot() {
     if (config.supabase_url) st.imgBase = `${config.supabase_url}/storage/v1/object/public/dish-images`;
     st.config = config;
     // Live menu: dish, price and availability changes appear without a reload.
-    watch({ config, tables: ["dishes", "dish_categories"], onChange: async () => {
+    stopMenu();
+    stopMenu = watch({ config, tables: ["dishes", "dish_categories"], onChange: async () => {
       if (st.step !== "menu" || st.busy) return;
       try { await loadCatalog(); render(); } catch { /* the next change or reload retries */ }
     } });

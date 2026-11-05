@@ -1,7 +1,7 @@
 // Customer account page: sign up, sign in, password reset, profile photo, order history and files.
 // Auth talks to Supabase Auth REST directly (like the owner login); the token is stored under the
 // customer's own key. All DOM is built with h() (textContent); server data is never parsed as HTML.
-import { customerApi as api, customerAuth } from "/js/api.js";
+import { customerApi as api, customerAuth, customerSession } from "/js/api.js";
 import { h } from "/js/dom.js";
 import { S, DIR, LANGS } from "./i18n.js";
 
@@ -42,9 +42,17 @@ function recoveryToken() {
   return params.get("access_token");
 }
 
+const ERRORS = { order_closed: "filesClosed", file_limit: "filesLimit", file_owner: "filesOwnerOnly" };
 async function run(fn) {
   say("");
-  try { await fn(); } catch (e) { say(e.message === "auth" ? t().loginFail : e.message, "error"); }
+  try { await fn(); } catch (e) {
+    if (e.code === "session_expired" || (e.status === 401 && customerAuth.get())) { // ask to sign in, not a confusing 404
+      customerSession.clear();
+      loginScreen();
+      return say(t().sessionExpiredShort, "error");
+    }
+    say(e.message === "auth" ? t().loginFail : t()[ERRORS[e.code]] ?? e.message, "error");
+  }
 }
 
 const field = (label, type, props = {}) => {
@@ -66,7 +74,7 @@ function loginScreen(mode = "login") {
     run(async () => {
       if (mode === "login") {
         const body = await authCall("token?grant_type=password", { email: email.value, password: password.value });
-        customerAuth.set(body.access_token);
+        customerSession.save(body);
         return accountScreen();
       }
       try {
@@ -101,6 +109,7 @@ function newPasswordScreen(token) {
     ev.preventDefault();
     run(async () => {
       try { await authCall("user", { password: password.value }, { method: "PUT", token }); } catch { throw new Error(t().passwordFail); }
+      recovery = null;
       say(t().passwordDone);
       loginScreen();
     });
@@ -110,32 +119,53 @@ function newPasswordScreen(token) {
 
 const money = (v, cur) => new Intl.NumberFormat({ he: "he-IL", ar: "ar-IL-u-nu-latn", en: "en-IL" }[lang], { style: "currency", currency: cur }).format(Number(v));
 
-async function filesPanel(order) {
+const STALE_MS = 240000; // signed links last 5 minutes; refresh before they run out
+const CLOSED = ["delivered", "cancelled", "rejected"];
+
+// Loaded and signed only when the panel is opened, and a failure stays inside the panel.
+function filesPanel(order) {
   const box = h("div", { class: "files" });
   const input = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp,application/pdf" });
-  const render = async () => {
-    const files = await api(`/api/orders/${order.id}/files`, { auth: true });
-    box.replaceChildren(...(files.length ? files : [null]).map((f) => f
-      ? h("div", { class: "file-row" },
-        h("a", { href: f.url, target: "_blank", rel: "noopener noreferrer" }, f.original_name),
-        h("button", { type: "button", class: "link", onclick: () => run(async () => { await api(`/api/orders/${order.id}/files/${f.id}`, { method: "DELETE" }); await render(); }) }, t().fileDelete))
-      : h("p", { class: "hint" }, t().noFiles)));
+  const closed = CLOSED.includes(order.status);
+  let loadedAt = 0;
+  const load = async () => {
+    box.replaceChildren(h("p", { class: "hint" }, t().filesLoading));
+    try {
+      const files = await api(`/api/orders/${order.id}/files`);
+      loadedAt = Date.now();
+      box.replaceChildren(...(files.length ? files : [null]).map((f) => f ? fileRow(f) : h("p", { class: "hint" }, t().noFiles)));
+    } catch (e) {
+      if (e.code === "session_expired" || e.status === 401) return run(async () => { throw e; });
+      box.replaceChildren(h("p", { class: "err", role: "alert" }, t().filesLoadFail),
+        h("button", { type: "button", onclick: load }, t().filesRetry));
+    }
+  };
+  const fileRow = (f) => {
+    const link = f.url
+      ? h("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", onclick: (ev) => {
+        if (Date.now() - loadedAt > STALE_MS) { ev.preventDefault(); load().then(() => say(t().linkRefreshed)); }
+      } }, f.original_name)
+      : h("span", {}, f.original_name);
+    const canDelete = !closed && f.uploaded_by === "customer";
+    return h("div", { class: "file-row" }, link, f.url ? null : h("button", { type: "button", class: "link", onclick: load }, t().filesRetry),
+      canDelete && h("button", { type: "button", class: "link", onclick: () => run(async () => { await api(`/api/orders/${order.id}/files/${f.id}`, { method: "DELETE" }); await load(); }) }, t().fileDelete));
   };
   const upload = h("button", { type: "button", onclick: () => run(async () => {
     if (!input.files[0]) return;
     const data = new FormData();
     data.append("file", input.files[0]);
-    try { await api(`/api/orders/${order.id}/files`, { method: "POST", body: data }); } catch (e) { throw new Error(`${t().uploadFail} ${e.message}`); }
+    await api(`/api/orders/${order.id}/files`, { method: "POST", body: data });
     input.value = "";
-    await render();
+    await load();
   }) }, t().fileUpload);
-  await render();
-  return h("details", { class: "order-files" }, h("summary", {}, t().files), h("p", { class: "hint" }, t().filesHint), box, input, upload);
+  const details = h("details", { class: "order-files" }, h("summary", {}, t().files), h("p", { class: "hint" }, t().filesHint), box, !closed && input, !closed && upload);
+  details.addEventListener("toggle", () => { if (details.open) load(); }); // fresh list and fresh links on every open
+  return details;
 }
 
 async function accountScreen() {
   const [me, orders] = await Promise.all([api("/api/me"), api("/api/me/orders")]).catch((e) => {
-    if (e.status === 401) { loginScreen(); return []; }
+    if (e.status === 401) { customerSession.clear(); loginScreen(); say(t().sessionExpiredShort, "error"); return []; }
     throw e;
   });
   if (!me) return;
@@ -158,21 +188,22 @@ async function accountScreen() {
       if (!photo.files[0]) return;
       const data = new FormData();
       data.append("file", photo.files[0]);
-      try { await api("/api/me/avatar", { method: "POST", body: data }); } catch (e) { throw new Error(`${t().uploadFail} ${e.message}`); }
+      try { await api("/api/me/avatar", { method: "POST", body: data }); } catch (e) { e.message = `${t().uploadFail} ${e.message}`; throw e; }
       await accountScreen();
     }) }, t().avatarUpload),
     me.avatar_url && h("button", { type: "button", class: "link", onclick: () => run(async () => { await api("/api/me/avatar", { method: "DELETE" }); await accountScreen(); }) }, t().avatarRemove));
-  const list = await Promise.all(orders.map(async (o) => h("li", { class: "ep-card order-row" },
+  const list = orders.map((o) => h("li", { class: "ep-card order-row" },
     h("div", {}, h("strong", {}, `${t().orderDate}: ${o.event_date}`), " · ", t().stageSub[o.status] ?? o.status),
     o.total != null && h("div", {}, `${t().orderTotal}: ${money(o.total, o.currency)}`),
-    await filesPanel(o))));
+    filesPanel(o)));
   app.replaceChildren(profile, photoCard,
     h("section", {}, h("h2", {}, t().myOrders), orders.length ? h("ul", { class: "order-list" }, list) : h("p", {}, t().noOrders),
       h("a", { class: "primary-link", href: "/customer/" }, t().newOrder)),
-    h("button", { type: "button", onclick: () => { customerAuth.clear(); loginScreen(); } }, t().logout));
+    h("button", { type: "button", onclick: () => { customerSession.clear(); loginScreen(); } }, t().logout));
 }
 
 // ---- boot
+let recovery = recoveryToken(); // read once: switching language re-runs boot() after the hash is gone
 function chrome() {
   document.documentElement.lang = lang;
   document.documentElement.dir = DIR[lang];
@@ -187,7 +218,6 @@ function chrome() {
 async function boot() {
   chrome();
   say("");
-  const recovery = recoveryToken();
   if (recovery) return newPasswordScreen(recovery);
   if (customerAuth.get()) return run(accountScreen);
   loginScreen();
