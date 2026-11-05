@@ -51,12 +51,12 @@ CREATE POLICY catering_images_read ON storage.objects FOR SELECT TO authenticate
 USING (bucket_id='dish-images' AND (SELECT auth.jwt()->'app_metadata'->>'role')='catering_owner');
 CREATE POLICY catering_images_insert ON storage.objects FOR INSERT TO authenticated
 WITH CHECK (bucket_id='dish-images' AND (SELECT auth.jwt()->'app_metadata'->>'role')='catering_owner'
- AND split_part(name,'/',1)='dishes'
- AND EXISTS (SELECT 1 FROM public.dishes d WHERE d.legacy_code=split_part(name,'/',2)));
+ AND split_part(objects.name,'/',1)='dishes'
+ AND EXISTS (SELECT 1 FROM public.dishes d WHERE d.legacy_code=split_part(objects.name,'/',2)));
 CREATE POLICY catering_images_update ON storage.objects FOR UPDATE TO authenticated
 USING (bucket_id='dish-images' AND (SELECT auth.jwt()->'app_metadata'->>'role')='catering_owner')
 WITH CHECK (bucket_id='dish-images' AND (SELECT auth.jwt()->'app_metadata'->>'role')='catering_owner'
- AND split_part(name,'/',1)='dishes'
- AND EXISTS (SELECT 1 FROM public.dishes d WHERE d.legacy_code=split_part(name,'/',2)));
+ AND split_part(objects.name,'/',1)='dishes'
+ AND EXISTS (SELECT 1 FROM public.dishes d WHERE d.legacy_code=split_part(objects.name,'/',2)));
 CREATE POLICY catering_images_delete ON storage.objects FOR DELETE TO authenticated
 USING (bucket_id='dish-images' AND (SELECT auth.jwt()->'app_metadata'->>'role')='catering_owner');

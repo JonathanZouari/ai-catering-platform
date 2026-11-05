@@ -66,6 +66,12 @@ try {
     "INSERT INTO public.blocked_dates(date) VALUES ('2027-01-01')"),/row-level security/);
   await role('authenticated',{app_metadata:{role:'catering_owner'}},
     "INSERT INTO public.time_slots(fulfillment_type,weekday,start_time,end_time) VALUES ('pickup',0,'10:00','12:00'); INSERT INTO public.blocked_dates(date) VALUES ('2027-01-01')");
+  await role('authenticated',{app_metadata:{role:'catering_owner'}},
+    "INSERT INTO storage.objects(bucket_id,name) VALUES ('dish-images','dishes/d1/review-test.png')");
+  await assert.rejects(role('authenticated',{app_metadata:{role:'catering_owner'}},
+    "INSERT INTO storage.objects(bucket_id,name) VALUES ('dish-images','dishes/not-a-dish/test.png')"),/row-level security/);
+  await assert.rejects(role('authenticated',{app_metadata:{role:'catering_manager'}},
+    "INSERT INTO storage.objects(bucket_id,name) VALUES ('dish-images','dishes/d1/denied.png')"),/row-level security/);
   await assert.rejects(db.exec("INSERT INTO public.time_slots(fulfillment_type,start_time,end_time) VALUES ('pickup','12:00','10:00')"),/check constraint/);
   for(const table of ['ai_conversations','ai_messages','ai_change_proposals']) {
     await assert.rejects(role('authenticated',{app_metadata:{role:'catering_owner'}},`SELECT * FROM public.${table}`),/permission denied/);
