@@ -4,6 +4,7 @@ import {
   approveProposal, assistantReply, getDish, newOrder, priceOrder, qtyLabel, recommendedQty,
   validateContact, validateEvent,
 } from "./mock-backend.js";
+import { fetchOrder, submitOrderRemote, toSnapshot } from "./remote.js";
 
 const STORAGE_KEY = "catering.customer.draft.v1";
 export const STEPS = ["event", "menu", "summary", "status"];
@@ -88,27 +89,48 @@ export function setContact(patch) {
   commit({ ...state, order: { ...state.order, contact: { ...state.order.contact, ...patch } } });
 }
 
-export function submitOrder() {
+// Validates locally for fast feedback, then POSTs to /api/orders; the server re-validates and
+// prices, and its frozen snapshot is what the status screen shows.
+export async function submitOrder() {
   const { order } = state;
   const errors = { ...validateContact(order.contact) };
   if (!Object.keys(order.items).length) errors.items = "הוסיפו לפחות מנה אחת להזמנה";
   if (Object.keys(validateEvent(order.event)).length) errors.event = "פרטי האירוע חסרים או לא תקינים";
   if (Object.keys(errors).length) return { errors };
-  const pricing = priceOrder(order);
-  const snapshot = {
-    submittedAt: new Date().toISOString(),
-    lines: pricing.lines.map((l) => ({ name: l.dish.name, qty: qtyLabel(l.dish, l.qty), unitPrice: l.unitPrice, lineTotal: l.lineTotal })),
-    subtotal: pricing.subtotal,
-    deliveryFee: pricing.deliveryFee,
-    total: pricing.total,
-  };
-  commit({
-    ...state,
-    step: "status",
-    order: { ...order, status: "pending_approval", snapshot, version: order.version + 1 },
-    chat: { ...state.chat, open: false },
-  });
-  return { errors: {} };
+  try {
+    const saved = await submitOrderRemote(order);
+    commit({
+      ...state,
+      step: "status",
+      order: { ...order, ...fromServer(saved) },
+      chat: { ...state.chat, open: false },
+    });
+    return { errors: {} };
+  } catch (error) {
+    const { name, phone, items } = error.details ?? {};
+    const first = Object.values(error.details ?? {})[0];
+    return { errors: { name, phone, items, server: first ?? error.message } };
+  }
+}
+
+const fromServer = (o) => ({
+  id: o.id,
+  status: o.status,
+  version: o.version,
+  ownerNote: o.decision_note ?? "",
+  snapshot: toSnapshot(o),
+});
+
+/** Pulls the owner's decision for a submitted order (status changes happen in the database). */
+export async function refreshStatus() {
+  const { order } = state;
+  if (order.status !== "pending_approval" || order.id === "draft-local") return;
+  try {
+    const saved = await fetchOrder(order.id);
+    if (saved.status !== order.status) commit({ ...state, order: { ...order, ...fromServer(saved) } });
+  } catch {
+    /* offline or order unknown: keep showing the last known status */
+  }
 }
 
 export function startOver() {
