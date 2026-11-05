@@ -1,9 +1,10 @@
 """Order validation, pricing and persistence. Money is integer agorot; server is authoritative."""
 
 import re
-import sqlite3
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
+
+import psycopg
 
 from app.schemas.orders import OrderCreate
 
@@ -16,28 +17,40 @@ class ApiError(Exception):
         self.status, self.code, self.message, self.details = status, code, message, details or {}
 
 
-def availability(db: sqlite3.Connection, today: date | None = None) -> dict:
+def _uuid(value: str) -> uuid.UUID | None:
+    try:
+        return uuid.UUID(value)
+    except ValueError:
+        return None
+
+
+def availability(db: psycopg.Connection, today: date | None = None) -> dict:
     today = today or date.today()
     slots: dict[str, list[str]] = {"pickup": [], "delivery": []}
     for r in db.execute(
         "SELECT DISTINCT fulfillment_type, start_time, end_time FROM time_slots"
-        " WHERE is_active = 1 ORDER BY start_time"
+        " WHERE is_active ORDER BY start_time"
     ):
-        slots[r["fulfillment_type"]].append(f"{r['start_time']}-{r['end_time']}")
+        slots[r["fulfillment_type"]].append(
+            f"{r['start_time']:%H:%M}-{r['end_time']:%H:%M}"
+        )
     return {
         "min_date": (today + timedelta(days=LEAD_DAYS)).isoformat(),
-        "blocked_dates": [r[0] for r in db.execute("SELECT date FROM blocked_dates ORDER BY date")],
+        "blocked_dates": [
+            r["date"].isoformat()
+            for r in db.execute("SELECT date FROM blocked_dates ORDER BY date")
+        ],
         "zones": [
             {"city": r["name"], "fee": r["fee"]}
             for r in db.execute(
-                "SELECT name, fee FROM delivery_zones WHERE is_active = 1 ORDER BY name"
+                "SELECT name, fee FROM delivery_zones WHERE is_active ORDER BY name"
             )
         ],
         "slots": slots,
     }
 
 
-def _validate(db: sqlite3.Connection, p: OrderCreate, today: date) -> dict[str, str]:
+def _validate(db: psycopg.Connection, p: OrderCreate, today: date) -> dict[str, str]:
     e, errors = p.event, {}
     if not e.type:
         errors["type"] = "בחרו סוג אירוע"
@@ -48,17 +61,22 @@ def _validate(db: sqlite3.Connection, p: OrderCreate, today: date) -> dict[str, 
         errors["date"] = "בחרו תאריך לאירוע"
     if day and day < today + timedelta(days=LEAD_DAYS):
         errors["date"] = "התאריך קרוב מדי. נדרשים לפחות יומיים מראש."
-    elif day and db.execute("SELECT 1 FROM blocked_dates WHERE date = ?", (e.date,)).fetchone():
+    elif day and db.execute("SELECT 1 FROM blocked_dates WHERE date = %s", (day,)).fetchone():
         errors["date"] = "התאריך הזה סגור להזמנות. בחרו תאריך אחר."
     start, _, end = e.slot.partition("-")
-    # strftime('%w'): Sunday = 0. A NULL weekday slot is open every day.
+    try:
+        start_t, end_t = time.fromisoformat(start), time.fromisoformat(end)
+    except ValueError:
+        start_t = end_t = None
+    # extract(dow): Sunday = 0. A NULL weekday slot is open every day.
     slot_ok = (
         day
+        and start_t
         and db.execute(
-            "SELECT 1 FROM time_slots WHERE is_active = 1 AND fulfillment_type = ?"
-            " AND start_time = ? AND end_time = ?"
-            " AND (weekday IS NULL OR weekday = CAST(strftime('%w', ?) AS INTEGER))",
-            (e.fulfillment, start, end, e.date),
+            "SELECT 1 FROM time_slots WHERE is_active AND fulfillment_type = %s"
+            " AND start_time = %s AND end_time = %s"
+            " AND (weekday IS NULL OR weekday = extract(dow FROM %s::date)::int)",
+            (e.fulfillment, start_t, end_t, day),
         ).fetchone()
     )
     if not slot_ok and "date" not in errors:
@@ -81,15 +99,16 @@ def _validate(db: sqlite3.Connection, p: OrderCreate, today: date) -> dict[str, 
     return errors
 
 
-def create_order(db: sqlite3.Connection, p: OrderCreate, today: date | None = None) -> dict:
+def create_order(db: psycopg.Connection, p: OrderCreate, today: date | None = None) -> dict:
     today = today or date.today()
     errors = _validate(db, p, today)
     dishes = {}
     for it in p.items:
-        row = db.execute(
+        dish_uuid = _uuid(it.dish_id)
+        row = dish_uuid and db.execute(
             "SELECT id, name, pricing_unit, unit_price FROM dishes"
-            " WHERE id = ? AND is_available = 1",
-            (it.dish_id,),
+            " WHERE id = %s AND is_available",
+            (dish_uuid,),
         ).fetchone()
         if not row:
             errors["items"] = "אחת המנות אינה זמינה יותר"
@@ -97,12 +116,14 @@ def create_order(db: sqlite3.Connection, p: OrderCreate, today: date | None = No
     zone = None
     if p.event.fulfillment == "delivery" and "city" not in errors:
         zone = db.execute(
-            "SELECT id, fee FROM delivery_zones WHERE name = ? AND is_active = 1", (p.event.city,)
+            "SELECT id, fee FROM delivery_zones WHERE name = %s AND is_active", (p.event.city,)
         ).fetchone()
         if not zone:
             errors["city"] = "אין משלוחים לעיר הזו"
     if errors:
         raise ApiError(422, "validation_error", "הנתונים שנשלחו אינם תקינים", errors)
+
+    day = date.fromisoformat(p.event.date)  # _validate rejected unparsable dates above
 
     lines = [
         (it, dishes[it.dish_id], int(dishes[it.dish_id]["unit_price"] * it.quantity + 0.5))
@@ -110,22 +131,22 @@ def create_order(db: sqlite3.Connection, p: OrderCreate, today: date | None = No
     ]
     subtotal = sum(total for *_, total in lines)
     fee = zone["fee"] if zone else 0
-    e, order_id, now = p.event, str(uuid.uuid4()), datetime.now().isoformat(timespec="seconds")
-    customer_id, event_id = str(uuid.uuid4()), str(uuid.uuid4())
-    with db:
+    e, order_id, now = p.event, uuid.uuid4(), datetime.now().astimezone()
+    customer_id, event_id = uuid.uuid4(), uuid.uuid4()
+    with db.transaction():
         db.execute(
-            "INSERT INTO customers (id, full_name, phone) VALUES (?, ?, ?)",
+            "INSERT INTO customers (id, full_name, phone) VALUES (%s, %s, %s)",
             (customer_id, p.contact.name.strip(), p.contact.phone.strip()),
         )
         db.execute(
             "INSERT INTO events (id, customer_id, event_type, event_date, adults, children,"
             " vegetarian_guests, vegan_guests, restricted_guests, dietary_notes)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
             (
                 event_id,
                 customer_id,
                 e.type,
-                e.date,
+                day,
                 e.adults,
                 e.children,
                 e.vegetarian,
@@ -137,7 +158,7 @@ def create_order(db: sqlite3.Connection, p: OrderCreate, today: date | None = No
         db.execute(
             "INSERT INTO orders (id, customer_id, event_id, status, fulfillment_type, requested_at,"
             " delivery_address, delivery_zone_id, subtotal, delivery_fee, total, submitted_at)"
-            " VALUES (?, ?, ?, 'pending_approval', ?, ?, ?, ?, ?, ?, ?, ?)",
+            " VALUES (%s, %s, %s, 'pending_approval', %s, %s, %s, %s, %s, %s, %s, %s)",
             (
                 order_id,
                 customer_id,
@@ -156,9 +177,9 @@ def create_order(db: sqlite3.Connection, p: OrderCreate, today: date | None = No
             db.execute(
                 "INSERT INTO order_items (id, order_id, dish_id, quantity, snapshot_name,"
                 " snapshot_pricing_unit, snapshot_unit_price, snapshot_line_total)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                 (
-                    str(uuid.uuid4()),
+                    uuid.uuid4(),
                     order_id,
                     it.dish_id,
                     it.quantity,
@@ -171,12 +192,13 @@ def create_order(db: sqlite3.Connection, p: OrderCreate, today: date | None = No
     return get_order(db, order_id)
 
 
-def get_order(db: sqlite3.Connection, order_id: str) -> dict:
-    o = db.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+def get_order(db: psycopg.Connection, order_id: str) -> dict:
+    order_uuid = _uuid(str(order_id))
+    o = order_uuid and db.execute("SELECT * FROM orders WHERE id = %s", (order_uuid,)).fetchone()
     if not o:
         raise ApiError(404, "not_found", "ההזמנה לא נמצאה")
     return {
-        "id": o["id"],
+        "id": str(o["id"]),
         "status": o["status"],
         "version": o["version"],
         "decision_note": o["decision_note"],
@@ -186,12 +208,13 @@ def get_order(db: sqlite3.Connection, order_id: str) -> dict:
                 {
                     "name": r["snapshot_name"],
                     "pricing_unit": r["snapshot_pricing_unit"],
-                    "quantity": r["quantity"],
+                    "quantity": float(r["quantity"]),
                     "unit_price": r["snapshot_unit_price"],
                     "line_total": r["snapshot_line_total"],
                 }
                 for r in db.execute(
-                    "SELECT * FROM order_items WHERE order_id = ? ORDER BY rowid", (order_id,)
+                    "SELECT * FROM order_items WHERE order_id = %s ORDER BY snapshot_name",
+                    (order_uuid,),
                 )
             ],
             "subtotal": o["subtotal"],

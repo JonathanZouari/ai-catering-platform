@@ -1,18 +1,13 @@
-import sqlite3
-from pathlib import Path
+import psycopg
+from psycopg.rows import dict_row
 
-SCHEMA = Path(__file__).with_name("schema.sql")
-
-
-def connect(path: str = "catering.db") -> sqlite3.Connection:
-    conn = sqlite3.connect(path)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")  # off by default in SQLite
-    conn.execute("PRAGMA journal_mode = WAL")
-    return conn
+from app.core.config import get_settings
 
 
-def init_db(path: str = "catering.db") -> sqlite3.Connection:
-    conn = connect(path)
-    conn.executescript(SCHEMA.read_text(encoding="utf-8"))
-    return conn
+def connect() -> psycopg.Connection:
+    url = get_settings().database_url
+    if not url:
+        raise RuntimeError("DATABASE_URL is not set (see .env.example)")
+    # autocommit: writes use an explicit `with db.transaction()`. prepare_threshold=None keeps
+    # it safe behind Supabase's connection pooler.
+    return psycopg.connect(url, row_factory=dict_row, autocommit=True, prepare_threshold=None)

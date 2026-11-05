@@ -1,6 +1,6 @@
-import sqlite3
 from typing import Annotated
 
+import psycopg
 from fastapi import APIRouter, Depends
 
 from app.api.dishes import get_db
@@ -8,7 +8,7 @@ from app.schemas.orders import OrderCreate
 from app.services import orders
 
 router = APIRouter(prefix="/api")
-Db = Annotated[sqlite3.Connection, Depends(get_db)]
+Db = Annotated[psycopg.Connection, Depends(get_db)]
 
 
 @router.get("/availability")
