@@ -122,3 +122,13 @@ def test_security_headers_on_api_and_pages(client):
 def test_static_files_revalidate_so_deploys_reach_customers(client):
     assert client.get("/customer/").headers["cache-control"] == "no-cache"
     assert client.get("/customer/customer.js").headers["cache-control"] == "no-cache"
+
+
+def test_csp_allows_supabase_realtime_but_no_inline_or_cdn_scripts(client):
+    csp = client.get("/health").headers["content-security-policy"]
+    assert "wss://*.supabase.co" in csp and "script-src 'self';" in csp
+    for page in ("/customer/", "/customer/account.html", "/admin/"):
+        html = client.get(page).text
+        assert " onclick=" not in html and "<script>" not in html
+        assert 'src="http' not in html  # scripts only from this origin (vendored supabase-js)
+    assert client.get("/vendor/supabase-js.umd.js").status_code == 200

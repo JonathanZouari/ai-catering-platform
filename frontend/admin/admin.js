@@ -1,4 +1,5 @@
 // All DOM is built with createElement/textContent; server data is never parsed as HTML.
+import { watch } from "/js/live.js";
 import { api, auth } from "/js/api.js";
 import { beep, muteToggle } from "/js/radio.js";
 import { h } from "/js/dom.js";
@@ -62,6 +63,7 @@ async function run(action) {
 }
 
 function logout(text = "") {
+  stopLive();
   auth.clear();
   topTabs.replaceChildren();
   tools.replaceChildren();
@@ -631,10 +633,12 @@ const GROUPS = {
 const SUB = { categories: "קטגוריות", dishes: "מנות", "serving-rules": "כללי כמויות", settings: "הגדרות", "time-slots": "חלונות זמן", "blocked-dates": "תאריכים חסומים" };
 const groupOf = (key) => (GROUPS[key] ? key : Object.keys(GROUPS).find((g) => GROUPS[g].keys.includes(key)));
 
+let currentKey = null, stopLive = () => {};
 async function showDashboard() {
   state.config ??= await api("/api/public-config");
   try { setSafety((await api("/api/public-settings")).safety_car); } catch { /* the switch stays off */ }
   openSection = async (key, arg = null) => {
+    currentKey = key;
     const g = groupOf(key);
     for (const b of topTabs.children) b.setAttribute("aria-current", String(b.dataset.key === g));
     const sub = h("nav", { class: "subnav", "aria-label": "תתי-אזורים" });
@@ -649,6 +653,12 @@ async function showDashboard() {
     h("button", { type: "button", class: "tab", "data-key": g, "aria-current": "false", onclick: () => run(() => openSection(keys[0] ?? g)) }, label)));
   tools.replaceChildren(safetySwitch(), muteToggle({ on: "רדיו פעיל", off: "השתקת רדיו", aria: "השתקת הרדיו" }), h("button", { type: "button", class: "ghost", onclick: () => logout() }, "יציאה"));
   await openSection("wall");
+  stopLive();
+  // New orders and status changes (RLS gives the owner every order) re-render the wall or the list.
+  stopLive = watch({ config: state.config, token: auth.get(), tables: ["orders", "order_items"], onChange: () => {
+    const busy = app.querySelector(".order-detail, form") || document.activeElement?.closest?.("form, textarea");
+    if (!busy && (currentKey === "wall" || currentKey === "orders")) run(() => openSection(currentKey));
+  } });
 }
 
 if (auth.get()) run(showDashboard); else showLogin();

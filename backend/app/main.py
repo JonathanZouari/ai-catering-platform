@@ -36,7 +36,7 @@ SECURITY_HEADERS = {
     "Content-Security-Policy": (
         "default-src 'self'; script-src 'self'; img-src 'self' data: https:; "
         "style-src 'self' 'unsafe-inline'; "
-        "font-src 'self'; connect-src 'self' https://*.supabase.co; "
+        "font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; "
         "frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
     ),
     "X-Content-Type-Options": "nosniff",

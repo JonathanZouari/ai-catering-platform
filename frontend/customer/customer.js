@@ -1,6 +1,7 @@
 // Customer ordering UI. All DOM is built with h() (createElement/textContent); server data is never
 // parsed as HTML. Totals shown are always the server's OrderOut values, never computed here.
-import { customerApi as api } from "/js/api.js"; // never the owner's token
+import { customerApi as api, customerAuth } from "/js/api.js"; // never the owner's token
+import { watch } from "/js/live.js";
 import { h, svg } from "/js/dom.js";
 import { beep, chirp, muteToggle } from "/js/radio.js";
 import { S, DIR, LANGS } from "./i18n.js";
@@ -811,8 +812,18 @@ function render() {
 // Tracker refresh: every 60s while the tab is visible, never two requests at once; stops when the tracker closes.
 let pollTimer = null, polling = false;
 function syncPoll(on) {
-  if (!on) { clearInterval(pollTimer); pollTimer = null; return; }
-  pollTimer ??= setInterval(async () => {
+  if (!on) { clearInterval(pollTimer); pollTimer = null; stopLive(); liveFor = null; return; }
+  pollTimer ??= setInterval(refreshOrder, 60000);
+  // Signed-in customers get pushed changes for their own order (RLS limits what is sent).
+  if (customerAuth.get() && st.cred && st.config && liveFor !== st.cred.id) {
+    stopLive();
+    liveFor = st.cred.id;
+    stopLive = watch({ config: st.config, token: customerAuth.get(), tables: [{ table: "orders", filter: `id=eq.${st.cred.id}` }], onChange: refreshOrder });
+  }
+}
+let stopLive = () => {}, liveFor = null;
+async function refreshOrder() {
+  {
     if (document.visibilityState !== "visible" || polling || st.busy || !st.cred) return;
     polling = true;
     const cred = st.cred;
@@ -828,7 +839,7 @@ function syncPoll(on) {
       if (changed) render();
       if (stage) chirp();
     } catch (e) { if (e.status === 404 && !stale()) resetOrder(t().notFound); } finally { polling = false; }
-  }, 60000);
+  }
 }
 
 async function setLang(lang) {
@@ -860,6 +871,12 @@ async function boot() {
     st.form = null;
     Object.assign(st, { types, settings, slots: avail.time_slots, blocked: avail.blocked_dates });
     if (config.supabase_url) st.imgBase = `${config.supabase_url}/storage/v1/object/public/dish-images`;
+    st.config = config;
+    // Live menu: dish, price and availability changes appear without a reload.
+    watch({ config, tables: ["dishes", "dish_categories"], onChange: async () => {
+      if (st.step !== "menu" || st.busy) return;
+      try { await loadCatalog(); render(); } catch { /* the next change or reload retries */ }
+    } });
     await loadCatalog();
     if (cred) {
       st.cred = cred;
