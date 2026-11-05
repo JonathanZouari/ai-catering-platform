@@ -72,6 +72,7 @@ class CustomerOrderOut(BaseModel):
     delivery_fee: Decimal | None
     total: Decimal | None
     submitted_at: UtcDatetime | None
+    adult_confirmed_at: UtcDatetime | None
     decided_at: UtcDatetime | None
     decision_note: str | None
     event: EventOut
@@ -87,6 +88,10 @@ class ItemIn(_In):
 
 class VersionIn(_In):
     version: int
+
+
+class SubmitIn(VersionIn):
+    adult_confirmed: bool = False  # required (true) when the order has alcohol
 
 
 class OrderItemOut(BaseModel):

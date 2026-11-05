@@ -64,6 +64,7 @@ function renderDishes() {
   $("dish-rows").replaceChildren(...shown.map((d) => {
     const title = el("th", { scope: "row" }, el("span", { className: "o-name", textContent: d.name }),
       el("span", { className: "help", textContent: names[d.category_id] ?? "" }));
+    if (d.contains_alcohol) title.append(el("span", { className: "pill", textContent: "18+" }));
     if (!d.is_available) title.append(el("span", { className: "pill s-rejected", textContent: "לא זמינה" }));
     const price = el("td", { className: "num" }, money(d.unit_price, d.currency), " ",
       el("span", { className: "help", textContent: d.unit_label || UNIT[d.pricing_unit] }));
@@ -110,6 +111,7 @@ function openEditor(dish) {
     $("d-min").value = dish.min_quantity ?? "";
     $("d-serves").value = dish.serves_adults ?? "";
     $("d-avail").checked = dish.is_available;
+    $("d-alcohol").checked = dish.contains_alcohol;
     $("d-kashrut").value = dish.dietary.kashrut_class ?? "pareve";
     $("d-veg").value = triState(dish.dietary.is_vegetarian);
     $("d-vegan").value = triState(dish.dietary.is_vegan);
@@ -133,6 +135,7 @@ function dishPayload() {
     min_quantity: text("d-min"),
     serves_adults: text("d-serves"),
     is_available: $("d-avail").checked,
+    contains_alcohol: $("d-alcohol").checked,
   };
 }
 

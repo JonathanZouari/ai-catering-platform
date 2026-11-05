@@ -15,6 +15,7 @@ from sqlalchemy import (
     String,
     Text,
     Uuid,
+    false,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -51,6 +52,8 @@ class Dish(Timestamps, Base):
     # How many adult portions one unit serves (OPEN_DECISIONS #3); null = no recommendation.
     serves_adults: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     is_available: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Sold to 18+ only: submitting needs the customer's age confirmation (OPEN_DECISIONS #11).
+    contains_alcohol: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
 
     category: Mapped[DishCategory] = relationship(lazy="joined")
     dietary: Mapped["DishDietary | None"] = relationship(

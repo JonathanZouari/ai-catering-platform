@@ -51,6 +51,7 @@ class DishCreate(_In):
     # Adults one unit serves (child = settings.child_portion); null = no recommendation.
     serves_adults: Quantity | None = None
     is_available: bool = True
+    contains_alcohol: bool = False
 
 
 class DishUpdate(_In):
@@ -64,6 +65,7 @@ class DishUpdate(_In):
     # Adults one unit serves (child = settings.child_portion); null = no recommendation.
     serves_adults: Quantity | None = None
     is_available: bool | None = None
+    contains_alcohol: bool | None = None
 
 
 class AllergenCreate(_In):
@@ -115,5 +117,6 @@ class DishOut(_Out):
     min_quantity: Decimal | None
     serves_adults: Decimal | None
     is_available: bool
+    contains_alcohol: bool
     dietary: DietaryOut
     allergens: list[DishAllergenOut]

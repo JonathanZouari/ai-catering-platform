@@ -97,7 +97,8 @@ def create_dish(db: Session, data: s.DishCreate) -> Dish:
 def update_dish(db: Session, dish_id: uuid.UUID, data: s.DishUpdate) -> Dish:
     dish = _get(db, Dish, dish_id, "Dish")
     changes = data.model_dump(exclude_unset=True)
-    _reject_nulls(changes, {"category_id", "name", "pricing_unit", "unit_price", "is_available"})
+    required = {"category_id", "name", "pricing_unit", "unit_price", "is_available"}
+    _reject_nulls(changes, required | {"contains_alcohol"})
     if "category_id" in changes:
         _check_category(db, changes["category_id"])
     for key, value in changes.items():

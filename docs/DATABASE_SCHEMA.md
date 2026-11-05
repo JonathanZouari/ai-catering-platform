@@ -60,6 +60,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | min_quantity | numeric(10,2) null | Per-dish minimum; the only minimum (#15 decided) |
 | serves_adults | numeric(10,2) null > 0 | Adults one unit serves, for recommendations (#3); null = no advice |
 | is_available | bool not null default true | |
+| contains_alcohol | bool not null default false | Sold to 18+ only (#11, migration 0012) |
 | created_at, updated_at | timestamptz | |
 
 ### dish_dietary (1:1 with dishes)
@@ -102,6 +103,7 @@ A missing row = **unknown**.
 | delivery_zone_id | uuid FK null | Zone whose fee was frozen at submission; on delete set null |
 | subtotal, delivery_fee, total | numeric(10,2) null | Computed by backend; frozen at submission |
 | submitted_at, decided_at | timestamptz null | |
+| adult_confirmed_at | timestamptz null | When the customer confirmed 18+ at submission; set only for orders with alcohol, cleared on withdraw (#11) |
 | decision_note | text null | Owner's note on approve/reject |
 | created_at, updated_at | timestamptz | |
 

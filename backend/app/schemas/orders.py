@@ -79,6 +79,7 @@ class OrderDetailOut(_Out):
     delivery_fee: Decimal | None
     total: Decimal | None
     submitted_at: UtcDatetime | None
+    adult_confirmed_at: UtcDatetime | None
     decided_at: UtcDatetime | None
     decision_note: str | None
     customer: CustomerOut

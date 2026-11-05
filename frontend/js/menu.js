@@ -16,6 +16,7 @@ const CODES = {
   invalid_transition: "ההזמנה כבר נשלחה ולא ניתן לשנות אותה",
   validation_error: "הכמות לא תקינה",
   empty_order: "צריך לבחור לפחות מנה אחת",
+  age_confirmation_required: "ההזמנה כוללת אלכוהול: סמנו שאתם מעל גיל 18",
   items_unavailable: "חלק מהמנות כבר לא זמינות. הסירו אותן מהסיכום ונסו שוב",
   slot_full: "השעה שבחרתם התמלאה בינתיים. בחרו שעה אחרת בפרטי האירוע",
   city_not_served: "אין כרגע משלוחים לעיר שבחרתם. עדכנו את פרטי האירוע (עיר אחרת או איסוף עצמי)",
@@ -99,6 +100,7 @@ function badges(d) {
   const out = [el("span", { className: `badge ${k[1]}`, textContent: k[0] })];
   if (d.dietary.is_vegan) out.push(el("span", { className: "badge diet", textContent: "טבעוני" }));
   else if (d.dietary.is_vegetarian) out.push(el("span", { className: "badge diet", textContent: "צמחוני" }));
+  if (d.contains_alcohol) out.push(el("span", { className: "badge diet", textContent: "אלכוהול 18+" }));
   return el("div", { className: "badges" }, ...out);
 }
 
@@ -216,6 +218,8 @@ async function renderSummary() {
   $("totals").replaceChildren(...rows);
   const count = p.lines.filter((l) => l.available).length;
   const dishes = count === 1 ? "מנה אחת" : `${count} מנות`;
+  const alcohol = new Set(state.dishes.filter((d) => d.contains_alcohol).map((d) => d.id));
+  $("adult-wrap").hidden = !state.editable || !p.lines.some((l) => l.available && alcohol.has(l.dish_id));
   $("submit").disabled = !state.editable || count === 0 || p.lines.some((l) => !l.available);
   $("bar-text").textContent = count ? `${dishes} · ${money(p.total)}` : "עוד לא נבחרו מנות";
 }
@@ -237,7 +241,7 @@ async function submit() {
   flushPending();
   try {
     await queue; // every quantity change has reached the server
-    await call(`/api/orders/${state.orderId}/submit`, { method: "POST", body: JSON.stringify({ version: state.order.version }) });
+    await call(`/api/orders/${state.orderId}/submit`, { method: "POST", body: JSON.stringify({ version: state.order.version, adult_confirmed: $("adult").checked }) });
     location.href = `/customer/order/?order=${encodeURIComponent(state.orderId)}`;
   } catch (err) {
     if (err.status === 401) { location.href = "/customer/"; return; }
