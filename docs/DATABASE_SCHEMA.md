@@ -64,7 +64,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | created_at, updated_at | timestamptz | |
 
 ### dish_dietary (1:1 with dishes)
-`dish_id` uuid PK/FK → dishes · `kashrut_class` kashrut_class **not null, default `pareve`**, check in (`meat`, `pareve`) (#9, migration 0011) · `is_vegetarian` bool null · `is_vegan` bool null · `verified_at` timestamptz null
+`dish_id` uuid PK/FK → dishes · `kashrut_class` kashrut_class default `pareve`, check in (`meat`, `pareve`) (#9, migration 0011); **null = not food** (disposables, no badge; migration 0013) · `is_vegetarian` bool null · `is_vegan` bool null · `verified_at` timestamptz null
 
 Null booleans mean **unknown** and must be presented as unknown, never as "no"/"yes".
 

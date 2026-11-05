@@ -11,8 +11,17 @@ EVENT = NS(adults=40, children=10, vegetarian_guests=5, vegan_guests=2)
 CHILD = D("0.75")  # -> 40 + 7.5 = 47.5 adult portions across 50 guests
 
 
-def dish(i, unit="per_tray", serves=None, vegetarian=None, vegan=None, minimum=None, known=True):
-    dietary = NS(is_vegetarian=vegetarian, is_vegan=vegan) if known else None
+def dish(
+    i,
+    unit="per_tray",
+    serves=None,
+    vegetarian=None,
+    vegan=None,
+    minimum=None,
+    known=True,
+    kashrut="pareve",
+):
+    dietary = NS(is_vegetarian=vegetarian, is_vegan=vegan, kashrut_class=kashrut) if known else None
     return NS(
         id=i,
         pricing_unit=unit,
@@ -104,6 +113,16 @@ def test_recommend_counts_only_guests_who_can_eat_the_dish():
         "unknown": (D("11.00"), 43),
         "brisket": (D("10.50"), 43),
         "min": (D("6.00"), 43),
+    }
+
+
+def test_recommend_non_food_is_one_per_guest():
+    # place settings: kashrut null = not food; all 50 guests, children whole, diet ignored
+    sets = dish("sets", unit="per_guest", serves=1, vegetarian=False, kashrut=None)
+    boxes = dish("boxes", unit="per_item", serves=12, kashrut=None)  # 50/12 -> 5
+    assert by_id(recommend(EVENT, [sets, boxes], CHILD)) == {
+        "sets": (D("50.00"), 50),
+        "boxes": (D("5.00"), 50),
     }
 
 

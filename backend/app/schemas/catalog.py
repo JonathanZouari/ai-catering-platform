@@ -85,14 +85,14 @@ class AllergenStatusIn(_In):
 class DietaryUpdate(_In):
     """Full replacement. null / "unknown" / an omitted allergen all mean unknown."""
 
-    kashrut_class: Kashrut = "pareve"
+    kashrut_class: Kashrut | None = "pareve"  # null = not food (disposables)
     is_vegetarian: bool | None = None
     is_vegan: bool | None = None
     allergens: list[AllergenStatusIn] = Field(default_factory=list, max_length=100)
 
 
 class DietaryOut(_Out):
-    kashrut_class: Kashrut = "pareve"
+    kashrut_class: Kashrut | None = "pareve"  # null = not food (disposables)
     is_vegetarian: bool | None = None
     is_vegan: bool | None = None
     verified_at: datetime | None = None

@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0012` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0013` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -49,7 +49,7 @@ erDiagram
     }
     dish_dietary {
         uuid dish_id PK, FK "cascade"
-        kashrut_class kashrut_class "meat or pareve, default pareve (no dairy, #9)"
+        kashrut_class kashrut_class "meat or pareve, default pareve (no dairy, #9); null = not food"
         bool is_vegetarian "null = unknown"
         bool is_vegan "null = unknown"
         timestamptz verified_at "null"

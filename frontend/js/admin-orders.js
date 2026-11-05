@@ -85,7 +85,7 @@ async function openOrder(id) {
 
   $("d-items").replaceChildren(...o.items.map((i) => el("tr", {},
     el("th", { scope: "row", textContent: i.name ?? "—" }),
-    el("td", { className: "num", textContent: `${qty(i.quantity)} ${UNIT[i.pricing_unit] ?? ""}` }),
+    el("td", { className: "num", textContent: i.pricing_unit === "per_guest" ? `ל-${qty(i.quantity)} אורחים` : `${qty(i.quantity)} ${UNIT[i.pricing_unit] ?? ""}` }),
     el("td", { className: "num", textContent: money(i.unit_price) }),
     el("td", { className: "num", textContent: money(i.line_total) }))));
 

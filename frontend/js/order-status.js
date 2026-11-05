@@ -6,7 +6,9 @@ import { call, session } from "/js/customer-session.js";
 const TZ = "Asia/Jerusalem";
 const UNIT = { per_tray: "מגשים", per_guest: "מנות", per_weight: 'ק"ג', per_item: "יחידות" };
 const UNIT_ONE = { per_tray: "מגש", per_guest: "מנה", per_weight: 'ק"ג', per_item: "יחידה" };
-const units = (quantity, unit) => (Number(quantity) === 1 ? UNIT_ONE : UNIT)[unit] ?? "";
+// per-guest lines read "for N guests": the unit is a guest, whether food or a place setting
+const qtyText = (q, unit) => unit === "per_guest" ? (Number(q) === 1 ? "לאורח אחד" : `ל-${num(q)} אורחים`)
+  : `${num(q)} ${(Number(q) === 1 ? UNIT_ONE : UNIT)[unit] ?? ""}`;
 const FULFILLMENT = { pickup: "איסוף עצמי", delivery: "משלוח" };
 const LEDE = {
   draft: "ההזמנה עדיין טיוטה. אפשר להמשיך לערוך ולשלוח אותה.",
@@ -160,7 +162,7 @@ async function load() {
 
   $("lines").replaceChildren(...pricing.lines.map((l) => el("tr", {},
     el("th", { scope: "row", textContent: l.name }),
-    el("td", { className: "num", textContent: `${num(l.quantity)} ${units(l.quantity, l.pricing_unit)}` }),
+    el("td", { className: "num", textContent: qtyText(l.quantity, l.pricing_unit) }),
     el("td", { className: "num", textContent: money(l.unit_price) }),
     el("td", { className: "num", textContent: money(l.line_total) }))));
   const rows = [fact("ביניים", money(pricing.subtotal))];

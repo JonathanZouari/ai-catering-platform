@@ -116,7 +116,10 @@ def test_kosher_meat_kitchen_has_no_dairy(client):
     url = f"/api/admin/dishes/{dish['id']}/dietary"
     res = client.put(url, json={"kashrut_class": "dairy"}, headers=AUTH)
     assert res.status_code == 422
-    assert client.put(url, json={"kashrut_class": None}, headers=AUTH).status_code == 422
+    # null = not food (disposables): no kashrut class, not listed under meat or pareve
+    res = client.put(url, json={"kashrut_class": None}, headers=AUTH)
+    assert res.status_code == 200 and res.json()["dietary"]["kashrut_class"] is None
+    assert client.get("/api/catalog/dishes?kashrut=pareve").json() == []
     assert client.put(url, json={"kashrut_class": "meat"}, headers=AUTH).status_code == 200
     meat = client.get("/api/catalog/dishes?kashrut=meat").json()
     assert [d["id"] for d in meat] == [dish["id"]]

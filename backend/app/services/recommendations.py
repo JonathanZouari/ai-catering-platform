@@ -8,6 +8,8 @@
   Vegetarian and vegan are separate groups within adults + children.
 - We don't know how the dietary groups split between adults and children, so excluded guests
   are removed proportionally: portions = (adults + children x child_portion) x eligible / total.
+- Non-food items (kashrut null, e.g. place settings) are one per guest: every guest counts, a
+  child as a whole guest, and dietary data doesn't apply.
 - Round up: per_weight to 0.5 kg, everything else to whole units; never below the dish minimum.
 The customer always decides; this is advice only.
 """
@@ -21,10 +23,14 @@ from app.models.orders import Event
 HALF = Decimal("0.5")
 
 
+def is_food(dish: Dish) -> bool:
+    return dish.dietary is None or dish.dietary.kashrut_class is not None
+
+
 def eligible_guests(event: Event, dish: Dish) -> int:
     total = event.adults + event.children
     diet = dish.dietary
-    if diet is not None and diet.is_vegan is True:
+    if not is_food(dish) or (diet is not None and diet.is_vegan is True):
         return total
     if diet is not None and diet.is_vegetarian is True:
         return total - event.vegan_guests
@@ -54,7 +60,8 @@ def recommend(event: Event, dishes: list[Dish], child_portion: Decimal) -> list[
         eligible = eligible_guests(event, dish)
         if not dish.serves_adults or eligible <= 0:
             continue
-        needed = portions * eligible / total / dish.serves_adults
+        per_dish = portions if is_food(dish) else Decimal(total)  # a child takes a whole setting
+        needed = per_dish * eligible / total / dish.serves_adults
         quantity = max(round_up(needed, dish.pricing_unit), dish.min_quantity or Decimal(0))
         out.append(Recommendation(dish.id, quantity.quantize(Decimal("0.01")), eligible))
     return out

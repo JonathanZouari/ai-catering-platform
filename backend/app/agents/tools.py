@@ -64,7 +64,7 @@ def _menu(ctx: Ctx, _: _Empty) -> dict:
     return {
         "currency": "ILS",
         "prices_include_vat": True,
-        "kashrut": "kosher meat kitchen: every dish is meat or pareve, no dairy",
+        "kashrut": "kosher: food is meat or pareve, no dairy; null = not food, no diet rules",
         "kashrut_certificate": settings.get(ctx.db).kashrut_certificate,
         "note": "null dietary value = unknown; an allergen not listed = unknown",
         "dishes": dishes,
