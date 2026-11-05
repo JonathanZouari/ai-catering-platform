@@ -185,6 +185,7 @@ def _require_capacity(repo: OrderRepository, order: Order) -> None:
     capacity = order.time_slot.capacity
     if capacity is None:
         return
+    repo.lock_slot(order.time_slot_id)
     booked = repo.count_booked(order.time_slot_id, order.event.event_date, order.id)
     if booked >= capacity:
         raise AppError(409, "slot_full", "השעה שנבחרה כבר מלאה. בחרו שעה אחרת")

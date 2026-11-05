@@ -58,7 +58,7 @@ def submit_order(
     if email:
         background.add_task(notifications.deliver, mailer, email, order.id)
     view = orders.view(session, scope, order)
-    # The email goes out with the session still open, so it must not hold the write lock.
+    # The email goes out with the session still open, so it must not hold the order's row locks.
     session.commit()
     return view
 

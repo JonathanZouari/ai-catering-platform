@@ -53,7 +53,7 @@ Sample menu and made-up names. Design based on the Stitch mockups.
 |---|---|
 | Backend | Python 3.12+, FastAPI, Pydantic, SQLAlchemy |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | SQLite, plus Supabase for caterer logins and images |
+| Data | Supabase: Postgres with RLS, Auth, Storage and Realtime |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -62,7 +62,7 @@ Sample menu and made-up names. Design based on the Stitch mockups.
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format)
+supabase/       migrations/ (SQL) and Supabase CLI config
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway

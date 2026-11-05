@@ -8,11 +8,10 @@ RUN cd backend && uv sync --frozen --no-dev
 
 COPY backend backend
 COPY frontend frontend
-COPY database database
 
 WORKDIR /srv/backend
 ENV PATH="/srv/backend/.venv/bin:$PATH"
 # Strict unless told otherwise, so a server missing APP_ENV never runs in development mode.
 ENV APP_ENV=production
-# Migrations run here because the database file only exists on the server's volume.
-CMD ["sh", "-c", "python -m scripts.migrate && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Migrations are applied with `supabase db push` before a deploy (docs/DEPLOYMENT.md).
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

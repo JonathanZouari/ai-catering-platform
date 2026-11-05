@@ -23,7 +23,7 @@ def store_upload(
         raise AppError(413, "file_too_large", "הקובץ גדול מדי (עד 5MB)")
     extension = detect_file_type(content, allow_pdf=allow_pdf)
     path = _object_path(scope.caterer_id, folder, extension)
-    # Nothing is unsaved yet, and the write lock must not be held during the network call.
+    # Nothing is unsaved yet, and no locks may be held during the network call.
     session.commit()
     storage.upload(path, content, content_type_for(extension))
     return path

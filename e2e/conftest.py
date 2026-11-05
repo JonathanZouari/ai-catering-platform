@@ -25,20 +25,35 @@ def call(base_url, path, body=None, token=None, method="POST", headers=None):
         return json.loads(response.read() or "null")
 
 
+# Local runs read the URL from this git-ignored file; CI sets the variable.
+LOCAL_ENV = Path(__file__).resolve().parents[1] / ".env.test"
+
+
+def database_url() -> str:
+    url = os.environ.get("E2E_DATABASE_URL")
+    if not url and LOCAL_ENV.exists():
+        for line in LOCAL_ENV.read_text(encoding="utf-8").splitlines():
+            if line.startswith("E2E_DATABASE_URL="):
+                url = line.split("=", 1)[1]
+    if not url:
+        pytest.fail("Set E2E_DATABASE_URL to a Postgres database whose name contains 'test'")
+    return url
+
+
 @pytest.fixture(scope="module")
-def base_url(tmp_path_factory):
+def base_url():
     """A fresh server and database for each test file."""
-    database = tmp_path_factory.mktemp("db") / "e2e.db"
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
     server = Path(__file__).parent / "server.py"
-    environment = os.environ | {"E2E_DATABASE_URL": f"sqlite:///{database}"}
+    environment = os.environ | {"E2E_DATABASE_URL": database_url()}
     process = subprocess.Popen(  # noqa: S603
         [sys.executable, str(server), str(port)], env=environment
     )
     address = f"http://127.0.0.1:{port}"
-    for _ in range(100):
+    # Rebuilding the remote database takes a while.
+    for _ in range(300):
         try:
             urllib.request.urlopen(f"{address}/health")  # noqa: S310
             break

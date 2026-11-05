@@ -4,6 +4,7 @@ import { renderMenu } from "/js/admin/menu.js";
 import { renderOrders } from "/js/admin/orders.js";
 import { renderProfile } from "/js/admin/profile.js";
 import { renderQuantities } from "/js/admin/quantities.js";
+import { watchOrders } from "/js/admin/realtime.js";
 import { api } from "/js/api.js";
 import { attempt, field, h } from "/js/ui.js";
 
@@ -79,6 +80,7 @@ function renderShell(profile, storageUrl) {
           h("a", { className: "button secondary", href: "/", target: "_blank", rel: "noopener" }, icon("home"), "צפייה באתר"),
           h("button", { type: "button", className: "secondary", onclick: logout }, icon("logout"), "יציאה"))),
       view),
+    h("p", { id: "live-status", className: "visually-hidden", role: "status" }),
   );
   return view;
 }
@@ -103,6 +105,7 @@ async function show(view) {
     else link.removeAttribute("aria-current");
   });
   document.title = `${SCREENS[key][0]} | ניהול העסק`;
+  view.dataset.screen = key;
   view.replaceChildren(h("div", { className: "loading", role: "status" }, h("span", { className: "spinner", "aria-hidden": "true" }), "טוען…"));
   await attempt(() => SCREENS[key][2](view));
   view.focus({ preventScroll: true });
@@ -117,6 +120,21 @@ async function start() {
   const view = renderShell(profile, config.storage_public_url);
   window.onhashchange = () => show(view);
   show(view);
+  watchOrders(() => {
+    clearTimeout(liveRefresh);
+    liveRefresh = setTimeout(() => refreshLive(view), 300);
+  });
+}
+
+let liveRefresh;
+
+// A new or changed order: update the counter, and the list if it's on screen and idle.
+async function refreshLive(view) {
+  updatePendingCount();
+  if (view.dataset.screen !== "orders" || document.querySelector("dialog[open]")) return;
+  await attempt(() => renderOrders(view));
+  const live = document.getElementById("live-status");
+  if (live) live.textContent = "רשימת ההזמנות עודכנה";
 }
 
 if (isLoggedIn()) start();

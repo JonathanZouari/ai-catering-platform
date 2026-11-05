@@ -26,7 +26,9 @@ def other_shop(client, make_tenant):
 def deployed(monkeypatch):
     settings = get_settings()
     monkeypatch.setattr(settings, "app_env", "staging")
-    monkeypatch.setattr(settings, "database_url", "sqlite:////data/test.db")
+    monkeypatch.setattr(
+        settings, "database_url", "postgresql://user:pw@db.example.test:5432/postgres"
+    )
     monkeypatch.setattr(settings, "supabase_url", "https://project.supabase.co")
     monkeypatch.setattr(settings, "supabase_anon_key", "anon")
     monkeypatch.setattr(settings, "supabase_service_role_key", "service")
@@ -143,7 +145,7 @@ def test_hero_video_and_its_still_photo_are_served(client):
 def test_policy_allows_only_the_project_supabase():
     policy = content_security_policy("https://project.supabase.co/")
     assert "img-src 'self' https://project.supabase.co;" in policy
-    assert "connect-src 'self' https://project.supabase.co;" in policy
+    assert "connect-src 'self' https://project.supabase.co wss://project.supabase.co;" in policy
 
 
 def test_hsts_only_when_deployed(client, monkeypatch):

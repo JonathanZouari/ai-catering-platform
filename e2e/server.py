@@ -1,4 +1,4 @@
-"""Runs the real app on real SQLite, faking only Supabase Auth and Storage on the same origin."""
+"""Runs the real app on a real Postgres test database, faking only Supabase Auth and Storage."""
 
 import json
 import os
@@ -23,7 +23,7 @@ os.environ.update(
 import jwt  # noqa: E402
 import uvicorn  # noqa: E402
 from app.agents.client import get_llm  # noqa: E402
-from app.core.db import apply_migrations, get_engine  # noqa: E402
+from app.core.db import get_engine  # noqa: E402
 from app.core.email import get_mailer  # noqa: E402
 from app.core.security import get_signing_key_resolver  # noqa: E402
 from app.core.storage import get_storage  # noqa: E402
@@ -31,20 +31,23 @@ from app.main import app  # noqa: E402
 from app.schemas.caterers import CatererCreate  # noqa: E402
 from app.services.caterers import create_caterer  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import ec  # noqa: E402
-from fastapi import APIRouter, Request  # noqa: E402
+from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
+from scripts import test_database  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 USER_ID = uuid4()
 KEY = ec.generate_private_key(ec.SECP256R1())
 FILES: dict[str, tuple[bytes, str]] = {}
 SENT: list[dict[str, str]] = []
+SOCKETS: list[WebSocket] = []
 
 
 def reset_database() -> None:
     engine = get_engine()
-    apply_migrations(engine)
+    test_database.reset(engine)
     with Session(engine) as session:
+        test_database.add_auth_user(session, USER_ID)
         data = CatererCreate(slug="taamim", name="טעמים קייטרינג", auth_user_id=USER_ID)
         create_caterer(session, data)
 
@@ -116,6 +119,32 @@ def fake_object(path: str):
 @fake_supabase.get("/test-only/sent-emails")
 def fake_outbox():
     return SENT
+
+
+@fake_supabase.websocket("/realtime/v1/websocket")
+async def fake_realtime(socket: WebSocket):
+    """Enough of Supabase Realtime for the dashboard: join, heartbeat, then changes."""
+    await socket.accept()
+    try:
+        while True:
+            message = await socket.receive_json()
+            reply = {"topic": message["topic"], "ref": message["ref"], "event": "phx_reply"}
+            await socket.send_json(reply | {"payload": {"status": "ok", "response": {}}})
+            if message["event"] == "phx_join":
+                SOCKETS.append(socket)
+    except WebSocketDisconnect:
+        if socket in SOCKETS:
+            SOCKETS.remove(socket)
+
+
+@fake_supabase.post("/test-only/realtime-change")
+async def fake_change():
+    """What Supabase sends when an order row changes."""
+    change = {"data": {"type": "UPDATE", "schema": "public", "table": "orders"}}
+    message = {"topic": "realtime:orders", "event": "postgres_changes", "payload": change}
+    for socket in list(SOCKETS):
+        await socket.send_json(message | {"ref": None})
+    return {"sockets": len(SOCKETS)}
 
 
 reset_database()

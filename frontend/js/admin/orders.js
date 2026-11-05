@@ -35,6 +35,8 @@ export async function renderOrders(view) {
     h("span", { className: "icon-tile" }, h("span", { className: `icon icon-${iconName}`, "aria-hidden": "true" })));
   const today = new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
+  // Live updates redraw only the list, never an open order (main.js).
+  view.dataset.screen = "orders";
   view.replaceChildren(
     h("div", { className: "page-head" },
       h("div", {}, h("p", { className: "eyebrow" }, "ניהול הזמנות"), h("h1", {}, "הזמנות")),
@@ -97,6 +99,7 @@ function dietCounts({ vegetarian_guests: vegetarian, vegan_guests: vegan, restri
 
 async function renderDetail(view, id) {
   const order = await adminApi(`/api/admin/orders/${id}`);
+  view.dataset.screen = "order-detail";
   const { customer, event } = order;
   const delivery = order.fulfillment_type === "delivery";
 

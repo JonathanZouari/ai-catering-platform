@@ -8,6 +8,8 @@ from app.core.config import get_settings
 def content_security_policy(supabase_url: str | None) -> str:
     """Only our own code runs. This enforces 'no third-party scripts' (ADR 0006)."""
     supabase = f" {supabase_url.rstrip('/')}" if supabase_url else ""
+    # Realtime's WebSocket on the same host: an https:// source doesn't cover wss://.
+    realtime = f" {supabase_url.rstrip('/').replace('http', 'ws', 1)}" if supabase_url else ""
     return "; ".join(
         [
             "default-src 'none'",
@@ -17,7 +19,7 @@ def content_security_policy(supabase_url: str | None) -> str:
             f"img-src 'self'{supabase}",
             # The homepage video plays from our own file, held in memory as a blob: URL.
             "media-src 'self' blob:",
-            f"connect-src 'self'{supabase}",
+            f"connect-src 'self'{supabase}{realtime}",
             "base-uri 'none'",
             "form-action 'self'",
             "frame-ancestors 'none'",

@@ -16,8 +16,8 @@ Run from `backend/`. Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
-uv run python -m scripts.dev_server      # the whole app with a fake login and a demo caterer, no accounts
-uv run python -m scripts.migrate         # apply new migrations to DATABASE_URL
+uv run python -m scripts.dev_server      # the whole app against yummai-dev (keys in ../.env.supabase-dev)
+uv run python -m scripts.seed_supabase ../.env.supabase-dev --reset   # rebuild the demo caterer and data
 uv run uvicorn app.main:app --reload     # http://127.0.0.1:8000  (/health, /admin/, /customer/)
 uv run ruff check .
 uv run ruff format --check .
@@ -26,18 +26,18 @@ uv run pytest tests/test_auth.py::test_garbage_token_is_rejected   # single test
 uv run python -m scripts.create_caterer --help                     # onboard a caterer by hand
 ```
 
-Tests create their own temporary SQLite file, so they need no setup.
+Tests need a Postgres database whose name contains `test`. They wipe it and rebuild it from `supabase/migrations/` (`scripts/test_database.py`). Locally they read `TEST_DATABASE_URL` and `E2E_DATABASE_URL` from the git-ignored `.env.test`, which points at a portable Postgres 17 in `C:/Users/User/postgres17`, port 54329. If it isn't running, start it with `C:/Users/User/postgres17/pgsql/bin/pg_ctl -D C:/Users/User/postgres17/data -l C:/Users/User/postgres17/server.log start`. CI runs its own Postgres service.
 
-E2E tests live in `e2e/` and drive a real browser against the real app and SQLite, with only Supabase Auth and Storage faked. From `backend/`:
+E2E tests live in `e2e/` and drive a real browser against the real app and Postgres, with only Supabase Auth, Storage and Realtime faked. From `backend/`:
 
 ```bash
 uv run --with playwright playwright install chromium
 uv run --with playwright pytest ../e2e
 ```
 
-The database is SQLite everywhere (ADR 0007). Supabase is used only for Auth and Storage.
+The database is Supabase Postgres (ADR 0009). The projects are `yummai-dev` and `yummai-test`, and their keys are in the git-ignored `.env.supabase-dev` and `.env.supabase-test`. Supabase also provides Auth, Storage and Realtime.
 
-Migrations are plain SQL in `database/migrations/` (`YYYYMMDDHHMMSS_name.sql`), run once each in filename order by `apply_migrations`, and in production at container start. New tables are `strict`. There is no ORM autogeneration: `models/` maps a hand-written schema, so a schema change means a new migration plus a model edit.
+Migrations are plain SQL in `supabase/migrations/` (`YYYYMMDDHHMMSS_name.sql`), applied with `supabase db push --remote` (dev first, production only with approval). New tables need RLS and a read policy; `tests/test_rls.py` fails without them. There is no ORM autogeneration: `models/` maps a hand-written schema, so a schema change means a new migration plus a model edit.
 
 ## Architecture
 
@@ -57,7 +57,8 @@ This is the most important invariant. Isolation is enforced by the code and the 
 
 ### Other invariants
 
-- **One writer at a time.** Non-GET requests hold SQLite's write lock from their first query until they commit (`core/db.py`). Never call the AI, send email, or do other slow work inside a write transaction. GET and HEAD requests are read-only snapshots, so they must not write.
+- **Locks stay short.** Writes that check then change a row take `FOR UPDATE` locks until they commit (`OrderRepository.lock`). Never call the AI, send email, upload, or do other slow work inside such a transaction. GET and HEAD requests run in read-only transactions, so they must not write.
+- **The API only reads.** Through the Supabase Data API and Realtime, a caterer can only read its own rows; every write goes through FastAPI. The dashboard's Realtime messages only trigger a reload from our API (`frontend/js/admin/realtime.js`).
 - **Backend is authoritative.** Prices, quantities, and order state are computed in `services/`, never by the frontend or the LLM.
 - **The AI only proposes.** No agent tool mutates an order; only the customer-facing approve endpoint does (`docs/AI_AGENT_DESIGN.md`, ADR 0003).
 - **Unknown stays unknown.** Null dietary fields and missing allergen rows mean unknown, never "no" or "free". Null calories are shown as unknown and are never estimated.
@@ -105,7 +106,7 @@ Worked in order. Don't build features of a later phase early.
 | Test site | Supabase Auth and Storage plus Railway with a volume, needs the user's accounts and approval | Skipped for now |
 | Stitch redesign | One caterer's site, Stitch design, homepage video (ADR 0008) | Done |
 | Supabase Postgres, part 1 | `yummai-dev` and `yummai-test` projects: schema, read-only RLS, `caterer-assets` bucket, Realtime on `orders`, demo login and synthetic data (`scripts/seed_supabase.py`). The app still runs on SQLite | Done |
-| Supabase Postgres, part 2 | Move the app onto Supabase Postgres, ADR 0009, live dashboard | Not started |
+| Supabase Postgres, part 2 | The app runs on Supabase Postgres (ADR 0009), tests on local Postgres, live order list in the dashboard | Done |
 | Pilot | First real caterer, needs its own approval | Not started |
 
 Everything up to the Stitch redesign is merged into `dev` and `main` on `origin`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.

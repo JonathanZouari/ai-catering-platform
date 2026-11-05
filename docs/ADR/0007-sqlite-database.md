@@ -1,7 +1,9 @@
 # ADR 0007 — SQLite as the only database
 
 ## Status
-Accepted. Replaces the Postgres part of ADR 0002. Supabase stays for Auth and Storage.
+Superseded by ADR 0009 (2026-11-05): the app is on Supabase Postgres again. Kept for history.
+
+Was: Accepted. Replaces the Postgres part of ADR 0002. Supabase stays for Auth and Storage.
 
 ## Context
 The project owner chose SQLite everywhere: the app, the tests and the deployed server. No live data existed, so nothing needed migrating and the Postgres migrations were replaced by one schema file.
