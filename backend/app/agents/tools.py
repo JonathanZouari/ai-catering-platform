@@ -17,7 +17,7 @@ from app.core.customer_auth import CustomerIdentity
 from app.core.errors import AppError
 from app.schemas import proposals as ps
 from app.schemas.proposals import Note
-from app.services import catalog, customer_orders, proposals
+from app.services import catalog, customer_orders, proposals, settings
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +63,8 @@ def _menu(ctx: Ctx, _: _Empty) -> dict:
     return {
         "currency": "ILS",
         "prices_include_vat": True,
+        "kashrut": "kosher meat kitchen: every dish is meat or pareve, no dairy",
+        "kashrut_certificate": settings.get(ctx.db).kashrut_certificate,
         "note": "null dietary value = unknown; an allergen not listed = unknown",
         "dishes": dishes,
     }

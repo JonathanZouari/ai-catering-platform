@@ -6,7 +6,6 @@ Format: **Question** · *Why it matters* · **Blocks**
 
 | # | Topic | Question | Why it matters | Blocks |
 |---|---|---|---|---|
-| 9 | Kashrut certification | Which certification(s)? Shown per dish or business-wide? Mixing meat & dairy dishes in one order allowed? | Affects data model and validation | Phase 2 dish fields, Phase 3 conflict checks |
 | 10 | Disposable serving equipment | Are utensils/disposables orderable? Priced how? | Could be catalog items or separate | Out of MVP until decided |
 | 11 | Alcohol | Offered at all? Age verification? | Legal implications | Out of MVP until decided |
 | 12 | Interface languages | ~~Hebrew only, English only, or both? RTL required?~~ **Decided 2026-11-01: Hebrew, RTL** (chosen with the "Table Journal" design). English is not planned. | Layout, copy, and AI response language | Resolved (AI response language follows: Hebrew) |
@@ -18,6 +17,7 @@ When a decision is made, record it here and move the row out of the table above.
 
 | Date | # | Decision | Decided by |
 |---|---|---|---|
+| 2026-11-04 | 9 | The kitchen is **kosher with a certificate and serves meat only**: every dish is meat or pareve (fish and desserts are pareve), **no dairy**, so meat and dairy can never meet in an order. Unmarked dishes are pareve. Meat with fish is allowed. The certifying body is an owner setting shown to customers (menu page, home page footer). Migration 0011. | Business owner |
 | 2026-11-04 | 16 | LLM provider: **Anthropic Claude**, model Claude Sonnet 5.5 (`claude-sonnet-5-5`, balanced cost). Budget control: a per-customer limit of messages to the assistant in any 24 hours, default **30**, owner-editable (0 turns the assistant off). | Business owner |
 | 2026-11-02 | 4 (rest) | Vegetarian and vegan guests are **separate** groups (a vegan is not also counted as vegetarian); vegetarian + vegan ≤ adults + children (migration 0006). | Business owner |
 | 2026-11-02 | 14 | Catalog prices **include VAT**; no VAT is added. Each line = quantity × unit price rounded half-up to the agora; total = sum of the rounded lines. | Business owner |

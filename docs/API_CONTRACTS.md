@@ -23,7 +23,8 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/catalog/categories` | Active categories, ordered |
-| GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`) |
+| GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`; `kashrut` is `meat` or `pareve`) |
+| GET | `/api/catalog/business` | `{kashrut_certificate}` (null = not shown). Public |
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
 | GET | `/api/delivery/cities` | `[{city, fee}]` for active zones |
 | GET | `/api/availability?from=&to=` | `{earliest_date, blocked_dates, time_slots, full_slots: [{slot_id, date}]}`. Only which slot is full, never booking counts |
@@ -106,7 +107,7 @@ A closed proposal returns `409 proposal_not_pending`. Withdrawing the order expi
 | POST | `/api/orders/{id}/proposals/{pid}/accept` | Same endpoint as owner proposals (above). An assistant proposal applies the items and keeps the order a draft (version + 1) |
 | POST | `/api/orders/{id}/proposals/{pid}/decline` | No mutation |
 
-`/api/admin/settings` now also takes and returns `assistant_daily_limit` (0–1000, required on PUT).
+`/api/admin/settings` now also takes and returns `assistant_daily_limit` (0–1000) and `kashrut_certificate` (≤ 200 chars, null or "" = none). Both are required on PUT.
 
 Proposal shape (`ProposalOut`, shared with owner proposals):
 

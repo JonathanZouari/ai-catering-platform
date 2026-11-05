@@ -35,6 +35,7 @@ async function load() {
   $("lead-days").value = settings.lead_days;
   $("child-portion").value = Number(settings.child_portion);
   $("assistant-limit").value = settings.assistant_daily_limit;
+  $("kashrut-cert").value = settings.kashrut_certificate ?? "";
 }
 
 function renderBlocked(blocked) {
@@ -164,6 +165,7 @@ export function initAvailability() {
       body: JSON.stringify({
         lead_days: Number(lead.value), child_portion: Number(child.value).toFixed(2),
         assistant_daily_limit: Number(limit.value),
+        kashrut_certificate: $("kashrut-cert").value.trim() || null,
       }),
     }), "הכללים נשמרו");
   });

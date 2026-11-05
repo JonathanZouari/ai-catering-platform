@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     DateTime,
     Enum,
     ForeignKey,
@@ -20,7 +21,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, Timestamps
 
 PRICING_UNITS = ("per_guest", "per_tray", "per_weight", "per_item")
-KASHRUT_CLASSES = ("meat", "dairy", "pareve")
+# The kitchen is kosher and meat-only (OPEN_DECISIONS #9): no dairy dishes. The Postgres enum
+# still has 'dairy' (migration 0001); a check constraint (0011) keeps it out.
+KASHRUT_CLASSES = ("meat", "pareve")
 ALLERGEN_STATUSES = ("contains", "free", "unknown")
 
 
@@ -59,13 +62,18 @@ class Dish(Timestamps, Base):
 
 
 class DishDietary(Base):
-    """Null = unknown, never "no" (DATABASE_SCHEMA.md)."""
+    """Null = unknown, never "no" (DATABASE_SCHEMA.md). Kashrut is always known: meat or pareve."""
 
     __tablename__ = "dish_dietary"
+    __table_args__ = (
+        CheckConstraint("kashrut_class in ('meat', 'pareve')", name="dish_dietary_meat_or_pareve"),
+    )
     dish_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("dishes.id", ondelete="CASCADE"), primary_key=True
     )
-    kashrut_class: Mapped[str | None] = mapped_column(Enum(*KASHRUT_CLASSES, name="kashrut_class"))
+    kashrut_class: Mapped[str] = mapped_column(
+        Enum(*KASHRUT_CLASSES, name="kashrut_class"), default="pareve", server_default="pareve"
+    )
     is_vegetarian: Mapped[bool | None] = mapped_column(Boolean)
     is_vegan: Mapped[bool | None] = mapped_column(Boolean)
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

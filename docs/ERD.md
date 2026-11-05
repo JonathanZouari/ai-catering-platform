@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0010` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0011` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -48,7 +48,7 @@ erDiagram
     }
     dish_dietary {
         uuid dish_id PK, FK "cascade"
-        kashrut_class kashrut_class "null = unknown"
+        kashrut_class kashrut_class "meat or pareve, default pareve (no dairy, #9)"
         bool is_vegetarian "null = unknown"
         bool is_vegan "null = unknown"
         timestamptz verified_at "null"
@@ -148,6 +148,7 @@ erDiagram
         numeric child_portion "0 to 1, default 0.75"
         int lead_days "0 to 60, default 3"
         int assistant_daily_limit "0 to 1000, default 30, per 24h"
+        text kashrut_certificate "null, max 200, shown to customers"
     }
     ai_conversations {
         uuid id PK
@@ -175,7 +176,7 @@ erDiagram
 ```
 
 ### Rules the diagram can't show
-- **Unknown is not "no".** A `null` dietary field or a missing `dish_allergens` row means *unknown*. It is shown as unknown and never treated as safe.
+- **Unknown is not "no".** A `null` dietary field or a missing `dish_allergens` row means *unknown*. It is shown as unknown and never treated as safe. Kashrut is the exception: it is always known (#9), `meat` or `pareve`, and every dish has a `dish_dietary` row from creation.
 - **Price snapshot.** While an order is `draft`, prices are read live from `dishes`. From `pending_approval` on, the `snapshot_*` columns are authoritative.
 - **Status transitions** (enforced in services, with atomic conditional updates): `draft → pending_approval` (customer), then `pending_approval → approved | rejected` (owner). Anything else returns `409 invalid_transition`.
 - **Ownership.** Customer access is always resolved from the verified token's `sub` → `customers.auth_user_id` (ADR 0005), never by email.
