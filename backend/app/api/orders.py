@@ -137,13 +137,17 @@ def list_files(
     return file_service.list_files(db, order, storage)
 
 
-@router.post("/orders/{order_id}/files", status_code=201)
+@router.post(
+    "/orders/{order_id}/files",
+    status_code=201,
+    dependencies=[Depends(limit("uploads", 30, 3600))],
+)
 # Sync on purpose: the storage upload uses blocking httpx, so FastAPI runs it in the threadpool.
 def upload_file(
     order_id: uuid.UUID, file: UploadFile, db: Db, storage: Files, viewer: Viewer,
     token: Token = None,
 ) -> OrderFileOut:  # fmt: skip
-    order = service.customer_order(db, order_id, token, lock=True, viewer=viewer)
+    order = service.customer_order(db, order_id, token, viewer=viewer)
     data, kind = read_upload(file, pdf=True)
     return file_service.add_file(db, order, data, kind, file.filename, "customer", storage)
 
@@ -153,5 +157,5 @@ def delete_file(
     order_id: uuid.UUID, file_id: uuid.UUID, db: Db, storage: Files, viewer: Viewer,
     token: Token = None,
 ) -> None:  # fmt: skip
-    order = service.customer_order(db, order_id, token, lock=True, viewer=viewer)
-    file_service.delete_file(db, order, file_id, storage)
+    order = service.customer_order(db, order_id, token, viewer=viewer)
+    file_service.delete_file(db, order, file_id, storage, "customer")

@@ -210,7 +210,7 @@ def get_order(order_id: uuid.UUID, db: Db) -> OrderOut:
 def list_order_files(
     order_id: uuid.UUID, db: Db, storage: Annotated[Storage, Depends(get_storage)]
 ) -> list[OrderFileOut]:
-    order = order_service.admin_locked_order(db, order_id)
+    order = order_service.admin_get_order(db, order_id)
     return file_service.list_files(db, order, storage)
 
 
@@ -219,7 +219,7 @@ def upload_order_file(
     order_id: uuid.UUID, file: UploadFile, db: Db,
     storage: Annotated[Storage, Depends(get_storage)],
 ) -> OrderFileOut:  # fmt: skip
-    order = order_service.admin_locked_order(db, order_id)
+    order = order_service.admin_get_order(db, order_id)
     data, kind = read_upload(file, pdf=True)
     return file_service.add_file(db, order, data, kind, file.filename, "admin", storage)
 
@@ -229,8 +229,8 @@ def delete_order_file(
     order_id: uuid.UUID, file_id: uuid.UUID, db: Db,
     storage: Annotated[Storage, Depends(get_storage)],
 ) -> None:  # fmt: skip
-    order = order_service.admin_locked_order(db, order_id)
-    file_service.delete_file(db, order, file_id, storage)
+    order = order_service.admin_get_order(db, order_id)
+    file_service.delete_file(db, order, file_id, storage, "admin")
 
 
 @router.get("/orders/{order_id}/assistant")

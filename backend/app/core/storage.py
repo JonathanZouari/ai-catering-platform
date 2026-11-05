@@ -89,12 +89,22 @@ def upload_to_supabase(data: bytes, kind: str, bucket: str | None = None, prefix
     return name
 
 
+def _already_gone(response: httpx.Response) -> bool:
+    """Storage reports a missing object as 404, or as 400 with statusCode 404 in the body."""
+    if response.status_code == 404:
+        return True
+    try:
+        return str(response.json().get("statusCode")) == "404"
+    except (ValueError, AttributeError):
+        return False
+
+
 def delete_from_supabase(bucket: str, path: str) -> None:
     s = _configured()
     response = httpx.delete(
         f"{s.supabase_url}/storage/v1/object/{bucket}/{path}", headers=_headers(), timeout=20
     )
-    if response.status_code >= 400 and response.status_code != 404:
+    if response.status_code >= 400 and not _already_gone(response):
         raise AppError(502, "File delete failed")
 
 
@@ -123,6 +133,16 @@ def quiet_delete(storage: Storage, bucket: str, path: str) -> None:
         storage.delete(bucket, path)
     except AppError:
         pass  # shortcut: an unreachable private orphan is leaked; add a sweep job if it matters
+
+
+def safe_sign(storage: Storage, bucket: str, path: str | None) -> str | None:
+    """A signing failure must not turn a saved change into an error: the link is just absent."""
+    if not path:
+        return None
+    try:
+        return storage.sign(bucket, path)
+    except AppError:
+        return None
 
 
 def get_uploader():

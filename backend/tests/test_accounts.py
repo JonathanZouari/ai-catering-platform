@@ -260,3 +260,125 @@ def test_admin_order_files_and_category_image(admin, client, body, a, objects):
         ).status_code
         == 415
     )
+
+
+# ---- review fixes
+def test_signed_in_order_never_overwrites_or_nulls_account_details(client, body, a):
+    client.patch("/api/me", json={"full_name": "Saved Name", "phone": "050-1"}, headers=a)
+    body["customer"] = {"full_name": "Other Name", "email": "other@example.com"}  # no phone
+    place(client, body, a)
+    me = client.get("/api/me", headers=a).json()
+    assert me["full_name"] == "Saved Name" and me["phone"] == "050-1"
+    assert me["email"] == f"{A_ID}@example.com"
+
+
+def test_customer_cannot_delete_owner_file(admin, client, body, a):
+    order = place(client, body, a)
+    owner_file = admin.post(
+        f"/api/admin/orders/{order['id']}/files", files={"file": ("o.pdf", PDF)}
+    ).json()["id"]
+    url = f"/api/orders/{order['id']}/files/{owner_file}"
+    r = client.delete(url, headers=a)
+    assert r.status_code == 403 and error_code(r) == "file_owner"
+    assert admin.delete(f"/api/admin/orders/{order['id']}/files/{owner_file}").status_code == 204
+
+
+@pytest.mark.parametrize("status", ["delivered", "cancelled", "rejected"])
+def test_closed_orders_lock_customer_file_changes_but_not_owner(admin, client, body, a, db, status):
+    order = place(client, body, a)
+    mine = upload(client, order, a).json()["id"]
+    db.execute(text("UPDATE orders SET status = :s"), {"s": status})
+    db.commit()
+    r = upload(client, order, a)
+    assert r.status_code == 409 and error_code(r) == "order_closed"
+    assert client.delete(f"/api/orders/{order['id']}/files/{mine}", headers=a).status_code == 409
+    assert client.get(f"/api/orders/{order['id']}/files", headers=a).status_code == 200
+    url = f"/api/admin/orders/{order['id']}/files"
+    assert admin.post(url, files={"file": ("o.pdf", PDF)}).status_code == 201
+    assert admin.delete(f"{url}/{mine}").status_code == 204
+
+
+def test_row_lock_only_for_the_count_and_after_the_upload(
+    admin, client, body, a, monkeypatch, uploads
+):
+    from app.repositories import orders as repo
+
+    real, locks = repo.get_order, []
+
+    def spy(db, order_id, *, lock=False):
+        if lock:
+            locks.append(len(uploads))  # how many uploads had happened when the lock was taken
+        return real(db, order_id, lock=lock)
+
+    monkeypatch.setattr(repo, "get_order", spy)
+    order = place(client, body, a)
+    locks.clear()
+    upload(client, order, a)
+    assert locks == [1]  # locked once, after the storage upload
+    locks.clear()
+    admin.get(f"/api/admin/orders/{order['id']}/files")
+    client.get(f"/api/orders/{order['id']}/files", headers=a)
+    fid = client.get(f"/api/orders/{order['id']}/files", headers=a).json()[0]["id"]
+    client.delete(f"/api/orders/{order['id']}/files/{fid}", headers=a)
+    assert locks == []  # reads, signing and deletes never take the lock
+
+
+def test_limit_hit_under_the_lock_deletes_the_uploaded_object(
+    client, body, a, monkeypatch, objects
+):
+    from app.repositories import orders as repo
+
+    answers = iter([0, 10])  # early check passes (a racing upload), locked check fails
+    monkeypatch.setattr(repo, "count_order_files", lambda *_: next(answers))
+    order = place(client, body, a)
+    r = upload(client, order, a)
+    assert r.status_code == 409 and error_code(r) == "file_limit"
+    assert objects == {}
+
+
+def test_signing_failure_after_save_still_succeeds_with_null_url(
+    client, body, a, storage_fail, objects
+):
+    order = place(client, body, a)
+    storage_fail.add("sign")
+    r = upload(client, order, a)
+    assert r.status_code == 201 and r.json()["url"] is None
+    av = avatar(client, a)
+    assert av.status_code == 200 and av.json()["avatar_url"] is None
+    listed = client.get(f"/api/orders/{order['id']}/files", headers=a)
+    assert listed.status_code == 200 and listed.json()[0]["url"] is None
+    storage_fail.clear()
+    assert client.get(f"/api/orders/{order['id']}/files", headers=a).json()[0]["url"]
+    assert len(objects) == 2  # both saved
+
+
+@pytest.mark.parametrize(
+    ("code", "body_json", "ok"),
+    [(404, None, True), (400, {"statusCode": "404"}, True), (400, {"statusCode": "400"}, False),
+     (500, None, False)],
+)  # fmt: skip
+def test_storage_delete_tolerates_missing_object(monkeypatch, code, body_json, ok):
+    import httpx
+
+    from app.core import storage
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "supabase_url", "https://x.supabase.co")
+    monkeypatch.setattr(get_settings(), "supabase_service_role_key", "sb_secret_test")
+    monkeypatch.setattr(
+        httpx, "delete", lambda *a, **k: httpx.Response(code, json=body_json) if body_json
+        else httpx.Response(code)
+    )  # fmt: skip
+    if ok:
+        storage.delete_from_supabase("b", "p")
+    else:
+        with pytest.raises(storage.AppError):
+            storage.delete_from_supabase("b", "p")
+
+
+def test_upload_routes_are_rate_limited(client, body, a):
+    order = place(client, body, a)
+    codes = {upload(client, order, a, JPEG).status_code for _ in range(5)}
+    assert codes == {201}
+    hits = [avatar(client, a).status_code for _ in range(31)]
+    assert hits[-1] == 429

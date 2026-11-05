@@ -12,7 +12,7 @@ class CustomerOut(BaseModel):
     full_name: str
     email: str | None
     phone: str | None
-    avatar_url: str | None  # signed, expires in 5 minutes
+    avatar_url: str | None  # signed, expires in 5 minutes; null if none or signing failed
 
 
 class CustomerPatch(BaseModel):
@@ -27,4 +27,4 @@ class OrderFileOut(BaseModel):
     size_bytes: int
     uploaded_by: str
     created_at: dt.datetime
-    url: str  # signed, expires in 5 minutes
+    url: str | None  # signed, expires in 5 minutes; null if signing failed (retry the list)

@@ -115,7 +115,7 @@ def objects():
 
 @pytest.fixture
 def storage_fail():
-    """Add "upload" or "delete" to make that fake storage call fail with 502."""
+    """Add "upload", "delete" or "sign" to make that fake storage call fail with 502."""
     return set()
 
 
@@ -146,6 +146,8 @@ def client(db, uploads, places, geo_calls, objects, storage_fail):
         objects.pop((bucket, path), None)
 
     def sign(bucket, path):
+        if "sign" in storage_fail:
+            raise AppError(502, "Could not create a file link")
         return f"https://signed.test/{bucket}/{path}?exp=300"
 
     def fake_uploader():

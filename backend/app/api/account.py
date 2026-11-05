@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile
 
 from app.core.db import Db
+from app.core.ratelimit import limit
 from app.core.security import require_customer
 from app.core.storage import Storage, get_storage, read_upload
 from app.schemas.account import CustomerOut, CustomerPatch
@@ -36,7 +37,7 @@ def my_orders(db: Db, claims: Claims) -> list[OrderSummary]:
     return order_service.my_orders(db, _me(db, claims))
 
 
-@router.post("/avatar")
+@router.post("/avatar", dependencies=[Depends(limit("uploads", 30, 3600))])
 # Sync on purpose: the storage upload uses blocking httpx, so FastAPI runs it in the threadpool.
 def upload_avatar(file: UploadFile, db: Db, claims: Claims, storage: Files) -> CustomerOut:
     data, kind = read_upload(file)

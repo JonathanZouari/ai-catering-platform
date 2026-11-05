@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.errors import AppError
-from app.core.storage import Storage, quiet_delete
+from app.core.storage import Storage, quiet_delete, safe_sign
 from app.models.orders import Customer
 from app.repositories import orders as repo
 from app.schemas.account import CustomerOut, CustomerPatch
@@ -37,10 +37,9 @@ def ensure_customer(db: Session, claims: dict, details: dict | None = None) -> C
 
 
 def me_out(customer: Customer, storage: Storage) -> CustomerOut:
-    path = customer.avatar_path
     return CustomerOut(
         id=customer.id, full_name=customer.full_name, email=customer.email, phone=customer.phone,
-        avatar_url=storage.sign(get_settings().avatar_bucket, path) if path else None,
+        avatar_url=safe_sign(storage, get_settings().avatar_bucket, customer.avatar_path),
     )  # fmt: skip
 
 

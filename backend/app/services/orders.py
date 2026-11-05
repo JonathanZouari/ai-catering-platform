@@ -150,8 +150,9 @@ def create_order(
     if claims and claims.get("app_metadata", {}).get("role") != "admin":
         details = body.customer.model_dump()
         customer = account.ensure_customer(db, claims, details)
-        for field, value in details.items():
-            setattr(customer, field, value)
+        for field, value in details.items():  # never overwrite or null saved account details
+            if value and not getattr(customer, field):
+                setattr(customer, field, value)
     else:
         customer = Customer(**body.customer.model_dump())
         db.add(customer)
@@ -453,8 +454,8 @@ def admin_order(db: Session, order_id) -> OrderOut:
     return order_out(order)
 
 
-def admin_locked_order(db: Session, order_id) -> Order:
-    order = repo.get_order(db, order_id, lock=True)
+def admin_get_order(db: Session, order_id) -> Order:
+    order = repo.get_order(db, order_id)
     if order is None:
         raise _not_found()
     return order
