@@ -297,7 +297,7 @@ The contract predates PR #24 and should be reconciled before Phase 2:
 - **Native types** replace the SQLite encodings: `timestamptz`, `date`, `time`, `boolean`, `jsonb` for `ai_proposals.changes`, `numeric` for `quantity`, `qty_per_guest` and `step`. Money is still integer agorot. Ids exposed by the API stay `text`.
 - **Row Level Security is on for every table.**
   - Menu and configuration tables (`dishes`, `dish_categories`, `allergens`, `dish_allergens`, `event_types`, `delivery_zones`, `time_slots`, `blocked_dates`, `business_settings`): anyone can read; only admins can insert, update or delete.
-  - `orders`, `order_items`, `order_status_events`, `ai_messages`, `ai_proposals`: no policy for `anon`. Admins can read them, update `orders` and insert `order_status_events`. Customers reach these tables only through the backend with the secret key.
+  - `orders`, `order_items`, `order_status_events`, `ai_messages`, `ai_proposals`: no policy for `anon`. Admins can read them and nothing else. All writes, including status and price changes, go through the backend with the secret key (ADR 0003).
   - Customer-ownership policies (a customer reading or editing their own order from the browser) are not written. They depend on how customers are identified (OPEN #1).
 - **Storage:** public bucket `dish-images` (5 MB, jpeg/png/webp). Only admins can upload, replace or delete.
 - **Realtime:** `orders`, `order_items`, `order_status_events`, `ai_proposals` and `dishes` are in the `supabase_realtime` publication. Subscribers only receive rows their RLS policy lets them read.
