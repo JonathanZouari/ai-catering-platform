@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23f2a93b'/%3E%3C/svg%3E">
+  <title>בנו את התפריט שלכם · קייטרינג (מוקאפ)</title>
+  <link rel="stylesheet" href="css/fonts.css">
+  <!-- Page-local tokens. Does not use or edit frontend/css/base.css. -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/catalogue.css">
+  <!-- v3/v4: espresso theme + radial fan, Hebrew RTL (overrides the files above) -->
+  <link rel="stylesheet" href="css/radial.css">
+</head>
+<body>
+  <a class="skip-link" href="#dish-list">דילוג לכל המנות</a>
+
+  <div class="sample-banner" role="note">
+    <span>נתוני דוגמה לבדיקת עיצוב</span>
+  </div>
+
+  <header class="r-header">
+    <!-- Placeholder business name until OPEN_DECISIONS #20 -->
+    <a class="r-wordmark" href="#">הקייטרינג</a>
+    <a class="r-event" id="event-link" href="#" aria-label="">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3v4M15 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span id="event-short"></span>
+    </a>
+  </header>
+
+  <div class="r-page">
+    <section class="r-fan" aria-labelledby="fan-title">
+      <div class="r-fan__head">
+        <h1 id="fan-title" class="r-title">בנו את התפריט שלכם</h1>
+        <div class="r-cats" role="radiogroup" aria-label="קטגוריה" id="cats"></div>
+      </div>
+
+      <div class="stage-wrap" id="stage-wrap">
+        <div class="stage" id="stage">
+          <p class="visually-hidden" id="fan-help">גלגל המנות המומלצות. החצים מסובבים אותו, Enter פותח את אפשרויות המנה ו־Escape סוגר אותן.</p>
+          <div class="rig" id="rig">
+            <div class="wheel" id="wheel" role="listbox" tabindex="0" aria-label="מנות מומלצות" aria-describedby="fan-help"></div>
+          </div>
+          <!-- Detail layer: sibling of the listbox so its controls are not nested inside an option. -->
+          <div class="detail" id="detail" inert></div>
+          <div class="fan-hint" id="fan-hint" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 4v16M7 9l5-5 5 5M7 15l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            החליקו לסיבוב · הקישו לפתיחה
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="r-list" id="main" aria-labelledby="list-title">
+      <div class="r-list__head">
+        <h2 class="r-h2" id="list-title"></h2>
+        <p class="r-count" id="list-count" aria-live="polite"></p>
+      </div>
+      <ul class="r-grid" id="dish-list" tabindex="-1"></ul>
+    </main>
+
+    <aside class="summary" id="summary" aria-labelledby="summary-title">
+      <div class="summary__head">
+        <h2 id="summary-title" class="r-h2">ההזמנה שלכם</h2>
+        <button type="button" class="icon-btn summary__close" id="summary-close" aria-label="סגירת סיכום ההזמנה">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div id="summary-body"></div>
+    </aside>
+  </div>
+
+  <!-- Bottom tab bar replaces v1's total bar on mobile: תפריט / הזמנה (count + total) / האירוע -->
+  <nav class="tabbar" aria-label="ניווט ההזמנה">
+    <a href="#main" class="tab is-active" aria-current="page">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path d="M4 11a8 8 0 0 1 16 0zM3 14h18M6 18h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>תפריט</span>
+    </a>
+    <button type="button" class="tab tab--order" id="bar-toggle" aria-expanded="false" aria-controls="summary">
+      <span class="tab__badge" id="bar-count" aria-hidden="true">0</span>
+      <span class="tab__total"><span class="visually-hidden" id="bar-count-sr"></span><span id="bar-total"></span></span>
+      <span class="tab__label">הזמנה</span>
+    </button>
+    <a href="#" class="tab">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3v4M15 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>האירוע</span>
+    </a>
+  </nav>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <p class="visually-hidden" id="fan-live" aria-live="polite" aria-atomic="true"></p>
+  <p class="visually-hidden" id="total-live" aria-live="polite" aria-atomic="true"></p>
+
+  <dialog class="dish-dialog" id="dish-dialog" aria-labelledby="dlg-title">
+    <div class="dish-dialog__inner" id="dlg-content"></div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
