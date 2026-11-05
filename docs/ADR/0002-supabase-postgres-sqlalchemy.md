@@ -6,7 +6,7 @@ Status: Proposed (adopted in Phase 2) · Date: 2026-10-29
 Supabase is mandated. Options: supabase-py (PostgREST) or a direct Postgres connection with SQLAlchemy.
 
 ## Decision
-The backend uses SQLAlchemy 2.x + psycopg against Supabase Postgres (`DATABASE_URL`). Supabase client/SDK used only where needed (Storage, Auth verification). Schema changes are SQL migrations in `database/migrations/`.
+The backend uses SQLAlchemy 2.x + psycopg against Supabase Postgres (`DATABASE_URL`). Supabase client/SDK used only where needed (Storage, Auth verification). Schema changes are SQL migrations in `database/supabase/migrations/` (Supabase CLI, run with `--workdir database`).
 
 ## Consequences
 + Real transactions and row locks (`SELECT … FOR UPDATE`), needed for safe proposal execution.

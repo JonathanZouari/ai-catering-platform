@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff9ed">
+  <title>התחברות | yumm.ai</title>
+  <link rel="preload" href="/assets/fonts/heebo-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/playpen-sans-hebrew-hebrew-800.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <p class="auth-brand wordmark"><a href="/" aria-label="yumm.ai, לעמוד הבית"><bdi>yumm<span class="dot">.</span>ai</bdi></a></p>
+
+    <section class="auth-card" aria-labelledby="auth-title">
+      <div class="auth-tabs" role="tablist" data-tabs>
+        <button type="button" role="tab" id="tab-login" aria-controls="form-login" aria-selected="true" data-mode="login">התחברות</button>
+        <button type="button" role="tab" id="tab-signup" aria-controls="form-signup" aria-selected="false" tabindex="-1" data-mode="signup">הרשמה</button>
+      </div>
+
+      <h1 id="auth-title" class="auth-title">ברוכים השבים</h1>
+
+      <p class="auth-msg" role="alert" aria-live="assertive" hidden data-msg></p>
+
+      <!-- Login -->
+      <form id="form-login" class="auth-form" role="tabpanel" aria-labelledby="tab-login" data-form="login" novalidate>
+        <label class="field">
+          <span>אימייל</span>
+          <input name="email" type="email" autocomplete="email" inputmode="email" dir="ltr" required>
+        </label>
+        <label class="field">
+          <span>סיסמה</span>
+          <input name="password" type="password" autocomplete="current-password" dir="ltr" required>
+        </label>
+        <button type="button" class="auth-link" data-mode="forgot">שכחתי סיסמה</button>
+        <button class="btn btn-primary auth-submit" type="submit">התחברות</button>
+      </form>
+
+      <!-- Sign up -->
+      <form id="form-signup" class="auth-form" role="tabpanel" aria-labelledby="tab-signup" data-form="signup" hidden novalidate>
+        <label class="field">
+          <span>שם מלא</span>
+          <input name="fullName" type="text" autocomplete="name" required>
+        </label>
+        <label class="field">
+          <span>טלפון <small>(לא חובה)</small></span>
+          <input name="phone" type="tel" autocomplete="tel" inputmode="tel" dir="ltr">
+        </label>
+        <label class="field">
+          <span>אימייל</span>
+          <input name="email" type="email" autocomplete="email" inputmode="email" dir="ltr" required>
+        </label>
+        <label class="field">
+          <span>סיסמה <small>(לפחות 8 תווים)</small></span>
+          <input name="password" type="password" autocomplete="new-password" minlength="8" dir="ltr" required>
+        </label>
+        <button class="btn btn-primary auth-submit" type="submit">יצירת חשבון</button>
+      </form>
+
+      <!-- Forgot password -->
+      <form class="auth-form" data-form="forgot" hidden novalidate>
+        <p class="auth-hint">נשלח אליכם קישור לבחירת סיסמה חדשה.</p>
+        <label class="field">
+          <span>אימייל</span>
+          <input name="email" type="email" autocomplete="email" inputmode="email" dir="ltr" required>
+        </label>
+        <button class="btn btn-primary auth-submit" type="submit">שליחת קישור</button>
+        <button type="button" class="auth-link" data-mode="login">חזרה להתחברות</button>
+      </form>
+
+      <!-- Set new password (after the reset link) -->
+      <form class="auth-form" data-form="reset" hidden novalidate>
+        <label class="field">
+          <span>סיסמה חדשה <small>(לפחות 8 תווים)</small></span>
+          <input name="password" type="password" autocomplete="new-password" minlength="8" dir="ltr" required>
+        </label>
+        <button class="btn btn-primary auth-submit" type="submit">שמירת סיסמה</button>
+      </form>
+    </section>
+  </main>
+
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>
