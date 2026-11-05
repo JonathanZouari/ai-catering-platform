@@ -3,7 +3,7 @@ import { fill, h, icon } from "../../lib/dom.js";
 import { fmtDate, fmtMoney } from "../../lib/format.js";
 import { illustration } from "../../lib/illustrations.js";
 import { confetti } from "../../lib/motion.js";
-import { getState, startOver } from "../store.js";
+import { getState, refreshStatus, startOver, subscribe } from "../store.js";
 
 const VIEW = {
   pending_approval: {
@@ -32,7 +32,7 @@ const TRACK = [
   ["החלטת העסק", (s) => s === "approved" || s === "rejected"],
 ];
 
-export function mountStatus(root) {
+function drawStatus(root) {
   const { order } = getState();
   const view = VIEW[order.status] ?? VIEW.pending_approval;
   const snap = order.snapshot;
@@ -92,3 +92,20 @@ export function mountStatus(root) {
 }
 
 let celebratedFor = null;
+
+// Shows the stored status and picks up the owner's decision (made in the database) while open.
+export function mountStatus(root) {
+  drawStatus(root);
+  let shown = getState().order.status;
+  const unsubscribe = subscribe((s) => {
+    if (s.order.status === shown) return;
+    shown = s.order.status;
+    drawStatus(root);
+  });
+  const timer = setInterval(refreshStatus, 15000);
+  refreshStatus();
+  return () => {
+    unsubscribe();
+    clearInterval(timer);
+  };
+}

@@ -7,6 +7,7 @@ import { mountEvent } from "./views/event.js";
 import { mountMenu } from "./views/menu.js";
 import { mountStatus } from "./views/status.js";
 import { mountSummary } from "./views/summary.js";
+import { loadAvailability } from "./remote.js";
 
 const VIEWS = { event: mountEvent, menu: mountMenu, summary: mountSummary, status: mountStatus };
 const TITLES = {
@@ -27,6 +28,8 @@ if (["pending", "approved", "rejected"].includes(demo)) seedDemo(demo);
 // Landing-page occasion cards link here with ?occasion=<event type> to preselect it.
 const occasion = new URLSearchParams(location.search).get("occasion");
 if (occasion && EVENT_TYPES.includes(occasion) && getState().order.status === "draft") setEvent({ type: occasion });
+
+await loadAvailability(); // zones, slots and closed dates from the database, before the first render
 
 let currentStep = null;
 let cleanup = null;
