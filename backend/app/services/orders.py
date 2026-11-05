@@ -37,7 +37,7 @@ from app.schemas.orders import (
     RatingIn,
     RecommendationOut,
 )
-from app.services import geo, pricing, quantities
+from app.services import account, geo, pricing, quantities
 from app.services.catalog import need
 from app.services.settings import num
 
@@ -50,10 +50,25 @@ def _not_found() -> AppError:
     return AppError(404, "Order not found")
 
 
-def customer_order(db: Session, order_id: uuid.UUID, token: str | None, *, lock: bool = False):
-    """Wrong token and unknown id look the same, so ids cannot be probed."""
+def customer_order(
+    db: Session,
+    order_id: uuid.UUID,
+    token: str | None,
+    *,
+    lock: bool = False,
+    viewer: uuid.UUID | None = None,
+):
+    """The private link token, or the signed-in customer who owns the order (viewer).
+
+    Wrong token, someone else's account and unknown id all look the same (404), so ids cannot be
+    probed. Guest orders are never linked to an account by email or phone.
+    """
     order = repo.get_order(db, order_id, lock=lock)
-    if order is None or not token or not hmac.compare_digest(order.access_token_hash, _hash(token)):
+    if order is None:
+        raise _not_found()
+    by_token = bool(token) and hmac.compare_digest(order.access_token_hash, _hash(token))
+    by_owner = viewer is not None and order.customer.auth_user_id == viewer
+    if not (by_token or by_owner):
         raise _not_found()
     return order
 
@@ -122,15 +137,24 @@ def _delivery(db: Session, geocode, ftype, address) -> dict:
                 delivery_fee_estimated=not q.found)  # fmt: skip
 
 
-def create_order(db: Session, body: OrderCreate, lang: str, geocode) -> OrderCreated:
+def create_order(
+    db: Session, body: OrderCreate, lang: str, geocode, claims: dict | None = None
+) -> OrderCreated:
     # shortcut: no rate limit on order creation; add at proxy/app before public launch (Phase 6).
     slot = check_logistics(
         db, body.event.event_date, body.fulfillment_type, body.time_slot_id,
         body.delivery_address,
     )  # fmt: skip
     fields = _delivery(db, geocode, body.fulfillment_type, body.delivery_address)
-    customer = Customer(**body.customer.model_dump())
-    db.add(customer)
+    # Signed-in customers' orders join their account; the owner's token is not a customer.
+    if claims and claims.get("app_metadata", {}).get("role") != "admin":
+        details = body.customer.model_dump()
+        customer = account.ensure_customer(db, claims, details)
+        for field, value in details.items():
+            setattr(customer, field, value)
+    else:
+        customer = Customer(**body.customer.model_dump())
+        db.add(customer)
     db.flush()
     event = Event(customer_id=customer.id, **body.event.model_dump())
     db.add(event)
@@ -220,12 +244,12 @@ def order_out(order: Order, lang: str = "he") -> OrderOut:
     )  # fmt: skip
 
 
-def get_order(db: Session, order_id, token, lang: str) -> OrderOut:
-    return order_out(customer_order(db, order_id, token), lang)
+def get_order(db: Session, order_id, token, lang: str, viewer=None) -> OrderOut:
+    return order_out(customer_order(db, order_id, token, viewer=viewer), lang)
 
 
-def get_pricing(db: Session, order_id, token, lang: str) -> PricingOut:
-    return _priced(customer_order(db, order_id, token), lang)
+def get_pricing(db: Session, order_id, token, lang: str, viewer=None) -> PricingOut:
+    return _priced(customer_order(db, order_id, token, viewer=viewer), lang)
 
 
 def patch_order(db: Session, order_id, token, body: OrderPatch, lang: str, geocode) -> OrderOut:
@@ -403,18 +427,23 @@ def reopen(db: Session, order_id, token, version, lang) -> OrderOut:
 
 
 # ---- owner
+def _summary(o: Order) -> OrderSummary:
+    return OrderSummary(
+        id=o.id, status=o.status, customer_name=o.customer.full_name,
+        event_type=o.event.event_type, event_date=o.event.event_date,
+        guests=o.event.adults + o.event.children, total=o.total, currency=o.currency,
+        submitted_at=o.submitted_at, created_at=o.created_at, version=o.version,
+        fulfillment_type=o.fulfillment_type, requested_at=o.requested_at,
+        delivered_at=o.delivered_at,
+    )  # fmt: skip
+
+
 def list_orders(db: Session, status: OrderStatus | None) -> list[OrderSummary]:
-    return [
-        OrderSummary(
-            id=o.id, status=o.status, customer_name=o.customer.full_name,
-            event_type=o.event.event_type, event_date=o.event.event_date,
-            guests=o.event.adults + o.event.children, total=o.total, currency=o.currency,
-            submitted_at=o.submitted_at, created_at=o.created_at, version=o.version,
-            fulfillment_type=o.fulfillment_type, requested_at=o.requested_at,
-            delivered_at=o.delivered_at,
-        )
-        for o in repo.list_orders(db, status)
-    ]  # fmt: skip
+    return [_summary(o) for o in repo.list_orders(db, status)]
+
+
+def my_orders(db: Session, customer: Customer) -> list[OrderSummary]:
+    return [_summary(o) for o in repo.orders_of_customer(db, customer.id)]
 
 
 def admin_order(db: Session, order_id) -> OrderOut:
@@ -422,6 +451,13 @@ def admin_order(db: Session, order_id) -> OrderOut:
     if order is None:
         raise _not_found()
     return order_out(order)
+
+
+def admin_locked_order(db: Session, order_id) -> Order:
+    order = repo.get_order(db, order_id, lock=True)
+    if order is None:
+        raise _not_found()
+    return order
 
 
 def decide(db: Session, order_id, status: OrderStatus, note: str | None) -> OrderOut:

@@ -13,7 +13,8 @@ from sqlalchemy.orm import Session
 from app.core import ratelimit, security
 from app.core.config import get_settings
 from app.core.db import Base, get_db, make_engine
-from app.core.storage import get_uploader
+from app.core.errors import AppError
+from app.core.storage import Storage, get_storage, get_uploader
 from app.main import app
 from app.migrate import SETTINGS, create_sqlite_schema
 from app.models.settings import BusinessSettings
@@ -25,7 +26,7 @@ TABLES = (
     "dish_allergens, dish_dietary, dishes, dish_categories, allergens, "
     "delivery_zones, time_slots, blocked_dates, order_items, orders, events, customers, "
     "quantity_rules, geocode_cache, business_settings, ai_change_proposals, ai_messages, "
-    "ai_conversations, order_ratings, notifications"
+    "ai_conversations, order_ratings, notifications, order_files"
 )
 
 
@@ -92,7 +93,7 @@ def make_token(key, monkeypatch):
             "exp": int(time.time()) + 600,
             "aud": "authenticated",
             "iss": f"{SUPABASE_URL}/auth/v1",
-            "sub": "user-1",
+            "sub": "00000000-0000-4000-8000-000000000001",
             "app_metadata": {"role": role} if role else {},
         } | overrides
         claims = {k: v for k, v in claims.items() if v is not None}
@@ -107,6 +108,18 @@ def uploads():
 
 
 @pytest.fixture
+def objects():
+    """Fake storage contents: {(bucket, path): bytes}."""
+    return {}
+
+
+@pytest.fixture
+def storage_fail():
+    """Add "upload" or "delete" to make that fake storage call fail with 502."""
+    return set()
+
+
+@pytest.fixture
 def places():
     """Fake geocoder data: address -> (lat, lon). Addresses not listed are 'not found'."""
     return {}
@@ -118,12 +131,29 @@ def geo_calls():
 
 
 @pytest.fixture
-def client(db, uploads, places, geo_calls):
+def client(db, uploads, places, geo_calls, objects, storage_fail):
+    def upload(data, kind, bucket=None, prefix=""):
+        if "upload" in storage_fail:
+            raise AppError(502, "File upload failed")
+        uploads.append((kind, len(data)))
+        name = f"{prefix}fake-{len(uploads)}.{kind}"
+        objects[(bucket or "dish-images", name)] = data
+        return name
+
+    def delete(bucket, path):
+        if "delete" in storage_fail:
+            raise AppError(502, "File delete failed")
+        objects.pop((bucket, path), None)
+
+    def sign(bucket, path):
+        return f"https://signed.test/{bucket}/{path}?exp=300"
+
     def fake_uploader():
-        return lambda data, kind: uploads.append((kind, len(data))) or f"fake-{len(uploads)}.{kind}"
+        return upload
 
     app.dependency_overrides[get_db] = lambda: db
     app.dependency_overrides[get_uploader] = fake_uploader
+    app.dependency_overrides[get_storage] = lambda: Storage(upload, delete, sign)
     app.dependency_overrides[get_geocoder] = lambda: lambda a: geo_calls.append(a) or places.get(a)
     yield TestClient(app)
     app.dependency_overrides.clear()

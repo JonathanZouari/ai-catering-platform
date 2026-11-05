@@ -1,10 +1,10 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.catalog import Dish
-from app.models.orders import Order, OrderItem, OrderStatus, QuantityRule
+from app.models.orders import Customer, Order, OrderFile, OrderItem, OrderStatus, QuantityRule
 
 
 def _orders():
@@ -38,3 +38,28 @@ def rules_by_category(db: Session) -> dict[uuid.UUID, QuantityRule]:
 
 def get_rule(db: Session, category_id: uuid.UUID):
     return db.scalar(select(QuantityRule).where(QuantityRule.category_id == category_id))
+
+
+def customer_by_auth(db: Session, auth_user_id: uuid.UUID) -> Customer | None:
+    return db.scalar(select(Customer).where(Customer.auth_user_id == auth_user_id))
+
+
+def orders_of_customer(db: Session, customer_id: uuid.UUID):
+    q = _orders().where(Order.customer_id == customer_id).order_by(Order.created_at.desc())
+    return list(db.scalars(q))
+
+
+def order_files(db: Session, order_id: uuid.UUID) -> list[OrderFile]:
+    q = select(OrderFile).where(OrderFile.order_id == order_id).order_by(OrderFile.created_at)
+    return list(db.scalars(q))
+
+
+def get_order_file(db: Session, order_id: uuid.UUID, file_id: uuid.UUID) -> OrderFile | None:
+    q = select(OrderFile).where(OrderFile.order_id == order_id, OrderFile.id == file_id)
+    return db.scalar(q)
+
+
+def count_order_files(db: Session, order_id: uuid.UUID) -> int:
+    return db.scalar(
+        select(func.count()).select_from(OrderFile).where(OrderFile.order_id == order_id)
+    )

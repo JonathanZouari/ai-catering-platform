@@ -33,6 +33,9 @@ class Customer(Base):
     full_name: Mapped[str] = mapped_column(Text)
     email: Mapped[str | None] = mapped_column(Text)
     phone: Mapped[str | None] = mapped_column(Text)
+    # No FK to auth.users (local/test Postgres has no auth schema); NULL = guest.
+    auth_user_id: Mapped[uuid.UUID | None] = mapped_column(unique=True)
+    avatar_path: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[dt.datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[dt.datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 
@@ -121,6 +124,18 @@ class OrderRating(Base):
     )
     stars: Mapped[int] = mapped_column(SmallInteger)
     comment: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[dt.datetime] = mapped_column(server_default=func.now())
+
+
+class OrderFile(Base):
+    __tablename__ = "order_files"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=func.gen_random_uuid())
+    order_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("orders.id", ondelete="CASCADE"))
+    path: Mapped[str] = mapped_column(Text)
+    original_name: Mapped[str] = mapped_column(Text)
+    content_type: Mapped[str] = mapped_column(Text)
+    size_bytes: Mapped[int]
+    uploaded_by: Mapped[str] = mapped_column(Text)
     created_at: Mapped[dt.datetime] = mapped_column(server_default=func.now())
 
 

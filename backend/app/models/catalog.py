@@ -41,6 +41,7 @@ class DishCategory(Base):
     name_en: Mapped[str | None] = mapped_column(Text)
     sort_order: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
+    image_path: Mapped[str | None] = mapped_column(Text)
 
 
 class Dish(Base):

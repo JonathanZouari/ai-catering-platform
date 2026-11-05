@@ -3,17 +3,17 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin, assistant, catalog, orders
+from app.api import account, admin, assistant, catalog, orders
 from app.api import config as public_config
 from app.core.config import get_settings
 from app.core.errors import _body, install_error_handlers
-from app.core.storage import MAX_IMAGE_BYTES
+from app.core.storage import MAX_FILE_BYTES, MAX_IMAGE_BYTES
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 app = FastAPI(title="AI Catering Platform")
 install_error_handlers(app)
-MAX_BODY_BYTES = MAX_IMAGE_BYTES + 64 * 1024  # image cap plus multipart overhead
+MULTIPART_OVERHEAD = 64 * 1024
 MAX_CHAT_BYTES = 16 * 1024  # assistant messages are <= 4000 chars
 
 
@@ -22,7 +22,8 @@ async def limit_body_size(request: Request, call_next):
     # Multipart bodies are parsed before auth runs, so reject oversized ones up front.
     # shortcut: trusts Content-Length; chunked bodies without it rely on the proxy's limit.
     length = int(request.headers.get("content-length") or 0)
-    if length > MAX_BODY_BYTES:
+    cap = MAX_FILE_BYTES if request.url.path.endswith("/files") else MAX_IMAGE_BYTES
+    if length > cap + MULTIPART_OVERHEAD:
         return _body(413, "Request body is too large")
     if length > MAX_CHAT_BYTES and request.url.path.endswith("/chat"):
         return _body(413, "Request body is too large", code="payload_too_large")
@@ -60,7 +61,7 @@ def health() -> dict[str, str]:
     return {"status": "ok", "env": get_settings().app_env}
 
 
-for module in (catalog, public_config, admin, orders, assistant):
+for module in (catalog, public_config, admin, orders, account, assistant):
     app.include_router(module.router)
 
 # Mounted last so API routes take precedence.

@@ -5,14 +5,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, UploadFile
 
 from app.core.db import Db
-from app.core.errors import AppError
 from app.core.security import require_admin
-from app.core.storage import MAX_IMAGE_BYTES, detect_image, get_uploader
+from app.core.storage import Storage, get_storage, get_uploader, read_upload
 from app.models.catalog import Allergen, Dish, DishCategory
 from app.models.logistics import BlockedDate, DeliveryZone, TimeSlot
 from app.models.orders import OrderStatus, QuantityRule
 from app.repositories import ai as ai_repo
 from app.repositories import catalog as repo
+from app.schemas.account import OrderFileOut
 from app.schemas.ai import ProposalOut
 from app.schemas.catalog import (
     CategoryIn,
@@ -46,6 +46,7 @@ from app.schemas.orders import (
 from app.schemas.settings import SafetyCarIn, SettingsIn, SettingsOut
 from app.services import availability, delivery, geo, notify
 from app.services import catalog as service
+from app.services import files as file_service
 from app.services import orders as order_service
 from app.services import settings as settings_service
 
@@ -113,17 +114,26 @@ def upload_image(
     dish_id: uuid.UUID,
     file: UploadFile,
     db: Db,
-    upload: Annotated[Callable[[bytes, str], str], Depends(get_uploader)],
+    upload: Annotated[Callable[..., str], Depends(get_uploader)],
 ) -> DishDetailOut:
     dish = service.need(db, Dish, dish_id, "Dish")
-    data = file.file.read(MAX_IMAGE_BYTES + 1)  # bounded read: never buffer more than the cap
-    if len(data) > MAX_IMAGE_BYTES:
-        raise AppError(413, "Image must be 5 MB or smaller")
-    kind = detect_image(data)
-    if kind is None:
-        raise AppError(415, "Only JPEG, PNG or WebP images are accepted")
+    data, kind = read_upload(file)
     service.update(db, dish, {"image_path": upload(data, kind)})
     return service.dish_detail(db, dish_id, "he", public=False)
+
+
+@router.post("/categories/{category_id}/image")
+def upload_category_image(
+    category_id: uuid.UUID,
+    file: UploadFile,
+    db: Db,
+    upload: Annotated[Callable[..., str], Depends(get_uploader)],
+) -> CategoryOut:
+    cat = service.need(db, DishCategory, category_id, "Category")
+    data, kind = read_upload(file)
+    return service.category_out(
+        service.update(db, cat, {"image_path": upload(data, kind, prefix="categories/")})
+    )
 
 
 @router.get("/allergens")
@@ -194,6 +204,33 @@ def list_orders(db: Db, status: OrderStatus | None = None) -> list[OrderSummary]
 @router.get("/orders/{order_id}")
 def get_order(order_id: uuid.UUID, db: Db) -> OrderOut:
     return order_service.admin_order(db, order_id)
+
+
+@router.get("/orders/{order_id}/files")
+def list_order_files(
+    order_id: uuid.UUID, db: Db, storage: Annotated[Storage, Depends(get_storage)]
+) -> list[OrderFileOut]:
+    order = order_service.admin_locked_order(db, order_id)
+    return file_service.list_files(db, order, storage)
+
+
+@router.post("/orders/{order_id}/files", status_code=201)
+def upload_order_file(
+    order_id: uuid.UUID, file: UploadFile, db: Db,
+    storage: Annotated[Storage, Depends(get_storage)],
+) -> OrderFileOut:  # fmt: skip
+    order = order_service.admin_locked_order(db, order_id)
+    data, kind = read_upload(file, pdf=True)
+    return file_service.add_file(db, order, data, kind, file.filename, "admin", storage)
+
+
+@router.delete("/orders/{order_id}/files/{file_id}", status_code=204)
+def delete_order_file(
+    order_id: uuid.UUID, file_id: uuid.UUID, db: Db,
+    storage: Annotated[Storage, Depends(get_storage)],
+) -> None:  # fmt: skip
+    order = order_service.admin_locked_order(db, order_id)
+    file_service.delete_file(db, order, file_id, storage)
 
 
 @router.get("/orders/{order_id}/assistant")

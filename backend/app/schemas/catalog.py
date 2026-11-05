@@ -62,6 +62,7 @@ class CategoryOut(Out):
     name_en: str | None
     sort_order: int
     is_active: bool
+    image_path: str | None = None
 
 
 # ---- dishes
