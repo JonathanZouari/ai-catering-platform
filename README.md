@@ -10,7 +10,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 |---|---|
 | Backend | Python 3.12+, FastAPI, Pydantic |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase Postgres through SQLAlchemy and psycopg; Supabase Storage and Auth planned |
+| Data | Supabase Postgres through SQLAlchemy and psycopg; Supabase Storage bucket for dish images (no upload yet); Auth planned |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -48,6 +48,17 @@ uv run uvicorn app.main:app --reload
 The app needs `DATABASE_URL` in `.env` and does not start without it (see `.env.example`). On startup it runs every SQL file in `database/migrations/`, then `database/seeds/`, that has not run yet. Each file runs once, in name order, and is recorded in the `schema_migrations` table. All pending files run in one transaction, so a failure leaves nothing behind.
 
 Add a schema change as a new numbered file (`0002_….sql`); never edit a file that has already run.
+
+### Storage
+
+Dish images go in a public Supabase Storage bucket, `dish-images`. It is not created by the migrations, because CI's plain Postgres has no `storage` schema. Run this once in each Supabase project (SQL Editor):
+
+```sql
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('dish-images', 'dish-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp']);
+```
+
+Anyone can view a file by its link. With no policies on `storage.objects`, the public cannot upload. The upload endpoint is not built yet; it waits for admin login (OPEN #1).
 
 ### Tests and lint
 
