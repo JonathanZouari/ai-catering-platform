@@ -26,6 +26,8 @@ uv run ruff check .                       # lint (E, F, I, B, UP, S; line length
 uv run ruff format --check .              # format check (CI fails on unformatted code)
 uv run pytest                             # all tests
 uv run pytest tests/test_health.py::test_health_ok   # single test
+TEST_DATABASE_URL=<empty Postgres> uv run pytest   # suite on the real migrations (wipes that DB)
+uv run python -m app.core.migrate [--dry-run]       # apply pending migrations to DATABASE_URL
 ```
 
 CI (`.github/workflows/ci.yml`) runs `uv sync --frozen` → ruff check → ruff format --check → pytest on push/PR to `dev` and `main`. If you change dependencies, update `uv.lock`, because CI and the Dockerfile both use `--frozen`.
@@ -36,7 +38,7 @@ The frontend has no build step, bundler or package.json. `node --check frontend/
 
 - **One FastAPI service serves everything.** `backend/app/main.py` registers API routes and then mounts `frontend/` at `/` with `StaticFiles(html=True)`. The mount must stay last so it does not shadow API routes. Because the frontend is same-origin, no CORS setup is needed. `FRONTEND_DIR` is resolved relative to `main.py`, so the Dockerfile keeps `backend/` and `frontend/` as siblings under `/srv`.
 - **Layered monolith:** `api → services → repositories → models`, with `schemas/` (Pydantic DTOs and AI tool args) and `core/` (config). Lower layers never import upper ones. Most of these packages are still empty stubs and fill in during Phases 2–4 (`docs/ARCHITECTURE.md`).
-- **Schema changes come in threes.** Every change touches the model in `backend/app/models/`, a new numbered SQL file in `database/migrations/` (Postgres), and the diagram in `docs/ERD.md`, all in the same PR.
+- **Schema changes come in threes.** Every change touches the model in `backend/app/models/`, a new numbered SQL file in `database/migrations/` (Postgres), and the diagram in `docs/ERD.md`, all in the same PR. Run the suite with `TEST_DATABASE_URL` on a new migration: the SQL is only exercised there.
   - Local SQLite only runs `create_all`, which adds missing tables but never alters existing ones. After adding a column, alter the local `dev.db` by hand or recreate it.
 - **The backend is authoritative.** Prices, quantities, order state and availability are computed server-side only. The frontend and the LLM only display data or make requests (ADR 0003).
 - **The AI agent (`agents/`, Phase 4) talks only to services, never to the database.** Tools are thin typed wrappers over services. The order ID is bound from the request context, never taken from model output. Mutations go through `propose_order_change`, which creates a pending proposal that the customer approves; execution happens in a single transaction (`docs/AI_AGENT_DESIGN.md`).
@@ -56,5 +58,5 @@ The frontend has no build step, bundler or package.json. `node --check frontend/
 
 - `dev` is for integration and maps to Railway `development` plus the dev Supabase project. `main` is production.
 - Feature work goes as a PR into `dev`. Releases go as a PR from `dev` to `main`. Production deploys are manual and need explicit approval.
-- Railway builds from the `Dockerfile` and runs a healthcheck on `/health`. Railway and Supabase are not connected yet (planned for Phase 6).
+- Railway builds from the `Dockerfile` and runs a healthcheck on `/health`. Before each deploy, `railway.json` runs `python -m app.core.migrate`, which applies pending SQL migrations and records them in `schema_migrations`. Setup and variables: `docs/DEPLOY.md`.
 - The Supabase service-role key is server-side only.

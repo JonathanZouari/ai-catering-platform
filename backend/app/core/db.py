@@ -25,12 +25,24 @@ def get_engine() -> Engine | None:
         return _build_engine()
 
 
+def engine_args(url: str) -> tuple[str, dict]:
+    """Supabase gives postgres(ql)://, which SQLAlchemy maps to psycopg2; we ship psycopg 3."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            url = "postgresql+psycopg://" + url[len(prefix) :]
+    if url.startswith("postgresql+psycopg://"):
+        # Supabase's transaction pooler (port 6543) can't keep prepared statements.
+        return url, {"prepare_threshold": None}
+    return url, {}
+
+
 @lru_cache
 def _build_engine() -> Engine | None:
     url = get_settings().database_url
     if not url:
         return None
-    engine = create_engine(url, pool_pre_ping=True)
+    url, connect_args = engine_args(url)
+    engine = create_engine(url, pool_pre_ping=True, connect_args=connect_args)
     if engine.dialect.name == "sqlite":
         # shortcut: local/test SQLite builds its schema from the models; Postgres uses the
         # SQL migrations in database/migrations/. Drop once a local Postgres is standard.

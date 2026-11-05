@@ -60,7 +60,7 @@ Status: **Draft v0.1** · Phase 0 deliverable
 
 - Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
 - Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via a public bucket (or signed URLs — to confirm in Phase 2).
-- Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
+- Schema changes as numbered SQL migrations in `database/migrations/`, applied to dev first by `python -m app.core.migrate` (Railway pre-deploy; tracked in `schema_migrations`). See `DEPLOY.md`.
 - RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies can follow the customer-auth model (ADR 0005).
 
 ## 5. Authentication

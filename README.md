@@ -2,7 +2,7 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Phase 4 — AI assistant**. Owner screens (Phase 2), customer ordering (Phase 3) and the ordering assistant are built and run locally; deployment (Railway, Supabase) is Phase 6. See `docs/` for the specs.
+> Status: **Phase 4 — AI assistant**. Owner screens (Phase 2), customer ordering (Phase 3) and the ordering assistant are built and run locally; deployment (Railway, Supabase) is Phase 6: see `docs/DEPLOY.md`. See `docs/` for the specs.
 
 ## Stack
 
@@ -78,7 +78,7 @@ uv run pytest
 
 ## Railway / Supabase status
 
-Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 6.
+`railway.json` builds the `Dockerfile`, runs pending migrations before each deploy (`python -m app.core.migrate`) and checks `/health`. Setup steps and variables: `docs/DEPLOY.md`.
 
 ## Documentation
 
