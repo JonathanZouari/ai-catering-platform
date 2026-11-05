@@ -32,7 +32,9 @@ PGlite uses Auth and Storage stubs; these results do not establish hosted Storag
 
 ## Deployment boundary
 
-The new migration sequence has **not** been applied to the hosted project. Browser control failed to connect and the CLI has no access token. Existing cloud data was not reset or deleted. Deploy the migrations and matching admin bundle together; do not use the normalized admin against the old schema. Reconcile the project's manually applied migration history before any CLI push.
+The four reviewed migrations were **deployed on 5 November 2026** to `yumm.ai` in Frankfurt (`vbechymjcdlztoissafv`). A hosted rollback rehearsal passed before the atomic deployment. All 16 original tables were backed up privately and compared inside the deployment transaction; all five original orders and both saved receipts survived unchanged. No cloud reset or data deletion was performed.
+
+The matching local server was restarted twice. Existing order 8 and new synthetic order 10 returned identical receipts after restart, and the signed-in owner admin displayed all six orders. See [cloud verification](CLOUD_UPGRADE_VERIFICATION.md) for evidence and limitations. CLI authentication and migration-history reconciliation remain outstanding; do not run an automatic CLI push/reset.
 
 The previous complete implementation remains recoverable at commit `f34cb219efcb8f71007be9980cfdfa1c60a99036`.
 
