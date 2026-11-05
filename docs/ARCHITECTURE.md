@@ -21,8 +21,8 @@ Status: **Draft v0.1** · Phase 0 deliverable
 │   │      │ typed calls only                  │
 │   │  agents/   LLM orchestration + tool defs │
 │   ▼                                          │
-│  repositories/ data access (SQLAlchemy)      │
-│  models/       ORM models                    │
+│  repositories/ data access (sqlite3, SQL)    │
+│  db/           connections, migrations, money│
 │  schemas/      Pydantic request/response/tool│
 │  core/         config, logging, security     │
 │                                              │
@@ -30,7 +30,7 @@ Status: **Draft v0.1** · Phase 0 deliverable
 └──────────────┬──────────────────┬────────────┘
                │                  │
                ▼                  ▼
-   Supabase Postgres       Supabase Storage      LLM provider [OPEN]
+   SQLite file             Supabase Storage      LLM provider [OPEN]
    (source of truth)       (dish images)
 ```
 
@@ -49,8 +49,9 @@ Status: **Draft v0.1** · Phase 0 deliverable
 | `core/config.py` | Typed settings from env | 1 |
 | `api/` | Routers: `health`, `catalog`, `orders`, `proposals`, `admin/*` | 1 (health) → 2–4 |
 | `services/` | `pricing`, `quantities`, `orders`, `proposals`, `catalog`, `availability`, `delivery` | 2–4 |
-| `repositories/` | One per aggregate; SQLAlchemy sessions | 2 |
-| `models/` | SQLAlchemy ORM models matching `DATABASE_SCHEMA.md` | 2 |
+| `db/` | `connect()` (foreign keys on), forward-only migration runner, money/timestamp helpers | 2 (done) |
+| `repositories/` | Supabase order adapter; finance/inventory belong to the separate operations extension | 2 |
+| `models/` | Typed row dataclasses where useful. No ORM (ADR 0005) | 2 |
 | `schemas/` | Pydantic DTOs and AI tool argument schemas | 2–4 |
 | `agents/` | Conversation loop, tool registry, system prompt | 4 |
 | `frontend/customer` | Ordering flow + chat panel | 3–4 |
@@ -58,24 +59,28 @@ Status: **Draft v0.1** · Phase 0 deliverable
 
 ## 4. Data access **[RECOMMENDATION]**
 
-- Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
-- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via a public bucket (or signed URLs — to confirm in Phase 2).
-- Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
-- RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies depend on the auth decision **[OPEN #1]**.
+**Current implementation:** explicit database selection. Supabase Postgres is used for cloud customer orders and the owner interface. SQLite remains the local fallback selected by configuration, never by a cloud-error fallback. See `DATABASE_SCHEMA.md` for the MVP scope split and normalized catalog.
+
+- Backend uses the standard-library `sqlite3` module. One connection per request via the `get_db` dependency (commit on success, rollback on error). Every connection comes from `app.db.connect()`, which turns on and verifies `PRAGMA foreign_keys`.
+- Database file: `SQLITE_PATH` (default `data/catering.sqlite3`, git-ignored). On Railway it must be on a mounted volume.
+- Schema changes: forward-only SQL migrations in `database/migrations/NNNN_name.sql`, applied on startup and by `uv run python -m app.db`. Non-destructive and checksummed. See `DATABASE_SCHEMA.md`.
+- Integrity rules live in the schema (STRICT tables, CHECKs, composite FKs, triggers), so no caller can bypass them, including the AI agent.
+- Authorization is enforced in services. There is no RLS in SQLite.
+- Supabase mode uses backend-only transactional invoker RPCs. The browser owner interface uses a publishable key, authenticated owner claims and RLS; the secret key remains server-side. Private dish images use Storage policies. Realtime refreshes the owner lists.
 
 ## 5. Authentication **[OPEN]**
 
-- Admin: one owner account. Recommended: Supabase Auth email login, backend verifies the JWT and checks an `admin` role.
+- Admin: one owner account through Supabase Auth. Authorization uses server-controlled `app_metadata.role = catering_owner`; editable user metadata never grants ownership.
 - Customer: undecided (account vs guest link). Backend dependencies will be written so either option plugs in.
 
-## 6. Environments and branches **[CONFIRMED]** (separate Supabase projects strongly preferred)
+## 6. Environments and branches **[CONFIRMED]**
 
-| Git branch | Railway environment | Supabase project | Deploys |
+| Git branch | Railway environment | Database | Deploys |
 |---|---|---|---|
-| `dev` | `development` | `ai-catering-dev` | Auto on push to `dev` (after Phase 6 approval) |
-| `main` | `production` | `ai-catering-prod` | Manual / explicit approval only |
+| `dev` | `development` | SQLite file on the dev volume | Auto on push to `dev` (after Phase 6 approval) |
+| `main` | `production` | SQLite file on the prod volume | Manual / explicit approval only |
 
-- Each Railway environment has its own variables (`APP_ENV`, `DATABASE_URL`, `SUPABASE_*`, LLM key).
+- Each Railway environment has its own variables (`APP_ENV`, `SQLITE_PATH`, `DB_AUTO_MIGRATE`, optional `SUPABASE_*` for Storage, LLM key).
 - Feature work → PR into `dev` → CI must pass → merge. Release → PR `dev` → `main` → CI → merge → manual production deploy.
 
 ## 7. CI/CD
@@ -86,7 +91,7 @@ GitHub Actions on push/PR to `dev` and `main`: `uv sync` → `ruff check` → `r
 
 - Consistent error response shape (`API_CONTRACTS.md`).
 - Structured logs without secrets or unnecessary personal data (no addresses/phone numbers in logs).
-- Proposal execution in a single DB transaction; failure leaves the order unchanged.
+- Proposal execution in a single DB transaction (`BEGIN IMMEDIATE` + `orders.version` check); failure leaves the order unchanged.
 
 ## 9. ADRs
 

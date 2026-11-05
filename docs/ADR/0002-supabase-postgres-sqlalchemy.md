@@ -1,6 +1,6 @@
 # ADR 0002 — Supabase Postgres accessed via SQLAlchemy from the backend
 
-Status: Proposed (adopted in Phase 2) · Date: 2026-10-29
+Status: **Superseded** by [ADR 0005](0005-sqlite-database.md) on 2026-11-02 (database is SQLite) · Date: 2026-10-29
 
 ## Context
 Supabase is mandated. Options: supabase-py (PostgREST) or a direct Postgres connection with SQLAlchemy.
