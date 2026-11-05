@@ -5,17 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ממשק העסק</title>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
-  <main>
+  <main class="admin-shell" hidden>
+    <div class="user-bar">
+      <span class="who">מחובר/ת: <bdi data-email></bdi></span>
+      <button class="btn btn-ghost" type="button" data-signout>יציאה</button>
+    </div>
     <h1>ממשק העסק</h1>
-    <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
+    <div data-content>
+      <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
+    </div>
   </main>
   <script type="module">
+    import { requireUser, signOut } from "/js/auth.js";
     import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+
+    const me = await requireUser();
+    document.querySelector("[data-email]").textContent = me.email;
+    document.querySelector("[data-signout]").addEventListener("click", async () => {
+      await signOut();
+      location.replace("/login/");
+    });
+
+    // UI check only; every /api/admin/* endpoint enforces the admin role on the server.
+    try {
+      await api("/api/admin/me");
+    } catch (e) {
+      if (e.status !== 403) throw e;
+      document.querySelector("h1").textContent = "אין הרשאה";
+      document.querySelector("[data-content]").innerHTML =
+        "<p>האזור הזה מיועד לבעל/ת העסק בלבד.</p><p><a href=\"/customer/\">למעבר לתכנון אירוע</a></p>";
+    }
+    document.querySelector("main").hidden = false;
   </script>
 </body>
 </html>
