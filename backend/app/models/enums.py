@@ -56,12 +56,11 @@ class KashrutMixingRule(StrEnum):
     WARN = "warn"
 
 
-def db_enum(enum_class: type[StrEnum]) -> Enum:
-    """Stored as text. The schema's CHECK constraints hold the allowed values."""
+def pg_enum(enum_class: type[StrEnum], name: str) -> Enum:
+    """Map to a Postgres enum type created by the migrations."""
     return Enum(
         enum_class,
-        native_enum=False,
-        create_constraint=False,
-        length=32,
+        name=name,
+        create_type=False,
         values_callable=lambda members: [member.value for member in members],
     )

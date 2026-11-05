@@ -1,6 +1,6 @@
 # Entity relationship diagram
 
-The SQLite schema from `database/migrations/20261102000000_sqlite_schema.sql`.
+The Postgres schema from `supabase/migrations/20261105000000_schema.sql`.
 Column details and rules are in `DATABASE_SCHEMA.md`.
 
 Notes:

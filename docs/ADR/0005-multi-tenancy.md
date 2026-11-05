@@ -3,7 +3,7 @@
 Status: Accepted (Phase 2) · Date: 2026-11-01
 
 ## Context
-The product changed from one business to many caterers. Any cross-caterer leak exposes one business's customers and prices to a competitor. The backend has full access to its database (SQLite since ADR 0007), so the database can't be the only barrier. Pilot caterers are onboarded by hand, so the number of tenants stays small during the MVP.
+The product changed from one business to many caterers. Any cross-caterer leak exposes one business's customers and prices to a competitor. The backend has full access to its database (Supabase Postgres, ADR 0009), so the database can't be the only barrier. Pilot caterers are onboarded by hand, so the number of tenants stays small during the MVP.
 
 ## Decision
 - One database and one schema. Every business table carries a non-null `caterer_id`, directly or through a parent that is itself scoped.

@@ -1,6 +1,6 @@
 # Preliminary Database Schema
 
-> The database is now SQLite (ADR 0007). The tables below still describe the model; `database/migrations/` is the exact schema and ADR 0007 lists how each type is stored.
+> The database is Supabase Postgres (ADR 0009). The tables below describe the model; `supabase/migrations/` is the exact schema, including RLS policies.
 
 Status: **Draft v0.2** — not yet migrated. First migration is planned for Phase 3.
 

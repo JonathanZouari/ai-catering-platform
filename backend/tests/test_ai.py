@@ -453,10 +453,9 @@ def test_one_order_can_not_spend_the_whole_allowance(shop, speak, session):
     send(order)
     session.execute(
         text(
-            "with recursive numbers (n) as (select 1 union all select n + 1 from numbers limit 100)"
-            " insert into ai_messages (caterer_id, conversation_id, role, content) "
+            "insert into ai_messages (caterer_id, conversation_id, role, content) "
             "select caterer_id, conversation_id, 'user', '{\"text\": \"א\"}' "
-            "from ai_messages, numbers limit 100"
+            "from ai_messages, generate_series(1, 100) limit 100"
         )
     )
     session.commit()

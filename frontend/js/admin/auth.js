@@ -35,6 +35,25 @@ async function requestToken(grantType, body) {
 
 export const login = (email, password) => requestToken("password", { email, password });
 
+// Seconds until the stored login expires, read from the token itself (not trusted, only timed).
+function secondsLeft(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return payload.exp - Date.now() / 1000;
+  } catch {
+    return 0;
+  }
+}
+
+// A login token with at least two minutes left, refreshing it first if needed.
+export async function accessToken() {
+  const session = JSON.parse(localStorage.getItem(KEY) ?? "{}");
+  if (!session.access_token) throw new Error("not logged in");
+  if (secondsLeft(session.access_token) > 120) return session.access_token;
+  await requestToken("refresh_token", { refresh_token: session.refresh_token });
+  return JSON.parse(localStorage.getItem(KEY)).access_token;
+}
+
 export async function adminApi(path, options = {}) {
   const send = () => {
     const { access_token: token } = JSON.parse(localStorage.getItem(KEY) ?? "{}");

@@ -3,7 +3,7 @@ from datetime import date
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.dialects.sqlite import insert
+from sqlalchemy.dialects.postgresql import insert
 
 from app.models import AiChangeProposal, AiConversation, AiMessage, AiUsage
 from app.models.enums import ProposalStatus
@@ -56,10 +56,10 @@ class ProposalRepository(ScopedRepository[AiChangeProposal]):
         return self.session.scalars(query.order_by(AiChangeProposal.created_at)).all()
 
     def lock(self, order_id: UUID, proposal_id: UUID) -> AiChangeProposal | None:
-        """Rereads the row. The transaction's write lock keeps it current (core/db.py)."""
         query = (
             self._select()
             .where(AiChangeProposal.id == proposal_id, AiChangeProposal.order_id == order_id)
+            .with_for_update()
             .execution_options(populate_existing=True)
         )
         return self.session.scalar(query)

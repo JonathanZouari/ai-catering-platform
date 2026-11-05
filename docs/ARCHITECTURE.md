@@ -30,7 +30,7 @@ Status: **Draft v0.2** · Updated in Phase 2 for many caterers
 └──────────────┬──────────────────┬────────────┘
                │                  │
                ▼                  ▼
-   SQLite on a volume      Supabase Storage      LLM provider (Claude)
+   Supabase Postgres       Supabase Storage      LLM provider (Claude)
    (source of truth)       (dish images, logos)
 ```
 
@@ -61,10 +61,11 @@ Status: **Draft v0.2** · Updated in Phase 2 for many caterers
 
 ## 4. Data access **[RECOMMENDATION]**
 
-- Backend opens one SQLite file with SQLAlchemy 2.x (`DATABASE_URL`). See ADR 0007.
+- Backend connects to Supabase Postgres with SQLAlchemy 2.x and psycopg through the session pooler (`DATABASE_URL`). See ADR 0009.
 - Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Object paths are prefixed by caterer ID. Public read for dish images, logos, and kashrut certificates via the public `caterer-assets` bucket, which must allow no anonymous write or listing.
-- Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
-- The database file is reachable only by the app, so **tenant isolation is enforced in the backend** and by composite foreign keys (ADR 0005).
+- Schema changes as SQL migrations in `supabase/migrations/`, applied with `supabase db push`, dev first.
+- **Tenant isolation is enforced in the backend**, by composite foreign keys (ADR 0005), and by read-only RLS on every table for the Data API and Realtime (ADR 0009).
+- The caterer dashboard gets live order changes from Supabase Realtime and reloads the list from the API.
 
 ## 5. Authentication and caterer scope **[CONFIRMED]**
 
