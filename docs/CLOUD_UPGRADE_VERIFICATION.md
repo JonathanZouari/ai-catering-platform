@@ -22,7 +22,7 @@ The four reviewed migrations (baseline, AI/availability foundation, catalog norm
 3. Submitted synthetic order **10**, labelled “בדיקת שדרוג ענן — אין להכין”, for **ILS 281.00**. Two concurrent identical submissions returned 201/200 and one order; a changed payload with the same token returned 409.
 4. Restarted the server again: process 11844 was replaced by 69408. Orders 8 and 10 still returned identical saved receipts, with `Cache-Control: no-store`. The database health check reported Supabase.
 5. The user signed in as the existing owner. After reloading the admin from the restarted server, all six orders were visible, including the new order and all five originals. The realtime indicator showed connected; this does not establish cross-window event delivery.
-6. A final hosted query compared the original order snapshot to current rows: **5 / 5 preserved**, **6 orders total**, **16 backed-up tables**, **4 applied migration records**.
+6. A final hosted query compared the original order snapshot to current rows: **5 / 5 preserved**, **6 orders total**, **16 backed-up tables**, **4 private deployment-manifest records** (distinct from CLI migration history, which was reconciled afterward).
 
 ![Owner admin after the second server restart](evidence/review-admin-after-restart.jpg)
 
@@ -30,7 +30,7 @@ The four reviewed migrations (baseline, AI/availability foundation, catalog norm
 
 - Cloud database changes are deployed; the application server is running locally on port 8766. This is not a public web-host deployment.
 - Fresh installations have 17 MVP tables. The upgraded hosted project also retains eight legacy operations tables and their data; those are excluded from the MVP browser access/navigation.
-- CLI authentication and historical migration reconciliation are not complete. Do not run an automatic CLI push/reset until that history is reconciled. The private deployment manifest is an audit record, not CLI migration history.
+- CLI access and migration history were subsequently reconciled without replaying migrations. All four versions now match and the dry run has no pending changes. See [CLI verification](CLI_ACCESS_AND_HISTORY.md).
 - The private table snapshots are not a full platform backup of Auth, Storage files, policies and sequences.
 - Hosted image upload and cross-window realtime delivery were not retested in this pass. Storage policy behavior passed local PostgreSQL regression checks.
 - AI execution/proposal approval and scheduling enforcement remain unimplemented schema foundations.
