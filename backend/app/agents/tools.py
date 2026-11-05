@@ -55,6 +55,7 @@ def _menu(ctx: Ctx, _: _Empty) -> dict:
                 "min_quantity": str(out.min_quantity) if out.min_quantity else None,
                 "serves_adults_per_unit": str(out.serves_adults) if out.serves_adults else None,
                 "kashrut": out.dietary.kashrut_class,
+                "alcohol_18_plus": out.contains_alcohol,
                 "vegetarian": out.dietary.is_vegetarian,
                 "vegan": out.dietary.is_vegan,
                 "allergens": {a.name: a.status for a in out.allergens},
@@ -108,7 +109,8 @@ TOOLS = [
     {
         "name": "get_menu",
         "description": "The dishes the customer can order now, with price per unit, pricing "
-        "unit, minimum quantity, servings per unit, kashrut, vegetarian/vegan and allergens.",
+        "unit, minimum quantity, servings per unit, kashrut, vegetarian/vegan, allergens and "
+        "whether it is alcohol (sold to 18+ only).",
         "input_schema": _NO_ARGS,
         "strict": True,
     },

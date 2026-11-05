@@ -49,7 +49,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | DELETE | `/api/orders/{id}/items/{dish_id}?version=N` | Remove dish |
 | GET | `/api/orders/{id}/pricing` | `{currency: ILS, vat_included: true, lines[], subtotal, delivery_fee, total}`. Lines are rounded half-up to the agora; a dish no longer orderable is flagged `available: false` and left out of the total |
 | GET | `/api/orders/{id}/recommendations` | `[{dish_id, quantity, eligible_guests}]` for dishes with `serves_adults` (rules: OPEN_DECISIONS #3, decided) |
-| POST | `/api/orders/{id}/submit` | `{version}`. `draft → pending_approval`. Re-checks everything: dishes still orderable (`409 items_unavailable`), date and lead time, slot, and capacity (`409 slot_full`); `422 empty_order`. Freezes the price snapshot and totals, and emails the owner |
+| POST | `/api/orders/{id}/submit` | `{version, adult_confirmed?}`. `draft → pending_approval`. Re-checks everything: dishes still orderable (`409 items_unavailable`), date and lead time, slot, and capacity (`409 slot_full`); `422 empty_order`. An order with an alcohol dish needs `adult_confirmed: true` (`422 age_confirmation_required`, #11), stored as `adult_confirmed_at`; withdraw clears it. Freezes the price snapshot and totals, and emails the owner |
 | POST | `/api/orders/{id}/withdraw` | `{version}`. `pending_approval → draft` (OPEN #7); unfreezes prices. After a decision → `409 invalid_transition` |
 
 Every mutation returns the full updated order (new `version`). A stale `version` → `409 order_version_conflict`.
@@ -83,7 +83,7 @@ Owner, on an order awaiting approval:
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/admin/orders/{id}/proposals` | Newest first |
-| POST | `/api/admin/orders/{id}/proposals` | `{items: [{dish_id, quantity}], note}` is the full wanted item list; the server derives the changes. Dishes and quantities only (no custom prices). `409 proposal_pending` if one is open; `422 no_changes`, `dish_unavailable`, `below_minimum` |
+| POST | `/api/admin/orders/{id}/proposals` | `{items: [{dish_id, quantity}], note}` is the full wanted item list; the server derives the changes. Dishes and quantities only (no custom prices). `409 proposal_pending` if one is open; `422 no_changes`, `dish_unavailable`, `below_minimum`, `age_confirmation_required` (alcohol in an order whose customer didn't confirm 18+) |
 | POST | `/api/admin/orders/{id}/proposals/{pid}/cancel` | |
 
 While a proposal is open, owner approve or reject returns `409 proposal_pending`.
@@ -137,7 +137,7 @@ Proposal shape (`ProposalOut`, shared with owner proposals):
 | Method | Path |
 |---|---|
 | GET/POST | `/api/admin/categories` · PATCH/DELETE `/api/admin/categories/{id}` |
-| GET/POST | `/api/admin/dishes` · PATCH/DELETE `/api/admin/dishes/{id}` |
+| GET/POST | `/api/admin/dishes` · PATCH/DELETE `/api/admin/dishes/{id}` (`contains_alcohol` marks a dish 18+, #11) |
 | POST | `/api/admin/dishes/{id}/image` (multipart → Supabase Storage) |
 | PUT | `/api/admin/dishes/{id}/dietary` |
 | GET/POST/PATCH/DELETE | `/api/admin/delivery-zones` `{name, fee, cities[], is_active}`. `cities` is a full replacement; a city already in another zone gives `409 city_taken` with `{city, zone}` |

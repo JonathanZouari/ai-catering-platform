@@ -90,12 +90,12 @@ def recommendations(
 @router.post("/{order_id}/submit", response_model=s.CustomerOrderOut)
 def submit(
     order_id: uuid.UUID,
-    data: s.VersionIn,
+    data: s.SubmitIn,
     background: BackgroundTasks,
     who: CustomerIdentity = Depends(require_customer),
     db: Session = Depends(get_db),
 ):
-    order = svc.submit(db, who, order_id, data.version)
+    order = svc.submit(db, who, order_id, data.version, data.adult_confirmed)
     if email := notifications.order_submitted(db, order_id):
         background.add_task(mailer.send, email)  # after the response; never blocks the order
     return order

@@ -94,6 +94,7 @@ async function openOrder(id) {
   const grand = fact('סה"כ', money(o.total));
   grand.className = "grand";
   $("d-totals").replaceChildren(...totals, grand);
+  $("d-alcohol").hidden = !o.adult_confirmed_at;
 
   const note = $("d-note");
   note.hidden = !o.decision_note && !o.decided_at;

@@ -144,6 +144,13 @@ def create(db: Session, order_id: uuid.UUID, data: s.ProposalCreate) -> s.Propos
     if has_pending(db, order_id):
         raise AppError(409, "proposal_pending", "Cancel the open proposal first")
     lines = _proposed_lines(db, order, data.items)
+    current = {str(i.dish_id) for i in order.items}  # only added dishes need the 18+ check
+    if order.adult_confirmed_at is None and any(
+        db.get(Dish, uuid.UUID(line["dish_id"])).contains_alcohol
+        for line in lines
+        if line["dish_id"] not in current
+    ):
+        raise AppError(422, "age_confirmation_required", "The customer hasn't confirmed 18+")
     changes = _changes(db, order, lines)
     if not changes:
         raise AppError(422, "no_changes", "The proposal changes nothing")

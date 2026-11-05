@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0011` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0012` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -43,6 +43,7 @@ erDiagram
         numeric min_quantity "null, > 0"
         numeric serves_adults "null, > 0, adults one unit serves"
         bool is_available
+        bool contains_alcohol "18+ only (#11)"
         timestamptz created_at
         timestamptz updated_at
     }
@@ -113,6 +114,7 @@ erDiagram
         numeric delivery_fee "null; frozen from the zone at submission"
         numeric total "null until submission"
         timestamptz submitted_at "null"
+        timestamptz adult_confirmed_at "null; 18+ confirmed (#11)"
         timestamptz decided_at "null"
         text decision_note "null, shown to customer"
         timestamptz created_at

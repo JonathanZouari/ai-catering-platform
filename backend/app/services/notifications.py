@@ -29,6 +29,9 @@ def _local(moment: datetime) -> str:
     return moment.astimezone(clock.BUSINESS_TZ).strftime("%d.%m.%Y %H:%M")
 
 
+ALCOHOL_NOTE = "כולל אלכוהול: הלקוח אישר שהוא מעל גיל 18. יש לבדוק תעודה מזהה במסירה או באיסוף."
+
+
 def order_submitted(db: Session, order_id: uuid.UUID) -> Email | None:
     settings = get_settings()
     order = db.get(Order, order_id)
@@ -52,6 +55,7 @@ def order_submitted(db: Session, order_id: uuid.UUID) -> Email | None:
 
 {lines}
 סה"כ כולל מע"מ: {_money(order.total)}{fee_note}
+{ALCOHOL_NOTE if order.adult_confirmed_at else ""}
 
 לאישור או דחייה: {settings.public_base_url}/admin/orders/
 """

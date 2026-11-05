@@ -275,7 +275,11 @@ def _expire_proposals(db: Session, order_id: uuid.UUID) -> None:
 
 
 def submit(
-    db: Session, who: CustomerIdentity, order_id: uuid.UUID, version: int
+    db: Session,
+    who: CustomerIdentity,
+    order_id: uuid.UUID,
+    version: int,
+    adult_confirmed: bool = False,
 ) -> s.CustomerOrderOut:
     order = _editable(db, who, order_id, version)
     if not order.items:
@@ -286,6 +290,10 @@ def submit(
         raise AppError(
             409, "items_unavailable", "Some dishes can't be ordered anymore", {"dishes": gone}
         )
+    has_alcohol = any(d.contains_alcohol for d in dishes.values())
+    if has_alcohol and not adult_confirmed:
+        raise AppError(422, "age_confirmation_required", "Alcohol is sold to 18+ only")
+    order.adult_confirmed_at = datetime.now(UTC) if has_alcohol else None
     order.requested_at = _validate(db, _as_draft_in(order))  # date, lead time, slot, guests
 
     # Lock the slot row (Postgres) so two last-minute submits can't both take the last place.
@@ -325,7 +333,7 @@ def withdraw(
     for item in order.items:  # back to live prices
         item.snapshot_name = item.snapshot_pricing_unit = None
         item.snapshot_unit_price = item.snapshot_line_total = None
-    order.subtotal = order.total = order.submitted_at = None
+    order.subtotal = order.total = order.submitted_at = order.adult_confirmed_at = None
     order.delivery_fee = order.delivery_zone_id = None  # live from the zone again
     _expire_proposals(db, order_id)  # an owner proposal was for the submitted order
     return _commit_bump(

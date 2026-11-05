@@ -98,6 +98,8 @@ class Order(Timestamps, Base):
     delivery_fee: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     total: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # When the customer confirmed being 18+; set only for orders with alcohol (#11).
+    adult_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     decision_note: Mapped[str | None] = mapped_column(Text)
 
