@@ -104,6 +104,8 @@ Worked in order. Don't build features of a later phase early.
 | SQLite | Replaced Postgres everywhere (ADR 0007) | Done |
 | Test site | Supabase Auth and Storage plus Railway with a volume, needs the user's accounts and approval | Skipped for now |
 | Stitch redesign | One caterer's site, Stitch design, homepage video (ADR 0008) | Done |
+| Supabase Postgres, part 1 | `yummai-dev` and `yummai-test` projects: schema, read-only RLS, `caterer-assets` bucket, Realtime on `orders`, demo login and synthetic data (`scripts/seed_supabase.py`). The app still runs on SQLite | Done |
+| Supabase Postgres, part 2 | Move the app onto Supabase Postgres, ADR 0009, live dashboard | Not started |
 | Pilot | First real caterer, needs its own approval | Not started |
 
 Everything up to the Stitch redesign is merged into `dev` and `main` on `origin`. `gh` defaults to `upstream` here, so pass `--repo mardar-anna/ai-catering-platform`.
