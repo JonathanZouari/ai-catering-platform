@@ -49,6 +49,10 @@ BEGIN
   );
 END $$;
 
+-- Without any SELECT grant Realtime still tells anon that a row changed (an empty event with
+-- "401"), which reveals order activity. With a grant and no anon policy, RLS drops the event.
+GRANT SELECT (id) ON orders, order_items TO anon;
+
 -- ---- policies (dropped and recreated so re-runs converge)
 DO $$
 DECLARE p record;
@@ -58,9 +62,11 @@ BEGIN
   END LOOP;
 END $$;
 
--- Public reads: active items only.
-CREATE POLICY public_read ON dish_categories FOR SELECT TO anon, authenticated USING (is_active);
-CREATE POLICY public_read ON dishes FOR SELECT TO anon, authenticated USING (is_available);
+-- Public reads. Dishes and categories stay readable when switched off: Realtime applies RLS to the
+-- new row, so a filter here would hide the very event that takes a dish off the live menu.
+-- The backend's catalog routes still hide them. No personal data lives in these tables.
+CREATE POLICY public_read ON dish_categories FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY public_read ON dishes FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY public_read ON delivery_zones FOR SELECT TO anon, authenticated USING (is_active);
 CREATE POLICY public_read ON time_slots FOR SELECT TO anon, authenticated USING (is_active);
 CREATE POLICY public_read ON allergens FOR SELECT TO anon, authenticated USING (true);
