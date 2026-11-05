@@ -125,3 +125,18 @@
 
 /* Landing header: login link next to the main CTA */
 .top-actions { display: flex; align-items: center; gap: var(--space-2); }
+
+/* Customer header: sign-out next to the stepper. On phones the stepper already fills
+   the row, so brand + sign-out share the first row and the stepper gets its own. */
+.header-signout { flex-shrink: 0; }
+@media (max-width: 640px) {
+  .site-header-inner { flex-wrap: wrap; row-gap: 0; }
+  .header-signout {
+    order: 1;
+    margin-inline-start: auto;
+    min-height: 36px;
+    padding-inline: var(--space-2);
+    font-size: var(--text-sm);
+  }
+  .site-header-inner .stepper-nav { order: 2; flex-basis: 100%; }
+}
