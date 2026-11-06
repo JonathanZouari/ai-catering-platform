@@ -72,7 +72,7 @@ Status: **Draft v0.1** · Phase 0 deliverable
 
 | Git branch | Railway environment | Supabase project | Deploys |
 |---|---|---|---|
-| `dev` | `development` | `ai-catering-dev` | Auto on push to `dev` (after Phase 6 approval) |
+| `dev` | `Dev` | `ai-catering-dev` | Auto on push to `dev` |
 | `main` | `production` | `ai-catering-prod` | Manual / explicit approval only |
 
 - Each Railway environment has its own variables (`APP_ENV`, `DATABASE_URL`, `SUPABASE_*`, LLM key).

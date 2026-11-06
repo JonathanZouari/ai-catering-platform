@@ -2,7 +2,7 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Phase 4 — AI assistant**. Owner screens (Phase 2), customer ordering (Phase 3) and the ordering assistant are built and run locally; deployment (Railway, Supabase) is Phase 6: see `docs/DEPLOY.md`. See `docs/` for the specs.
+> Status: **Phase 6 — deploy**. Owner screens (Phase 2), customer ordering (Phase 3) and the ordering assistant (Phase 4) are built. The development environment runs at https://ai-catering-platform-dev.up.railway.app (Railway `Dev`, Supabase `ai-catering-dev`); production isn't set up yet: see `docs/DEPLOY.md`. See `docs/` for the specs.
 
 ## Stack
 
@@ -69,7 +69,7 @@ uv run pytest
 | Branch | Purpose | Railway env | Supabase project |
 |---|---|---|---|
 | `main` | Production (default branch) | `production` | prod project |
-| `dev` | Integration | `development` | dev project |
+| `dev` | Integration | `Dev` | dev project |
 
 - Feature work → PR into `dev` (CI must pass).
 - Release → PR `dev` → `main`.

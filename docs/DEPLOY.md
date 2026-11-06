@@ -1,6 +1,8 @@
 # Deploy (Phase 6)
 
-How the `development` environment goes live: the `dev` branch → Railway `development` → Supabase `ai-catering-dev`. Production (`main`) follows the same steps with its own projects, only after explicit approval (ARCHITECTURE §6).
+How the development environment goes live: the `dev` branch → Railway environment `Dev` (https://ai-catering-platform-dev.up.railway.app) → Supabase `ai-catering-dev`. Production (`main`) follows the same steps with its own projects, only after explicit approval (ARCHITECTURE §6).
+
+**Current state (2026-11-06):** the Railway `production` environment still holds a copy of the Dev variables, so it points at `ai-catering-dev`. Its auto deploy is **off** so a push can't run migrations from another branch on the dev database. Before the first release, give it its own Supabase project (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`), a new `ADMIN_TOKEN`, source branch `main`, then turn auto deploy back on.
 
 ## How a deploy works
 
@@ -23,7 +25,7 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 
 ### 2. Railway
 - New Project → Deploy from GitHub repo → `idanss0/ai-catering-platform`.
-- Environment `development` → service settings → Source branch `dev`. Railway no longer reads `railway.json` for new services (Config as Code is deprecated), so set these in the service settings: Deploy → Pre-deploy command `python -m app.core.migrate`, Healthcheck Path `/health`; Scale → Region EU West. The Dockerfile is detected automatically. `railway.json` stays in the repo as a record of these values.
+- Environment `Dev` → service settings → Source branch `dev`. Railway no longer reads `railway.json` for new services (Config as Code is deprecated), so set these in the service settings: Deploy → Pre-deploy command `python -m app.core.migrate`, Healthcheck Path `/health`; Scale → Region EU West. The Dockerfile is detected automatically. `railway.json` stays in the repo as a record of these values.
 - Settings → Networking → Generate Domain. Put this address in `PUBLIC_BASE_URL` and in the Supabase Site URL.
 - Variables (Railway sets `PORT` itself):
 
@@ -34,7 +36,7 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
 | `SUPABASE_ANON_KEY` | Project Settings → API Keys → publishable or anon key |
 | `ADMIN_TOKEN` | a new long random value, not the local one: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
-| `BREVO_API_KEY` | Brevo → SMTP & API → API Keys. Railway blocks outbound SMTP below its Pro plan, so the app sends through Brevo's HTTPS API |
+| `BREVO_API_KEY` | Brevo → SMTP & API → API Keys (starts with `xkeysib-`; an SMTP key `xsmtpsib-` won't work). Railway blocks outbound SMTP below its Pro plan, so the app sends through Brevo's HTTPS API. In Brevo → Security → Authorised IPs, turn the IP blocking off: Railway's outbound IP changes, and a blocked IP answers 401 (`email failed: ... (HTTP 401)` in the logs) |
 | `SMTP_FROM` | the sender address; verify it in Brevo → Senders first |
 | `OWNER_EMAIL` | where new orders are sent |
 | `PUBLIC_BASE_URL` | `https://<railway-domain>` |
@@ -42,10 +44,10 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 Leave `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` unset. The chat panel then stays hidden and the API answers 503 (the assistant is tested locally against a fake Claude). Never set `SUPABASE_SERVICE_ROLE_KEY` unless code needs it, which none does yet.
 
 ## After the first deploy
-1. Deploy logs should show `13 migration(s) applied: ...`. Later deploys show `0 migration(s) applied`.
+1. Deploy logs should show `N migration(s) applied: ...` (all of `database/migrations/`). Later deploys show `0 migration(s) applied`. Any environment whose `DATABASE_URL` points at the same database also migrates it on its next deploy.
 2. `https://<domain>/health` returns 200.
 3. Owner: `/admin/` with the new `ADMIN_TOKEN`. Add categories, dishes, time slots and delivery zones, and set the order rules and kashrut certificate.
-4. Customer: `/customer/` → email → 6-digit code → profile → an event and an order → submit. The owner gets an email.
+4. Customer: `/customer/` → email → 6-digit code → profile → an event and an order → submit. The owner gets an email (no `email failed` line in the deploy logs).
 
 ## Checking migrations locally
 Before merging a new migration, run the suite on a real Postgres. It wipes that database, so use an empty one:
