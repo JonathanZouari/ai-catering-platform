@@ -36,7 +36,7 @@ def _messages(db: Session, conversation: AiConversation | None) -> list[AiMessag
     if conversation is None:
         return []
     q = select(AiMessage).where(AiMessage.conversation_id == conversation.id)
-    return list(db.scalars(q.order_by(AiMessage.id)))
+    return list(db.scalars(q.order_by(AiMessage.position)))
 
 
 def _sent_today(db: Session, order: Order) -> int:
@@ -72,6 +72,7 @@ def start_turn(
     db.add(
         AiMessage(
             conversation_id=conversation.id,
+            position=_next_position(db, conversation.id),
             role="user",
             content=[{"type": "text", "text": text}],
             customer_text=text,
@@ -85,9 +86,24 @@ def start_turn(
 def append(db: Session, conversation_id: uuid.UUID, messages: list[dict]) -> None:
     """Store a finished turn's messages together, so a failed turn never leaves a tool call
     without its result in the history."""
-    for m in messages:
-        db.add(AiMessage(conversation_id=conversation_id, role=m["role"], content=m["content"]))
+    start = _next_position(db, conversation_id)
+    for i, m in enumerate(messages):
+        db.add(
+            AiMessage(
+                conversation_id=conversation_id,
+                position=start + i,
+                role=m["role"],
+                content=m["content"],
+            )
+        )
     db.commit()
+
+
+def _next_position(db: Session, conversation_id: uuid.UUID) -> int:
+    # A concurrent turn on the same conversation hits the unique (conversation_id, position)
+    # and fails instead of interleaving the history.
+    q = select(func.coalesce(func.max(AiMessage.position), 0))
+    return db.scalar(q.where(AiMessage.conversation_id == conversation_id)) + 1
 
 
 def _reply_text(content: list[dict]) -> str:

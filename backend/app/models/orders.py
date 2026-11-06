@@ -90,10 +90,6 @@ class Order(Timestamps, Base):
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     delivery_address: Mapped[str | None] = mapped_column(Text)  # street and number
     delivery_city: Mapped[str | None] = mapped_column(Text)  # one of the zones' cities (#19)
-    # The zone whose fee was frozen at submission; null while draft or if the zone is deleted.
-    delivery_zone_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("delivery_zones.id", ondelete="SET NULL")
-    )
     subtotal: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     delivery_fee: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     total: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))

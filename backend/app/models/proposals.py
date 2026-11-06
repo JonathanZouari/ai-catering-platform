@@ -1,4 +1,4 @@
-"""Change proposals on an order, mirroring migration 0009.
+"""Change proposals on an order, mirroring migrations 0009 and 0015.
 
 One mechanism for both proposers (ADR 0003): the owner proposes changes to an order awaiting
 approval (OPEN_DECISIONS #6, this slice); the AI assistant will propose changes to drafts in
@@ -14,6 +14,7 @@ from sqlalchemy import (
     JSON,
     CheckConstraint,
     DateTime,
+    Enum,
     ForeignKey,
     Index,
     Integer,
@@ -34,10 +35,6 @@ class OrderProposal(Base):
     __tablename__ = "order_proposals"
     __table_args__ = (
         CheckConstraint("proposed_by in ('owner', 'assistant')", name="order_proposals_by"),
-        CheckConstraint(
-            "status in ('pending', 'accepted', 'declined', 'cancelled', 'expired')",
-            name="order_proposals_status",
-        ),
         # At most one open proposal per order.
         Index(
             "order_proposals_one_pending",
@@ -62,7 +59,9 @@ class OrderProposal(Base):
     price_before: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     price_after: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     note: Mapped[str | None] = mapped_column(Text)  # from the proposer, shown to the customer
-    status: Mapped[str] = mapped_column(Text, default="pending")
+    status: Mapped[str] = mapped_column(
+        Enum(*PROPOSAL_STATUSES, name="proposal_status"), default="pending"
+    )
     customer_note: Mapped[str | None] = mapped_column(Text)  # reason when declining
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

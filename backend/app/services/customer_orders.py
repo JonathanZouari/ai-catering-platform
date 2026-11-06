@@ -312,7 +312,6 @@ def submit(
         item.snapshot_unit_price = dish.unit_price
         item.snapshot_line_total = pricing.line_total(item.quantity, dish.unit_price)
     order.subtotal = priced.subtotal
-    order.delivery_zone_id = zone.id if zone else None
     order.delivery_fee = priced.delivery_fee  # frozen with the prices
     order.total = priced.total
     order.submitted_at = datetime.now(UTC)
@@ -334,7 +333,7 @@ def withdraw(
         item.snapshot_name = item.snapshot_pricing_unit = None
         item.snapshot_unit_price = item.snapshot_line_total = None
     order.subtotal = order.total = order.submitted_at = order.adult_confirmed_at = None
-    order.delivery_fee = order.delivery_zone_id = None  # live from the zone again
+    order.delivery_fee = None  # live from the zone again
     _expire_proposals(db, order_id)  # an owner proposal was for the submitted order
     return _commit_bump(
         db, who, order_id, version, from_status="pending_approval", to_status="draft"
