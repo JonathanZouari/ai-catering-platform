@@ -22,7 +22,9 @@ class Settings(BaseSettings):
     smtp_starttls: bool = True
     smtp_username: str | None = None
     smtp_password: str | None = None
-    smtp_from: str | None = None
+    smtp_from: str | None = None  # sender address, also for Brevo (must be a verified sender)
+    # Brevo HTTPS API key: when set, mail goes through Brevo, not SMTP (Railway blocks SMTP).
+    brevo_api_key: str | None = None
     owner_email: str | None = None  # where "new order awaiting approval" goes
     public_base_url: str = "http://127.0.0.1:8000"  # for links inside emails
     # AI ordering assistant (OPEN_DECISIONS #16: Anthropic Claude). No key = chat answers 503.
