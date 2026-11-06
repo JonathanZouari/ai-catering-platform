@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>yumm.ai | כניסה</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+  <main class="auth-page">
+    <form class="auth-card" id="login-form" novalidate>
+      <h1>כניסה</h1>
+      <p class="demo-hint">לצוות העסק וללקוחות עם חשבון.</p>
+      <p class="form-error" id="error" role="alert" hidden></p>
+      <div class="field">
+        <label for="email">אימייל</label>
+        <input id="email" name="email" type="email" autocomplete="email" dir="ltr" required>
+      </div>
+      <div class="field">
+        <label for="password">סיסמה</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" dir="ltr" required>
+      </div>
+      <button class="btn btn-primary" type="submit" id="submit">כניסה</button>
+    </form>
+  </main>
+  <script type="module">
+    import { signIn, currentUser, HOME_FOR_ROLE } from "/js/auth.js";
+
+    const form = document.getElementById("login-form");
+    const errorEl = document.getElementById("error");
+    const submit = document.getElementById("submit");
+    const params = new URLSearchParams(location.search);
+    const next = params.get("next");
+
+    const showError = (text) => { errorEl.textContent = text; errorEl.hidden = !text; };
+    const go = (me) => {
+      const home = HOME_FOR_ROLE[me.role];
+      if (!home) return showError("החשבון הזה עדיין לא משויך ללקוח או לצוות. פנו לעסק.");
+      location.replace(next && next.startsWith(home) ? next : home);
+    };
+
+    if (params.get("denied")) showError("אין לחשבון הזה גישה לעמוד שביקשתם.");
+    else currentUser().then((me) => me?.role && go(me));
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      showError("");
+      submit.disabled = true;
+      try {
+        go(await signIn(form.email.value.trim(), form.password.value));
+      } catch (err) {
+        showError(err.message === "Invalid login credentials" ? "האימייל או הסיסמה שגויים." : err.message);
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

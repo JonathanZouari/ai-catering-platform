@@ -2,20 +2,128 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ממשק העסק</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>yumm.ai | ממשק העסק</title>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
-  <main>
-    <h1>ממשק העסק</h1>
-    <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
+  <main class="auth-page">
+    <div class="topbar">
+      <h1>ממשק העסק</h1>
+      <div style="display:flex;gap:12px;align-items:center">
+        <span id="who" class="demo-hint"></span>
+        <button class="btn btn-secondary" type="button" id="logout">יציאה</button>
+      </div>
+    </div>
+
+    <section class="panel" aria-labelledby="orders-title">
+      <div class="topbar">
+        <h2 id="orders-title">הזמנות</h2>
+        <span class="live" id="live" aria-live="polite">מתחבר לעדכונים…</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>תאריך האירוע</th><th>אירוע</th><th>לקוח</th><th>סועדים</th><th>סטטוס</th><th>סה״כ</th></tr></thead>
+          <tbody id="orders"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="dishes-title">
+      <h2 id="dishes-title">תמונות מנות</h2>
+      <p class="demo-hint">JPG, PNG או WEBP, עד 5MB. התמונה נשמרת ב-Supabase Storage ומוצגת ללקוחות בתפריט.</p>
+      <p class="form-error" id="upload-error" role="alert" hidden></p>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>תמונה</th><th>מנה</th><th>מחיר</th><th></th></tr></thead>
+          <tbody id="dishes"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
+
   <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+    import { supabase, requireRole, signOut, dishImageUrl, shekels, STATUS_LABEL } from "/js/auth.js";
+
+    const me = await requireRole("staff");
+    document.getElementById("who").textContent = me.profile.full_name;
+    document.getElementById("logout").onclick = signOut;
+
+    // Orders, kept live with Supabase Realtime -------------------------------
+    const ordersEl = document.getElementById("orders");
+    const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+    async function loadOrders(flashId) {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, event_date, event_type, status, adults, children, total_agorot, customers(full_name)")
+        .order("event_date");
+      if (error) { ordersEl.innerHTML = `<tr><td colspan="6">${esc(error.message)}</td></tr>`; return; }
+      ordersEl.innerHTML = data.map((o) => `
+        <tr data-id="${o.id}" class="${o.id === flashId ? "flash" : ""}">
+          <td class="num">${new Date(o.event_date).toLocaleDateString("he-IL")}</td>
+          <td>${esc(o.event_type)}</td>
+          <td>${esc(o.customers?.full_name)}</td>
+          <td class="num">${o.adults + o.children}</td>
+          <td><span class="pill ${o.status}">${STATUS_LABEL[o.status]}</span></td>
+          <td class="num">${shekels(o.total_agorot)}</td>
+        </tr>`).join("");
+    }
+    await loadOrders();
+
+    const live = document.getElementById("live");
+    supabase.channel("staff-orders")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" },
+          (change) => loadOrders(change.new?.id))
+      .subscribe((status) => {
+        const on = status === "SUBSCRIBED";
+        live.classList.toggle("on", on);
+        live.textContent = on ? "מתעדכן בזמן אמת" : "העדכונים החיים מנותקים";
+      });
+
+    // Dish images in Supabase Storage ------------------------------------------
+    const dishesEl = document.getElementById("dishes");
+    const uploadError = document.getElementById("upload-error");
+
+    async function loadDishes() {
+      const { data, error } = await supabase
+        .from("dishes").select("id, name, price_agorot, unit_label, image_path").order("name");
+      if (error) { dishesEl.innerHTML = `<tr><td colspan="4">${esc(error.message)}</td></tr>`; return; }
+      dishesEl.innerHTML = data.map((d) => {
+        const url = dishImageUrl(d.image_path);
+        return `<tr>
+          <td>${url ? `<img class="dish-thumb" src="${url}" alt="" loading="lazy">` : `<span class="dish-thumb"></span>`}</td>
+          <td>${esc(d.name)}<br><span class="demo-hint">${esc(d.unit_label)}</span></td>
+          <td class="num">${shekels(d.price_agorot)}</td>
+          <td><label class="btn btn-secondary upload-label">החלפת תמונה
+            <input type="file" accept="image/jpeg,image/png,image/webp" data-dish="${d.id}"></label></td>
+        </tr>`;
+      }).join("");
+    }
+    await loadDishes();
+
+    dishesEl.addEventListener("change", async (event) => {
+      const input = event.target.closest("input[type=file]");
+      const file = input?.files?.[0];
+      if (!file) return;
+      uploadError.hidden = true;
+      if (file.size > 5 * 1024 * 1024) {
+        uploadError.textContent = "הקובץ גדול מ-5MB. נסו תמונה קטנה יותר.";
+        uploadError.hidden = false;
+        return;
+      }
+      const ext = file.type.split("/")[1].replace("jpeg", "jpg");
+      const path = `dishes/${input.dataset.dish}/${Date.now()}.${ext}`;
+      const up = await supabase.storage.from("dish-images").upload(path, file, { contentType: file.type });
+      const save = up.error ? up : await supabase.from("dishes").update({ image_path: path }).eq("id", input.dataset.dish);
+      if (save.error) {
+        uploadError.textContent = `ההעלאה נכשלה: ${save.error.message}`;
+        uploadError.hidden = false;
+        return;
+      }
+      await loadDishes();
+    });
   </script>
 </body>
 </html>
