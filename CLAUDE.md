@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Ordering and management web app for a single catering business (Hebrew, RTL). Currently **Phase 4 (AI assistant)**: the Phase 2 admin screens and the Phase 3 customer ordering flow are built; customer accounts use Supabase Auth (ADR 0005); the ordering assistant uses Claude (`app/agents/`, OPEN #16 decided). The specs in `docs/` say what comes next and in which phase. Check `docs/OPEN_DECISIONS.md` before implementing anything marked **[OPEN]**, such as the logo.
+Ordering and management web app for a single catering business (Hebrew, RTL). Currently **Phase 6 (deploy)**: the Phase 2 admin screens, the Phase 3 customer ordering flow and the Phase 4 ordering assistant (Claude, `app/agents/`, OPEN #16 decided) are built; customer accounts use Supabase Auth (ADR 0005). The development environment runs on Railway `Dev` with Supabase `ai-catering-dev`; production isn't set up yet (`docs/DEPLOY.md`). The specs in `docs/` say what comes next and in which phase. Check `docs/OPEN_DECISIONS.md` before implementing anything marked **[OPEN]**, such as the logo.
 
 ## Working rules
 
@@ -57,7 +57,7 @@ The frontend has no build step, bundler or package.json. `node --check frontend/
 
 ## Branches and deploy
 
-- `dev` is for integration and maps to Railway `development` plus the dev Supabase project. `main` is production.
+- `dev` is for integration and maps to Railway `Dev` plus the dev Supabase project. `main` is production.
 - Feature work goes as a PR into `dev`. Releases go as a PR from `dev` to `main`. Production deploys are manual and need explicit approval.
 - Railway builds from the `Dockerfile` and runs a healthcheck on `/health`. Before each deploy, the service's pre-deploy command (set in the Railway dashboard; Railway ignores `railway.json` for new services) runs `python -m app.core.migrate`, which applies pending SQL migrations and records them in `schema_migrations`. Setup and variables: `docs/DEPLOY.md`.
 - The Supabase service-role key is server-side only.
