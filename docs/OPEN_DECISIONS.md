@@ -14,9 +14,8 @@ Format: **Question** · *Why it matters* · **Blocks**
 | 6 | Quote modification & negotiation | Can the owner edit or counter-propose a quote, or only approve/reject? | Adds states and UI | Out of MVP until decided |
 | 7 | Cancellation & revision | Can a customer cancel or edit after submission or approval? Deadlines? | Adds states and rules | Out of MVP until decided |
 | 8 | Allergen verification & cross-contamination | What disclaimer text is shown? Is there a "may contain" level? Who verifies allergen data? | Safety and liability wording | Phase 2 allergen fields' semantics, Phase 4 agent wording |
-| 9 | Kashrut certification | Which certification(s)? Shown per dish or business-wide? Mixing meat & dairy dishes in one order allowed? | Affects data model and validation | Phase 2 dish fields, Phase 3 conflict checks |
 | 10 | Disposable serving equipment | Are utensils/disposables orderable? Priced how? | Could be catalog items or separate | Out of MVP until decided |
-| 11 | Alcohol | Offered at all? Age verification? | Legal implications | Out of MVP until decided |
+| 11 | Alcohol | Requested with whole meals (2026-10-30). Licence? Age verification? | Legal implications | Out of MVP until decided |
 | 12 | Interface languages | Hebrew only, English only, or both? RTL required? | Layout, copy, and AI response language | Phase 3 UI build (design tokens can be direction-agnostic now) |
 | 13 | Notification channels | Email, SMS, WhatsApp, none? For which events (submitted, approved, rejected)? | Third-party providers and cost | Out of MVP until decided |
 | 14 | VAT & rounding | Are catalog prices VAT-inclusive? VAT rate handling? Rounding rules for totals and weight-based prices? | Deterministic pricing correctness | Phase 3 pricing engine final rules |
@@ -25,7 +24,8 @@ Format: **Question** · *Why it matters* · **Blocks**
 | 17 | Currency | Single currency (e.g., ILS)? Display format? | Money formatting and storage | Phase 2 pricing fields (stored as numeric + currency code until decided) |
 | 18 | Weight unit | kg, 100 g, or configurable per dish? | Per-weight pricing math | Phase 2 pricing units |
 | 19 | Delivery zone definition | Zones by city list, postal code, or radius/polygon? | Address → zone lookup method | Phase 2 delivery zones |
-| 20 | Brand | Business name, logo, colors, fonts | Visual identity | Phase 3 UI polish (neutral tokens until then) |
+| 20 | Brand | Business name decided: Yummai. Still open: logo, colors, fonts | Visual identity | Phase 3 UI polish (neutral tokens until then) |
+| 21 | Whole-meal packages | Which cuisines and dishes are offered? Priced per guest or fixed? Child price? Can a dish be swapped? Can a package be combined with single dishes? | Packages are not in the schema or API yet, and the storefront shows sample menus and prices | Catalog phase (package tables, backend pricing per ADR 0003) |
 
 ## Decision log
 
@@ -33,4 +33,4 @@ When a decision is made, record it here and move the row out of the table above.
 
 | Date | # | Decision | Decided by |
 |---|---|---|---|
-| — | — | — | — |
+| 2026-10-30 | 9 | Kashrut removed from the product: no certification, badges, fields or filters | Product owner |

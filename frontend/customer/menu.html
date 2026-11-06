@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בניית התפריט · Yummai</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="landing">
+<a class="skip-link" href="#main">דילוג לתוכן</a>
+<header class="masthead">
+  <div class="wrap">
+    <a class="wordmark" href="/" lang="en">Yummai</a>
+    <nav aria-label="ניווט ראשי">
+      <ul class="nav">
+      <li class="nav-hide-sm"><a href="/">ראשי</a></li>
+      <li><a href="/customer/#event">תכנון אירוע</a></li>
+      <li><a href="#menu">תפריט</a></li>
+      <li><a href="#assistant">העוזר</a></li>
+      <li><a href="/customer/order.html">ההזמנה שלי</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main" class="inner">
+  <div class="wrap">
+    <div class="page-head">
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="stepper">
+          <li><a href="/customer/#event"><span><span class="num">1</span> <span class="label-long">· </span>פרטי האירוע</span></a></li>
+          <li><a href="/customer/menu.html" aria-current="step"><span><span class="num">2</span> <span class="label-long">· </span>תפריט</span></a></li>
+          <li><a href="/customer/order.html"><span><span class="num">3</span> <span class="label-long">· </span>ההזמנה שלי</span></a></li>
+          <li><a href="/customer/quote.html"><span><span class="num">4</span> <span class="label-long">· </span>הצעת מחיר</span></a></li>
+        </ol>
+      </nav>
+      <p class="fine" data-event data-prefix="שלב 2 מתוך 4 · ">שלב 2 מתוך 4</p>
+      <h1 id="menu-title">בניית התפריט</h1>
+      <p>בוחרים ארוחה שלמה, או מרכיבים לבד מנה אחר מנה.</p>
+    </div>
+  </div>
+
+    <!-- C2: dish catalog filtered by :target, C4: assistant -->
+    <section class="flow-section" id="menu" aria-labelledby="menu-title">
+      <div class="wrap">
+      <nav class="cat-bar path-bar" aria-label="דרך בניית התפריט">
+        <ul>
+          <li><a href="#meals"><img src="/assets/cat-whole.jpg" width="360" height="360" alt="">ארוחה שלמה</a></li>
+          <li><a href="#pick"><img src="/assets/cat-mains.jpg" width="360" height="360" alt="">בחירת מנות</a></li>
+          <li><a href="#extras"><img src="/assets/cat-wine.jpg" width="360" height="360" alt="">תוספות</a></li>
+        </ul>
+      </nav>
+      </div>
+      <figure class="menu-banner"><img src="/assets/hands-salt.jpg" width="1376" height="768" alt="יד של שף מפזרת מלח גס מלמעלה על ירקות צלויים, והגרגרים קפואים באוויר"></figure>
+      <div class="wrap">
+      <div class="menu-layout">
+        <div class="catalog">
+          <section class="menu-group meals" id="meals" aria-labelledby="h-meals">
+            <h3 id="h-meals">ארוחה שלמה</h3>
+            <p>בוחרים מטבח ומקבלים ארוחה מוכנה מחמש מנות שנבנו יחד. בלי להרכיב ובלי לחשב כמויות.</p>
+            <fieldset>
+              <legend class="sr-only">בחירת מטבח</legend>
+              <div class="options">
+                <label class="option"><input type="radio" name="cuisine" value="med" data-name="ארוחה ים-תיכונית" data-price="95" checked><strong>ים-תיכוני</strong><span>לימון, שמן זית ועשבי תיבול</span><span class="option-price">&lrm;₪95 לסועד</span></label>
+                <label class="option"><input type="radio" name="cuisine" value="ita" data-name="ארוחה איטלקית" data-price="110"><strong>איטלקי</strong><span>עגבניות, בזיליקום וגבינות</span><span class="option-price">&lrm;₪110 לסועד</span></label>
+                <label class="option"><input type="radio" name="cuisine" value="mex" data-name="ארוחה מקסיקנית" data-price="100"><strong>מקסיקני</strong><span>ליים, כוסברה ותירס</span><span class="option-price">&lrm;₪100 לסועד</span></label>
+                <label class="option"><input type="radio" name="cuisine" value="tha" data-name="ארוחה תאילנדית" data-price="105"><strong>תאילנדי</strong><span>קוקוס, למון-גראס וליים</span><span class="option-price">&lrm;₪105 לסועד</span></label>
+              </div>
+            </fieldset>
+              <article class="meal" data-cuisine="med" aria-labelledby="m-med">
+                <div class="dish-top">
+                  <h4 id="m-med">ארוחה ים-תיכונית</h4>
+                  <p class="price">&lrm;₪95 <small>לסועד · 40 אורחים: &lrm;₪3,800</small></p>
+                </div>
+                <p>לימון, שמן זית ועשבי תיבול טריים עוברים מהמזה ועד העוף, והטארטים עם הפירות מסיימים בקלילות.</p>
+                <dl class="courses">
+                  <div><dt>ראשונה</dt><dd>מגש מזה עם חומוס, טחינה וחצילים קלויים</dd></div>
+                  <div><dt>עיקרית</dt><dd>עוף בלימון וזיתים</dd></div>
+                  <div><dt>תוספת</dt><dd>אורז בעשבי תיבול ושקדים</dd></div>
+                  <div><dt>סלט</dt><dd>טאבולה עם רימונים</dd></div>
+                  <div><dt>קינוח</dt><dd>טארטים ופרלינים</dd></div>
+                </dl>
+                <details class="allergens">
+                  <summary>מידע על אלרגנים</summary>
+                  <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                </details>
+                <div class="pairing">
+                  <p class="field-label">משקאות שמתאימים לארוחה</p>
+                  <ul>
+                  <li>
+                    <label for="drink-med-0">יין לבן יבש <small>&lrm;₪90 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-med-0" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="יין לבן יבש" data-price="90">
+                  </li>
+                  <li>
+                    <label for="drink-med-1">ערק עם לימון <small>&lrm;₪120 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-med-1" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="ערק עם לימון" data-price="120">
+                  </li>
+                  <li>
+                    <label for="drink-med-2">לימונדה עם נענע <small>&lrm;₪45 לקנקן</small></label>
+                    <input class="input input-number qty" type="number" id="drink-med-2" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="לימונדה עם נענע" data-price="45">
+                  </li>
+                  </ul>
+                  <p class="hint">אלכוהול נמכר מעל גיל 18 בלבד.</p>
+                </div>
+              </article>
+              <article class="meal" data-cuisine="ita" aria-labelledby="m-ita">
+                <div class="dish-top">
+                  <h4 id="m-ita">ארוחה איטלקית</h4>
+                  <p class="price">&lrm;₪110 <small>לסועד · 40 אורחים: &lrm;₪4,400</small></p>
+                </div>
+                <p>ארוחת טרטוריה חלבית: עגבניות, בזיליקום ושמן זית בכל מנה מלוחה, וקפה בטירמיסו לסיום.</p>
+                <dl class="courses">
+                  <div><dt>ראשונה</dt><dd>ברוסקטה עגבניות ובזיליקום</dd></div>
+                  <div><dt>עיקרית</dt><dd>לזניה תרד וריקוטה</dd></div>
+                  <div><dt>תוספת</dt><dd>ירקות צלויים בבלסמי</dd></div>
+                  <div><dt>סלט</dt><dd>סלט רוקט ופרמזן</dd></div>
+                  <div><dt>קינוח</dt><dd>טירמיסו</dd></div>
+                </dl>
+                <details class="allergens">
+                  <summary>מידע על אלרגנים</summary>
+                  <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                </details>
+                <div class="pairing">
+                  <p class="field-label">משקאות שמתאימים לארוחה</p>
+                  <ul>
+                  <li>
+                    <label for="drink-ita-0">יין אדום איטלקי <small>&lrm;₪110 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-ita-0" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="יין אדום איטלקי" data-price="110">
+                  </li>
+                  <li>
+                    <label for="drink-ita-1">פרוסקו <small>&lrm;₪95 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-ita-1" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="פרוסקו" data-price="95">
+                  </li>
+                  <li>
+                    <label for="drink-ita-2">מי סודה עם לימון <small>&lrm;₪25 לקנקן</small></label>
+                    <input class="input input-number qty" type="number" id="drink-ita-2" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="מי סודה עם לימון" data-price="25">
+                  </li>
+                  </ul>
+                  <p class="hint">אלכוהול נמכר מעל גיל 18 בלבד.</p>
+                </div>
+              </article>
+              <article class="meal" data-cuisine="mex" aria-labelledby="m-mex">
+                <div class="dish-top">
+                  <h4 id="m-mex">ארוחה מקסיקנית</h4>
+                  <p class="price">&lrm;₪100 <small>לסועד · 40 אורחים: &lrm;₪4,000</small></p>
+                </div>
+                <p>ליים, כוסברה ותירס קושרים בין המנות, מהגוואקמולה ועד הטאקו, וקינמון בצ'ורוס חותם את הארוחה.</p>
+                <dl class="courses">
+                  <div><dt>ראשונה</dt><dd>גוואקמולה וצ'יפס תירס</dd></div>
+                  <div><dt>עיקרית</dt><dd>טאקו בקר בבישול ארוך</dd></div>
+                  <div><dt>תוספת</dt><dd>אורז ליים וכוסברה עם שעועית שחורה</dd></div>
+                  <div><dt>סלט</dt><dd>סלט תירס צלוי וצ'ילי</dd></div>
+                  <div><dt>קינוח</dt><dd>צ'ורוס בקינמון</dd></div>
+                </dl>
+                <details class="allergens">
+                  <summary>מידע על אלרגנים</summary>
+                  <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                </details>
+                <div class="pairing">
+                  <p class="field-label">משקאות שמתאימים לארוחה</p>
+                  <ul>
+                  <li>
+                    <label for="drink-mex-0">בירה מקסיקנית <small>&lrm;₪18 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-mex-0" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="בירה מקסיקנית" data-price="18">
+                  </li>
+                  <li>
+                    <label for="drink-mex-1">טקילה <small>&lrm;₪160 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-mex-1" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="טקילה" data-price="160">
+                  </li>
+                  <li>
+                    <label for="drink-mex-2">מי היביסקוס קרים <small>&lrm;₪45 לקנקן</small></label>
+                    <input class="input input-number qty" type="number" id="drink-mex-2" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="מי היביסקוס קרים" data-price="45">
+                  </li>
+                  </ul>
+                  <p class="hint">אלכוהול נמכר מעל גיל 18 בלבד.</p>
+                </div>
+              </article>
+              <article class="meal" data-cuisine="tha" aria-labelledby="m-tha">
+                <div class="dish-top">
+                  <h4 id="m-tha">ארוחה תאילנדית</h4>
+                  <p class="price">&lrm;₪105 <small>לסועד · 40 אורחים: &lrm;₪4,200</small></p>
+                </div>
+                <p>קוקוס, למון-גראס וליים חוזרים בכל מנה, מהקארי החם ועד המנגו הקר בסוף הארוחה.</p>
+                <dl class="courses">
+                  <div><dt>ראשונה</dt><dd>רול אביב ירקות</dd></div>
+                  <div><dt>עיקרית</dt><dd>עוף בקארי ירוק וחלב קוקוס</dd></div>
+                  <div><dt>תוספת</dt><dd>אורז יסמין</dd></div>
+                  <div><dt>סלט</dt><dd>סלט מלפפון, ליים ובוטנים</dd></div>
+                  <div><dt>קינוח</dt><dd>אורז דביק בקוקוס ומנגו</dd></div>
+                </dl>
+                <details class="allergens">
+                  <summary>מידע על אלרגנים</summary>
+                  <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                </details>
+                <div class="pairing">
+                  <p class="field-label">משקאות שמתאימים לארוחה</p>
+                  <ul>
+                  <li>
+                    <label for="drink-tha-0">בירה תאילנדית <small>&lrm;₪18 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-tha-0" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="בירה תאילנדית" data-price="18">
+                  </li>
+                  <li>
+                    <label for="drink-tha-1">יין ריזלינג <small>&lrm;₪100 לבקבוק</small></label>
+                    <input class="input input-number qty" type="number" id="drink-tha-1" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="יין ריזלינג" data-price="100">
+                  </li>
+                  <li>
+                    <label for="drink-tha-2">תה קר בלמון-גראס <small>&lrm;₪40 לקנקן</small></label>
+                    <input class="input input-number qty" type="number" id="drink-tha-2" value="0" min="0" max="300" inputmode="numeric" data-drink data-name="תה קר בלמון-גראס" data-price="40">
+                  </li>
+                  </ul>
+                  <p class="hint">אלכוהול נמכר מעל גיל 18 בלבד.</p>
+                </div>
+              </article>
+            <div class="meal-tools"><a class="btn btn-outline" href="#extras">הזמנת כלים ואביזרים</a></div>
+            <div class="meal-buy">
+              <label class="btn btn-primary"><input type="checkbox" id="meal-add" autocomplete="off"><span class="when-off">הוספת החבילה להזמנה</span><span class="when-on">✓ החבילה בהזמנה</span></label>
+            </div>
+            <div class="meal-notes">
+              <label class="field-label" for="meal-notes">הערות לארוחה</label>
+              <textarea class="input" id="meal-notes" name="meal-notes" rows="3" aria-describedby="meal-notes-hint"></textarea>
+              <p class="hint" id="meal-notes-hint">כתבו לנו כל מה שחשוב לכם, למשל העדפות או בקשות מיוחדות.</p>
+            </div>
+            <p class="fine">החבילה נמכרת כמו שהיא ומחליפה מנות שבחרתם בנפרד. בעל העסק יעבור על ההערות התזונתיות לפני האישור.</p>
+          </section>
+
+          <div class="menu-group" id="pick">
+            <h3>בחירת מנות</h3>
+            <p>בוחרים עד 2 מנות מכל סוג ובונים ארוחה שלמה.</p>
+            <nav class="cat-bar" aria-label="בחירת מנות">
+              <ul>
+                <li><a href="#cat-starters"><img src="/assets/cat-starters.jpg" width="360" height="360" alt="">ראשונות</a></li>
+                <li><a href="#cat-mains"><img src="/assets/cat-mains.jpg" width="360" height="360" alt="">עיקריות</a></li>
+                <li><a href="#cat-sides"><img src="/assets/cat-sides.jpg" width="360" height="360" alt="">תוספות</a></li>
+                <li><a href="#cat-salads"><img src="/assets/cat-salads.jpg" width="360" height="360" alt="">סלטים</a></li>
+                <li><a href="#cat-desserts"><img src="/assets/cat-desserts.jpg" width="360" height="360" alt="">קינוחים</a></li>
+              </ul>
+            </nav>
+          <section class="cat-section" id="cat-starters" aria-labelledby="h-starters">
+            <h3 id="h-starters">ראשונות</h3>
+            <p class="fine" data-count>נבחרו 0 מתוך 2</p>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-mezze">
+                  <div class="card-media"><img src="/assets/dish-mezze.jpg" alt="מגש מזה עם חומוס, חצילים קלויים, זיתים וטחינה" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-mezze">מגש מזה ים-תיכוני</h4>
+                      <p class="price">&lrm;₪18 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>שומשום.</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-mezze" data-pick data-name="מגש מזה ים-תיכוני" data-price="18" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-eggplant">
+                  <div class="card-media"><img class="focus-spoon" src="/assets/chef-spoon.jpg" alt="יד מזלפת טחינה על חצילים קלויים עם רימונים" width="1376" height="768" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-eggplant">חצילים קלויים בטחינה</h4>
+                      <p class="price">&lrm;₪16 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>שומשום.</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-eggplant" data-pick data-name="חצילים קלויים בטחינה" data-price="16" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-beet">
+                  <div class="card-media"><img src="/assets/dish-beet.jpg" alt="יד מזלפת שמן זית על קרפצ'יו סלק" width="800" height="447" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-beet">קרפצ'יו סלק בשמן זית</h4>
+                      <p class="price">&lrm;₪17 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-beet" data-pick data-name="קרפצ'יו סלק בשמן זית" data-price="17" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          <section class="cat-section" id="cat-mains" aria-labelledby="h-mains">
+            <h3 id="h-mains">עיקריות</h3>
+            <p class="fine" data-count>נבחרו 0 מתוך 2</p>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-chicken">
+                  <div class="card-media"><img src="/assets/dish-chicken.jpg" alt="עוף צלוי עם לימון, זיתים ורוזמרין" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-chicken">עוף בלימון וזיתים</h4>
+                      <p class="price">&lrm;₪42 <small>לסועד</small></p>
+                    </div>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-chicken" data-pick data-name="עוף בלימון וזיתים" data-price="42" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-beef">
+                  <div class="card-media"><img src="/assets/cat-mains.jpg" alt="יד פורסת צלי בקר על קרש עץ" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-beef">צלי בקר בפריסה</h4>
+                      <p class="price">&lrm;₪52 <small>לסועד</small></p>
+                    </div>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-beef" data-pick data-name="צלי בקר בפריסה" data-price="52" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-fish">
+                  <div class="card-media"><img src="/assets/dish-fish.jpg" alt="יד סוחטת לימון מעל דג לבן צלוי עם עשבי תיבול" width="800" height="447" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-fish">דג לבן בלימון ועשבי תיבול</h4>
+                      <p class="price">&lrm;₪46 <small>לסועד</small></p>
+                    </div>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-fish" data-pick data-name="דג לבן בלימון ועשבי תיבול" data-price="46" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          <section class="cat-section" id="cat-sides" aria-labelledby="h-sides">
+            <h3 id="h-sides">תוספות</h3>
+            <p class="fine" data-count>נבחרו 0 מתוך 2</p>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-challah">
+                  <div class="card-media"><img src="/assets/dish-challah.jpg" alt="חלה קלועה עם שומשום על קרש עץ" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-challah">חלה מתוקה קלועה</h4>
+                      <p class="price">&lrm;₪6 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>גלוטן, ביצים, שומשום.</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-challah" data-pick data-name="חלה מתוקה קלועה" data-price="6" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-vegetables">
+                  <div class="card-media"><img src="/assets/cat-sides.jpg" alt="יד מקפיצה ירקות צלויים במחבת" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-vegetables">ירקות צלויים במחבת</h4>
+                      <p class="price">&lrm;₪12 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-vegetables" data-pick data-name="ירקות צלויים במחבת" data-price="12" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-rice">
+                  <div class="card-media"><img src="/assets/dish-rice.jpg" alt="יד מגישה בכף אורז עם עשבי תיבול ושקדים" width="800" height="447" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-rice">אורז בעשבי תיבול ושקדים</h4>
+                      <p class="price">&lrm;₪10 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-rice" data-pick data-name="אורז בעשבי תיבול ושקדים" data-price="10" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          <section class="cat-section" id="cat-salads" aria-labelledby="h-salads">
+            <h3 id="h-salads">סלטים</h3>
+            <p class="fine" data-count>נבחרו 0 מתוך 2</p>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-tabbouleh">
+                  <div class="card-media dish-crop-tabbouleh"><img src="/assets/hero-feast.jpg" alt="סלט טאבולה עם עגבניות, פטרוזיליה ורימונים" width="1152" height="864" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-tabbouleh">סלט טאבולה</h4>
+                      <p class="price">&lrm;₪11 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>גלוטן (בורגול).</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-tabbouleh" data-pick data-name="סלט טאבולה" data-price="11" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-green">
+                  <div class="card-media"><img src="/assets/cat-salads.jpg" alt="ידיים מערבבות סלט ירוק בקערה" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-green">סלט ירוק עם אבוקדו</h4>
+                      <p class="price">&lrm;₪13 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-green" data-pick data-name="סלט ירוק עם אבוקדו" data-price="13" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-tomato">
+                  <div class="card-media"><img src="/assets/dish-tomato.jpg" alt="יד מניחה בזיליקום על סלט עגבניות" width="800" height="447" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-tomato">סלט עגבניות ובזיליקום</h4>
+                      <p class="price">&lrm;₪11 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-tomato" data-pick data-name="סלט עגבניות ובזיליקום" data-price="11" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          <section class="cat-section" id="cat-desserts" aria-labelledby="h-desserts">
+            <h3 id="h-desserts">קינוחים</h3>
+            <p class="fine" data-count>נבחרו 0 מתוך 2</p>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-tarts">
+                  <div class="card-media"><img src="/assets/dish-dessert.jpg" alt="טארטים קטנים עם פירות יער לצד כדורי שוקולד" width="1024" height="1024" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-tarts">מגש טארטים ופרלינים</h4>
+                      <p class="price">&lrm;₪16 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p>גלוטן, ביצים, אגוזים.</p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-tarts" data-pick data-name="מגש טארטים ופרלינים" data-price="16" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-fruit-tart">
+                  <div class="card-media"><img src="/assets/cat-desserts.jpg" alt="יד מגישה טארט פירות על צלחת" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-fruit-tart">טארט פירות</h4>
+                      <p class="price">&lrm;₪18 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-fruit-tart" data-pick data-name="טארט פירות" data-price="18" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+              <li>
+                <article class="card lift dish" aria-labelledby="d-mousse">
+                  <div class="card-media"><img src="/assets/dish-mousse.jpg" alt="יד מניחה פטל על מוס שוקולד בכוס" width="800" height="447" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-mousse">מוס שוקולד ופטל</h4>
+                      <p class="price">&lrm;₪15 <small>לסועד</small></p>
+                    </div>
+                    <ul class="badges" aria-label="סימונים"><li><span class="badge badge-veg">צמחוני</span></li></ul>
+                    <details class="allergens">
+                      <summary>מידע על אלרגנים</summary>
+                      <p><span class="unknown">מידע לא ידוע עדיין. נא לברר מול העסק לפני ההזמנה.</span></p>
+                    </details>
+                    <div class="dish-foot">
+                      <div class="meal-buy"><label class="btn btn-outline"><input type="checkbox" id="pick-mousse" data-pick data-name="מוס שוקולד ופטל" data-price="15" autocomplete="off"><span class="when-off">בחירת המנה</span><span class="when-on">✓ נבחרה</span></label></div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+            <p class="pick-progress" id="pick-progress" aria-live="polite">נבחרו 0 מתוך 10 מנות</p>
+          </div>
+          <div class="menu-group" id="extras">
+            <h3>תוספות</h3>
+            <nav class="cat-bar" aria-label="תוספות">
+              <ul>
+                <li><a href="#cat-drinks"><img src="/assets/cat-drinks.jpg" width="360" height="360" alt="">משקאות</a></li>
+                <li><a href="#cat-wine"><img src="/assets/cat-wine.jpg" width="360" height="360" alt="">יינות</a></li>
+                <li><a href="#cat-dishes"><img src="/assets/cat-dishes.jpg" width="360" height="360" alt="">כלים</a></li>
+                <li><a href="#cat-accessories"><img src="/assets/cat-accessories.jpg" width="360" height="360" alt="">אביזרים</a></li>
+              </ul>
+            </nav>
+          <section class="cat-section" id="cat-drinks" aria-labelledby="h-drinks">
+            <h3 id="h-drinks">משקאות</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-lemonade">
+                  <div class="card-media"><img src="/assets/cat-drinks.jpg" alt="יד מוזגת לימונדה עם נענע וקרח מקנקן לכוס" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-lemonade">לימונדה ביתית עם נענע</h4>
+                      <p class="price">&lrm;₪45 <small>לקנקן · 1.5 ליטר</small></p>
+                    </div>
+                    <div class="dish-foot">
+                      <label class="fine" for="x-lemonade">כמות</label>
+                      <input class="input input-number qty" type="number" id="x-lemonade" value="0" min="0" max="300" inputmode="numeric" data-extra="drink" data-name="לימונדה ביתית עם נענע" data-price="45">
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          <section class="cat-section" id="cat-wine" aria-labelledby="h-wine">
+            <h3 id="h-wine">יינות</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-red-wine">
+                  <div class="card-media"><img src="/assets/cat-wine.jpg" alt="יד מוזגת יין אדום מבקבוק לכוס" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-red-wine">יין אדום יבש</h4>
+                      <p class="price">&lrm;₪90 <small>לבקבוק</small></p>
+                    </div>
+                    <div class="dish-foot">
+                      <label class="fine" for="x-red-wine">כמות</label>
+                      <input class="input input-number qty" type="number" id="x-red-wine" value="0" min="0" max="300" inputmode="numeric" data-extra="drink" data-name="יין אדום יבש" data-price="90">
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          <section class="cat-section" id="cat-dishes" aria-labelledby="h-dishes">
+            <h3 id="h-dishes">כלים</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-tableware">
+                  <div class="card-media"><img src="/assets/cat-dishes.jpg" alt="יד מניחה צלחת לבנה על ערימת צלחות ליד כוסות זכוכית" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-tableware">ערכת כלים לסועד</h4>
+                      <p class="price">&lrm;₪12 <small>לסועד · צלחת, סכו"ם וכוס</small></p>
+                    </div>
+                    <div class="dish-foot">
+                      <label class="fine" for="x-tableware">כמות</label>
+                      <input class="input input-number qty" type="number" id="x-tableware" value="0" min="0" max="300" inputmode="numeric" data-extra="tools" data-name="ערכת כלים לסועד" data-price="12">
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          <section class="cat-section" id="cat-accessories" aria-labelledby="h-accessories">
+            <h3 id="h-accessories">אביזרים</h3>
+            <ul class="dish-grid">
+              <li>
+                <article class="card lift dish" aria-labelledby="d-butcher-block">
+                  <div class="card-media"><img src="/assets/cat-accessories.jpg" alt="יד משמנת בוצ'ר בלוק משובץ מעץ" width="360" height="360" loading="lazy"></div>
+                  <div class="card-body">
+                    <div class="dish-top">
+                      <h4 id="d-butcher-block">בוצ'ר בלוק להגשה</h4>
+                      <p class="price">&lrm;₪60 <small>ליחידה · השכרה לאירוע</small></p>
+                    </div>
+                    <div class="dish-foot">
+                      <label class="fine" for="x-butcher-block">כמות</label>
+                      <input class="input input-number qty" type="number" id="x-butcher-block" value="0" min="0" max="300" inputmode="numeric" data-extra="tools" data-name="בוצ'ר בלוק להגשה" data-price="60">
+                    </div>
+                  </div>
+                </article>
+              </li>
+            </ul>
+          </section>
+          </div>
+          <div class="menu-next"><a class="btn btn-primary btn-lg" href="/customer/#event" data-next="המשך להזמנה שלי">תכנן אירוע</a></div>
+        </div>
+
+        <div class="side">
+
+          <!-- C4: AI assistant (bottom sheet on mobile, side panel at >=1024px; opens via :target) -->
+          <section class="assistant" id="assistant" aria-labelledby="ai-title">
+            <div class="assistant-head">
+              <h3 id="ai-title">✦ העוזר החכם</h3>
+              <a class="close" href="#menu" aria-label="סגירת העוזר">✕</a>
+            </div>
+            <p class="assistant-intro">העוזר מציע רק מנות מהתפריט ולא משנה דבר בלי אישור שלך.</p>
+            <ol class="messages" role="log" aria-live="polite" aria-label="שיחה עם העוזר">
+              <li class="msg msg-user"><span class="who">את/ה</span>יש לנו שלושה צמחונים. משהו ירוק וקליל במקום חלק מהלחם?</li>
+              <li class="msg msg-ai"><span class="who">העוזר</span>הנה הצעה: להוסיף שני מגשי טאבולה (טבעוני) ולהוריד חלה אחת. שימו לב, בטאבולה יש גלוטן.</li>
+            </ol>
+
+            <article class="proposal" aria-labelledby="p-title">
+              <div class="proposal-head">
+                <h4 id="p-title">הוספת סלט טאבולה, הסרת חלה אחת</h4>
+                <p class="status status-pending">ממתין לאישור שלך</p>
+              </div>
+              <div class="proposal-body">
+                <table class="diff">
+                  <caption class="sr-only">השינויים המוצעים, כמות לפני ואחרי</caption>
+                  <thead><tr><th scope="col">מנה</th><th scope="col" class="num">לפני</th><th scope="col" class="num">אחרי</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row"><span class="op op-add">הוספה</span>סלט טאבולה</th><td class="num">0</td><td class="num after">2 מגשים</td></tr>
+                    <tr><th scope="row"><span class="op op-remove">הסרה</span>חלה מתוקה</th><td class="num">4</td><td class="num after">3 יחידות</td></tr>
+                  </tbody>
+                  <tfoot><tr><th scope="row">סה"כ</th><td class="num">&lrm;₪2,966</td><td class="num">&lrm;₪3,242 <span class="delta">(+&lrm;₪276)</span></td></tr></tfoot>
+                </table>
+                <p class="proposal-note">שום דבר לא משתנה בהזמנה עד שתאשרו. ההצעה תפוג אם ההזמנה תשתנה בינתיים.</p>
+                <div class="proposal-actions">
+                  <button type="button" class="btn btn-primary">אשר</button>
+                  <button type="button" class="btn btn-outline">דחה</button>
+                </div>
+              </div>
+            </article>
+
+            <form class="composer" action="/customer/menu.html#assistant" method="get">
+              <label class="field-label" for="ask">כתבו לעוזר</label>
+              <div class="composer-row">
+                <textarea class="input" id="ask" name="q" rows="1" placeholder="למשל: כמה קינוחים צריך?"></textarea>
+                <button type="submit" class="btn btn-quiet">שליחה</button>
+              </div>
+            </form>
+          </section>
+          <a class="scrim" href="#menu" tabindex="-1" aria-hidden="true">סגירה</a>
+        </div>
+      </div>
+      </div>
+    </section>
+
+  <div class="order-bar" role="region" aria-label="סיכום הזמנה">
+    <p class="bar-total"><span data-total="label">סה"כ משוער · 0 פריטים</span><strong aria-live="polite" data-total="grand">&lrm;₪0</strong><a class="bar-details" href="/customer/order.html">לפירוט ההזמנה</a></p>
+    <a class="btn btn-outline btn-ai" href="#assistant" aria-label="העוזר החכם">✦ עוזר</a>
+    <a class="btn btn-primary" href="/customer/#event" data-next="להזמנה">תכנן אירוע</a>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 · קייטרינג לאירועים פרטיים</p>
+    <span class="sample-note">נתוני דוגמה · המחירים והמנות להמחשה בלבד</span>
+    <p class="server-status">מצב שרת: <span id="status" aria-live="polite">בודק…</span></p>
+  </div>
+</footer>
+  <script type="module" src="/js/meals.js"></script>
+  <script type="module">
+    import { api } from "/js/api.js";
+    const el = document.getElementById("status");
+    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+  </script>
+</body>
+</html>

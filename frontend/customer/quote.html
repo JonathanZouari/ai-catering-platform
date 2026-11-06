@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הצעת מחיר · Yummai</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="landing">
+<a class="skip-link" href="#main">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>Yummai</a>
+    <nav aria-label="ניווט ראשי">
+      <ul class="nav">
+      <li class="nav-hide-sm"><a href="/">ראשי</a></li>
+      <li><a href="/customer/#event">תכנון אירוע</a></li>
+      <li><a href="/customer/menu.html">תפריט</a></li>
+      <li><a href="/customer/menu.html#assistant">העוזר</a></li>
+      <li><a href="/customer/order.html">ההזמנה שלי</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main" class="inner">
+  <div class="wrap">
+    <div class="page-head">
+      <nav aria-label="שלבי ההזמנה">
+        <ol class="stepper">
+          <li><a href="/customer/#event"><span><span class="num">1</span> <span class="label-long">· </span>פרטי האירוע</span></a></li>
+          <li><a href="/customer/menu.html"><span><span class="num">2</span> <span class="label-long">· </span>תפריט</span></a></li>
+          <li><a href="/customer/order.html"><span><span class="num">3</span> <span class="label-long">· </span>ההזמנה שלי</span></a></li>
+          <li><a href="/customer/quote.html" aria-current="step"><span><span class="num">4</span> <span class="label-long">· </span>הצעת מחיר</span></a></li>
+        </ol>
+      </nav>
+      <h1>הצעת מחיר</h1>
+    </div>
+
+    <!-- C5: quote status (static) -->
+    <section class="flow-section" id="quote" aria-labelledby="quote-title">
+      <div class="section-head">
+        <p class="fine">שלב 4 מתוך 4</p>
+        <h2 id="quote-title">סטטוס הצעת המחיר</h2>
+        <p>אחרי השליחה בעל העסק עובר על הבקשה ומאשר אותה אישית. עד אז זו בקשה, לא הזמנה סגורה.</p>
+      </div>
+      <div class="quote-layout">
+        <article class="quote-card" aria-labelledby="q-title">
+          <div class="quote-head">
+            <h3 id="q-title" class="h3-size">הבקשה שלך</h3>
+            <p class="status status-pending">ממתין לאישור בעל העסק</p>
+          </div>
+          <p class="fine" data-event></p>
+          <dl class="totals">
+            <div><dt>סכום מנות</dt><dd data-total="subtotal">&lrm;₪0</dd></div>
+            <div><dt>דמי משלוח (מרכז)</dt><dd data-total="fee">&lrm;₪0</dd></div>
+            <div class="grand"><dt>סה"כ משוער</dt><dd data-total="grand">&lrm;₪0</dd></div>
+          </dl>
+          <p class="proposal-note">ההזמנה עדיין לא סגורה ולא בוצע חיוב. הסטטוס יתעדכן כאן כשבעל העסק יאשר או ידחה את הבקשה.</p>
+          <figure class="owner-note">
+            <blockquote><p>קיבלתי את הבקשה, תודה! אבדוק זמינות לתאריך ואחזור אליכם עד מחר בצהריים.</p></blockquote>
+            <figcaption>הערה מבעל העסק</figcaption>
+          </figure>
+        </article>
+
+        <section class="quote-card" aria-labelledby="legend-title">
+          <h3 id="legend-title" class="h3-size">מה אומר כל סטטוס</h3>
+          <ul class="legend">
+            <li><span class="status status-draft">טיוטה</span><p>הבקשה עוד לא נשלחה. אפשר לשנות הכול.</p></li>
+            <li><span class="status status-pending">ממתין לאישור</span><p>הבקשה נשלחה לבעל העסק. זו עדיין לא הזמנה סגורה.</p></li>
+            <li><span class="status status-approved">אושר</span><p>בעל העסק אישר את ההצעה. רק עכשיו ההזמנה סגורה.</p></li>
+            <li><span class="status status-rejected">נדחה</span><p>בעל העסק לא יכול לקבל את ההזמנה כפי שהיא. אפשר לשנות ולשלוח שוב.</p></li>
+          </ul>
+        </section>
+      </div>
+    </section>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 · קייטרינג לאירועים פרטיים</p>
+    <span class="sample-note">נתוני דוגמה · המחירים והמנות להמחשה בלבד</span>
+    <p class="server-status">מצב שרת: <span id="status" aria-live="polite">בודק…</span></p>
+  </div>
+</footer>
+  <script type="module" src="/js/meals.js"></script>
+  <script type="module">
+    import { api } from "/js/api.js";
+    const el = document.getElementById("status");
+    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+  </script>
+</body>
+</html>

@@ -15,7 +15,7 @@ All tools are thin wrappers around `services/`. Arguments are Pydantic models; i
 | Tool | Args | Returns |
 |---|---|---|
 | `get_menu_categories` | — | Active categories |
-| `get_available_dishes` | `category_id?`, `vegetarian?`, `vegan?`, `kashrut?` | Dishes with price, unit, dietary fields (null = unknown) |
+| `get_available_dishes` | `category_id?`, `vegetarian?`, `vegan?` | Dishes with price, unit, dietary fields (null = unknown) |
 | `get_dish_details` | `dish_id` | Full dish incl. allergen statuses |
 | `get_current_order` | — | Order, items, guest composition, `version` |
 | `get_order_pricing` | — | Backend-computed itemized pricing |
