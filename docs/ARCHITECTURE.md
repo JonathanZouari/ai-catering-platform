@@ -6,7 +6,8 @@ Status: **Draft v0.1** · Phase 0 deliverable
 
 ```
             Browser (customer / admin)
-       HTML + CSS + vanilla JS (fetch → REST)
+       HTML + CSS + vanilla JS (fetch → REST,
+       supabase-js → Auth, menu, admin, Storage, Realtime)
                        │
                        ▼
 ┌──────────────────────────────────────────────┐
@@ -21,8 +22,8 @@ Status: **Draft v0.1** · Phase 0 deliverable
 │   │      │ typed calls only                  │
 │   │  agents/   LLM orchestration + tool defs │
 │   ▼                                          │
-│  repositories/ data access (SQLAlchemy)      │
-│  models/       ORM models                    │
+│  repositories/ data access (Postgres)        │
+│  models/       table mappings (optional)     │
 │  schemas/      Pydantic request/response/tool│
 │  core/         config, logging, security     │
 │                                              │
@@ -49,8 +50,8 @@ Status: **Draft v0.1** · Phase 0 deliverable
 | `core/config.py` | Typed settings from env | 1 |
 | `api/` | Routers: `health`, `catalog`, `orders`, `proposals`, `admin/*` | 1 (health) → 2–4 |
 | `services/` | `pricing`, `quantities`, `orders`, `proposals`, `catalog`, `availability`, `delivery` | 2–4 |
-| `repositories/` | One per aggregate; SQLAlchemy sessions | 2 |
-| `models/` | SQLAlchemy ORM models matching `DATABASE_SCHEMA.md` | 2 |
+| `repositories/` | One per aggregate; queries against Supabase Postgres | 2 |
+| `models/` | Optional SQLAlchemy mappings of the existing tables (the schema itself lives in `supabase/migrations/`) | 2 |
 | `schemas/` | Pydantic DTOs and AI tool argument schemas | 2–4 |
 | `agents/` | Conversation loop, tool registry, system prompt | 4 |
 | `frontend/customer` | Ordering flow + chat panel | 3–4 |
@@ -58,15 +59,23 @@ Status: **Draft v0.1** · Phase 0 deliverable
 
 ## 4. Data access **[RECOMMENDATION]**
 
-- Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
-- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via a public bucket (or signed URLs — to confirm in Phase 2).
-- Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
-- RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies depend on the auth decision **[OPEN #1]**.
+Supabase Postgres in every environment (ADR-0002, revised 2026-11-06). No SQLite.
 
-## 5. Authentication **[OPEN]**
+- **Schema:** SQL migrations in `supabase/migrations/` (Supabase CLI), applied to `ai-catering-dev` first, production only after approval. Demo data in `supabase/seed.sql`. Details in `DATABASE_SCHEMA.md`.
+- **Backend:** connects directly with `psycopg` (SQLAlchemy 2.x optional, mapped onto the existing tables) using the pooled connection string (`DATABASE_URL`). This privileged connection bypasses RLS and is the only writer for pricing, order submission, the capacity check and AI proposal execution (ADR-0003).
+- **Browser:** `supabase-js` (`frontend/js/auth.js`) with the publishable key from `frontend/js/supabase-config.js`, for login, reading the menu, staff admin screens, dish-image upload and Realtime. Row Level Security on every table decides what each request may see or change.
+- **Storage:** public bucket `dish-images`. Anyone can view; staff upload, replace and delete straight from the admin page, allowed by storage RLS.
+- **Realtime:** `orders` and `order_events`. Staff see every change live, a customer only their own orders.
+- **Local development:** the `ai-catering-dev` project, or the local Supabase stack (`supabase start`, needs Docker). Tests run against the local stack.
 
-- Admin: one owner account. Recommended: Supabase Auth email login, backend verifies the JWT and checks an `admin` role.
-- Customer: undecided (account vs guest link). Backend dependencies will be written so either option plugs in.
+## 5. Authentication
+
+Supabase Auth (email + password) for staff and customers.
+
+- **Staff:** a login whose user id has an active row in `staff_users`. Pages: `/login/` → `/admin/`.
+- **Customer:** a login linked to a `customers` row through `auth_user_id`. Pages: `/login/` → `/account/`. Customers without a login keep using their private order link.
+- Roles come from database rows, never from `user_metadata`, which users can edit.
+- Still open **[OPEN #1]**: how a new customer signs up and gets linked to an existing customer record (needs phone verification first; see `OPEN_DECISIONS.md`).
 
 ## 6. Environments and branches **[CONFIRMED]** (separate Supabase projects strongly preferred)
 
