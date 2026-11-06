@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>דיאגרמת בסיס הנתונים – Yummai</title>
+<style>
+:root{--bg:#faf8f5;--box:#fff;--ink:#222;--mute:#777;--line:#a39a8c}
+@media (prefers-color-scheme:dark){:root{--bg:#161412;--box:#211e1b;--ink:#eee;--mute:#999;--line:#6b6459}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,"Segoe UI",Arial,sans-serif}
+header{padding:16px}
+h1{margin:0 0 6px;font-size:1.3rem}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.9rem}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
+.wrap{overflow:auto;padding:0 16px 24px}
+svg{display:block;direction:ltr;font-family:ui-monospace,Consolas,monospace}
+.t rect.b{fill:var(--box);stroke-width:1.5}
+.t text{fill:var(--ink);font-size:12px}
+.t .h{font-weight:700;fill:#fff;font-size:13px}
+.t .k{fill:var(--mute)}
+.edge{stroke:var(--line);stroke-width:1.3;fill:none}
+.t:hover rect.b{stroke-width:3}
+</style>
+</head>
+<body>
+<header>
+<h1>מבנה בסיס הנתונים של Yummai (18 טבלאות)</h1>
+<div class="legend" id="legend"></div>
+<small style="color:var(--mute)">קו = קשר (FK). PK = מפתח ראשי, FK = מפתח זר. מוצגות העמודות העיקריות בלבד; הפירוט המלא ב-database-plan.html.</small>
+</header>
+<div class="wrap"><svg id="s" width="1540" height="820" viewBox="0 0 1540 820"></svg></div>
+<script>
+const G={people:['משתמשים','#4a7fb5'],catalog:['מנות ומחירים','#b5532a'],meals:['ארוחות שלמות','#8a5ab5'],event:['אירועים ולוגיסטיקה','#3c9a6e'],order:['הזמנות','#c28a1d'],ai:['העוזר החכם','#6a6a6a']};
+// name:[group,x,y,[cols]]
+const T={
+customers:['people',20,20,['PK id','auth_user_id','full_name','email','phone']],
+events:['event',280,20,['PK id','FK customer_id','FK event_type','event_date','FK time_slot_id','adults, children','omnivore_guests','vegetarian_guests','vegan_guests','restricted_guests','notes']],
+orders:['order',540,20,['PK id','FK customer_id','FK event_id (1:1)','status','version','fulfillment_type','delivery_address','FK delivery_zone_id','subtotal','delivery_fee','total']],
+order_items:['order',800,20,['PK id','FK order_id','FK dish_id (או)','FK package_id (או)','quantity','snapshot_unit_price','snapshot_line_total']],
+dishes:['catalog',1060,20,['PK id','FK category_id','kind (food/drink/tools)','name','pricing_unit','unit_price','currency','is_available','image_path']],
+dish_categories:['catalog',1320,20,['PK id','name','sort_order','is_active']],
+delivery_zones:['event',20,330,['PK id','name','fee','is_active']],
+blocked_dates:['event',20,470,['PK id','date','reason']],
+event_types:['event',280,330,['PK code','label','sort_order']],
+time_slots:['event',280,440,['PK id','fulfillment_type','start_time','end_time','capacity']],
+ai_conversations:['ai',540,330,['PK id','FK order_id']],
+ai_messages:['ai',540,450,['PK id','FK conversation_id','role','content (jsonb)']],
+ai_change_proposals:['ai',280,590,['PK id','FK order_id','FK conversation_id','base_order_version','changes (jsonb)','price_before','price_after','status']],
+meal_packages:['meals',800,330,['PK id','code (med/ita/mex/tha)','name, cuisine','price_per_guest']],
+meal_package_drinks:['meals',800,470,['FK package_id','FK dish_id']],
+dish_dietary:['catalog',1060,330,['FK dish_id (PK)','is_vegetarian','is_vegan']],
+dish_allergens:['catalog',1060,450,['FK dish_id','FK allergen_id','status']],
+allergens:['catalog',1320,330,['PK id','name']]
+};
+const E=[['events','customers'],['events','event_types'],['events','time_slots'],['orders','customers'],['orders','events'],['orders','delivery_zones'],
+['order_items','orders'],['order_items','dishes'],['order_items','meal_packages'],['dishes','dish_categories'],['dish_dietary','dishes'],
+['dish_allergens','dishes'],['dish_allergens','allergens'],['meal_package_drinks','meal_packages'],['meal_package_drinks','dishes'],
+['ai_conversations','orders'],['ai_messages','ai_conversations'],['ai_change_proposals','orders'],['ai_change_proposals','ai_conversations']];
+const W=200,H0=28,RH=18,ns='http://www.w3.org/2000/svg';
+const s=document.getElementById('s');
+const R={};
+for(const n in T){const[g,x,y,c]=T[n];R[n]={x,y,w:W,h:H0+c.length*RH+8,c:G[g][1]}}
+const mk=(t,a,p)=>{const e=document.createElementNS(ns,t);for(const k in a)e.setAttribute(k,a[k]);(p||s).appendChild(e);return e};
+function edge(a,b){const A=R[a],B=R[b];
+ const ax=A.x+A.w/2,ay=A.y+A.h/2,bx=B.x+B.w/2,by=B.y+B.h/2;
+ const clip=(r,cx,cy,tx,ty)=>{const dx=tx-cx,dy=ty-cy;const k=Math.min(dx?Math.abs(r.w/2/dx):1e9,dy?Math.abs(r.h/2/dy):1e9);return[cx+dx*k,cy+dy*k]};
+ const[p1,p2]=clip(A,ax,ay,bx,by),[q1,q2]=clip(B,bx,by,ax,ay);
+ mk('line',{class:'edge',x1:p1,y1:p2,x2:q1,y2:q2});
+ // "many" end at A (crow-foot dot), "one" end at B
+ mk('circle',{cx:p1,cy:p2,r:4,fill:'var(--line)'});
+ mk('circle',{cx:q1,cy:q2,r:4,fill:'var(--bg)',stroke:'var(--line)','stroke-width':1.5});
+}
+E.forEach(([a,b])=>edge(a,b));
+for(const n in T){const r=R[n],g=mk('g',{class:'t'});
+ mk('rect',{class:'b',x:r.x,y:r.y,width:r.w,height:r.h,rx:7,stroke:r.c},g);
+ mk('path',{d:`M${r.x},${r.y+H0} V${r.y+7} a7,7 0 0 1 7,-7 H${r.x+r.w-7} a7,7 0 0 1 7,7 V${r.y+H0} Z`,fill:r.c},g);
+ mk('text',{class:'h',x:r.x+10,y:r.y+19},g).textContent=n;
+ T[n][3].forEach((c,i)=>{const t=mk('text',{x:r.x+10,y:r.y+H0+16+i*RH,class:/^(PK|FK)/.test(c)?'k':''},g);t.textContent=c});
+}
+document.getElementById('legend').innerHTML=Object.values(G).map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')+'<span>● = צד "הרבה" &nbsp; ○ = צד "אחד"</span>';
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>תוכנית בסיס הנתונים – Yummai</title>
+<style>
+:root{--bg:#faf8f5;--card:#fff;--ink:#222;--mute:#666;--line:#e3ddd3;--acc:#b5532a;--tag:#f3e9df}
+@media (prefers-color-scheme:dark){:root{--bg:#161412;--card:#201d1a;--ink:#eee;--mute:#aaa;--line:#38332d;--acc:#e08a5c;--tag:#2c2620}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 16px;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,"Segoe UI",Arial,sans-serif}
+main{max-width:980px;margin:auto}
+h1{margin:0 0 4px}h2{margin:40px 0 12px;border-bottom:2px solid var(--acc);padding-bottom:4px}
+p.lead{color:var(--mute);margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card h3{margin:0 0 2px;font-size:1.05rem;direction:ltr;text-align:right;color:var(--acc)}
+.card .d{color:var(--mute);font-size:.88rem;margin:0 0 8px}
+ul.c{list-style:none;margin:0;padding:0;direction:ltr;text-align:left;font:13px/1.55 ui-monospace,Consolas,monospace}
+ul.c li{border-top:1px dashed var(--line);padding:2px 0}
+.t{background:var(--tag);border-radius:4px;padding:0 5px;margin-inline-start:4px;font-size:.75rem}
+table{width:100%;border-collapse:collapse;background:var(--card);font-size:.92rem}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:start}
+th{background:var(--tag)}
+code{direction:ltr;unicode-bidi:embed;background:var(--tag);padding:0 4px;border-radius:3px}
+pre{direction:ltr;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:13px}
+.warn{border-inline-start:4px solid var(--acc);background:var(--card);padding:10px 14px;border-radius:6px}
+</style>
+</head>
+<body>
+<main>
+<h1>תוכנית בסיס הנתונים – Yummai</h1>
+<p class="lead">Supabase (PostgreSQL) · 18 טבלאות · מקור: <code>docs/DATABASE_SCHEMA.md</code> + מה שהאתר אוסף בפועל. סטטוס: <b>תוכנית בלבד – עדיין לא הורצה על מסד נתונים.</b></p>
+
+<h2>1. המטרה: מה נאסף</h2>
+<table>
+<tr><th>נושא</th><th>טבלאות</th></tr>
+<tr><td>משתמשים</td><td><code>customers</code></td></tr>
+<tr><td>מנות ומחירים</td><td><code>dish_categories</code>, <code>dishes</code>, <code>dish_dietary</code>, <code>allergens</code>, <code>dish_allergens</code></td></tr>
+<tr><td>ארוחות שלמות (חבילות)</td><td><code>meal_packages</code>, <code>meal_package_drinks</code></td></tr>
+<tr><td>אירועים</td><td><code>events</code>, <code>event_types</code>, <code>time_slots</code>, <code>blocked_dates</code></td></tr>
+<tr><td>הזמנות ומשלוח</td><td><code>orders</code>, <code>order_items</code>, <code>delivery_zones</code></td></tr>
+<tr><td>העוזר החכם</td><td><code>ai_conversations</code>, <code>ai_messages</code>, <code>ai_change_proposals</code></td></tr>
+</table>
+
+<h2>2. קשרים בין הטבלאות</h2>
+<pre>customers ──&lt; events ──1:1── orders ──&lt; order_items &gt── dishes &gt── dish_categories
+    │                │  │                      └──&gt; meal_packages ──&lt; meal_package_drinks ──&gt; dishes
+    └──&lt; orders      │  └──&gt; delivery_zones
+                     ├──&gt; event_types
+                     └──&gt; time_slots
+orders ──&lt; ai_conversations ──&lt; ai_messages
+orders ──&lt; ai_change_proposals
+dishes ──1:1── dish_dietary      dishes ──&lt; dish_allergens &gt── allergens</pre>
+
+<h2>3. הטבלאות</h2>
+<h3>משתמשים</h3>
+<div class="grid">
+<div class="card"><h3>customers</h3><p class="d">לקוחות. נוצרים בתשלום מפרטי הקשר; אין חובה להירשם.</p><ul class="c">
+<li>id <span class="t">uuid PK</span></li><li>auth_user_id <span class="t">null, unique → auth.users</span></li><li>full_name <span class="t">not null</span></li><li>email, phone</li><li>created_at, updated_at</li></ul></div>
+</div>
+
+<h3>מנות ומחירים</h3>
+<div class="grid">
+<div class="card"><h3>dish_categories</h3><p class="d">9 קטגוריות: ראשונות, עיקריות, תוספות, סלטים, קינוחים, משקאות, יינות, כלים, אביזרים.</p><ul class="c"><li>id <span class="t">uuid PK</span></li><li>name <span class="t">unique</span></li><li>sort_order, is_active</li></ul></div>
+<div class="card"><h3>dishes</h3><p class="d">כל פריט שנמכר, כולל מחיר.</p><ul class="c"><li>id <span class="t">uuid PK</span></li><li>category_id <span class="t">FK</span></li><li>kind <span class="t">food | drink | tools</span></li><li>name, description, image_path</li><li>pricing_unit <span class="t">per_guest | per_tray | per_weight | per_item</span></li><li>unit_price <span class="t">numeric(10,2) ≥ 0</span></li><li>unit_label, min_quantity</li><li>currency <span class="t">ILS</span></li><li>is_available</li></ul></div>
+<div class="card"><h3>dish_dietary</h3><p class="d">צמחוני/טבעוני. null = לא ידוע (לא "לא").</p><ul class="c"><li>dish_id <span class="t">PK/FK</span></li><li>is_vegetarian, is_vegan <span class="t">bool null</span></li><li>verified_at</li></ul></div>
+<div class="card"><h3>allergens / dish_allergens</h3><p class="d">אלרגנים לכל מנה. שורה חסרה = לא ידוע.</p><ul class="c"><li>allergens: id, name <span class="t">unique</span></li><li>dish_allergens: dish_id, allergen_id, status <span class="t">contains | free | unknown</span></li></ul></div>
+</div>
+
+<h3>ארוחות שלמות</h3>
+<div class="grid">
+<div class="card"><h3>meal_packages</h3><p class="d">4 חבילות במחיר לסועד: ים-תיכוני 95, איטלקי 110, מקסיקני 100, תאילנדי 105.</p><ul class="c"><li>id <span class="t">uuid PK</span></li><li>code <span class="t">unique: med/ita/mex/tha</span></li><li>name, cuisine, description</li><li>price_per_guest <span class="t">numeric(10,2)</span></li><li>currency, is_active</li></ul></div>
+<div class="card"><h3>meal_package_drinks</h3><p class="d">3 משקאות מוצעים לכל חבילה.</p><ul class="c"><li>package_id <span class="t">FK</span></li><li>dish_id <span class="t">FK</span></li><li>PK (package_id, dish_id)</li></ul></div>
+</div>
+
+<h3>אירועים ולוגיסטיקה</h3>
+<div class="grid">
+<div class="card"><h3>events</h3><p class="d">האירוע שהלקוח מתכנן.</p><ul class="c"><li>id <span class="t">uuid PK</span></li><li>customer_id <span class="t">FK</span></li><li>event_type <span class="t">FK → event_types</span></li><li>event_date, time_slot_id <span class="t">FK</span></li><li>adults, children</li><li>omnivore_guests, vegetarian_guests, vegan_guests, restricted_guests</li><li>dietary_notes, notes</li><li>CHECK adults + children &gt; 0</li></ul></div>
+<div class="card"><h3>event_types</h3><p class="d">12 סוגי אירוע (בר מצווה, שבת, יום הולדת…).</p><ul class="c"><li>code <span class="t">PK</span></li><li>label, sort_order</li></ul></div>
+<div class="card"><h3>time_slots</h3><p class="d">3 חלונות: 11–13, 17–19, 19–21.</p><ul class="c"><li>id, fulfillment_type <span class="t">null = שניהם</span></li><li>weekday, start_time, end_time</li><li>capacity, is_active</li></ul></div>
+<div class="card"><h3>blocked_dates</h3><p class="d">תאריכים סגורים.</p><ul class="c"><li>id, date <span class="t">unique</span>, reason</li></ul></div>
+<div class="card"><h3>delivery_zones</h3><p class="d">אזורי משלוח; ברירת מחדל ₪120.</p><ul class="c"><li>id, name, fee <span class="t">≥ 0</span></li><li>definition <span class="t">jsonb</span>, is_active</li></ul></div>
+</div>
+
+<h3>הזמנות</h3>
+<div class="grid">
+<div class="card"><h3>orders</h3><p class="d">הזמנה אחת לכל אירוע.</p><ul class="c"><li>id, customer_id, event_id <span class="t">unique</span></li><li>status <span class="t">draft → pending_approval → approved | rejected</span></li><li>version <span class="t">נעילה אופטימית</span></li><li>fulfillment_type <span class="t">pickup | delivery</span></li><li>requested_at, delivery_address, delivery_zone_id</li><li>subtotal, delivery_fee, total</li><li>submitted_at, decided_at, decision_note</li><li>CHECK משלוח ⇒ כתובת חובה</li></ul></div>
+<div class="card"><h3>order_items</h3><p class="d">שורות הזמנה: מנה <b>או</b> חבילה.</p><ul class="c"><li>id, order_id <span class="t">FK</span></li><li>dish_id <span class="t">null</span>, package_id <span class="t">null</span></li><li>CHECK בדיוק אחד מהם</li><li>quantity <span class="t">&gt; 0</span></li><li>snapshot_name / pricing_unit / unit_price / line_total <span class="t">מחיר קפוא בשליחה</span></li></ul></div>
+</div>
+
+<h3>העוזר החכם</h3>
+<div class="grid">
+<div class="card"><h3>ai_conversations</h3><p class="d">שיחה לכל הזמנה.</p><ul class="c"><li>id, order_id, created_at</li></ul></div>
+<div class="card"><h3>ai_messages</h3><p class="d">הודעות.</p><ul class="c"><li>id, conversation_id</li><li>role <span class="t">user | assistant | tool</span></li><li>content <span class="t">jsonb</span></li></ul></div>
+<div class="card"><h3>ai_change_proposals</h3><p class="d">הצעות שינוי שהבעלים/לקוח מאשרים.</p><ul class="c"><li>id, order_id, conversation_id</li><li>base_order_version</li><li>changes <span class="t">jsonb</span></li><li>price_before, price_after</li><li>status <span class="t">pending | approved | rejected | expired | failed</span></li><li>executed_at <span class="t">אידמפוטנטיות</span></li><li>הצעה <code>pending</code> אחת לכל הזמנה</li></ul></div>
+</div>
+
+<h2>4. הרשאות (RLS)</h2>
+<table>
+<tr><th>מי</th><th>מה</th></tr>
+<tr><td>כל אחד (anon)</td><td>קריאה בלבד: קטלוג (קטגוריות, מנות, חבילות, אלרגנים), סוגי אירוע, חלונות זמן, אזורי משלוח</td></tr>
+<tr><td>לקוח מחובר</td><td>רואה רק את השורות שלו: customers, events, orders, order_items</td></tr>
+<tr><td>הבאקאנד (service role)</td><td>כתיבה לכל הטבלאות. יצירת הזמנות ואירועים עוברת רק דרכו</td></tr>
+</table>
+
+<h2>5. נתוני התחלה (seed)</h2>
+<p>12 סוגי אירוע · 3 חלונות זמן · אזור משלוח אחד (₪120) · 9 קטגוריות · 30 פריטים (15 מנות, 12 משקאות, 3 כלים/אביזרים) · 4 חבילות · 12 קישורי משקה-חבילה. כל המחירים נלקחו מ-<code>menu.html</code>.</p>
+
+<h2>6. קבצים</h2>
+<table>
+<tr><th>קובץ</th><th>תוכן</th></tr>
+<tr><td><code>database/migrations/20261106000000_init.sql</code></td><td>טבלאות, enums, אינדקסים, טריגרים, RLS</td></tr>
+<tr><td><code>database/seed.sql</code></td><td>נתוני ההתחלה</td></tr>
+</table>
+
+<h2>7. פתוח / סיכונים</h2>
+<div class="warn">
+<ul>
+<li>דגלי צמחוני/אלרגנים <b>לא מולאו</b> (יוצגו "לא ידוע") – צריך שהבעלים יאמת.</li>
+<li>מחיר ברירת מחדל של משקאות/יינות הוא "לפריט" (בקבוק/כוס?) – צריך אישור.</li>
+<li>לא הוחלט: הרשמה מול אורח (#1), מע"מ (#14), נוסחאות כמויות (#3), קיבולת (#5).</li>
+<li>האתר עדיין לא מחובר למסד – הפרונטאנד ממשיך לעבוד מ-sessionStorage.</li>
+</ul>
+</div>
+</main>
+</body>
+</html>
