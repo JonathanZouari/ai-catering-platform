@@ -5,7 +5,7 @@ How the `development` environment goes live: the `dev` branch → Railway `devel
 ## How a deploy works
 
 1. A push to `dev` (a merged PR) makes Railway build the `Dockerfile`.
-2. **Pre-deploy:** Railway runs `python -m app.core.migrate` (`railway.json`). It applies every file in `database/migrations/` that isn't listed in `schema_migrations` yet. Each file runs once, in name order, in its own transaction. If one fails, the deploy stops and the running version stays up.
+2. **Pre-deploy:** Railway runs `python -m app.core.migrate` (the service's pre-deploy command). It applies every file in `database/migrations/` that isn't listed in `schema_migrations` yet. Each file runs once, in name order, in its own transaction. If one fails, the deploy stops and the running version stays up.
 3. Railway starts the new version and waits for `/health` to answer 200.
 
 The app never creates or alters tables on Postgres. Only the migrations do. `create_all` runs on SQLite only.
@@ -18,11 +18,12 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 - **Email templates:** Authentication → Emails. In both **Magic Link** and **Confirm signup**, put the code `{{ .Token }}` in the body. New customers get "Confirm signup" and returning customers get "Magic Link". Hebrew example: `קוד הכניסה שלכם ל-Yummai: {{ .Token }}`.
 - **SMTP:** Authentication → Emails → SMTP Settings. Use a real sender, for example Resend, Brevo or Postmark. The built-in mailer only sends a few emails an hour.
 - **URL Configuration:** set the Site URL to the Railway domain from step 2. Login uses a code, not a link, so no redirect URLs are needed.
+- **Data API:** Integrations → Data API → turn off. The app never uses it, and every table also has RLS on with no policies (migration 0014), so the public anon key can't reach the data either way.
 - **Connection string:** Connect → Connection string. Use the **Session pooler** (port 5432, IPv4). The transaction pooler (6543) works too, because the app turns off prepared statements. The direct connection is IPv6-only, which Railway doesn't support by default.
 
 ### 2. Railway
 - New Project → Deploy from GitHub repo → `idanss0/ai-catering-platform`.
-- Environment `development` → service settings → Source branch `dev`. Railway reads `railway.json` for the build, the pre-deploy migrations and the healthcheck.
+- Environment `development` → service settings → Source branch `dev`. Railway no longer reads `railway.json` for new services (Config as Code is deprecated), so set these in the service settings: Deploy → Pre-deploy command `python -m app.core.migrate`, Healthcheck Path `/health`; Scale → Region EU West. The Dockerfile is detected automatically. `railway.json` stays in the repo as a record of these values.
 - Settings → Networking → Generate Domain. Put this address in `PUBLIC_BASE_URL` and in the Supabase Site URL.
 - Variables (Railway sets `PORT` itself):
 

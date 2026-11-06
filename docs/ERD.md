@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0013` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0014` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
