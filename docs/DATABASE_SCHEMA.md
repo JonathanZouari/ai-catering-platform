@@ -12,7 +12,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | `kashrut_class` | `meat`, `dairy`, `pareve` | Decision 9: only `meat` and `pareve` are allowed (check constraint, migration 0011); `dairy` stays in the type because Postgres can't drop an enum value |
 | `fulfillment_type` | `pickup`, `delivery` | Decision 8 |
 | `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
-| `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
+| `proposal_status` | `pending`, `accepted`, `declined`, `cancelled`, `expired` | migration 0015 (was text + check) |
 | `allergen_status` | `contains`, `free`, `unknown` | Decision 9 — unknown ≠ free |
 
 ## Tables
@@ -100,7 +100,6 @@ A missing row = **unknown**.
 | requested_at | timestamptz not null | Requested pickup/delivery time |
 | delivery_address | text null | CHECK: required when `delivery` |
 | delivery_city | text null | A zone city, required for delivery |
-| delivery_zone_id | uuid FK null | Zone whose fee was frozen at submission; on delete set null |
 | subtotal, delivery_fee, total | numeric(10,2) null | Computed by backend; frozen at submission |
 | submitted_at, decided_at | timestamptz null | |
 | adult_confirmed_at | timestamptz null | When the customer confirmed 18+ at submission; set only for orders with alcohol, cleared on withdraw (#11) |
@@ -126,7 +125,7 @@ While `draft`, prices are read live from `dishes`; on `pending_approval` the sna
 `id` uuid PK · `order_id` FK not null, **unique** (one conversation per order), cascade · `created_at`
 
 ### ai_messages (migration 0010)
-`id` bigint identity PK (keeps the order) · `conversation_id` FK cascade, indexed · `role` text CHECK in (`user`,`assistant`) · `content` jsonb (Claude API content blocks, incl. thinking and tool_use/tool_result; tool results are `user` messages, as the API sends them) · `customer_text` text null (the customer's own words; counted for the daily limit and shown in the chat) · `created_at`. Append-only.
+`id` uuid PK · `conversation_id` FK cascade, indexed · `position` int (1, 2, 3... per conversation, unique with `conversation_id`; the history order, since a turn's messages share a `created_at`; migration 0015) · `role` text CHECK in (`user`,`assistant`) · `content` jsonb (Claude API content blocks, incl. thinking and tool_use/tool_result; tool results are `user` messages, as the API sends them) · `customer_text` text null (the customer's own words; counted for the daily limit and shown in the chat) · `created_at`. Append-only.
 
 ### order_proposals
 One table for both proposers (migration 0009, OPEN #6 decided): `owner` proposes on orders awaiting approval, and `assistant` (Phase 4) on drafts. It replaces the planned `ai_change_proposals`.
@@ -141,7 +140,7 @@ One table for both proposers (migration 0009, OPEN #6 decided): `owner` proposes
 | lines | jsonb not null | Full proposed item list with frozen prices (existing dishes keep their frozen price, added dishes take the catalog price) |
 | price_before, price_after | numeric(10,2) not null | `price_after` includes the order's delivery fee |
 | note | text null | From the proposer, shown to the customer; becomes the decision note on accept |
-| status | text: pending, accepted, declined, cancelled, expired | |
+| status | proposal_status, default pending | enum since migration 0015 |
 | customer_note | text null | Reason when declining |
 | created_at, decided_at | timestamptz | |
 | UNIQUE (order_id) WHERE status = 'pending' | | At most one open proposal per order |

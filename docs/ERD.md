@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0014` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0015` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -109,7 +109,6 @@ erDiagram
         timestamptz requested_at "event date at the slot start"
         text delivery_address "street, required when delivery"
         text delivery_city "null, a zone city when delivery"
-        uuid delivery_zone_id FK "null, set at submission; set null on zone delete"
         numeric subtotal "null until submission"
         numeric delivery_fee "null; frozen from the zone at submission"
         numeric total "null until submission"
@@ -140,7 +139,7 @@ erDiagram
         numeric price_before
         numeric price_after "incl. delivery fee"
         text note "null, shown to customer"
-        text status "pending, accepted, declined, cancelled, expired"
+        proposal_status status "pending, accepted, declined, cancelled, expired"
         text customer_note "null, decline reason"
         timestamptz created_at
         timestamptz decided_at "null"
@@ -158,8 +157,9 @@ erDiagram
         timestamptz created_at
     }
     ai_messages {
-        bigint id PK "identity, keeps the order"
+        uuid id PK
         uuid conversation_id FK "cascade"
+        int position "1, 2, 3... per conversation; unique with conversation_id"
         text role "user, assistant"
         jsonb content "API content blocks, append-only"
         text customer_text "null, the customer's own words"

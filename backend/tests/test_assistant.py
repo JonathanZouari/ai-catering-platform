@@ -303,3 +303,23 @@ def test_submitting_expires_the_open_proposal(client, order, claude):
     assert [(x["id"], x["status"]) for x in listed] == [(p["id"], "expired")]
     order_id = o["url"].rsplit("/", 1)[1]
     assert client.post(f"/api/admin/orders/{order_id}/approve", headers=AUTH).status_code == 200
+
+
+def test_history_keeps_its_order_across_turns(client, order, claude):
+    # one turn stores several messages at once (same created_at); position keeps the order
+    claude.script = [
+        msg("tool_use", call("get_current_order", id_="toolu_a")),
+        say("ראשון"),
+        say("שני"),
+    ]
+    assert chat(client, order, "שאלה 1").status_code == 200
+    assert chat(client, order, "שאלה 2").status_code == 200
+    sent = claude.requests[-1]["messages"]
+    assert [(m["role"], m["content"][0]["type"]) for m in sent] == [
+        ("user", "text"),
+        ("assistant", "tool_use"),
+        ("user", "tool_result"),
+        ("assistant", "text"),
+        ("user", "text"),
+    ]
+    assert sent[0]["content"][0]["text"] == "שאלה 1" and sent[-1]["content"][0]["text"] == "שאלה 2"
