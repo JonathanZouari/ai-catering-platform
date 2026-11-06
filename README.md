@@ -23,7 +23,7 @@ database/       migrations/ (SQL, Supabase CLI format — first migration in Pha
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
-railway.json    Railway build/deploy config (healthcheck /health)
+railway.json    record of the Railway settings (set in the dashboard)
 .env.example    Environment variable template
 ```
 
@@ -78,7 +78,7 @@ uv run pytest
 
 ## Railway / Supabase status
 
-`railway.json` builds the `Dockerfile`, runs pending migrations before each deploy (`python -m app.core.migrate`) and checks `/health`. Setup steps and variables: `docs/DEPLOY.md`.
+Railway builds the `Dockerfile`, runs pending migrations before each deploy (`python -m app.core.migrate`, set as the pre-deploy command in the dashboard) and checks `/health`. Setup steps and variables: `docs/DEPLOY.md`.
 
 ## Documentation
 

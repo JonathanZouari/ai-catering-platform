@@ -38,6 +38,7 @@ The frontend has no build step, bundler or package.json. `node --check frontend/
 
 - **One FastAPI service serves everything.** `backend/app/main.py` registers API routes and then mounts `frontend/` at `/` with `StaticFiles(html=True)`. The mount must stay last so it does not shadow API routes. Because the frontend is same-origin, no CORS setup is needed. `FRONTEND_DIR` is resolved relative to `main.py`, so the Dockerfile keeps `backend/` and `frontend/` as siblings under `/srv`.
 - **Layered monolith:** `api → services → repositories → models`, with `schemas/` (Pydantic DTOs and AI tool args) and `core/` (config). Lower layers never import upper ones. Most of these packages are still empty stubs and fill in during Phases 2–4 (`docs/ARCHITECTURE.md`).
+- **New tables enable RLS** (`alter table ... enable row level security`, no policies) in their migration, so Supabase's anon key reaches nothing; the app connects as the table owner and is unaffected. `test_db.py` checks this on Postgres.
 - **Schema changes come in threes.** Every change touches the model in `backend/app/models/`, a new numbered SQL file in `database/migrations/` (Postgres), and the diagram in `docs/ERD.md`, all in the same PR. Run the suite with `TEST_DATABASE_URL` on a new migration: the SQL is only exercised there.
   - Local SQLite only runs `create_all`, which adds missing tables but never alters existing ones. After adding a column, alter the local `dev.db` by hand or recreate it.
 - **The backend is authoritative.** Prices, quantities, order state and availability are computed server-side only. The frontend and the LLM only display data or make requests (ADR 0003).
@@ -58,5 +59,5 @@ The frontend has no build step, bundler or package.json. `node --check frontend/
 
 - `dev` is for integration and maps to Railway `development` plus the dev Supabase project. `main` is production.
 - Feature work goes as a PR into `dev`. Releases go as a PR from `dev` to `main`. Production deploys are manual and need explicit approval.
-- Railway builds from the `Dockerfile` and runs a healthcheck on `/health`. Before each deploy, `railway.json` runs `python -m app.core.migrate`, which applies pending SQL migrations and records them in `schema_migrations`. Setup and variables: `docs/DEPLOY.md`.
+- Railway builds from the `Dockerfile` and runs a healthcheck on `/health`. Before each deploy, the service's pre-deploy command (set in the Railway dashboard; Railway ignores `railway.json` for new services) runs `python -m app.core.migrate`, which applies pending SQL migrations and records them in `schema_migrations`. Setup and variables: `docs/DEPLOY.md`.
 - The Supabase service-role key is server-side only.

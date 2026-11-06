@@ -2,7 +2,7 @@
 
 Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
 
-Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
+Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table with no policies (migration 0014; the app connects as the owner, so only Supabase's anon/authenticated roles are shut out).
 
 ## Enums
 
