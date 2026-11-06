@@ -6,7 +6,7 @@ Format: **Question** · *Why it matters* · **Blocks**
 
 | # | Topic | Question | Why it matters | Blocks |
 |---|---|---|---|---|
-| 1 | Customer authentication / guest checkout | Must customers create an account? Email magic link, OTP by phone, password, or guest checkout with a tokenized link? | Determines ownership model, RLS policies, and how a customer returns to a draft/quote | Phase 3 order ownership, Phase 4 chat history |
+| 1 | Customer authentication / guest checkout | **Partly decided (see log):** staff and customers log in with Supabase Auth, and the private order link stays. Still open: how does a new customer sign up and get linked to their existing customer record (phone OTP before linking)? Is an account required, or optional? | Determines ownership model, RLS policies, and how a customer returns to a draft/quote | Phase 3 order ownership, Phase 4 chat history |
 | 2 | Payment & deposit | Is any deposit or payment collected in-app? | Payments are out of scope unless approved | Nothing in MVP unless approved |
 | 3 | Serving & quantity formulas | Per category/dish, how much per adult / child? Rounding (e.g., whole trays)? Different for vegetarian/vegan guests? | Quantity recommendation must use business rules, not AI guesses | Phase 3 quantity engine (schema can hold rules; values unknown) |
 | 5 | Availability & capacity | Capacity model decided (guests per day, see log). Still open: the default daily guest limit, minimum lead time, same-day orders? | Defines date/slot validation | Phase 2 availability rules, Phase 3 date picker |
@@ -38,3 +38,6 @@ When a decision is made, record it here and move the row out of the table above.
 | 2026-11-02 | 18 | Weight-based dishes are priced **per 100 g**. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
 | 2026-11-02 | — | One phone number = one customer (`customers.phone` unique). | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
 | 2026-11-02 | — | AI chat messages are deleted **90 days after the event date**; suggestions and their outcome stay with the order. Customers are told in the chat. | Proposed in DB planning (PR from galitbental), **pending owner confirmation** |
+| 2026-11-05 | 1 (part) | Staff **and customers** log in with **Supabase Auth** (email + password). Staff = active `staff_users` row; customer = `customers.auth_user_id`. | Requested in a Claude Code session |
+| 2026-11-05 | — | Staff see orders update **live** (Supabase Realtime on `orders` and `order_events`); customers see their own orders live. | Requested in a Claude Code session |
+| 2026-11-06 | — | **SQLite dropped.** The database is Supabase Postgres in every environment; schema in `supabase/migrations/`, with enum types, `jsonb` and RLS (ADR-0002 revised). | Requested in a Claude Code session |

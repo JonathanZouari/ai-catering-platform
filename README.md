@@ -8,9 +8,9 @@ Ordering and management web app for a **single catering business**. Customers pl
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
+| Backend | Python 3.12+, FastAPI, Pydantic (Postgres access added in Phase 2) |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage) in production; SQLite for local development and tests |
+| Data | Supabase (Postgres, Auth, Storage, Realtime) in every environment. Schema in `supabase/migrations/` |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -19,7 +19,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (Alembic, runs on SQLite locally and Postgres in production — first migration in Phase 2)
+supabase/       migrations/ (SQL, Supabase CLI), seed.sql (synthetic demo data), config.toml
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -40,7 +40,9 @@ uv run uvicorn app.main:app --reload
 
 - API health: http://127.0.0.1:8000/health
 - Customer UI: http://127.0.0.1:8000/customer/
-- Admin UI: http://127.0.0.1:8000/admin/
+- Admin UI: http://127.0.0.1:8000/admin/ (staff login)
+- Login: http://127.0.0.1:8000/login/
+- Customer account: http://127.0.0.1:8000/account/ (customer login)
 
 ### Tests and lint
 
@@ -62,7 +64,21 @@ uv run pytest
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 2, when database code exists.
+`psycopg` (and optionally `sqlalchemy`) is added to the backend when its database code exists. The browser loads `supabase-js` from a pinned CDN URL in `frontend/js/auth.js`.
+
+### Database (Supabase)
+
+The schema and the demo data live in `supabase/`. The repo is linked to the `ai-catering-dev` project. Install the [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) first.
+
+```bash
+supabase migration new <name>            # write a new migration (never edit an applied one)
+supabase db push --remote                # apply new migrations to the linked project
+supabase db query --remote -f supabase/seed.sql   # load demo data into an empty database
+supabase db advisors --remote            # security and performance checks before merging
+supabase start && supabase db reset      # optional: full local copy (needs Docker)
+```
+
+The database password for the CLI goes in `SUPABASE_DB_PASSWORD` (see `.env.example`). Demo logins for staff and a customer exist in the dev project. Ask the owner for the passwords.
 
 ## Branches and environments
 

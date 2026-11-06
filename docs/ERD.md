@@ -1,6 +1,6 @@
 # Entity-relationship diagram
 
-Diagrams for the planned schema in [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md) (v0.2, not migrated yet). Column conventions:
+Diagrams for the schema in [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md) (v0.3, live in Supabase; SQL in `supabase/migrations/`). Column types such as `order_status` and `kashrut` are Postgres enum types. Column conventions:
 
 - `*_agorot`: money in whole agorot, VAT-inclusive (₪85.50 = `8550`).
 - `*_milli`: quantity in thousandths of the dish unit (3 trays = `3000`).
@@ -59,14 +59,14 @@ erDiagram
     text name
     text description
     text image_path
-    text unit "tray, 100g, item, guest"
+    dish_unit unit "tray, 100g, item, guest"
     text unit_label "e.g. tray for 10"
     int price_agorot "VAT-inclusive"
     int qty_per_adult_milli "recommendation"
     int qty_per_child_milli "recommendation"
     int qty_step_milli "stepper and rounding"
     int qty_min_milli
-    text kashrut "meat, dairy, pareve, null = unknown"
+    kashrut kashrut "meat, dairy, pareve, null = unknown"
     bool is_vegetarian "null = unknown"
     bool is_vegan "null = unknown"
     uuid allergens_verified_by FK "staff_users"
@@ -82,7 +82,7 @@ erDiagram
   dish_allergens {
     uuid dish_id PK, FK
     uuid allergen_id PK, FK
-    text status "contains, may_contain, free"
+    allergen_status status "contains, may_contain, free"
   }
 ```
 
@@ -101,13 +101,13 @@ erDiagram
     text full_name
     text phone UK "digits only, one phone = one customer"
     text email
-    text auth_user_id UK "reserved for login"
+    uuid auth_user_id FK "auth.users, when they have a login"
   }
   orders {
     uuid id PK
     uuid customer_id FK
     text access_token_hash UK "private order link"
-    text status "draft to completed"
+    order_status status "draft to completed"
     int version "bumped on every change"
     text event_type
     date event_date
@@ -120,7 +120,7 @@ erDiagram
     int vegan "subset of guests"
     int restricted "subset of guests"
     text dietary_notes
-    text fulfillment "pickup, delivery"
+    fulfillment fulfillment "pickup, delivery"
     text city FK "zone_cities"
     text delivery_address
     uuid delivery_zone_id FK
@@ -137,17 +137,17 @@ erDiagram
     uuid dish_id FK
     int quantity_milli
     text snapshot_name "frozen"
-    text snapshot_unit "frozen"
-    text snapshot_kashrut "frozen"
+    dish_unit snapshot_unit "frozen"
+    kashrut snapshot_kashrut "frozen"
     int snapshot_price_agorot "frozen"
     int line_total_agorot "frozen"
   }
   order_events {
     uuid id PK
     uuid order_id FK
-    text from_status
-    text to_status
-    text actor_type "customer, staff, system"
+    order_status from_status
+    order_status to_status
+    actor_type actor_type "customer, staff, system"
     uuid staff_user_id FK
     text note
     timestamp created_at
@@ -172,8 +172,8 @@ erDiagram
   ai_messages {
     uuid id PK
     uuid conversation_id FK
-    text role "user, assistant, tool"
-    json content
+    message_role role "user, assistant, tool"
+    jsonb content
     timestamp created_at
   }
   ai_change_proposals {
@@ -181,10 +181,10 @@ erDiagram
     uuid order_id FK "one pending per order"
     uuid conversation_id FK
     int base_order_version "must match orders.version"
-    json changes "typed operations"
+    jsonb changes "typed operations"
     int price_before_agorot
     int price_after_agorot
-    text status "pending, approved, rejected, expired, failed"
+    proposal_status status "pending, approved, rejected, expired, failed"
     timestamp decided_at
     timestamp executed_at "set once"
   }
@@ -212,7 +212,7 @@ erDiagram
   }
   time_slots {
     uuid id PK
-    text fulfillment "pickup, delivery"
+    fulfillment fulfillment "pickup, delivery"
     int weekday "0-6, null = every day"
     time start_time
     time end_time
@@ -232,11 +232,9 @@ erDiagram
     text currency "ILS"
   }
   staff_users {
-    uuid id PK
-    text email UK
-    text password_hash
+    uuid id PK, FK "auth.users"
+    text email UK "copy of the Auth email"
     text full_name
     bool is_active
-    timestamp last_login_at
   }
 ```
