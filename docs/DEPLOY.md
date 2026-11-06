@@ -16,7 +16,7 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 - Pick a region near Israel, for example `eu-central-1` (Frankfurt).
 - **Asymmetric JWT keys:** Project Settings → JWT Keys. The project must sign with an asymmetric key (ES256 or RS256). If it still uses the legacy shared secret, migrate to signing keys there. Without them, every customer login fails closed (ADR 0005).
 - **Email templates:** Authentication → Emails. In both **Magic Link** and **Confirm signup**, put the code `{{ .Token }}` in the body. New customers get "Confirm signup" and returning customers get "Magic Link". Hebrew example: `קוד הכניסה שלכם ל-Yummai: {{ .Token }}`.
-- **SMTP:** Authentication → Emails → SMTP Settings. Use a real sender, for example Resend, Brevo or Postmark. The built-in mailer only sends a few emails an hour.
+- **SMTP:** Authentication → Emails → SMTP Settings. Use a real sender, for example Gmail with an app password (dev), Resend, Brevo or Postmark. The built-in mailer only sends a few emails an hour. Supabase sends these login emails from its own servers, so Railway's SMTP block doesn't affect them. Custom SMTP must be on before the templates can be edited.
 - **URL Configuration:** set the Site URL to the Railway domain from step 2. Login uses a code, not a link, so no redirect URLs are needed.
 - **Data API:** Integrations → Data API → turn off. The app never uses it, and every table also has RLS on with no policies (migration 0014), so the public anon key can't reach the data either way.
 - **Connection string:** Connect → Connection string. Use the **Session pooler** (port 5432, IPv4). The transaction pooler (6543) works too, because the app turns off prepared statements. The direct connection is IPv6-only, which Railway doesn't support by default.
@@ -34,7 +34,8 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
 | `SUPABASE_ANON_KEY` | Project Settings → API Keys → publishable or anon key |
 | `ADMIN_TOKEN` | a new long random value, not the local one: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_STARTTLS`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM` | the same sender as Supabase's SMTP |
+| `BREVO_API_KEY` | Brevo → SMTP & API → API Keys. Railway blocks outbound SMTP below its Pro plan, so the app sends through Brevo's HTTPS API |
+| `SMTP_FROM` | the sender address; verify it in Brevo → Senders first |
 | `OWNER_EMAIL` | where new orders are sent |
 | `PUBLIC_BASE_URL` | `https://<railway-domain>` |
 

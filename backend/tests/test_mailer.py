@@ -1,7 +1,16 @@
 import smtplib
 
+import httpx
+import pytest
+
 from app.core import config, mailer
 from app.core.mailer import Email
+
+
+@pytest.fixture(autouse=True)
+def no_brevo(monkeypatch):
+    # a local .env may hold a key; each test opts in explicitly
+    monkeypatch.setattr(config.get_settings(), "brevo_api_key", None)
 
 
 def test_skips_without_smtp(monkeypatch, caplog):
@@ -60,3 +69,48 @@ def test_smtp_failure_never_raises(monkeypatch, caplog):
     monkeypatch.setattr(smtplib, "SMTP", boom)
     mailer.send(Email("dana@example.com", "נושא", "גוף", kind="order_decided"))  # not raised
     assert "SMTPRecipientsRefused" in caplog.text and "dana@example.com" not in caplog.text
+
+
+def test_brevo_api_when_key_set(monkeypatch):
+    settings = config.get_settings()
+    monkeypatch.setattr(settings, "brevo_api_key", "test-key")
+    monkeypatch.setattr(settings, "smtp_host", None)  # SMTP isn't needed with the API
+    monkeypatch.setattr(settings, "smtp_from", "orders@example.com")
+    calls = []
+
+    def fake_post(url, json, headers, timeout):
+        calls.append((url, json, headers))
+        return httpx.Response(201, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    monkeypatch.setattr(smtplib, "SMTP", lambda *a, **k: pytest.fail("SMTP used"))
+    mailer.send(Email("dana@example.com", "שלום\r\nBcc: evil@example.com", "גוף"))
+    [(url, payload, headers)] = calls
+    assert url == mailer.BREVO_URL and headers == {"api-key": "test-key"}
+    assert payload == {
+        "sender": {"email": "orders@example.com", "name": "Yummai"},
+        "to": [{"email": "dana@example.com"}],
+        "subject": "שלום Bcc: evil@example.com",
+        "textContent": "גוף",
+    }
+
+
+def test_brevo_failure_never_raises(monkeypatch, caplog):
+    settings = config.get_settings()
+    monkeypatch.setattr(settings, "brevo_api_key", "test-key")
+    monkeypatch.setattr(settings, "smtp_from", "orders@example.com")
+
+    def rejected(url, **kw):
+        body = {"message": "invalid recipient dana@example.com"}
+        return httpx.Response(400, json=body, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx, "post", rejected)
+    mailer.send(Email("dana@example.com", "נושא", "גוף", kind="order_decided"))  # not raised
+    assert "order_decided (HTTP 400)" in caplog.text and "dana@example.com" not in caplog.text
+
+    def down(url, **kw):
+        raise httpx.ConnectError("unreachable")
+
+    monkeypatch.setattr(httpx, "post", down)
+    mailer.send(Email("dana@example.com", "נושא", "גוף", kind="order_submitted"))
+    assert "order_submitted (ConnectError)" in caplog.text
