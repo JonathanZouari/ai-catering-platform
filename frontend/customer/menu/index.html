@@ -54,6 +54,15 @@
 
       <section class="summary" id="summary" aria-labelledby="summary-h">
         <h3 id="summary-h">סיכום ההזמנה</h3>
+        <div class="summary-tools" id="summary-tools" hidden>
+          <button type="button" class="btn ghost" id="add-more">+ הוספת מנות</button>
+          <button type="button" class="btn ghost danger" id="clear-order">ניקוי ההזמנה</button>
+          <p class="clear-confirm" id="clear-confirm" role="alert" hidden>
+            <span>להסיר את כל המנות מההזמנה?</span>
+            <button type="button" class="btn primary" id="clear-yes">כן, לנקות</button>
+            <button type="button" class="btn ghost" id="clear-no">ביטול</button>
+          </p>
+        </div>
         <div class="table-scroll">
           <table class="lines">
             <thead><tr><th scope="col">מנה</th><th scope="col">כמות</th><th scope="col">מחיר</th><th scope="col">סה"כ</th></tr></thead>
