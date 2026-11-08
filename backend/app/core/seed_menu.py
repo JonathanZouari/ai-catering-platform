@@ -1,4 +1,7 @@
-"""Fill the catalog with a starter menu: `uv run python -m app.core.seed_menu [--dry-run]`.
+"""Fill the catalog with a starter menu: `uv run python -m app.core.seed_menu [--dev] [--dry-run]`.
+
+Without `--dev`: the local starter menu (creates its categories). With `--dev`: additions that
+fit the Dev catalog's existing categories (DEV_MENU).
 
 Idempotent and additive: categories and dishes are matched by name, existing ones are never
 changed or deleted (only a missing photo is filled in). Kosher meat kitchen: meat or pareve,
@@ -92,16 +95,60 @@ MENU: dict[str, tuple[int, list[tuple]]] = {
     ]),
 }  # fmt: skip
 
+# Additions for the Dev catalog (entered 2026-11-08: 36 dishes in 10 categories, other names).
+# Only dishes Dev has nothing close to, filed under Dev's own categories (`--dev` never creates
+# a category). Reuses MENU rows by name; DEV_EXTRA holds the dishes MENU doesn't have.
+_ROWS = {row[0]: row for _, rows in MENU.values() for row in rows}
+DEV_EXTRA = {
+    "מוסקה בשרית": ("מוסקה בשרית", "חצילים, בקר טחון ורוטב עגבניות, בלי גבינה", "per_tray", 230, None, 10, "meat", None, [], None, False),
+    "כרעי עוף בסילאן": ("כרעי עוף בסילאן", "כרעיים צלויות בסילאן, שום ושומשום", "per_item", 22, 10, 1, "meat", None, ["שומשום"], None, False),
+    "מוסר ים בתנור": ("מוסר ים בתנור", "פילה עם עשבי תיבול, לימון ושמן זית", "per_guest", 72, 10, 1, "pareve", None, ["דגים"], None, False),
+    "מגש ירקות ומטבלים": ("מגש ירקות ומטבלים", "ירקות חתוכים עם טחינה ומטבל חצילים", "per_tray", 150, None, 15, "pareve", "vegan", ["שומשום"], None, False),
+    "מגש סושי צמחוני": ("מגש סושי צמחוני", "רולים במילוי ירקות ואבוקדו, עם סויה", "per_tray", 220, None, 12, "pareve", "vegan", ["סויה", "שומשום"], None, False),
+}  # fmt: skip
+_ROWS |= DEV_EXTRA
+DEV_MENU: dict[str, tuple[int, list[tuple]]] = {
+    cat: (0, [_ROWS[n] for n in names])
+    for cat, names in {
+        "סלטים ומטבלים": ["מטבוחה", "סלט גזר מרוקאי", "סלט פטוש", "סלט עדשים שחורות ובטטה"],
+        "מאפים ופתיחים": [
+            "קובה מטוגן",
+            "פלאפל עם טחינה",
+            "מיני סביח בפיתה",
+            "רולים וייטנאמיים",
+            "ממולאים",
+            "חלה קלועה",
+            "פוקאצ'ה עשבי תיבול",
+            "לחמניות אישיות",
+        ],
+        "עיקריות בשר": ["קציצות בקר ברוטב עגבניות", "אסאדו בבישול ארוך", "מוסקה בשרית"],
+        "עיקריות עוף": ["עוף שלם בתנור עם הדרים", "כרעי עוף בסילאן"],
+        "דגים": ["מוסר ים בתנור"],
+        "תוספות": [
+            "מג'דרה",
+            "שעועית ירוקה מוקפצת",
+            "קוסקוס עם ירקות",
+            "פירה בשמן זית",
+            "אורז עם אטריות",
+        ],
+        "מגשי אירוח": ["מגש ירקות ומטבלים", "מגש סושי צמחוני", "מקלובה צמחונית"],
+        "קינוחים": ["עוגת תפוזים", "מגש פטיפורים", "סורבה לימון", "מלבי חלב קוקוס"],
+        "שתייה": ["לימונדה עם נענע", "מיץ תפוזים סחוט", "עמדת קפה ותה", "יין לבן כשר", "בירה"],
+    }.items()
+}
 
-def seed(db: Session) -> tuple[int, int, int]:
+
+def seed(db: Session, menu=MENU, new_categories: bool = True) -> tuple[int, int, int]:
     """Returns (categories added, dishes added, photos filled in). The caller commits."""
     allergens = {a.name: a.id for a in db.scalars(select(Allergen))}
     categories = {c.name: c for c in db.scalars(select(DishCategory))}
     dishes = {d.name: d for d in db.scalars(select(Dish))}
     added_cats = added = photos = 0
-    for cat_name, (sort_order, rows) in MENU.items():
+    for cat_name, (sort_order, rows) in menu.items():
         cat = categories.get(cat_name)
         if cat is None:
+            if not new_categories:
+                raise ValueError(f"category {cat_name!r} not found; nothing was written")
             cat = DishCategory(name=cat_name, sort_order=sort_order)
             db.add(cat)
             db.flush()
@@ -146,7 +193,8 @@ def main(argv: list[str]) -> None:
     if engine is None:
         sys.exit("DATABASE_URL is not set")
     with sessionmaker(engine)() as db:
-        result = seed(db)
+        dev = "--dev" in argv
+        result = seed(db, DEV_MENU if dev else MENU, new_categories=not dev)
         if "--dry-run" in argv:
             db.rollback()
         else:

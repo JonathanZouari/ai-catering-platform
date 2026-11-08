@@ -28,3 +28,24 @@ def test_seed_is_additive_idempotent_and_never_dairy(make_session):
         assert {d.dietary.kashrut_class for d in dishes if d.dietary} <= {"meat", "pareve"}
         assert all(d.dietary.verified_at is None for d in dishes if d.dietary)
         assert not any(a.allergen.name == "חלב" for d in dishes for a in d.allergens)
+
+
+def test_dev_menu_only_fills_existing_categories(make_session):
+    from app.core.seed_menu import DEV_MENU
+
+    with make_session() as db:
+        db.add_all(Allergen(name=n) for n in ALLERGENS)
+        db.add_all(DishCategory(name=n) for n in list(DEV_MENU)[:-1])  # one category missing
+        db.commit()
+        try:
+            seed(db, DEV_MENU, new_categories=False)
+            raise AssertionError("expected a missing-category error")
+        except ValueError as e:
+            assert list(DEV_MENU)[-1] in str(e)
+        db.rollback()
+        assert db.scalar(select(func.count()).select_from(Dish)) == 0
+
+        db.add(DishCategory(name=list(DEV_MENU)[-1]))
+        db.commit()
+        total = sum(len(rows) for _, rows in DEV_MENU.values())
+        assert seed(db, DEV_MENU, new_categories=False) == (0, total, 0)
