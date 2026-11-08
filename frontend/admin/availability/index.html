@@ -114,6 +114,11 @@
             <input id="kashrut-cert" type="text" maxlength="200" placeholder="למשל: בהשגחת רבנות תל אביב">
             <span class="help">מוצג ללקוחות בדף המנות ובתחתית דף הבית. ריק = לא מוצג.</span>
           </div>
+          <div class="field">
+            <label for="default-fee">דמי משלוח לשאר הארץ (₪)</label>
+            <input id="default-fee" type="number" inputmode="decimal" min="0" max="10000" step="0.01">
+            <span class="help">לכל יישוב שלא נמצא באף אזור משלוח. ריק = משלוחים רק לערים שבאזורים.</span>
+          </div>
         </div>
         <div class="actions"><button class="btn primary" type="submit">שמירת הכללים</button></div>
       </form>

@@ -137,7 +137,7 @@ async function loadPlaces() {
 
 function cityMatches(query) {
   const q = key(query);
-  if (!q) return state.cities;
+  if (!q) return state.cities.slice(0, MAX_SUGGESTIONS);
   // Exact name first, then served cities, then names that start with the text, then a later word.
   const rank = (c) => (key(c.city) === q ? 0 : c.fee !== null ? 1 : key(c.city).startsWith(q) ? 2 : 3);
   return state.places.filter((c) => key(c.city).split(" ").some((_, i, w) => w.slice(i).join(" ").startsWith(q)))

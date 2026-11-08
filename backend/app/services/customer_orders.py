@@ -91,8 +91,10 @@ def _validate(db: Session, data: s.DraftIn) -> datetime:
     if data.fulfillment_type == "delivery":
         if not data.delivery_address:
             raise _invalid("delivery_address", "A delivery address is required")
-        if not data.delivery_city or not delivery_svc.zone_for_city(db, data.delivery_city):
+        served = data.delivery_city and delivery_svc.delivery_for(db, data.delivery_city)
+        if not served:
             raise _invalid("delivery_city", "We don't deliver to this city", "city_not_served")
+        data.delivery_city = served[0]  # one spelling per city: the zone's, or the CBS one
     local = datetime.combine(e.event_date, slot.start_time, tzinfo=clock.BUSINESS_TZ)
     return local.astimezone(UTC)
 
@@ -220,15 +222,11 @@ def remove_item(
 # pricing and recommendations (C3)
 
 
-def _live_zone(db: Session, order: Order):
+def _live_fee(db: Session, order: Order) -> Decimal | None:
     if order.fulfillment_type != "delivery" or not order.delivery_city:
         return None
-    return delivery_svc.zone_for_city(db, order.delivery_city)
-
-
-def _live_fee(db: Session, order: Order) -> Decimal | None:
-    zone = _live_zone(db, order)
-    return zone.fee if zone else None
+    served = delivery_svc.delivery_for(db, order.delivery_city)
+    return served[1] if served else None
 
 
 def get_pricing(db: Session, who: CustomerIdentity, order_id: uuid.UUID) -> s.PricingOut:
@@ -303,8 +301,8 @@ def submit(
     if slot.capacity is not None and taken >= slot.capacity:
         raise AppError(409, "slot_full", "This time is fully booked for that date")
 
-    zone = _live_zone(db, order)  # _validate made sure a delivery city is served
-    priced = pricing.price_order(order, dishes, zone.fee if zone else None)
+    # _validate made sure a delivery city is served
+    priced = pricing.price_order(order, dishes, _live_fee(db, order))
     for item in order.items:
         dish = dishes[item.dish_id]
         item.snapshot_name = dish.name

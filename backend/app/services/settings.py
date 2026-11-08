@@ -26,6 +26,7 @@ def update(db: Session, data: SettingsIn) -> BusinessSettings:
     row.lead_days = data.lead_days
     row.assistant_daily_limit = data.assistant_daily_limit
     row.kashrut_certificate = data.kashrut_certificate or None
+    row.default_delivery_fee = data.default_delivery_fee
     db.commit()
     db.refresh(row)  # return what was stored (numeric(3,2)), not the request's Decimal
     return row

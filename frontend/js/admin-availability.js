@@ -36,6 +36,7 @@ async function load() {
   $("child-portion").value = Number(settings.child_portion);
   $("assistant-limit").value = settings.assistant_daily_limit;
   $("kashrut-cert").value = settings.kashrut_certificate ?? "";
+  $("default-fee").value = settings.default_delivery_fee ?? "";
 }
 
 function renderBlocked(blocked) {
@@ -156,9 +157,11 @@ export function initAvailability() {
     const lead = $("lead-days");
     const child = $("child-portion");
     const limit = $("assistant-limit");
+    const fee = $("default-fee");
     const fields = [lead, child, limit];
     const bad = fields.filter((i) => !i.checkValidity() || i.value === "");
-    for (const i of fields) i.setAttribute("aria-invalid", String(bad.includes(i)));
+    if (!fee.checkValidity()) bad.push(fee); // optional: empty = zones only
+    for (const i of [...fields, fee]) i.setAttribute("aria-invalid", String(bad.includes(i)));
     if (bad.length) { bad[0].reportValidity(); return; }
     mutate(() => call("/api/admin/settings", {
       method: "PUT",
@@ -166,6 +169,7 @@ export function initAvailability() {
         lead_days: Number(lead.value), child_portion: Number(child.value).toFixed(2),
         assistant_daily_limit: Number(limit.value),
         kashrut_certificate: $("kashrut-cert").value.trim() || null,
+        default_delivery_fee: fee.value === "" ? null : Number(fee.value).toFixed(2),
       }),
     }), "הכללים נשמרו");
   });
