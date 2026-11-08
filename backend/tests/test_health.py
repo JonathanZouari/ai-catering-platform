@@ -51,6 +51,17 @@ def test_design_assets_served():
         assert client.get(path).status_code == 200, path
 
 
+def test_static_files_revalidate():
+    # A deploy must show up at once: browsers keep the file but re-check it (304 when unchanged).
+    for path in ("/", "/css/base.css", "/js/event.js", "/assets/img/table.jpg"):
+        first = client.get(path)
+        assert first.headers["cache-control"] == "no-cache", path
+        again = client.get(path, headers={"If-None-Match": first.headers["etag"]})
+        assert again.status_code == 304, path
+        assert again.headers["cache-control"] == "no-cache", path
+    assert "no-cache" not in client.get("/health").headers.get("cache-control", "")
+
+
 def test_city_list_served():
     # tools/build_cities.py output: the city field suggests these, served cities get a fee.
     response = client.get("/data/cities.json")
