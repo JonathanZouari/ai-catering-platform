@@ -3,6 +3,7 @@
 import { api } from "/js/api.js";
 import { initAssistant } from "/js/assistant.js";
 import { call, session } from "/js/customer-session.js";
+import { hydrateIllustrations } from "/js/illustrations.js";
 
 const KASHRUT = { meat: ["בשרי", "k-meat"], pareve: ["פרווה", "k-parve"] }; // no dairy (OPEN #9)
 const UNIT = { per_tray: "מגשים", per_guest: "מנות", per_weight: 'ק"ג', per_item: "יחידות" };
@@ -31,13 +32,20 @@ const $ = (id) => document.getElementById(id);
 const state = {
   orderId: null, order: null, dishes: [], categories: [], recs: new Map(),
   category: "", diet: null, editable: false,
+  want: new Map(), // dishId -> quantity asked for but not yet confirmed by the server
 };
+// shortcut: placeholder art guessed from the category name; add an icon field on categories
+// if the owner wants to choose it.
+const CATEGORY_ART = [[/סלט|מטבל/, "olive"], [/בשר|עוף|עיקר|גריל|דג/, "grill"], [/תוספ/, "pot"],
+  [/קינוח|פירות/, "lemon"], [/מאפ|לחם|פתיח/, "basket"], [/שתי|יין|משקא/, "glass"]];
+const artFor = (name = "") => CATEGORY_ART.find(([re]) => re.test(name))?.[1] ?? "plate";
 
 const money = (v) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(v);
 const num = (v) => new Intl.NumberFormat("he-IL", { maximumFractionDigits: 2 }).format(v);
 const day = (iso) => new Intl.DateTimeFormat("he-IL", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00Z`));
 const stepOf = (dish) => (dish.pricing_unit === "per_weight" ? 0.5 : 1);
 const quantityOf = (dishId) => Number(state.order.items.find((i) => i.dish_id === dishId)?.quantity ?? 0);
+const qty = (dishId) => state.want.get(dishId) ?? quantityOf(dishId); // what the customer sees
 
 function el(tag, props = {}, ...children) {
   const node = Object.assign(document.createElement(tag), props);
@@ -81,19 +89,58 @@ function flushPending() {
 }
 
 async function send(dish, quantity) {
-  if (quantity === quantityOf(dish.id)) return;
+  const settle = () => { if (state.want.get(dish.id) === quantity) state.want.delete(dish.id); };
+  if (quantity === quantityOf(dish.id)) { settle(); return; }
   const url = `/api/orders/${state.orderId}/items/${dish.id}`;
   try {
     state.order = quantity > 0
       ? await call(url, { method: "PUT", body: JSON.stringify({ quantity: quantity.toFixed(2), version: state.order.version }) })
       : await call(`${url}?version=${state.order.version}`, { method: "DELETE" });
+    settle();
   } catch (err) {
     if (err.status === 401) { location.href = "/customer/"; return; }
     toast(CODES[err.code] ?? "לא הצלחנו לעדכן. נסו שוב");
+    state.want.delete(dish.id);
     if (err.code === "order_version_conflict" || err.code === "invalid_transition") await loadOrder();
-    renderDishes(); // put the cards back to what the server has (re-render only here: keeps focus)
+    keepFocus(() => { renderDishes(); renderSide(); }); // back to what the server has
   }
   await renderSummary();
+}
+
+// The customer asks for a quantity: normalise it to the dish's step and minimum, show it at
+// once everywhere, and queue the request (the server stays the authority, ADR 0003).
+function setQuantity(d, value) {
+  const current = qty(d.id);
+  let v = Math.max(0, Math.round(value / stepOf(d)) * stepOf(d));
+  const min = Number(d.min_quantity ?? 0);
+  if (v > 0 && v < min) v = value > current ? min : 0; // jump over the forbidden range
+  state.want.set(d.id, v);
+  requestQuantity(d, v);
+  keepFocus(() => { syncCard(d); renderSide(); });
+}
+
+// First amount when a dish lands on the table: the recommendation, else the smallest allowed.
+const startQuantity = (d) => Number(state.recs.get(d.id)?.quantity) || Math.max(Number(d.min_quantity ?? 0), stepOf(d));
+
+function addToTable(d) {
+  const current = qty(d.id);
+  setQuantity(d, current > 0 ? current + stepOf(d) : startQuantity(d));
+  toast(`${current > 0 ? "עוד" : "נוסף לשולחן"}: ${d.name} (${qtyText(qty(d.id), d.pricing_unit)})`);
+  const tray = $("tray");
+  tray.classList.remove("bump");
+  void tray.offsetWidth; // restart the animation
+  tray.classList.add("bump");
+}
+
+// Re-rendering replaces buttons; put focus back on the same control (data-key), or on the
+// control that took its place when a dish crossed zero.
+function keepFocus(render) {
+  const key = document.activeElement?.dataset?.key;
+  render();
+  if (!key || document.activeElement?.dataset?.key === key) return;
+  const id = key.split(":")[1];
+  const find = (k) => document.querySelector(`[data-key="${CSS.escape(k)}"]`);
+  (find(key) ?? find(`inc:${id}`) ?? find(`add:${id}`) ?? $("tray-toggle"))?.focus();
 }
 
 // --- rendering ---
@@ -116,39 +163,28 @@ function allergens(d) {
   return el("details", { className: "allergens" }, el("summary", { textContent: "מידע על אלרגנים" }), ...lines);
 }
 
-function stepper(d) {
-  const current = quantityOf(d.id);
-  const input = el("input", { type: "number", inputMode: "decimal", min: 0, step: stepOf(d), value: current, disabled: !state.editable });
+function stepper(d, prefix = "") {
+  const input = el("input", { type: "number", inputMode: "decimal", min: 0, step: stepOf(d), value: qty(d.id), disabled: !state.editable });
+  input.dataset.key = `${prefix}qty:${d.id}`;
   input.setAttribute("aria-label", `כמות ${d.name} (${UNIT[d.pricing_unit]})`);
-  const min = Number(d.min_quantity ?? 0);
-  const apply = (value) => {
-    let v = Math.max(0, Math.round(value / stepOf(d)) * stepOf(d));
-    if (v > 0 && v < min) v = value > current ? min : 0; // jump over the forbidden range
-    input.value = v;
-    input.closest(".dish").classList.toggle("in-order", v > 0);
-    requestQuantity(d, v);
-  };
-  const btn = (delta, text, label) => {
+  const btn = (delta, text, label, kind) => {
     const b = el("button", { type: "button", className: "step-btn", textContent: text, disabled: !state.editable });
+    b.dataset.key = `${prefix}${kind}:${d.id}`;
     b.setAttribute("aria-label", `${label} ${d.name}`);
-    b.addEventListener("click", () => apply((Number(input.value) || 0) + delta));
+    b.addEventListener("click", () => setQuantity(d, qty(d.id) + delta));
     return b;
   };
-  input.addEventListener("change", () => apply(Number(input.value) || 0));
-  return el("div", { className: "stepper" }, btn(-stepOf(d), "−", "פחות"), input, btn(stepOf(d), "+", "עוד"));
+  input.addEventListener("change", () => setQuantity(d, Number(input.value) || 0));
+  return el("div", { className: "stepper" }, btn(-stepOf(d), "−", "פחות", "dec"), input, btn(stepOf(d), "+", "עוד", "inc"));
 }
 
 function recommendation(d) {
   const r = state.recs.get(d.id);
   if (!r) return null;
   const line = el("span", { className: "rec", textContent: `מומלץ: ${num(r.quantity)} ${UNIT[d.pricing_unit]} ל-${r.eligible_guests} אורחים` });
-  if (!state.editable || Number(r.quantity) === quantityOf(d.id)) return line;
+  if (!state.editable || Number(r.quantity) === qty(d.id)) return line;
   const use = el("button", { type: "button", className: "chip-btn", textContent: "לפי ההמלצה" });
-  use.addEventListener("click", () => {
-    const input = use.closest(".dish").querySelector(".stepper input");
-    input.value = Number(r.quantity);
-    input.dispatchEvent(new Event("change"));
-  });
+  use.addEventListener("click", () => setQuantity(d, Number(r.quantity)));
   return el("div", { className: "chips" }, line, use);
 }
 
@@ -160,30 +196,159 @@ function visible(d) {
   return true;
 }
 
+// --- drag to the table: Pointer Events, so mouse and touch share one path. On touch a long
+// press starts the drag, so a normal swipe still scrolls. Buttons are the keyboard equivalent.
+const LONG_PRESS_MS = 300;
+const overTray = (ev) => {
+  const r = $("tray").getBoundingClientRect();
+  return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+};
+
+function draggable(node, label, onDrop) {
+  node.addEventListener("contextmenu", (e) => { if (document.documentElement.classList.contains("dragging")) e.preventDefault(); });
+  node.addEventListener("pointerdown", (e) => {
+    if (!state.editable || !e.isPrimary || e.button !== 0) return;
+    if (e.target.closest("button, input, a, summary, label, select")) return;
+    const touch = e.pointerType !== "mouse";
+    const start = { x: e.clientX, y: e.clientY };
+    let ghost = null;
+    let last = e;
+    const place = (ev) => {
+      ghost.style.translate = `${ev.clientX}px ${ev.clientY}px`;
+      $("tray").classList.toggle("drop-hot", overTray(ev));
+    };
+    const begin = () => {
+      ghost = el("div", { className: "drag-ghost", textContent: label });
+      ghost.setAttribute("aria-hidden", "true");
+      document.body.append(ghost);
+      document.documentElement.classList.add("dragging");
+      node.classList.add("drag-src");
+      place(last);
+    };
+    const timer = touch ? setTimeout(begin, LONG_PRESS_MS) : 0;
+    const move = (ev) => {
+      last = ev;
+      if (ghost) return place(ev);
+      if (Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 8) return;
+      if (touch) stop(); // moved before the long press: that's a scroll, not a drag
+      else begin();
+    };
+    const blockScroll = (ev) => { if (ghost) ev.preventDefault(); };
+    function stop(ev) {
+      clearTimeout(timer);
+      removeEventListener("pointermove", move);
+      removeEventListener("pointerup", stop);
+      removeEventListener("pointercancel", stop);
+      removeEventListener("touchmove", blockScroll);
+      if (!ghost) return;
+      ghost.remove();
+      document.documentElement.classList.remove("dragging");
+      node.classList.remove("drag-src");
+      $("tray").classList.remove("drop-hot");
+      if (ev?.type === "pointerup") onDrop(overTray(ev));
+    }
+    addEventListener("pointermove", move);
+    addEventListener("pointerup", stop);
+    addEventListener("pointercancel", stop);
+    addEventListener("touchmove", blockScroll, { passive: false });
+  });
+}
+
+// --- rendering ---
+function media(d) {
+  if (/^\/assets\/img\/[\w-]+\.(jpg|png|webp)$/.test(d.image_path ?? "")) { // only our own photos
+    const img = el("img", { src: d.image_path, alt: "", loading: "lazy", width: 400, height: 300, draggable: false });
+    return el("div", { className: "dish-media" }, img);
+  }
+  const art = document.createElement("i");
+  art.dataset.ill = artFor(state.categories.find((c) => c.id === d.category_id)?.name);
+  return el("div", { className: "dish-media no-photo in" }, art); // "in": drawn, no draw-in per card
+}
+
+function cardFoot(d) {
+  const foot = el("div", { className: "dish-foot" });
+  if (qty(d.id) > 0 || !state.editable) foot.append(stepper(d));
+  else {
+    const add = el("button", { type: "button", className: "btn ghost add-btn", textContent: "+ לשולחן" });
+    add.dataset.key = `add:${d.id}`;
+    add.setAttribute("aria-label", `הוספת ${d.name} לשולחן`);
+    add.addEventListener("click", () => addToTable(d));
+    foot.append(add);
+  }
+  if (d.min_quantity) foot.append(el("span", { className: "help", textContent: `מינימום ${num(d.min_quantity)} ${UNIT[d.pricing_unit]}` }));
+  const rec = recommendation(d);
+  if (rec) foot.append(rec);
+  return foot;
+}
+
+function card(d) {
+  const body = el("div", { className: "dish-body" },
+    el("h4", { textContent: d.name }),
+    badges(d),
+    d.description ? el("p", { className: "dish-desc", textContent: d.description }) : "",
+    el("p", { className: "price num" }, money(d.unit_price), " ", el("span", { textContent: d.unit_label || PER[d.pricing_unit] })),
+    allergens(d),
+    cardFoot(d));
+  const node = el("article", { className: `dish${qty(d.id) > 0 ? " in-order" : ""}` }, media(d), body);
+  node.dataset.dish = d.id;
+  draggable(node, d.name, (onTray) => { if (onTray) addToTable(d); });
+  return node;
+}
+
+function syncCard(d) {
+  const node = document.querySelector(`.dish[data-dish="${CSS.escape(d.id)}"]`);
+  if (!node) return;
+  node.classList.toggle("in-order", qty(d.id) > 0);
+  node.querySelector(".dish-foot").replaceWith(cardFoot(d));
+}
+
 function renderDishes() {
   const shown = state.dishes.filter(visible);
   $("no-dishes").hidden = shown.length > 0;
-  $("dishes").replaceChildren(...shown.map((d) => {
-    const foot = el("div", { className: "dish-foot" }, stepper(d));
-    if (d.min_quantity) foot.append(el("span", { className: "help", textContent: `מינימום ${num(d.min_quantity)} ${UNIT[d.pricing_unit]}` }));
-    const rec = recommendation(d);
-    if (rec) foot.append(rec);
-    const body = el("div", { className: "dish-body" },
-      el("h3", { textContent: d.name }),
-      badges(d),
-      d.description ? el("p", { className: "dish-desc", textContent: d.description }) : "",
-      el("p", { className: "price num" }, money(d.unit_price), " ", el("span", { textContent: d.unit_label || PER[d.pricing_unit] })),
-      allergens(d),
-      foot);
-    return el("article", { className: `dish${quantityOf(d.id) > 0 ? " in-order" : ""}` }, body);
-  }));
+  // "All" reads as a menu: one titled section per category, in the owner's order.
+  const groups = state.category ? [[null, shown]]
+    : state.categories.map((c) => [c, shown.filter((d) => d.category_id === c.id)]).filter(([, ds]) => ds.length);
+  $("dishes").replaceChildren(...groups.map(([c, ds]) => el("section", { className: "dish-group" },
+    c ? el("h3", { className: "group-h", textContent: c.name }) : "",
+    el("div", { className: "dish-grid" }, ...ds.map(card)))));
+  hydrateIllustrations($("dishes"));
+}
+
+function trayItem(d) {
+  const remove = el("button", { type: "button", className: "tray-del", textContent: "✕" });
+  remove.dataset.key = `tdel:${d.id}`;
+  remove.setAttribute("aria-label", `הסרת ${d.name} מהשולחן`);
+  remove.addEventListener("click", () => { setQuantity(d, 0); toast(`הוסר מהשולחן: ${d.name}`); });
+  const item = el("li", { className: "tray-item" },
+    el("span", { className: "tray-name" }, d.name, el("small", { textContent: qtyText(qty(d.id), d.pricing_unit) })),
+    stepper(d, "t"), remove);
+  // dragging an item off the table takes it out of the order
+  draggable(item, d.name, (onTray) => { if (!onTray) { setQuantity(d, 0); toast(`הוסר מהשולחן: ${d.name}`); } });
+  return item;
+}
+
+// The table panel and the per-category counters.
+function renderSide() {
+  const chosen = state.dishes.filter((d) => qty(d.id) > 0);
+  const names = new Map(state.categories.map((c) => [c.id, c.name]));
+  const ids = new Set([...names.keys(), ...chosen.map((d) => d.category_id)]);
+  $("tray-list").replaceChildren(...[...ids].map((id) => {
+    const ds = chosen.filter((d) => d.category_id === id);
+    return ds.length ? el("div", { className: "tray-group" }, el("h4", { textContent: names.get(id) ?? "אחר" }), el("ul", {}, ...ds.map(trayItem))) : "";
+  }), chosen.length ? "" : el("p", { className: "empty", textContent: "השולחן עוד ריק. גררו לכאן מנות." }));
+  renderCategories();
 }
 
 function renderCategories() {
+  const chosen = state.dishes.filter((d) => qty(d.id) > 0);
   const chip = (id, name) => {
+    const count = chosen.filter((d) => !id || d.category_id === id).length;
     const b = el("button", { type: "button", className: "chip-btn", textContent: name });
+    if (count) b.append(el("span", { className: "chip-count", textContent: String(count) }));
+    b.dataset.key = `cat:${id}`;
+    b.setAttribute("aria-label", count ? `${name}, ${count} נבחרו` : name);
     b.setAttribute("aria-pressed", String(state.category === id));
-    b.addEventListener("click", () => { state.category = id; renderCategories(); renderDishes(); });
+    b.addEventListener("click", () => { state.category = id; keepFocus(() => { renderCategories(); renderDishes(); }); });
     return b;
   };
   $("categories").replaceChildren(chip("", "הכל"), ...state.categories.map((c) => chip(c.id, c.name)));
@@ -294,14 +459,20 @@ export async function initMenu() {
   }
   $("submit").addEventListener("click", submit);
   $("edit-event").href = `/customer/event/?order=${encodeURIComponent(state.orderId)}`;
-  renderCategories();
+  $("tray-toggle").addEventListener("click", () => {
+    const open = $("tray-toggle").getAttribute("aria-expanded") !== "true";
+    $("tray-toggle").setAttribute("aria-expanded", String(open));
+    $("tray-list").hidden = !open;
+  });
+  $("tray").addEventListener("animationend", () => $("tray").classList.remove("bump"));
+  renderSide();
   renderDishes();
   await renderSummary();
   $("menu").hidden = false;
   if (state.editable) {
     initAssistant(state.orderId, {
       beforeAnswer: async () => { flushPending(); await queue; }, // own edits land first
-      afterAccept: async () => { await loadOrder(); renderDishes(); await renderSummary(); },
+      afterAccept: async () => { await loadOrder(); renderSide(); renderDishes(); await renderSummary(); },
     });
   }
 }

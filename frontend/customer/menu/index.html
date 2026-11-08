@@ -27,6 +27,7 @@
         <li>האירוע</li><li aria-current="step"><strong>המנות</strong></li><li>סיכום ושליחה</li>
       </ol>
       <h2>בחירת מנות</h2>
+      <p class="fine">גררו מנה אל השולחן בתחתית המסך, או לחצו "לשולחן" על הכרטיס. במגע: לחיצה ארוכה ואז גרירה.</p>
       <p class="lede" id="event-line"></p>
       <p class="fine" id="kashrut-line"></p>
     </div>
@@ -48,7 +49,7 @@
         מה שמסומן "לא ידוע" לא נבדק. באלרגיה חמורה דברו איתנו לפני ההזמנה.
       </p>
 
-      <div class="dish-grid" id="dishes"></div>
+      <div class="dish-groups" id="dishes"></div>
       <p class="empty" id="no-dishes" hidden>אין מנות שמתאימות לסינון.</p>
 
       <section class="summary" id="summary" aria-labelledby="summary-h">
@@ -70,10 +71,17 @@
         </div>
       </section>
 
-      <div class="menu-bar" id="menu-bar">
-        <span id="bar-text" aria-live="polite"></span>
-        <a class="btn primary" href="#summary">לסיכום</a>
-      </div>
+      <section class="tray" id="tray" aria-labelledby="tray-h" data-reveal>
+        <div class="tray-list" id="tray-list" hidden></div>
+        <p class="tray-drop" aria-hidden="true">שחררו כאן כדי להוסיף לשולחן</p>
+        <div class="tray-head">
+          <button type="button" class="tray-toggle" id="tray-toggle" aria-expanded="false" aria-controls="tray-list">
+            <i data-ill="basket"></i>
+            <span><strong id="tray-h">השולחן שלכם</strong> <span id="bar-text" aria-live="polite"></span></span>
+          </button>
+          <a class="btn primary" href="#summary">לסיכום</a>
+        </div>
+      </section>
     </div>
   </main>
 
