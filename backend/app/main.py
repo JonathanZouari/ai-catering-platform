@@ -14,6 +14,19 @@ from app.core.errors import install_error_handlers
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
+
+class RevalidatingStaticFiles(StaticFiles):
+    """Static files the browser keeps but re-checks on every use (a cheap 304 when unchanged).
+
+    Without Cache-Control browsers guess a lifetime, so a deploy can stay invisible for days.
+    """
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 app = FastAPI(title="AI Catering Platform")
 install_error_handlers(app)
 app.include_router(catalog.router)
@@ -34,4 +47,4 @@ def health() -> dict[str, str]:
 
 
 # Mounted last so API routes take precedence.
-app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+app.mount("/", RevalidatingStaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
