@@ -117,6 +117,23 @@ function setQuantity(d, value) {
   state.want.set(d.id, v);
   requestQuantity(d, v);
   keepFocus(() => { syncCard(d); renderSide(); });
+  const inSummary = document.querySelector(`[data-key="sqty:${CSS.escape(d.id)}"]`);
+  if (inSummary) inSummary.value = v; // the line total follows when the server answers
+}
+
+// "Clear order": every line to zero, sent at once (the server removes each item).
+function clearOrder() {
+  const byId = new Map(state.dishes.map((d) => [d.id, d]));
+  for (const i of state.order.items) {
+    const d = byId.get(i.dish_id);
+    if (d) setQuantity(d, 0);
+    else queue = queue.then(() => send({ id: i.dish_id }, 0)).catch(() => {});
+  }
+  flushPending();
+  $("clear-confirm").hidden = true;
+  $("clear-order").hidden = false;
+  $("add-more").focus();
+  toast("ההזמנה נוקתה");
 }
 
 // First amount when a dish lands on the table: the recommendation, else the smallest allowed.
@@ -138,9 +155,12 @@ function keepFocus(render) {
   const key = document.activeElement?.dataset?.key;
   render();
   if (!key || document.activeElement?.dataset?.key === key) return;
-  const id = key.split(":")[1];
+  const [kind, id] = key.split(":");
   const find = (k) => document.querySelector(`[data-key="${CSS.escape(k)}"]`);
-  (find(key) ?? find(`inc:${id}`) ?? find(`add:${id}`) ?? $("tray-toggle"))?.focus();
+  // summary controls ("s…") stay in the summary rather than jumping up to the dish card
+  const next = find(key) ?? (kind.startsWith("s") ? $("add-more")
+    : find(`inc:${id}`) ?? find(`add:${id}`) ?? $("tray-toggle"));
+  next?.focus({ preventScroll: kind.startsWith("s") });
 }
 
 // --- rendering ---
@@ -359,8 +379,13 @@ const fact = (term, value, cls = "") => el("div", { className: cls }, el("dt", {
 async function renderSummary() {
   const p = await call(`/api/orders/${state.orderId}/pricing`);
   $("no-lines").hidden = p.lines.length > 0;
-  $("lines").replaceChildren(...p.lines.map((l) => {
+  $("summary-tools").hidden = !state.editable;
+  $("clear-order").hidden = p.lines.length === 0;
+  const byId = new Map(state.dishes.map((d) => [d.id, d]));
+  const row = (l) => {
+    const d = byId.get(l.dish_id);
     const name = el("th", { scope: "row", textContent: l.name });
+    let amount = el("td", { className: "num", textContent: qtyText(l.quantity, l.pricing_unit) });
     if (!l.available) {
       name.append(el("span", { className: "help unknown", textContent: "לא זמינה יותר, לא נכללת בסכום" }));
       // It's gone from the menu grid, so this is the only place to take it out of the order.
@@ -372,12 +397,24 @@ async function renderSummary() {
         });
         name.append(remove);
       }
+    } else if (state.editable && d) {
+      const remove = el("button", { type: "button", className: "tray-del", textContent: "✕" });
+      remove.dataset.key = `sdel:${d.id}`;
+      remove.setAttribute("aria-label", `הסרת ${d.name} מההזמנה`);
+      remove.addEventListener("click", () => { setQuantity(d, 0); toast(`הוסר מההזמנה: ${d.name}`); });
+      amount = el("td", { className: "line-edit" }, stepper(d, "s"), remove);
     }
-    return el("tr", {}, name,
-      el("td", { className: "num", textContent: qtyText(l.quantity, l.pricing_unit) }),
+    return el("tr", {}, name, amount,
       el("td", { className: "num", textContent: money(l.unit_price) }),
       el("td", { className: "num", textContent: money(l.line_total) }));
-  }));
+  };
+  // Grouped like the menu: category order, then anything no longer on the menu.
+  const groups = state.categories.map((c) => [c.name, p.lines.filter((l) => byId.get(l.dish_id)?.category_id === c.id)]);
+  groups.push(["", p.lines.filter((l) => !byId.has(l.dish_id) || !state.categories.some((c) => c.id === byId.get(l.dish_id).category_id))]);
+  keepFocus(() => $("lines").replaceChildren(...groups.filter(([, ls]) => ls.length).flatMap(([name, ls]) => [
+    ...(name ? [el("tr", { className: "group-row" }, el("th", { colSpan: 4, scope: "colgroup", textContent: name }))] : []),
+    ...ls.map(row),
+  ])));
   const rows = [fact("ביניים", money(p.subtotal))];
   if (state.order.fulfillment_type === "delivery") {
     rows.push(fact("משלוח", p.delivery_fee === null ? "אין משלוח לעיר שנבחרה" : money(p.delivery_fee)));
@@ -465,6 +502,24 @@ export async function initMenu() {
     $("tray-list").hidden = !open;
   });
   $("tray").addEventListener("animationend", () => $("tray").classList.remove("bump"));
+  $("add-more").addEventListener("click", () => {
+    $("categories").scrollIntoView({ block: "start" });
+    $("categories").querySelector("button")?.focus({ preventScroll: true });
+  });
+  $("clear-order").addEventListener("click", () => {
+    $("clear-order").hidden = true;
+    $("clear-confirm").hidden = false;
+    $("clear-no").focus();
+  });
+  $("clear-no").addEventListener("click", () => {
+    $("clear-confirm").hidden = true;
+    $("clear-order").hidden = false;
+    $("clear-order").focus();
+  });
+  $("clear-yes").addEventListener("click", clearOrder);
+  // The summary does everything the table bar does; step the bar aside so it doesn't cover it.
+  new IntersectionObserver(([e]) => $("tray").classList.toggle("away", e.isIntersecting)) // back while dragging (CSS)
+    .observe($("summary"));
   renderSide();
   renderDishes();
   await renderSummary();
