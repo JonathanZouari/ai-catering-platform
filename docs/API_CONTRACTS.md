@@ -138,7 +138,7 @@ Proposal shape (`ProposalOut`, shared with owner proposals):
 |---|---|
 | GET/POST | `/api/admin/categories` · PATCH/DELETE `/api/admin/categories/{id}` |
 | GET/POST | `/api/admin/dishes` · PATCH/DELETE `/api/admin/dishes/{id}` (`contains_alcohol` marks a dish 18+, #11) |
-| POST | `/api/admin/dishes/{id}/image` (multipart → Supabase Storage) |
+| PUT/DELETE | `/api/admin/dishes/{id}/image`. PUT body = the image file itself (`Content-Type` `image/jpeg`, `image/png` or `image/webp`, ≤ 5 MB; the bytes must match the type), stored in Supabase Storage bucket `dish-images` as `dishes/{dish_id}/{random}.{ext}`; `?placeholder=true` stores under `placeholder/` (a stand-in photo, OPEN #20). Replacing or deleting removes the old file. Errors: `422 invalid_image`, `413 image_too_large`, `503 storage_unavailable`, `502 storage_failed`. Dish responses carry `image_url` (ready to show) and `image_is_placeholder` (true for `/assets/...` and `placeholder/...` photos, shown as "illustrative") |
 | PUT | `/api/admin/dishes/{id}/dietary` |
 | GET/POST/PATCH/DELETE | `/api/admin/delivery-zones` `{name, fee, cities[], is_active}`. `cities` is a full replacement; a city already in another zone gives `409 city_taken` with `{city, zone}` |
 | GET/POST/PATCH/DELETE | `/api/admin/time-slots` |

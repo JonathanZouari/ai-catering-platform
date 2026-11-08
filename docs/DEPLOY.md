@@ -40,8 +40,18 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 | `SMTP_FROM` | the sender address; verify it in Brevo → Senders first |
 | `OWNER_EMAIL` | where new orders are sent |
 | `PUBLIC_BASE_URL` | `https://<railway-domain>` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Project Settings → API Keys → secret / service_role key. Only the dish-photo upload uses it (server-side, `core/storage.py`); without it the upload answers 503 `storage_unavailable` and the rest of the app works. Never expose it to the browser |
 
-Leave `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` unset. The chat panel then stays hidden and the API answers 503 (the assistant is tested locally against a fake Claude). Never set `SUPABASE_SERVICE_ROLE_KEY` unless code needs it, which none does yet.
+Leave `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` unset. The chat panel then stays hidden and the API answers 503 (the assistant is tested locally against a fake Claude).
+
+### 3. Dish photo bucket (Supabase Storage)
+The owner uploads dish photos in the admin screen; the server stores them in the public bucket `dish-images`. Create it once per project (SQL editor):
+```sql
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('dish-images', 'dish-images', true, 5242880, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
+```
+Public means anyone can read a photo by its URL (they are on the public menu). Add no policies on `storage.objects`: with RLS on and no policies, only the service-role key (the server) can upload, replace or delete. Done on Dev 2026-11-08.
 
 ## After the first deploy
 1. Deploy logs should show `N migration(s) applied: ...` (all of `database/migrations/`). Later deploys show `0 migration(s) applied`. Any environment whose `DATABASE_URL` points at the same database also migrates it on its next deploy.

@@ -202,9 +202,16 @@ html.dragging .tray { outline-color: var(--accent-fg); }
 .tray.away { opacity: 0; visibility: hidden; transform: translateY(16px); transition: opacity .2s, transform .2s, visibility 0s .2s; }
 html.dragging .tray.away { opacity: 1; visibility: visible; transform: none; } /* the drop target comes back mid-drag */
 #categories { scroll-margin-block-start: 110px; } /* "add dishes" lands below the sticky header */
+.photo-edit { display: grid; gap: 12px; }
+.photo-edit[hidden] { display: none; }
+.photo-preview { display: grid; gap: 6px; justify-items: start; }
+.photo-preview img { width: 240px; max-width: 100%; aspect-ratio: 4 / 3; height: auto; object-fit: cover; }
+.photo-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.photo-actions:has(input:focus-visible) label { outline: 3px solid var(--accent); outline-offset: 2px; }
+.photo-note { position: absolute; inset-block-end: 8px; inset-inline-start: 8px; padding: 2px 8px; background: rgb(var(--shade) / .6); color: var(--photo-ink); font-size: .75rem; font-weight: 600; }
+.dish-media { position: relative; }
 .summary-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .summary-tools[hidden], .clear-confirm[hidden] { display: none; }
-.btn.danger { color: var(--danger); border-color: currentColor; }
 .clear-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 100%; margin: 0; padding: 10px 14px; background: var(--danger-soft); color: var(--fg); font-weight: 600; }
 .lines .group-row th { padding-block: 18px 6px; font-size: .95rem; color: var(--muted); border-block-end: 1px solid var(--line); }
 .line-edit { white-space: nowrap; }

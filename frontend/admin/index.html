@@ -75,6 +75,20 @@
         <div class="field"><label for="d-desc">תיאור</label><textarea id="d-desc" name="description" rows="3" maxlength="2000"></textarea></div>
 
         <fieldset>
+          <legend>תמונת המנה</legend>
+          <p class="help" id="photo-new">אפשר להוסיף תמונה אחרי שמירת המנה.</p>
+          <div class="photo-edit" id="photo-edit" hidden>
+            <div class="photo-preview" id="photo-preview"></div>
+            <div class="photo-actions">
+              <label class="btn ghost" for="d-photo">בחירת תמונה</label>
+              <input class="sr-only" id="d-photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help">
+              <button class="btn ghost" type="button" id="photo-remove">הסרת התמונה</button>
+              <span class="help" id="photo-help">JPG, PNG או WebP, עד 5MB. התמונה נשמרת מיד.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
           <legend>תמחור</legend>
           <div class="field-row">
             <div class="field"><label for="d-unit">יחידת תמחור</label>

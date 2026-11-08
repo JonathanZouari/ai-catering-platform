@@ -110,6 +110,8 @@ class DishOut(_Out):
     name: str
     description: str | None
     image_path: str | None
+    image_url: str | None = None  # ready to show: a static asset or the public Storage URL
+    image_is_placeholder: bool = False  # stand-in photo, shown with "illustrative" (OPEN #20)
     pricing_unit: PricingUnit
     unit_price: Decimal
     unit_label: str | None

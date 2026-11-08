@@ -24,17 +24,17 @@ IMG = "/assets/img/"
 #            image, alcohol)]); diet: "vegan" / "veg" / None (unknown)
 MENU: dict[str, tuple[int, list[tuple]]] = {
     "סלטים ומטבלים": (0, [
-        ("חומוס ביתי", None, "per_tray", 120, None, 15, "pareve", "vegan", ["שומשום"], "chickpea.jpg", False),
+        ("חומוס ביתי", None, "per_tray", 120, None, 15, "pareve", "vegan", ["שומשום"], "d-hummus.webp", False),
         ("סלט ירוק עם קינואה", None, "per_tray", 140, None, 12, "pareve", "vegan", [], "quinoa.jpg", False),
         ("טחינה ירוקה", "טחינה גולמית עם פטרוזיליה, לימון ושום", "per_tray", 70, None, 25, "pareve", "vegan", ["שומשום"], None, False),
         ("מטבוחה", "עגבניות ופלפלים בבישול ארוך, פיקנטי עדין", "per_tray", 80, None, 20, "pareve", "vegan", [], None, False),
         ("סלט כרוב סגול אסייתי", "כרוב, גזר ובצל ירוק ברוטב סויה ושומשום", "per_tray", 95, None, 15, "pareve", "vegan", ["שומשום", "סויה"], None, False),
-        ("סלט פטוש", "ירקות קצוצים, סומק ופיתה קלויה", "per_tray", 110, None, 12, "pareve", "vegan", ["גלוטן"], "green-salad.jpg", False),
+        ("סלט פטוש", "ירקות קצוצים, סומק ופיתה קלויה", "per_tray", 110, None, 12, "pareve", "vegan", ["גלוטן"], "d-fattoush.webp", False),
         ("סלט גזר מרוקאי", "גזר מבושל בכמון, שום ופטרוזיליה", "per_tray", 75, None, 20, "pareve", "vegan", [], None, False),
-        ("סלט עדשים שחורות ובטטה", "עדשים, בטטה צלויה, בצל סגול ועשבי תיבול", "per_tray", 120, None, 12, "pareve", "vegan", [], "greens.jpg", False),
+        ("סלט עדשים שחורות ובטטה", "עדשים, בטטה צלויה, בצל סגול ועשבי תיבול", "per_tray", 120, None, 12, "pareve", "vegan", [], "d-lentil-salad.webp", False),
     ]),
     "מנות עיקריות": (1, [
-        ("שיפודי עוף בגריל", None, "per_item", 18, None, Decimal("0.5"), "meat", None, [], "skewers.jpg", False),
+        ("שיפודי עוף בגריל", None, "per_item", 18, None, Decimal("0.5"), "meat", None, [], None, False),
         ("בריסקט בבישול ארוך", None, "per_weight", 220, None, 4, "meat", None, [], "brisket.jpg", False),
         ("פילה סלמון בתנור", None, "per_guest", 65, None, 1, "pareve", None, ["דגים"], "salmon.jpg", False),
         ("טופו מוקפץ עם ירקות", None, "per_guest", 48, None, 1, "pareve", "vegan", ["סויה"], "tofu.jpg", False),
@@ -56,7 +56,7 @@ MENU: dict[str, tuple[int, list[tuple]]] = {
         ("פירה בשמן זית", "פירה תפוחי אדמה בלי חלב, עם שמן זית ועירית", "per_tray", 85, None, 12, "pareve", "vegan", [], None, False),
     ]),
     "קינוחים": (3, [
-        ("עוגת שוקולד", None, "per_item", 160, None, 12, "pareve", None, [], "cake.jpg", False),
+        ("עוגת שוקולד", None, "per_item", 160, None, 12, "pareve", None, [], "d-chocolate-cake.webp", False),
         ("סלט פירות", None, "per_tray", 130, None, 20, "pareve", "vegan", [], None, False),
         ("עוגת תפוזים", "עוגה בחושה עם סירופ תפוזים", "per_item", 120, None, 12, "pareve", "veg", ["גלוטן", "ביצים"], None, False),
         ("מוס שוקולד בכוסות", "מוס פרווה על בסיס שוקולד מריר", "per_item", 12, 12, 1, "pareve", "veg", ["ביצים"], None, False),
