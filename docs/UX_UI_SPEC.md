@@ -14,20 +14,24 @@ Status: **Draft v0.2**. Visual direction chosen: **"Table Journal" (יומן ש�
 
 Source of truth: `frontend/css/base.css` (tokens, primitives, every app-screen component) and `frontend/css/home.css` (landing page only).
 
-**Look.** White page, near-black text, one forest-green accent. Square corners, thin black rules instead of cards. Large food photography, 3D depth on the landing page, and hand-drawn line illustrations with handwritten notes.
+**Look.** Warm paper page, espresso text, a pomegranate accent for every action and selection, and saffron for small marks of place. Square corners, thin warm rules instead of cards. Large food photography, 3D depth on the landing page, and hand-drawn line illustrations with handwritten notes.
 
-**Color tokens.** Light values are listed. Dark values switch automatically with `prefers-color-scheme`, or can be forced with `data-theme`.
+**Color tokens ("pomegranate & saffron", 2026-11-08).** Light values are listed. Dark values (espresso background, paper text, light pomegranate) switch automatically with `prefers-color-scheme`, or can be forced with `data-theme`. Every text pair passes WCAG AA in both themes.
 
 | Token | Light | Use |
 |---|---|---|
-| `--bg` / `--surface` | `#ffffff` | Page and panel background |
-| `--fg` | `#121211` | Text, rules, primary button |
-| `--muted` | `#5a5955` | Secondary text |
-| `--line` / `--line-strong` | `#e2e1dd` / `#8f8d88` | Dividers and control borders |
-| `--accent` / `--accent-ink` | `#1e4a37` | Brand accent, focus ring, illustrations |
-| `--success` / `--danger` / `--warning-ink` (+ `-soft`) | | Status pills, notices |
+| `--bg` / `--surface` | `#fff8ef` / `#fffdf9` | Page and panel background |
+| `--fg` | `#2a1a12` | Text and rules |
+| `--muted` | `#6b5546` | Secondary text |
+| `--line` / `--line-strong` | `#ecdcc8` / `#9a7f6a` | Dividers and control borders (3.5:1) |
+| `--accent` / `--accent-fg` / `--accent-ink` | `#a11d3a` / `#fff8ef` / `#a11d3a` | Primary button, selected chips and segments, menu bar, own chat messages, toast, focus ring, illustrations |
+| `--spark` / `--spark-soft` | `#b8780f` / `#fbe7c2` | Saffron: active-page underline, text selection |
+| `--success` / `--danger` / `--warning-ink` (+ `-soft`) | | Status pills, notices. Danger is a vermilion (`#b93a14`) next to the pomegranate accent, so errors always carry text and `aria-invalid` too |
 | `--meat` / `--dairy` / `--parve` | | Kashrut badges |
 | `--photo-ink`, `--paper`, `--paper-ink` | | Text on photos; the polaroid cards |
+| `--shade` | `32 14 8` | RGB triplet for warm photo overlays and shadows: `rgb(var(--shade) / .5)` |
+
+Browser surfaces follow the palette: caret, checkbox/radio accent, scrollbar and text selection.
 
 **Type.** All fonts come from Google Fonts.
 
