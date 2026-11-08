@@ -174,6 +174,7 @@ function badges(d) {
 }
 
 function allergens(d) {
+  if (d.dietary.kashrut_class === null) return ""; // not food: no allergen info to show
   const contains = d.allergens.filter((a) => a.status === "contains").map((a) => a.name);
   const free = d.allergens.filter((a) => a.status === "free").map((a) => a.name);
   const lines = [];
