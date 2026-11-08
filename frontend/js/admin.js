@@ -91,6 +91,9 @@ function renderAllergenFields(current) {
   }));
 }
 
+// Not food (kashrut ""): trays, place settings. No allergens to declare.
+const toggleAllergens = () => { $("allergen-set").hidden = $("d-kashrut").value === ""; };
+
 const triState = (v) => (v === null || v === undefined ? "" : String(v));
 const fromTriState = (v) => (v === "" ? null : v === "true");
 
@@ -119,6 +122,7 @@ function openEditor(dish) {
     $("d-category").value = $("filter").value;
   }
   renderAllergenFields(dish?.allergens ?? []);
+  toggleAllergens();
   renderPhoto(dish);
   $("d-name").focus({ preventScroll: true });
   f.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
@@ -182,7 +186,7 @@ function dietaryPayload() {
     kashrut_class: $("d-kashrut").value || null,
     is_vegetarian: fromTriState($("d-veg").value),
     is_vegan: fromTriState($("d-vegan").value),
-    allergens: [...$("allergen-fields").querySelectorAll("select")]
+    allergens: $("allergen-set").hidden ? [] : [...$("allergen-fields").querySelectorAll("select")]
       .map((s) => ({ allergen_id: Number(s.dataset.allergenId), status: s.value })),
   };
 }
@@ -236,6 +240,7 @@ export function initAdmin() {
   $("filter").addEventListener("change", renderDishes);
   $("new-dish").addEventListener("click", () => openEditor(null));
   $("dish-form").addEventListener("submit", saveDish);
+  $("d-kashrut").addEventListener("change", toggleAllergens);
   $("d-photo").addEventListener("change", () => {
     const file = $("d-photo").files[0];
     $("d-photo").value = ""; // the same file can be chosen again
