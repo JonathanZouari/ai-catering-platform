@@ -1,6 +1,6 @@
 # Entity-relationship diagram
 
-Diagrams for the schema in [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md) (v0.3, live in Supabase; SQL in `supabase/migrations/`). Column types such as `order_status` and `kashrut` are Postgres enum types. Column conventions:
+Diagrams for the schema in [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md) (v0.4, live in Supabase; SQL in `supabase/migrations/`). Column types such as `order_status` and `kashrut` are Postgres enum types. Column conventions:
 
 - `*_agorot`: money in whole agorot, VAT-inclusive (₪85.50 = `8550`).
 - `*_milli`: quantity in thousandths of the dish unit (3 trays = `3000`).
@@ -9,7 +9,7 @@ Diagrams for the schema in [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md) (v0.3, liv
 
 ## Overview (relationships only)
 
-Every line is a foreign key. `orders` is the centre. `settings` and `calendar_overrides` have no foreign keys; the backend reads them for the daily guest limit.
+Every line is a foreign key. `orders` is the centre; each order belongs to one `events` row, and an event can have several orders. `settings` and `calendar_overrides` have no foreign keys; the backend reads them for the daily guest limit.
 
 ```mermaid
 erDiagram
@@ -18,10 +18,11 @@ erDiagram
   allergens ||--o{ dish_allergens : "listed in"
   staff_users |o--o{ dishes : "verifies allergens"
   delivery_zones ||--o{ zone_cities : "covers"
+  customers ||--o{ events : "holds"
+  events ||--o{ orders : "quoted in"
   customers ||--o{ orders : "places"
   time_slots |o--o{ orders : "booked in"
   zone_cities |o--o{ orders : "delivers to city"
-  delivery_zones |o--o{ orders : "priced by"
   orders ||--o{ order_items : "has lines"
   dishes ||--o{ order_items : "ordered as"
   orders ||--o{ order_events : "history"
@@ -92,6 +93,8 @@ Statuses: `draft` → `pending_approval` → `approved` / `rejected`, plus `canc
 
 ```mermaid
 erDiagram
+  customers ||--o{ events : "holds"
+  events ||--o{ orders : "quoted in"
   customers ||--o{ orders : "places"
   orders ||--o{ order_items : "has lines"
   dishes ||--o{ order_items : "ordered as"
@@ -103,27 +106,31 @@ erDiagram
     text email
     uuid auth_user_id FK "auth.users, when they have a login"
   }
-  orders {
+  events {
     uuid id PK
     uuid customer_id FK
-    text access_token_hash UK "private order link"
-    order_status status "draft to completed"
-    int version "bumped on every change"
     text event_type
     date event_date
-    uuid time_slot_id FK
-    time slot_start "copied from slot"
-    time slot_end "copied from slot"
     int adults "at least 1"
     int children
     int vegetarian "subset of guests"
     int vegan "subset of guests"
     int restricted "subset of guests"
     text dietary_notes
+  }
+  orders {
+    uuid id PK
+    uuid customer_id FK "same as the event's"
+    uuid event_id FK
+    text access_token_hash UK "private order link"
+    order_status status "draft to completed"
+    int version "bumped on every change"
+    uuid time_slot_id FK
+    time slot_start "copied from slot"
+    time slot_end "copied from slot"
     fulfillment fulfillment "pickup, delivery"
     text city FK "zone_cities"
     text delivery_address
-    uuid delivery_zone_id FK
     int delivery_fee_agorot "frozen"
     int subtotal_agorot "frozen"
     int total_agorot "frozen"

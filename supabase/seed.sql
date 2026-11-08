@@ -160,17 +160,8 @@ insert into customers (full_name, phone, email, auth_user_id) values
 
 -- Orders -------------------------------------------------------------------------
 -- The access token hash stands in for the secret in each customer's private link.
-insert into orders (customer_id, access_token_hash, status, version, event_type, event_date,
-                    time_slot_id, adults, children, vegetarian, vegan, restricted, dietary_notes,
-                    fulfillment, city, delivery_address, created_at)
-select c.id, encode(sha256(convert_to(v.token, 'UTF8')), 'hex'), v.status::order_status, v.version, v.event_type,
-       v.event_date::date,
-       (select s.id from time_slots s
-         where s.fulfillment = v.fulfillment::fulfillment
-           and (s.weekday = extract(dow from v.event_date::date) or s.weekday is null)
-         order by s.weekday nulls last, s.start_time limit 1),
-       v.adults, v.children, v.veg, v.vegan, v.restricted, v.notes,
-       v.fulfillment::fulfillment, v.city, v.address, v.created::timestamptz
+create temp table demo_orders on commit drop as
+select gen_random_uuid() as event_id, c.id as customer_id, v.*
 from (values
   ('demo-order-1', '0500000000', 'pending_approval', 2, 'יום הולדת',          '2026-11-27', 30, 10, 4, 2, 0, null, 'delivery', 'תל אביב-יפו', 'רחוב הדוגמה 12, דירה 4', '2026-11-02 18:10+02'),
   ('demo-order-2', '0500000000', 'completed',        3, 'ארוחת שישי משפחתית', '2026-10-16', 12, 4, 0, 0, 0, null, 'pickup', null, null, '2026-10-05 12:00+03'),
@@ -183,6 +174,24 @@ from (values
 ) as v(token, phone, status, version, event_type, event_date, adults, children, veg, vegan,
        restricted, notes, fulfillment, city, address, created)
 join customers c on c.phone = v.phone;
+
+-- One event per demo order (an event may also have several orders).
+insert into events (id, customer_id, event_type, event_date, adults, children,
+                    vegetarian, vegan, restricted, dietary_notes, created_at)
+select event_id, customer_id, event_type, event_date::date, adults, children,
+       veg, vegan, restricted, notes, created::timestamptz
+from demo_orders;
+
+insert into orders (customer_id, event_id, access_token_hash, status, version,
+                    time_slot_id, fulfillment, city, delivery_address, created_at)
+select v.customer_id, v.event_id, encode(sha256(convert_to(v.token, 'UTF8')), 'hex'),
+       v.status::order_status, v.version,
+       (select s.id from time_slots s
+         where s.fulfillment = v.fulfillment::fulfillment
+           and (s.weekday = extract(dow from v.event_date::date) or s.weekday is null)
+         order by s.weekday nulls last, s.start_time limit 1),
+       v.fulfillment::fulfillment, v.city, v.address, v.created::timestamptz
+from demo_orders v;
 
 -- Order lines: (order token, dish, quantity in thousandths)
 insert into order_items (order_id, dish_id, quantity_milli)
@@ -229,8 +238,7 @@ set slot_start = s.start_time, slot_end = s.end_time
 from time_slots s where s.id = o.time_slot_id;
 
 update orders o
-set delivery_zone_id    = zc.zone_id,
-    delivery_fee_agorot = z.fee_agorot
+set delivery_fee_agorot = z.fee_agorot
 from zone_cities zc join delivery_zones z on z.id = zc.zone_id
 where o.city = zc.city and o.fulfillment = 'delivery' and o.status <> 'draft';
 
@@ -244,9 +252,6 @@ set subtotal_agorot = t.subtotal,
 from (select order_id, sum(line_total_agorot)::int as subtotal
       from order_items group by order_id) t
 where t.order_id = o.id and o.status <> 'draft';
-
-update orders o set delivery_zone_id = zc.zone_id
-from zone_cities zc where o.city = zc.city and o.status = 'draft';
 
 -- Status history -----------------------------------------------------------------
 insert into order_events (order_id, from_status, to_status, actor_type, created_at)
@@ -270,8 +275,8 @@ from (values
 join orders o on o.access_token_hash = encode(sha256(convert_to(v.token, 'UTF8')), 'hex');
 
 insert into order_events (order_id, from_status, to_status, actor_type, note, created_at)
-select id, 'approved'::order_status, 'completed'::order_status, 'system'::actor_type, 'האירוע הסתיים', event_date + interval '1 day'
-from orders where status = 'completed';
+select o.id, 'approved'::order_status, 'completed'::order_status, 'system'::actor_type, 'האירוע הסתיים', e.event_date + interval '1 day'
+from orders o join events e on e.id = o.event_id where o.status = 'completed';
 
 -- AI assistant: a chat on the draft order with one pending suggestion ---------------
 with o as (

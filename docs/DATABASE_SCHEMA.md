@@ -1,6 +1,7 @@
 # Database Schema (Supabase Postgres)
 
-Status: **v0.3** — live in the `ai-catering-dev` Supabase project since 2026-11-05.
+Status: **v0.4** — live in the `ai-catering-dev` Supabase project since 2026-11-05.
+v0.4 (2026-11-08) brings back a separate `events` table (one event, several orders) and derives the delivery zone from the city.
 v0.3 (2026-11-06) drops the SQLite compatibility of v0.2: the database is Supabase Postgres in every environment (ADR-0002).
 The SQL source of truth is `supabase/migrations/`; synthetic demo data is in `supabase/seed.sql`. This document describes it.
 Diagrams: [`ERD.md`](ERD.md).
@@ -146,28 +147,37 @@ Slots decide **when** pickup/delivery happens. They carry no capacity: capacity 
 | auth_user_id | uuid null unique, FK → `auth.users` ON DELETE SET NULL | The customer's Supabase Auth login, if they have one. How a new login gets linked to an existing customer is still open **[OPEN #1]** |
 | created_at, updated_at | timestamp | |
 
-#### orders
-Event details live on the order (v0.1 `events` was always 1:1 and is merged in).
+#### events
+What the event is. One event can have several orders, e.g. a quotation reworked into a new order after a rejection.
 
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| customer_id | uuid FK → customers not null | index |
-| access_token_hash | text not null unique | SHA-256 of the secret in the customer's private order link. The plain token is never stored |
-| status | order_status not null default `'draft'` | Index (`status`, `event_date`) |
-| version | int not null default 1 | Incremented on every mutation; AI proposals execute only against a matching version |
+| customer_id | uuid FK → customers not null | index. UNIQUE (`id`, `customer_id`) so orders can reference both |
 | event_type | text not null | From the configured list of private event types |
-| event_date | date not null | |
-| time_slot_id | uuid FK → time_slots null | |
-| slot_start, slot_end | time null | Copied from the slot, so later slot edits don't change the order |
+| event_date | date not null | index |
 | adults | int not null CHECK ≥ 1 | |
 | children | int not null default 0 CHECK ≥ 0 | |
 | vegetarian, vegan, restricted | int not null default 0 CHECK ≥ 0 | **Subsets** of adults + children, mutually exclusive (a vegan is not also counted as vegetarian). CHECK `vegetarian + vegan + restricted ≤ adults + children` |
 | dietary_notes | text null | Free text for the owner; never parsed into safety claims |
+| created_at, updated_at | timestamp | |
+
+#### orders
+One quotation for an event: how it is served and what it costs.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| customer_id | uuid FK → customers not null | index. Kept for RLS; must equal the event's customer |
+| event_id | uuid not null | index. FK (`event_id`, `customer_id`) → events (`id`, `customer_id`), so an order can't belong to another customer than its event |
+| access_token_hash | text not null unique | SHA-256 of the secret in the customer's private order link. The plain token is never stored |
+| status | order_status not null default `'draft'` | index |
+| version | int not null default 1 | Incremented on every mutation; AI proposals execute only against a matching version |
+| time_slot_id | uuid FK → time_slots null | |
+| slot_start, slot_end | time null | Copied from the slot, so later slot edits don't change the order |
 | fulfillment | fulfillment not null | |
-| city | text null | FK → zone_cities.city |
+| city | text null | FK → zone_cities.city. The delivery zone is derived from it (`zone_cities.zone_id`), never stored on the order |
 | delivery_address | text null | CHECK: `city` and `delivery_address` not null when `fulfillment = 'delivery'` |
-| delivery_zone_id | uuid FK → delivery_zones null | |
 | delivery_fee_agorot | int null | Frozen at submission |
 | subtotal_agorot | int null | Sum of line totals, frozen at submission |
 | total_agorot | int null | Subtotal + delivery fee, frozen at submission (VAT-inclusive) |
@@ -243,7 +253,7 @@ The schema accepts all six statuses; the backend allows only the transitions abo
 
 | Rule | Where |
 |---|---|
-| **Daily guest capacity**: for `event_date`, limit = `calendar_overrides.max_guests` if set, else `settings.default_max_guests_per_day`. Sum `adults + children` over orders in `pending_approval` or `approved` on that date; submission fails if the new order would exceed the limit. Blocked dates and `min_lead_days` are checked first | Submission service, inside the submit transaction. Take a transaction-scoped advisory lock on the date (`pg_advisory_xact_lock`) so two concurrent submissions can't both take the last places |
+| **Daily guest capacity**: for `event_date`, limit = `calendar_overrides.max_guests` if set, else `settings.default_max_guests_per_day`. Sum `adults + children` over events on that date that have an order in `pending_approval` or `approved`, counting each event once; submission fails if the new order would exceed the limit. Blocked dates and `min_lead_days` are checked first | Submission service, inside the submit transaction. Take a transaction-scoped advisory lock on the date (`pg_advisory_xact_lock`) so two concurrent submissions can't both take the last places |
 | Price and quantity calculation, price snapshot at submission | Pricing service (ADR-0003) |
 | Proposal execution: version match, single execution | Proposal service (`AI_AGENT_DESIGN.md`) |
 | **Meat/dairy mix warning**: mixing is allowed. If an order has both a `meat` and a `dairy` dish, the customer sees a warning and the owner sees a flag on the order. Computed from the items (from `snapshot_kashrut` once submitted); no stored flag. The AI must say so when a suggestion creates a mix | Pricing/order service, admin order view, AI tools |
@@ -256,7 +266,7 @@ RLS is on for every table. Browser requests use the publishable key and run as `
 | Who | Can read | Can change |
 |---|---|---|
 | Visitor (`anon`) | Menu: active categories, available dishes, allergens, active delivery zones and cities, active time slots, settings | Nothing |
-| Customer | The menu, plus their own `customers` row, orders, order lines, order history, AI chats and suggestions | Their own `customers` row only. Orders are created and changed through the backend (ADR-0003) |
+| Customer | The menu, plus their own `customers` row, events, orders, order lines, order history, AI chats and suggestions | Their own `customers` row only. Orders are created and changed through the backend (ADR-0003) |
 | Staff | Everything | Everything |
 | Backend (direct connection) | Everything (bypasses RLS) | Everything, following the backend rules above |
 
@@ -264,7 +274,12 @@ RLS is on for every table. Browser requests use the publishable key and run as `
 
 **Storage:** public bucket `dish-images` (5 MB max; JPEG, PNG, WEBP). Anyone can view an image by its URL; only staff can upload, replace (upsert) or delete. `dishes.image_path` holds the object path inside the bucket, e.g. `dishes/<dish id>/<timestamp>.webp`.
 
-**Realtime:** `orders` and `order_events` are in the `supabase_realtime` publication. Subscribers receive only the rows their read rules allow: staff get every order, a customer only their own.
+**Realtime:** `events`, `orders` and `order_events` are in the `supabase_realtime` publication. Subscribers receive only the rows their read rules allow: staff get every order, a customer only their own.
+
+## Changes in v0.4 (2026-11-08)
+
+- `events` is a separate table again (it was merged into `orders` in v0.2): one event can have several orders. Event type, date, guest counts and dietary notes moved there; `orders.event_id` added.
+- `orders.delivery_zone_id` removed: the zone comes from `orders.city` → `zone_cities.zone_id`, so the two can't disagree. The fee is still frozen in `delivery_fee_agorot`.
 
 ## Changes in v0.3 (2026-11-06)
 
