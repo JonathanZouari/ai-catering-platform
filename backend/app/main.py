@@ -1,3 +1,4 @@
+import mimetypes
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -13,6 +14,8 @@ from app.core.config import get_settings
 from app.core.errors import install_error_handlers
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+# The slim Docker image's type table lacks WebP, so dish photos went out as octet-stream.
+mimetypes.add_type("image/webp", ".webp")
 
 
 class RevalidatingStaticFiles(StaticFiles):
