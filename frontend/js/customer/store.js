@@ -96,6 +96,10 @@ export async function restoreOrder() {
   if (order.accessToken) {
     try {
       const saved = await api("/api/orders/receipt", { headers: { "X-Order-Token": order.accessToken }, cache: "no-store" });
+      // A late response must not revive a previous order or roll back a newer decision.
+      if (state.order.accessToken !== order.accessToken) return;
+      if (state.order.status !== "draft" && saved.version < state.order.version) return;
+      if (state.step === "status" && JSON.stringify(state.order) === JSON.stringify({ ...saved, accessToken: order.accessToken })) return;
       commit({ ...state, order: { ...saved, accessToken: order.accessToken }, step: "status" });
     } catch (error) {
       if (error.status !== 404 || order.status !== "draft") throw error;

@@ -84,6 +84,9 @@ class OrderStore(Protocol):
     def lock_submissions(self) -> None: ...
     def find(self, token_hash: str, order_id: int | None = None) -> dict | None: ...
     def create(self, token_hash: str, payload: str, draft: dict) -> tuple[str, dict | None]: ...
+    def decide(
+        self, order_id: int, decision: str, expected_version: int, note: str
+    ) -> tuple[bool, dict | None]: ...
 
 
 class SqliteOrders:
@@ -110,8 +113,8 @@ class SqliteOrders:
                         "allergens": [
                             a["name"]
                             for a in self.conn.execute(
-                            "SELECT a.name FROM allergens a "
-                            "JOIN dish_allergens da ON da.allergen_id=a.id "
+                                "SELECT a.name FROM allergens a "
+                                "JOIN dish_allergens da ON da.allergen_id=a.id "
                                 "WHERE da.dish_id=? AND da.status='contains' ORDER BY a.id",
                                 (row["id"],),
                             )
@@ -119,9 +122,9 @@ class SqliteOrders:
                         "allergenStatuses": [
                             dict(a)
                             for a in self.conn.execute(
-                            "SELECT a.name,coalesce(da.status,'unknown') AS status "
-                            "FROM allergens a LEFT JOIN dish_allergens da "
-                            "ON da.allergen_id=a.id AND da.dish_id=? ORDER BY a.id",
+                                "SELECT a.name,coalesce(da.status,'unknown') AS status "
+                                "FROM allergens a LEFT JOIN dish_allergens da "
+                                "ON da.allergen_id=a.id AND da.dish_id=? ORDER BY a.id",
                                 (row["id"],),
                             )
                         ],
@@ -228,6 +231,31 @@ class SqliteOrders:
         saved = self.find(token_hash)
         conn.commit()  # Never return success before persistence succeeds.
         return "created", saved
+
+    def decide(
+        self, order_id: int, decision: str, expected_version: int, note: str
+    ) -> tuple[bool, dict | None]:
+        """One UPDATE compares and writes, so concurrent decisions move the version once."""
+        decided = (
+            self.conn.execute(
+                "UPDATE orders SET status=?, version=version+1, decided_at=?, decision_note=? "
+                "WHERE id=? AND status='pending_approval' AND version=?",
+                (
+                    decision,
+                    datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    note or None,
+                    order_id,
+                    expected_version,
+                ),
+            ).rowcount
+            == 1
+        )
+        row = self.conn.execute(
+            "SELECT id, status, version, decision_note, decided_at FROM orders WHERE id=?",
+            (order_id,),
+        ).fetchone()
+        self.conn.commit()
+        return decided, None if row is None else dict(row)
 
 
 def get_order_store(request: Request) -> Iterator[OrderStore]:

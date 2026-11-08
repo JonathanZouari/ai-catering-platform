@@ -99,3 +99,22 @@ class SupabaseOrders:
             return outcome, None
         logger.error("Supabase customer_order_submit returned an unknown outcome")
         raise CloudUnavailable
+
+    def decide(
+        self, order_id: int, decision: str, expected_version: int, note: str
+    ) -> tuple[bool, dict | None]:
+        result = _require(
+            self._rpc(
+                "owner_order_decide",
+                p_order_id=order_id,
+                p_decision=decision,
+                p_expected_version=expected_version,
+                p_note=note,
+            ),
+            "decided",
+            "order",
+        )
+        if result["order"] is None:
+            return False, None
+        order = _require(result["order"], "id", "status", "version", "decision_note", "decided_at")
+        return result["decided"] is True, order

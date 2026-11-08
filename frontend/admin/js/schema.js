@@ -92,7 +92,7 @@ export const TABLES = [
     label: "הזמנות",
     description: "הזמנה אחת לכל אירוע, עם סטטוס, סכומים ואופן אספקה.",
     group: "orders",
-    readOnlyReason: "קריאה בלבד בשלב זה.",
+    readOnlyReason: "פתחו בדיקת הזמנה לאישור או לדחייה. פרטי ההגשה והמחיר נשמרים ללא שינוי.",
     columns: [
       id,
       { name: "customer_id", label: "לקוח", type: "fk", fk: fk("customers") },

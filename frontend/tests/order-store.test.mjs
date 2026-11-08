@@ -67,3 +67,55 @@ test("no submission when browser cannot retain its recovery credential", async (
   assert.ok((await store.submitOrder()).errors.server);
   assert.equal(store.getState().order.status, "draft");
 });
+
+for (const status of ["approved", "rejected"]) {
+  test(`receipt refresh displays ${status} and owner note, retaining its snapshot`, async () => {
+    const order = { ...draft(), id: 20, version: 1, status: "pending_approval", accessToken: "b".repeat(64), snapshot: { total: 85, lines: [{ name: "Frozen", lineTotal: 85 }] } };
+    const store = await storeWith(order);
+    globalThis.fetch = async (_path, options) => {
+      assert.equal(options.cache, "no-store");
+      return Response.json({ ...order, version: 2, status, ownerNote: "הודעה מהעסק" });
+    };
+    await store.restoreOrder();
+    assert.equal(store.getState().order.status, status);
+    assert.equal(store.getState().order.ownerNote, "הודעה מהעסק");
+    assert.deepEqual(store.getState().order.snapshot, order.snapshot);
+    const reopened = await storeWith(store.getState().order);
+    assert.equal(reopened.getState().order.status, status);
+  });
+}
+
+test("late receipt cannot resurrect an order after start over", async () => {
+  const order = { ...draft(), id: 20, version: 1, status: "approved", accessToken: "c".repeat(64) };
+  const store = await storeWith(order);
+  let resolve;
+  globalThis.fetch = () => new Promise(r => { resolve = r; });
+  const refresh = store.restoreOrder();
+  store.startOver();
+  resolve(Response.json(order));
+  await refresh;
+  assert.equal(store.getState().order.status, "draft");
+  assert.equal(store.getState().step, "event");
+});
+
+test("out-of-order refresh cannot roll back an owner decision", async () => {
+  const order = { ...draft(), id: 20, version: 1, status: "pending_approval", accessToken: "d".repeat(64) };
+  const store = await storeWith(order);
+  let first;
+  globalThis.fetch = () => new Promise(r => { first = r; });
+  const older = store.restoreOrder();
+  globalThis.fetch = async () => Response.json({ ...order, version: 2, status: "approved" });
+  await store.restoreOrder();
+  first(Response.json(order));
+  await older;
+  assert.equal(store.getState().order.status, "approved");
+  assert.equal(store.getState().order.version, 2);
+});
+
+test("failed refresh retains last receipt and reports failure", async () => {
+  const order = { ...draft(), id: 20, status: "pending_approval", accessToken: "e".repeat(64) };
+  const store = await storeWith(order);
+  globalThis.fetch = async () => new Response("{}", { status: 503 });
+  await assert.rejects(store.restoreOrder());
+  assert.deepEqual(store.getState().order, order);
+});

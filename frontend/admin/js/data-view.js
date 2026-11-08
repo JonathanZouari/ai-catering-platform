@@ -1,6 +1,7 @@
 // Live records for authorized staff: table list, paginated grid and the live-update channel.
 import { clear, errorBlock, h, ident } from "./dom.js";
 import { openRowForm } from "./forms.js";
+import { openOrderDecision } from "./order-decisions.js";
 import {
   DISH_BUCKET,
   PAGE_SIZES,
@@ -254,6 +255,7 @@ export function createDataView({ client, container, onSessionLost }) {
     }
     const focusedKey = document.activeElement?.dataset?.rowKey;
     const canEdit = table.editable === true;
+    const canReview = table.name === "orders";
     clear(gridArea).append(
       state.rows.length === 0
         ? h("p", { class: "empty-state" }, "אין רשומות בטבלה הזו.")
@@ -267,7 +269,7 @@ export function createDataView({ client, container, onSessionLost }) {
               h(
                 "tr",
                 {},
-                canEdit && h("th", { scope: "col" }, h("span", { class: "visually-hidden" }, "פעולות")),
+                (canEdit || canReview) && h("th", { scope: "col" }, h("span", { class: "visually-hidden" }, "פעולות")),
                 table.columns.map((column) =>
                   h(
                     "th",
@@ -286,7 +288,7 @@ export function createDataView({ client, container, onSessionLost }) {
                 h(
                   "tr",
                   {},
-                  canEdit &&
+                  (canEdit || canReview) &&
                     h(
                       "td",
                       {},
@@ -296,10 +298,10 @@ export function createDataView({ client, container, onSessionLost }) {
                           class: "btn btn-ghost",
                           type: "button",
                           "data-row-key": rowKey(table, row),
-                          "aria-label": `עריכת רשומה ${rowKey(table, row)}`,
-                          onclick: () => openForm(row),
+                          "aria-label": `${canReview ? "בדיקת הזמנה" : "עריכת רשומה"} ${rowKey(table, row)}`,
+                          onclick: () => canReview ? openDecision(row) : openForm(row),
                         },
-                        "עריכה",
+                        canReview ? "בדיקת הזמנה" : "עריכה",
                       ),
                     ),
                   table.columns.map((column) => h("td", {}, cellContent(column, row))),
@@ -344,6 +346,13 @@ export function createDataView({ client, container, onSessionLost }) {
   }
 
   /* ---------- actions ---------- */
+
+  function openDecision(row) {
+    openOrderDecision({ client, row, customerName: state.lookups.customer_id?.[row.customer_id],
+      isSessionAlive: () => alive, onSaved: () => load({ quiet: true }), onSessionLost,
+      registerDialog: (value) => { dialog = value; },
+    });
+  }
 
   function openForm(row) {
     if (!state.table.editable) return;
