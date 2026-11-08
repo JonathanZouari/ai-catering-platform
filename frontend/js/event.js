@@ -114,20 +114,104 @@ function renderSlots(selectId = null) {
 
 const money = (v) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(v);
 
+// City autocomplete: spaces, hyphens and quote marks don't matter ("תל אביב" finds "תל אביב-יפו").
+const norm = (s) => s.replace(/[-־'"׳״]/g, " ").replace(/\s+/g, " ").trim();
+
+function cityMatches(query) {
+  const q = norm(query);
+  if (!q) return state.cities;
+  return state.cities.filter((c) => norm(c.city).split(" ").some((_, i, w) => w.slice(i).join(" ").startsWith(q)));
+}
+
+// The served city the text means: an exact name, or the only city it is the start of.
+function resolveCity(text) {
+  const q = norm(text);
+  if (!q) return null;
+  const exact = state.cities.find((c) => norm(c.city) === q);
+  if (exact) return exact.city;
+  const starts = state.cities.filter((c) => norm(c.city).startsWith(q));
+  return starts.length === 1 ? starts[0].city : null;
+}
+
 function renderCities(selected = $("city").value) {
-  const known = state.cities.some((c) => c.city === selected);
-  const options = state.cities.map((c) => el("option", { value: c.city, textContent: c.city }));
-  // A city the order had that is no longer served stays visible, so the customer sees why.
-  if (selected && !known) options.unshift(el("option", { value: selected, textContent: `${selected} (אין משלוחים כרגע)` }));
-  $("city").replaceChildren(el("option", { value: "", textContent: "בחרו עיר" }), ...options);
-  $("city").value = selected ?? "";
+  $("city").value = selected ?? ""; // a city no longer served stays, and the help says so
   showFee();
 }
 
 function showFee() {
-  const city = state.cities.find((c) => c.city === $("city").value);
+  const text = $("city").value;
+  const city = state.cities.find((c) => c.city === text);
   $("city-help").textContent = city ? `דמי משלוח: ${money(city.fee)}`
-    : $("city").value ? "לעיר הזו אין כרגע משלוחים." : "משלוחים רק לערים שברשימה.";
+    : norm(text) && !cityMatches(text).length ? "לעיר הזו אין כרגע משלוחים." : "משלוחים רק לערים שברשימה.";
+}
+
+function initCityCombo() {
+  const input = $("city");
+  const list = $("city-list");
+  let shown = [];
+  let active = -1;
+  const options = () => [...list.children];
+  const highlight = (i) => {
+    active = i;
+    options().forEach((li, j) => li.setAttribute("aria-selected", String(j === i)));
+    if (i < 0) { input.removeAttribute("aria-activedescendant"); return; }
+    input.setAttribute("aria-activedescendant", options()[i].id);
+    options()[i].scrollIntoView({ block: "nearest" });
+  };
+  const close = () => {
+    list.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    highlight(-1);
+  };
+  const open = () => {
+    shown = cityMatches(input.value);
+    const q = norm(input.value);
+    list.replaceChildren(...shown.map((c, i) => {
+      const at = q ? norm(c.city).indexOf(q) : -1; // norm keeps the length, so offsets line up
+      const name = at < 0 ? el("span", { textContent: c.city })
+        : el("span", {}, c.city.slice(0, at), el("mark", { textContent: c.city.slice(at, at + q.length) }), c.city.slice(at + q.length));
+      const li = el("li", { id: `city-opt-${i}` }, name, el("span", { className: "combo-fee", textContent: money(c.fee) }));
+      li.setAttribute("role", "option");
+      return li;
+    }));
+    list.hidden = shown.length === 0;
+    input.setAttribute("aria-expanded", String(shown.length > 0));
+    highlight(shown.length === 1 && q ? 0 : -1);
+  };
+  const pick = (c) => {
+    input.value = c.city;
+    input.removeAttribute("aria-invalid");
+    close();
+    showFee();
+  };
+  input.addEventListener("focus", open);
+  input.addEventListener("input", () => { open(); showFee(); });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (list.hidden) open();
+      if (!shown.length) return;
+      const n = shown.length;
+      highlight(e.key === "ArrowDown" ? (active + 1) % n : (active <= 0 ? n - 1 : active - 1));
+    } else if (e.key === "Enter" && !list.hidden && active >= 0) {
+      e.preventDefault(); // pick, don't submit the form
+      pick(shown[active]);
+    } else if (e.key === "Escape" && !list.hidden) {
+      e.preventDefault();
+      close();
+    }
+  });
+  list.addEventListener("mousedown", (e) => e.preventDefault()); // keep focus in the input
+  list.addEventListener("click", (e) => {
+    const li = e.target.closest('[role="option"]');
+    if (li) pick(shown[options().indexOf(li)]);
+  });
+  input.addEventListener("blur", () => {
+    close();
+    const city = resolveCity(input.value);
+    if (city) input.value = city;
+    showFee();
+  });
 }
 
 function checkDate() {
@@ -157,7 +241,7 @@ function readForm() {
     fulfillment_type: fulfillment(),
     slot_id: $("slot").value,
     delivery_address: fulfillment() === "delivery" ? $("address").value.trim() || null : null,
-    delivery_city: fulfillment() === "delivery" ? $("city").value || null : null,
+    delivery_city: fulfillment() === "delivery" ? resolveCity($("city").value) ?? ($("city").value.trim() || null) : null,
   };
 }
 
@@ -175,6 +259,9 @@ function clientProblem(body) {
   if (over) return [over, `לא יכול להיות יותר מסך האורחים (${guests})`];
   if (e.vegetarian_guests + e.vegan_guests > guests) return ["vegan_guests", `צמחונים וטבעונים יחד לא יכולים לעבור את סך האורחים (${guests})`];
   if (body.fulfillment_type === "delivery" && !body.delivery_city) return ["delivery_city", "בחרו עיר למשלוח"];
+  if (body.fulfillment_type === "delivery" && !state.cities.some((c) => c.city === body.delivery_city)) {
+    return ["delivery_city", CODES.city_not_served];
+  }
   if (body.fulfillment_type === "delivery" && !body.delivery_address) return ["delivery_address", "צריך רחוב ומספר למשלוח"];
   return null;
 }
@@ -272,7 +359,7 @@ export async function initEvent() {
     $("delivery-option").disabled = true;
     $("delivery-option").closest("label").title = "אין כרגע משלוחים";
   }
-  $("city").addEventListener("change", showFee);
+  initCityCombo();
   $("event-date").addEventListener("change", checkDate);
   for (const r of document.querySelectorAll('input[name="fulfillment"]')) r.addEventListener("change", onFulfillment);
   $("event-form").addEventListener("submit", save);
