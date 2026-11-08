@@ -1,9 +1,16 @@
 """Delivery zones (OPEN_DECISIONS #19): named lists of cities, each zone with one fee.
 
 A city belongs to at most one zone (the DB key enforces it too). Only active zones deliver.
+Any other Israeli locality (the CBS list in frontend/data/cities.json) gets the owner's default
+fee, when one is set.
 """
 
+import json
+import re
 import uuid
+from decimal import Decimal
+from functools import lru_cache
+from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -12,6 +19,23 @@ from sqlalchemy.orm import Session
 from app.core.errors import AppError
 from app.models.delivery import DeliveryZone, DeliveryZoneCity
 from app.schemas import delivery as s
+from app.services import settings as settings_svc
+
+LOCALITIES = Path(__file__).resolve().parents[3] / "frontend" / "data" / "cities.json"
+
+
+def city_key(name: str) -> str:
+    """Compare names like the city field does (event.js key()): spaces, hyphens and quote marks
+    don't matter, nor doubled yod/vav ("קריית אונו" is the CBS "קרית אונו")."""
+    flat = " ".join(re.sub(r"[-\u05be'\"\u05f3\u05f4]", " ", name).split())
+    return flat.replace("יי", "י").replace("וו", "ו")
+
+
+@lru_cache
+def _localities() -> dict[str, str]:
+    """city_key -> the CBS spelling, for every Israeli locality."""
+    names = json.loads(LOCALITIES.read_text(encoding="utf-8"))
+    return {city_key(n): n for n in names}
 
 
 def to_out(zone: DeliveryZone) -> s.ZoneOut:
@@ -105,11 +129,35 @@ def zone_for_city(db: Session, city: str) -> DeliveryZone | None:
     return zone if zone is not None and zone.is_active else None
 
 
+def delivery_for(db: Session, city: str) -> tuple[str, Decimal] | None:
+    """(the city as stored, its fee) when we deliver there: an active zone's city at the zone fee,
+    else any Israeli locality at the default fee (stored in the CBS spelling); None otherwise."""
+    zone = zone_for_city(db, city)
+    if zone is not None:
+        return s.normalize_city(city), zone.fee
+    default = settings_svc.get(db).default_delivery_fee
+    official = _localities().get(city_key(city))
+    if default is not None and official is not None:
+        return official, default
+    return None
+
+
 def public_cities(db: Session) -> list[s.CityOut]:
+    """Every city we deliver to: zone cities at their fee, then (with a default fee) every other
+    locality at that fee."""
     rows = db.execute(
         select(DeliveryZoneCity.city, DeliveryZone.fee)
         .join(DeliveryZone, DeliveryZone.id == DeliveryZoneCity.zone_id)
         .where(DeliveryZone.is_active)
         .order_by(DeliveryZoneCity.city)
     )
-    return [s.CityOut(city=city, fee=fee) for city, fee in rows]
+    cities = [s.CityOut(city=city, fee=fee) for city, fee in rows]
+    default = settings_svc.get(db).default_delivery_fee
+    if default is not None:
+        zoned = {city_key(c.city) for c in cities}
+        cities += [
+            s.CityOut(city=name, fee=default)
+            for k, name in sorted(_localities().items(), key=lambda kv: kv[1])
+            if k not in zoned
+        ]
+    return cities

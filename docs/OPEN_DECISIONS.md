@@ -26,6 +26,7 @@ When a decision is made, record it here and move the row out of the table above.
 | 2026-11-02 | 3 | Quantity recommendations: the owner sets per dish how many adults one unit serves (`serves_adults`); a child = **0.75** of an adult (owner setting); each dish counts only the guests who can eat it (vegan dish: all; vegetarian: all but vegans; other or unknown: all but vegetarians and vegans); round up to whole units / 0.5 kg; never below the dish minimum. Advice only. | Business owner |
 | 2026-11-02 | 15 | Only the existing per-dish minimum quantity; no order-level or guest minimum. | Business owner |
 | 2026-11-02 | 5 | Orders at least **3 days** before the event (owner setting `lead_days`); capacity is enforced **per time slot** (orders awaiting approval or approved count; empty capacity = unlimited). | Business owner |
+| 2026-11-08 | 19 | Delivery to **any Israeli locality**: zone cities keep the zone fee; every other locality (CBS list) costs one owner-set default fee (`business_settings.default_delivery_fee`, empty = zone cities only). | Business owner |
 | 2026-11-02 | 19 | Delivery zones are **lists of cities**, each with a fee; delivery only to listed cities. | Business owner |
 | 2026-11-02 | 8 | Show allergens as contains / free / unknown exactly as entered, plus a fixed cross-contamination notice; no "may contain" level. | Business owner |
 | 2026-11-02 | 7 | While awaiting approval the customer can withdraw the order back to draft, edit and resubmit; after approval, changes only by contacting the business. | Business owner |

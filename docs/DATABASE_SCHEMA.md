@@ -159,4 +159,4 @@ Owner proposals: on `pending_approval`. Accepting one moves the order to `approv
 
 ## Business rules storage
 
-Quantity rules (OPEN #3, decided) need no rules table: `dishes.serves_adults` per dish plus `business_settings` (single row: `child_portion` 0.75, `lead_days` 3, and `assistant_daily_limit` 30 messages per customer in any 24 hours, migration 0010). See ERD.md for the formula.
+Quantity rules (OPEN #3, decided) need no rules table: `dishes.serves_adults` per dish plus `business_settings` (single row: `child_portion` 0.75, `lead_days` 3, and `assistant_daily_limit` 30 messages per customer in any 24 hours, migration 0010; `default_delivery_fee` numeric(10,2) null, migration 0016: the fee for any Israeli locality outside the zones, null = deliver to zone cities only). See ERD.md for the formula.

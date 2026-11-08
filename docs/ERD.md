@@ -1,6 +1,6 @@
 # Entity-Relationship Diagram
 
-Status: matches migrations `0001`–`0015` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+Status: matches migrations `0001`–`0016` and `backend/app/models/`. **Update this file in the same PR as every new migration.** Column-level notes and rationale live in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
 
 Postgres types are shown. Local/test SQLite stores uuids as `char(32)` and enums as `varchar`. Every table has RLS enabled with no policies, because only the backend's privileged connection reads and writes (ADR 0002).
 
@@ -150,6 +150,7 @@ erDiagram
         int lead_days "0 to 60, default 3"
         int assistant_daily_limit "0 to 1000, default 30, per 24h"
         text kashrut_certificate "null, max 200, shown to customers"
+        numeric default_delivery_fee "null = zone cities only; else any Israeli locality"
     }
     ai_conversations {
         uuid id PK

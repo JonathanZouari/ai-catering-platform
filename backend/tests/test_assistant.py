@@ -254,6 +254,7 @@ def test_scope_access_and_limits(client, order, claude):
         "lead_days": 3,
         "assistant_daily_limit": 1,
         "kashrut_certificate": None,
+        "default_delivery_fee": None,
     }
     client.put("/api/admin/settings", json=limit, headers=AUTH)
     claude.script = [say("שלום!")]

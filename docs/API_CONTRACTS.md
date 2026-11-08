@@ -26,7 +26,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 | GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`; `kashrut` is `meat` or `pareve`; `dietary.kashrut_class` null = not food, e.g. disposables) |
 | GET | `/api/catalog/business` | `{kashrut_certificate}` (null = not shown). Public |
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
-| GET | `/api/delivery/cities` | `[{city, fee}]` for active zones |
+| GET | `/api/delivery/cities` | `[{city, fee}]`: active zone cities at their fee, then (when `default_delivery_fee` is set) every other Israeli locality from `frontend/data/cities.json` at that fee |
 | GET | `/api/availability?from=&to=` | `{earliest_date, blocked_dates, time_slots, full_slots: [{slot_id, date}]}`. Only which slot is full, never booking counts |
 
 ## Customer account (Supabase Auth access token as `Authorization: Bearer`, ADR 0005)
@@ -71,7 +71,7 @@ Implemented so far (Phase 3, slice 2): `POST`, `GET` and `PATCH /api/orders/{id}
 - The date is not in the past (Israel time) and not blocked → `422 date_unavailable`.
 - The slot is active, of the same type, and valid for that weekday → `422 slot_unavailable`. `requested_at` is the event date at the slot's start time, Israel time, returned in UTC.
 - Dietary groups are at most adults + children → `422 validation_error` with `details.field`.
-- Delivery needs a street address, and its `delivery_city` must be in an active zone (`422 city_not_served`). The fee is live while draft and frozen at submit.
+- Delivery needs a street address, and its `delivery_city` must be in an active zone, or be any Israeli locality when the owner set `default_delivery_fee` (`422 city_not_served` otherwise). A non-zone city is stored in the CBS spelling ("קריית אונו" → "קרית אונו"). The fee (zone fee, else the default fee) is live while draft and frozen at submit.
 - A customer without a profile → `409 profile_required`.
 - Someone else's order → `404`.
 - A non-draft → `409 invalid_transition`.
@@ -107,7 +107,7 @@ A closed proposal returns `409 proposal_not_pending`. Withdrawing the order expi
 | POST | `/api/orders/{id}/proposals/{pid}/accept` | Same endpoint as owner proposals (above). An assistant proposal applies the items and keeps the order a draft (version + 1) |
 | POST | `/api/orders/{id}/proposals/{pid}/decline` | No mutation |
 
-`/api/admin/settings` now also takes and returns `assistant_daily_limit` (0–1000) and `kashrut_certificate` (≤ 200 chars, null or "" = none). Both are required on PUT.
+`/api/admin/settings` now also takes and returns `assistant_daily_limit` (0–1000), `kashrut_certificate` (≤ 200 chars, null or "" = none) and `default_delivery_fee` (0–10000, null = zone cities only). All are required on PUT.
 
 Proposal shape (`ProposalOut`, shared with owner proposals):
 

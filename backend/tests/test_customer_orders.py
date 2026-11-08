@@ -193,18 +193,21 @@ def test_settings_defaults_and_update(client):
         "lead_days": 3,
         "assistant_daily_limit": 30,
         "kashrut_certificate": None,
+        "default_delivery_fee": None,
     }
     new = {
         "child_portion": "0.5",
         "lead_days": 5,
         "assistant_daily_limit": 10,
         "kashrut_certificate": "  כשר בהשגחת רבנות תל אביב ",
+        "default_delivery_fee": "150",
     }
     res = client.put("/api/admin/settings", json=new, headers=AUTH)
     assert res.json() == {
         **new,
         "child_portion": "0.50",
         "kashrut_certificate": "כשר בהשגחת רבנות תל אביב",
+        "default_delivery_fee": "150.00",
     }
     public = client.get("/api/catalog/business").json()
     assert public == {"kashrut_certificate": "כשר בהשגחת רבנות תל אביב"}
@@ -216,6 +219,8 @@ def test_settings_defaults_and_update(client):
     assert client.put("/api/admin/settings", json=missing, headers=AUTH).status_code == 422
     bad = {**new, "child_portion": "1.5"}
     assert client.put("/api/admin/settings", json=bad, headers=AUTH).status_code == 422
+    negative = {**new, "default_delivery_fee": "-1"}
+    assert client.put("/api/admin/settings", json=negative, headers=AUTH).status_code == 422
 
 
 def test_lead_time_and_earliest_date(client, setup):
@@ -238,6 +243,7 @@ def test_lead_time_and_earliest_date(client, setup):
             "lead_days": 0,
             "assistant_daily_limit": 30,
             "kashrut_certificate": None,
+            "default_delivery_fee": None,
         },
         headers=AUTH,
     )

@@ -17,6 +17,10 @@ class BusinessSettings(Base):
         CheckConstraint(
             "assistant_daily_limit between 0 and 1000", name="business_settings_assistant_limit"
         ),
+        CheckConstraint(
+            "default_delivery_fee is null or default_delivery_fee between 0 and 10000",
+            name="business_settings_default_delivery_fee",
+        ),
     )
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True, default=1)
     # A child's portion as a share of an adult's (OPEN_DECISIONS #3: 0.75).
@@ -27,3 +31,5 @@ class BusinessSettings(Base):
     assistant_daily_limit: Mapped[int] = mapped_column(Integer, default=30)
     # Who certifies the kitchen, shown to customers (OPEN_DECISIONS #9); null = not shown.
     kashrut_certificate: Mapped[str | None] = mapped_column(Text)
+    # Delivery fee for a locality outside every zone (migration 0016); null = zones only.
+    default_delivery_fee: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
