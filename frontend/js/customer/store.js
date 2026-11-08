@@ -80,6 +80,22 @@ export function setQty(dishId, qty) {
   mutateOrder({ items });
 }
 
+/**
+ * Carries a saved draft over to a freshly loaded catalog: ids are renamed through idMap
+ * (old id -> new id) and dishes that are no longer on the menu are dropped. Submitted orders
+ * keep their frozen snapshot and are left alone.
+ */
+export function remapItems(idMap) {
+  if (state.order.status !== "draft") return;
+  const items = {};
+  for (const [id, qty] of Object.entries(state.order.items)) {
+    if (idMap.has(id)) items[idMap.get(id)] = qty;
+  }
+  const same = Object.keys(items).length === Object.keys(state.order.items).length
+    && Object.keys(items).every((id) => id in state.order.items);
+  if (!same) mutateOrder({ items });
+}
+
 export function addRecommended(dishId) {
   setQty(dishId, recommendedQty(getDish(dishId), state.order.event));
 }

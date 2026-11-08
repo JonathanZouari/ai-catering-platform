@@ -2,6 +2,8 @@
 // The real backend is authoritative for prices, quantities and order state (ADR-0003).
 // Everything here mirrors the shapes in docs/API_CONTRACTS.md so views can be switched to
 // api() calls without changing their markup. Values marked PLACEHOLDER are NOT business rules.
+// The catalog is real: catalog.js loads it from /api/catalog and swaps it in with setCatalog().
+// CATEGORIES and DISHES below are only the initial content (used by the ?demo= review screens).
 
 import { addDays, toIsoDate } from "../lib/format.js";
 
@@ -71,6 +73,19 @@ export function slotsFor(fulfillment) {
 }
 
 export const getDish = (id) => DISHES.find((d) => d.id === id);
+
+/**
+ * Replaces the catalog in place, so every module that imported CATEGORIES / DISHES sees it.
+ * Returns old dish id -> new dish id (matched by name) so saved drafts can be carried over.
+ */
+export function setCatalog(categories, dishes) {
+  const byName = new Map(dishes.map((d) => [d.name, d.id]));
+  const idMap = new Map(DISHES.filter((d) => byName.has(d.name)).map((d) => [d.id, byName.get(d.name)]));
+  for (const d of dishes) idMap.set(d.id, d.id);
+  CATEGORIES.splice(0, CATEGORIES.length, ...categories);
+  DISHES.splice(0, DISHES.length, ...dishes);
+  return idMap;
+}
 export const getCategory = (id) => CATEGORIES.find((c) => c.id === id);
 
 export function unitStep(dish) {
@@ -140,10 +155,9 @@ const round2 = (n) => Math.round(n * 100) / 100;
 
 export function priceOrder(order) {
   const lines = Object.entries(order.items)
-    .map(([dishId, qty]) => {
-      const dish = getDish(dishId);
-      return { dish, qty, unitPrice: dish.price, lineTotal: round2(dish.price * qty) };
-    })
+    .map(([dishId, qty]) => ({ dish: getDish(dishId), qty }))
+    .filter((l) => l.dish) // a dish taken off the menu since the draft was saved
+    .map(({ dish, qty }) => ({ dish, qty, unitPrice: dish.price, lineTotal: round2(dish.price * qty) }))
     .sort((a, b) => DISHES.indexOf(a.dish) - DISHES.indexOf(b.dish));
   const subtotal = round2(lines.reduce((sum, l) => sum + l.lineTotal, 0));
   const zone = ZONES.find((z) => z.city === order.event.city);
@@ -152,8 +166,8 @@ export function priceOrder(order) {
 }
 
 export function missingCategories(order) {
-  const picked = new Set(Object.keys(order.items).map((id) => getDish(id).categoryId));
-  return ["salads", "mains", "sides", "desserts"].filter((c) => !picked.has(c)).map(getCategory);
+  const picked = new Set(Object.keys(order.items).map((id) => getDish(id)?.categoryId));
+  return ["salads", "mains", "sides", "desserts"].filter((c) => !picked.has(c)).map(getCategory).filter(Boolean);
 }
 
 const UNIT_PLURAL = { tray: "מגשים", kg: "ק״ג", item: "יחידות", guest: "אורחים" };
@@ -216,7 +230,7 @@ export function suggestedPrompts() {
 
 export function assistantReply(order, rawText) {
   const text = rawText.trim();
-  const inOrder = Object.keys(order.items);
+  const inOrder = Object.keys(order.items).filter(getDish);
   const reply = (message, changes) => ({ reply: message, proposals: changes ? [makeProposal(order, changes)] : [] });
 
   const allergen = ALLERGEN_WORDS.find((a) => text.includes(a));
@@ -233,7 +247,8 @@ export function assistantReply(order, rawText) {
   if (/קינוח|מתוק|עוגה|סוכר/.test(text)) {
     const hasDessert = inOrder.some((id) => getDish(id).categoryId === "desserts");
     if (hasDessert) return reply("כבר יש בהזמנה קינוח. אפשר לשנות את הכמות בסיכום ההזמנה.");
-    const dish = getDish("d15");
+    const dish = DISHES.find((d) => d.categoryId === "desserts" && d.vegan && !(d.id in order.items));
+    if (!dish) return reply("אין כרגע בתפריט קינוח שמסומן כטבעוני.");
     return reply(`אפשר להוסיף את ${dish.name}, שמתאימה גם לאורחים טבעוניים.`, [{ op: "add_item", dish_id: dish.id, quantity: recommendedQty(dish, order.event) }]);
   }
 
@@ -267,6 +282,7 @@ export function assistantReply(order, rawText) {
     if (!missing.length) return reply("יש בהזמנה מנות מכל הקטגוריות המרכזיות. אפשר לשאול אותי על כמויות, אלרגנים או מחיר.");
     const cat = missing[0];
     const dish = DISHES.find((d) => d.categoryId === cat.id && !(d.id in order.items));
+    if (!dish) return reply(`אין כרגע מנות זמינות בקטגוריה "${cat.name}".`);
     return reply(`עדיין אין בהזמנה מנות מהקטגוריה "${cat.name}". אפשר להתחיל עם ${dish.name}.`, [{ op: "add_item", dish_id: dish.id, quantity: recommendedQty(dish, order.event) }]);
   }
 

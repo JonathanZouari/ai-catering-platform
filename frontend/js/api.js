@@ -1,8 +1,10 @@
 // Thin fetch wrapper; backend errors use { error: { code, message, details } }.
 export async function api(path, options = {}) {
+  const isForm = options.body instanceof FormData;
   const response = await fetch(path, {
-    headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
+    // FormData sets its own multipart Content-Type (with the boundary).
+    headers: { ...(isForm ? {} : { "Content-Type": "application/json" }), ...options.headers },
   });
   const body = await response.json().catch(() => null);
   if (!response.ok) {
