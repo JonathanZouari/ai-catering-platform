@@ -46,7 +46,7 @@ function showLogin() {
 
 export async function call(path, options = {}) {
   try {
-    return await api(path, { ...options, headers: { Authorization: `Bearer ${token}` } });
+    return await api(path, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } });
   } catch (err) {
     if (err.status === 401) showLogin();
     throw err;

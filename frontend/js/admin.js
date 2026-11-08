@@ -119,8 +119,46 @@ function openEditor(dish) {
     $("d-category").value = $("filter").value;
   }
   renderAllergenFields(dish?.allergens ?? []);
+  renderPhoto(dish);
   $("d-name").focus({ preventScroll: true });
   f.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+
+// --- dish photo: saved on its own request, straight away (the file is the request body) ---
+const PHOTO_ERRORS = {
+  invalid_image: "הקובץ אינו תמונה מסוג JPG, PNG או WebP",
+  image_too_large: "התמונה גדולה מ-5MB",
+  storage_unavailable: "אחסון התמונות לא מוגדר בשרת",
+  storage_failed: "שמירת התמונה נכשלה, נסו שוב",
+};
+
+function renderPhoto(dish) {
+  $("photo-new").hidden = Boolean(dish);
+  $("photo-edit").hidden = !dish;
+  $("photo-remove").hidden = !dish?.image_url;
+  const preview = $("photo-preview");
+  if (dish?.image_url) {
+    const img = el("img", { src: dish.image_url, alt: `התמונה של ${dish.name}`, width: 240, height: 180 });
+    const note = dish.image_is_placeholder ? el("span", { className: "help", textContent: "תמונה להמחשה. העלו תמונה משלכם כדי להחליף." }) : "";
+    preview.replaceChildren(img, note);
+  } else {
+    preview.replaceChildren(el("span", { className: "help", textContent: "אין תמונה. בתפריט יופיע איור." }));
+  }
+}
+
+async function photoRequest(request, done) {
+  const error = $("form-error");
+  error.hidden = true;
+  try {
+    state.editing = await request();
+    renderPhoto(state.editing);
+    await load();
+    toast(done);
+  } catch (err) {
+    if (err.status === 401) return;
+    error.textContent = PHOTO_ERRORS[err.code] ?? explain(err);
+    error.hidden = false;
+  }
 }
 
 function dishPayload() {
@@ -198,6 +236,18 @@ export function initAdmin() {
   $("filter").addEventListener("change", renderDishes);
   $("new-dish").addEventListener("click", () => openEditor(null));
   $("dish-form").addEventListener("submit", saveDish);
+  $("d-photo").addEventListener("change", () => {
+    const file = $("d-photo").files[0];
+    $("d-photo").value = ""; // the same file can be chosen again
+    if (!file || !state.editing) return;
+    photoRequest(() => call(`/api/admin/dishes/${state.editing.id}/image`, {
+      method: "PUT", body: file, headers: { "Content-Type": file.type || "application/octet-stream" },
+    }), "התמונה נשמרה");
+  });
+  $("photo-remove").addEventListener("click", () => {
+    if (!state.editing) return;
+    photoRequest(() => call(`/api/admin/dishes/${state.editing.id}/image`, { method: "DELETE" }), "התמונה הוסרה");
+  });
   $("delete-dish").addEventListener("click", (e) => confirmThen(e.currentTarget, () =>
     mutate(() => call(`/api/admin/dishes/${state.editing.id}`, { method: "DELETE" }), "המנה נמחקה")
       .then((ok) => ok && openEditor(null))));

@@ -2,10 +2,12 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
+from app.core.errors import AppError
 from app.core.security import require_admin
 from app.schemas import catalog as s
 from app.services import catalog as svc
@@ -63,6 +65,31 @@ def delete_dish(dish_id: uuid.UUID, db: Session = Depends(get_db)):
 @router.put("/dishes/{dish_id}/dietary", response_model=s.DishOut)
 def set_dietary(dish_id: uuid.UUID, data: s.DietaryUpdate, db: Session = Depends(get_db)):
     return svc.to_out(svc.set_dietary(db, dish_id, data))
+
+
+@router.put("/dishes/{dish_id}/image", response_model=s.DishOut)
+async def set_image(
+    dish_id: uuid.UUID, request: Request, placeholder: bool = False, db: Session = Depends(get_db)
+):
+    """Body = the image file itself (Content-Type image/jpeg|png|webp), no multipart."""
+    declared = request.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > svc.MAX_IMAGE_BYTES:
+        raise AppError(413, "image_too_large", "Images are limited to 5 MB")
+    data = bytearray()
+    async for chunk in request.stream():  # stop reading past the limit, whatever the header said
+        data += chunk
+        if len(data) > svc.MAX_IMAGE_BYTES:
+            raise AppError(413, "image_too_large", "Images are limited to 5 MB")
+    content_type = request.headers.get("content-type", "")
+    dish = await run_in_threadpool(
+        svc.set_image, db, dish_id, bytes(data), content_type, placeholder
+    )
+    return svc.to_out(dish)
+
+
+@router.delete("/dishes/{dish_id}/image", response_model=s.DishOut)
+def remove_image(dish_id: uuid.UUID, db: Session = Depends(get_db)):
+    return svc.to_out(svc.remove_image(db, dish_id))
 
 
 @router.get("/allergens", response_model=list[s.AllergenOut])

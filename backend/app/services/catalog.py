@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core import storage
 from app.core.errors import AppError
 from app.models.catalog import Allergen, Dish, DishAllergen, DishCategory, DishDietary
 from app.repositories import catalog as repo
@@ -142,12 +143,60 @@ def set_dietary(db: Session, dish_id: uuid.UUID, data: s.DietaryUpdate) -> Dish:
     return dish
 
 
+# dish photos (Supabase Storage). image_path is either a static "/assets/..." file or a path in
+# the bucket: "dishes/..." = the owner's own photo, "placeholder/..." = stand-in (OPEN #20).
+
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
+IMAGE_TYPES = {  # content type -> (extension, check of the file's own first bytes)
+    "image/jpeg": ("jpg", lambda b: b[:3] == b"\xff\xd8\xff"),
+    "image/png": ("png", lambda b: b[:8] == b"\x89PNG\r\n\x1a\n"),
+    "image/webp": ("webp", lambda b: b[:4] == b"RIFF" and b[8:12] == b"WEBP"),
+}
+
+
+def _image_url(path: str | None) -> str | None:
+    if not path:
+        return None
+    return path if path.startswith("/assets/") else storage.public_url(path)
+
+
+def set_image(
+    db: Session, dish_id: uuid.UUID, data: bytes, content_type: str, placeholder: bool = False
+) -> Dish:
+    dish = _get(db, Dish, dish_id, "Dish")
+    kind = IMAGE_TYPES.get(content_type.split(";")[0].strip().lower())
+    if kind is None or not kind[1](data):
+        raise AppError(422, "invalid_image", "Upload a JPG, PNG or WebP image")
+    if len(data) > MAX_IMAGE_BYTES:
+        raise AppError(413, "image_too_large", "Images are limited to 5 MB")
+    # Our own name (never the uploader's filename); a new name per upload busts caches.
+    path = f"{'placeholder' if placeholder else 'dishes'}/{dish.id}/{uuid.uuid4().hex}.{kind[0]}"
+    storage.upload(path, data, content_type)
+    old, dish.image_path = dish.image_path, path
+    db.commit()
+    db.refresh(dish)
+    if old and not old.startswith("/"):
+        storage.delete(old)
+    return dish
+
+
+def remove_image(db: Session, dish_id: uuid.UUID) -> Dish:
+    dish = _get(db, Dish, dish_id, "Dish")
+    old, dish.image_path = dish.image_path, None
+    db.commit()
+    db.refresh(dish)
+    if old and not old.startswith("/"):
+        storage.delete(old)
+    return dish
+
+
 def to_out(dish: Dish) -> s.DishOut:
-    plain = {
-        k: getattr(dish, k) for k in s.DishOut.model_fields if k not in ("dietary", "allergens")
-    }
+    computed = ("dietary", "allergens", "image_url", "image_is_placeholder")
+    plain = {k: getattr(dish, k) for k in s.DishOut.model_fields if k not in computed}
     return s.DishOut(
         **plain,
+        image_url=_image_url(dish.image_path),
+        image_is_placeholder=bool(dish.image_path) and not dish.image_path.startswith("dishes/"),
         dietary=s.DietaryOut.model_validate(dish.dietary) if dish.dietary else s.DietaryOut(),
         allergens=[
             s.DishAllergenOut(allergen_id=a.allergen_id, name=a.allergen.name, status=a.status)

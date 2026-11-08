@@ -7,7 +7,7 @@ Format: **Question** · *Why it matters* · **Blocks**
 | # | Topic | Question | Why it matters | Blocks |
 |---|---|---|---|---|
 | 12 | Interface languages | ~~Hebrew only, English only, or both? RTL required?~~ **Decided 2026-11-01: Hebrew, RTL** (chosen with the "Table Journal" design). English is not planned. | Layout, copy, and AI response language | Resolved (AI response language follows: Hebrew) |
-| 20 | Brand | Business name, logo, colors, fonts. **Decided 2026-11-01: name "Yummai", colors and fonts per the "Table Journal" direction (UX_UI_SPEC §2).** Still open: logo, real food photography | Visual identity | Logo and photos only (Unsplash placeholders until then) |
+| 20 | Brand | Business name, logo, colors, fonts. **Decided 2026-11-01: name "Yummai", colors and fonts per the "Table Journal" direction (UX_UI_SPEC §2).** Still open: logo, real food photography. **2026-11-08:** the owner can upload a photo per dish in the admin screen (Supabase Storage); until then dishes show Unsplash placeholders labelled "תמונה להמחשה" (illustrative photo), which an upload replaces | Visual identity | Logo and real dish photos only (placeholders until then) |
 
 ## Decision log
 

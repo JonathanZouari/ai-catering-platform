@@ -276,9 +276,11 @@ function draggable(node, label, onDrop) {
 
 // --- rendering ---
 function media(d) {
-  if (/^\/assets\/img\/[\w-]+\.(jpg|png|webp)$/.test(d.image_path ?? "")) { // only our own photos
-    const img = el("img", { src: d.image_path, alt: "", loading: "lazy", width: 400, height: 300, draggable: false });
-    return el("div", { className: "dish-media" }, img);
+  // Our own static photos or the server-built Storage URL; never javascript:/data: or the like.
+  if (/^(\/assets\/img\/[\w-]+\.(jpg|png|webp)|https:\/\/[^"'\s]+)$/.test(d.image_url ?? "")) {
+    const img = el("img", { src: d.image_url, alt: "", loading: "lazy", width: 400, height: 300, draggable: false });
+    const note = d.image_is_placeholder ? el("span", { className: "photo-note", textContent: "תמונה להמחשה" }) : "";
+    return el("div", { className: "dish-media" }, img, note);
   }
   const art = document.createElement("i");
   art.dataset.ill = artFor(state.categories.find((c) => c.id === d.category_id)?.name);
