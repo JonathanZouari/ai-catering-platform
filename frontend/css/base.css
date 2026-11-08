@@ -151,7 +151,21 @@ legend { padding: 0; margin-block-end: 10px; }
 .dish-media { aspect-ratio: 4 / 3; overflow: hidden; max-width: 100%; box-shadow: 0 18px 30px -20px rgb(var(--shade) / .55); }
 .dish-media img { width: 100%; height: 100%; object-fit: cover; }
 .dish-body { display: grid; gap: 8px; align-content: start; border-block-start: 1px solid var(--fg); margin-block-start: 12px; padding-block-start: 12px; }
-.dish h3 { font-size: 1.5rem; font-weight: 700; }
+.dish h4 { font-size: 1.5rem; font-weight: 700; }
+.dish-groups { display: grid; gap: 56px; }
+.dish-group { display: grid; gap: 20px; }
+.group-h { font-size: 2rem; font-weight: 900; border-block-end: 3px double var(--fg); padding-block-end: 6px; }
+.dish-media.no-photo { display: grid; place-items: center; background: var(--spark-soft); color: var(--spark); box-shadow: none; }
+.dish-media.no-photo .ill { width: 38%; height: auto; color: var(--spark); }
+.dish { cursor: grab; touch-action: manipulation; }
+.dish.drag-src, .tray-item.drag-src { opacity: .45; }
+@media (pointer: coarse) { .dish, .tray-item { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; } }
+html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
+/* physical left on purpose: JS moves the ghost by the pointer's clientX, which is physical */
+.drag-ghost { position: fixed; inset-block-start: 0; left: 0; z-index: 60; pointer-events: none; transform: translate(-50%, -120%); padding: 8px 14px; background: var(--fg); color: var(--bg); font: 700 1rem/1.2 var(--font-body); white-space: nowrap; box-shadow: 0 12px 24px -10px rgb(var(--shade) / .6); }
+.chip-count { min-width: 1.6em; padding: 1px 6px; background: var(--spark-soft); color: var(--warning-ink); font-size: .8rem; font-weight: 700; text-align: center; }
+.chip-btn[aria-pressed="true"] .chip-count { background: var(--accent-fg); color: var(--accent); }
+.add-btn { min-height: 44px; }
 .dish.in-order .dish-body { border-block-start: 3px solid var(--accent-ink); }
 .dish-desc { color: var(--muted); font-size: .95rem; }
 .badges { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -163,8 +177,30 @@ legend { padding: 0; margin-block-end: 10px; }
 .unknown { color: var(--danger); }
 .dish-foot { display: grid; gap: 6px; justify-items: start; margin-block-start: 6px; }
 .rec { font-size: .85rem; color: var(--muted); }
-.menu-bar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; padding-inline-start: 20px; background: var(--accent); color: var(--accent-fg); border-radius: var(--radius); z-index: 5; box-shadow: 0 10px 24px -12px rgb(var(--shade) / .55); }
-.menu-bar .btn.primary { background: var(--accent-fg); color: var(--accent); }
+/* "your table": sticky drop target at the bottom of the menu; opens upward into the chosen list */
+.tray { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 5; display: grid; background: var(--accent); color: var(--accent-fg); border-radius: var(--radius); box-shadow: 0 10px 24px -12px rgb(var(--shade) / .55); outline: 3px dashed transparent; outline-offset: -8px; transition: outline-color .15s, transform .15s; }
+.tray-toggle { flex: 1; min-width: 0; }
+.tray-toggle > span { display: grid; }
+.tray-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; padding-inline-start: 12px; }
+.tray-head .btn.primary { background: var(--accent-fg); color: var(--accent); }
+.tray-toggle { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border: 0; background: transparent; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.tray-toggle .ill { width: 34px; height: 34px; color: inherit; }
+.tray-toggle::after { content: "▴"; font-size: .9rem; }
+.tray-toggle[aria-expanded="true"]::after { content: "▾"; }
+.tray-list { max-height: min(50vh, 420px); overflow-y: auto; padding: 12px 16px 4px; background: var(--surface); color: var(--fg); display: grid; gap: 14px; border: 2px solid var(--accent); border-block-end: 0; }
+.tray-list[hidden] { display: none; }
+.tray-group h4 { font-size: 1rem; color: var(--muted); border-block-end: 1px solid var(--line); padding-block-end: 4px; }
+.tray-group ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.tray-item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-block: 8px; border-block-end: 1px dotted var(--line); cursor: grab; }
+.tray-name { flex: 1 1 10em; display: grid; font-weight: 600; }
+.tray-name small { color: var(--muted); font-weight: 400; }
+.tray-del { width: 44px; height: 44px; border: 0; background: transparent; color: var(--danger); font-size: 1rem; cursor: pointer; }
+.tray-drop { display: none; margin: 0; padding: 18px 16px 0; text-align: center; font: 700 1.1rem/1.2 var(--font-body); }
+html.dragging .tray-drop { display: block; }
+html.dragging .tray { outline-color: var(--accent-fg); }
+.tray.drop-hot { transform: scale(1.02); background: var(--accent-ink); outline-style: solid; }
+.tray.bump { animation: tray-bump .35s cubic-bezier(.2, .8, .2, 1); }
+@keyframes tray-bump { 40% { transform: scale(1.04); } }
 
 /* summary (C3) */
 .summary { display: grid; gap: 16px; max-width: 760px; }
@@ -259,6 +295,7 @@ legend { padding: 0; margin-block-end: 10px; }
 
 .toast { position: fixed; z-index: 50; inset-inline: 0; margin-inline: auto; width: fit-content; max-width: calc(100% - 32px); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); padding: 12px 18px; background: var(--accent); color: var(--accent-fg); box-shadow: 0 10px 24px -10px rgb(var(--shade) / .5); border-radius: var(--radius-sm); font-weight: 600; opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s; pointer-events: none; }
 .toast.show { opacity: 1; transform: none; }
+html[data-route="menu"] .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); } /* above the table bar */
 
 /* hand-drawn line illustrations (js/illustrations.js) and the shared motion layer (js/motion.js) */
 .ill { width: 48px; height: 48px; flex: none; color: var(--accent-ink); overflow: visible; }
