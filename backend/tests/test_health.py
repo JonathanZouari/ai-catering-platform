@@ -49,3 +49,15 @@ def test_design_assets_served():
     )
     for path in paths:
         assert client.get(path).status_code == 200, path
+
+
+def test_city_list_served():
+    # tools/build_cities.py output: the city field suggests these, served cities get a fee.
+    response = client.get("/data/cities.json")
+    assert response.status_code == 200
+    cities = response.json()
+    assert len(cities) > 1000
+    assert cities == sorted(set(cities))
+    assert all(isinstance(c, str) and c == c.strip() and c for c in cities)
+    assert not [c for c in cities if "שבט" in c]
+    assert {"תל אביב - יפו", "אילת", "קרית אונו"} <= set(cities)

@@ -30,7 +30,9 @@ const FIELD_INPUT = {
 };
 
 const $ = (id) => document.getElementById(id);
-const state = { order: null, blocked: new Set(), slots: [], earliest: null, full: new Set(), cities: [] };
+// cities: the served ones with fees; places: those plus every other Israeli locality (fee null).
+const state = { order: null, blocked: new Set(), slots: [], earliest: null, full: new Set(), cities: [], places: [] };
+const MAX_SUGGESTIONS = 50;
 
 // Dates are plain YYYY-MM-DD strings in Israel time; never parsed in the viewer's timezone.
 const isoToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date());
@@ -116,20 +118,41 @@ const money = (v) => new Intl.NumberFormat("he-IL", { style: "currency", currenc
 
 // City autocomplete: spaces, hyphens and quote marks don't matter ("תל אביב" finds "תל אביב-יפו").
 const norm = (s) => s.replace(/[-־'"׳״]/g, " ").replace(/\s+/g, " ").trim();
+// For comparing names only: also ignores doubled yod/vav, so the CBS "קרית אונו" is the zone's "קריית אונו".
+const key = (s) => norm(s).replace(/יי/g, "י").replace(/וו/g, "ו");
 
-function cityMatches(query) {
-  const q = norm(query);
-  if (!q) return state.cities;
-  return state.cities.filter((c) => norm(c.city).split(" ").some((_, i, w) => w.slice(i).join(" ").startsWith(q)));
+// Served cities first, then every other locality from /data/cities.json that isn't one of them.
+function mergePlaces(served, names) {
+  const seen = new Set(served.map((c) => key(c.city)));
+  return [...served, ...names.filter((n) => !seen.has(key(n))).map((city) => ({ city, fee: null }))];
 }
 
-// The served city the text means: an exact name, or the only city it is the start of.
+async function loadPlaces() {
+  try {
+    const res = await fetch("/data/cities.json");
+    if (res.ok) return await res.json();
+  } catch { /* the served cities alone still work */ }
+  return [];
+}
+
+function cityMatches(query) {
+  const q = key(query);
+  if (!q) return state.cities;
+  // Exact name first, then served cities, then names that start with the text, then a later word.
+  const rank = (c) => (key(c.city) === q ? 0 : c.fee !== null ? 1 : key(c.city).startsWith(q) ? 2 : 3);
+  return state.places.filter((c) => key(c.city).split(" ").some((_, i, w) => w.slice(i).join(" ").startsWith(q)))
+    .sort((a, b) => rank(a) - rank(b))
+    .slice(0, MAX_SUGGESTIONS);
+}
+
+// The locality the text means: an exact name, or the only one it is the start of. A served city
+// wins over a CBS spelling of it, because mergePlaces dropped that spelling.
 function resolveCity(text) {
-  const q = norm(text);
+  const q = key(text);
   if (!q) return null;
-  const exact = state.cities.find((c) => norm(c.city) === q);
+  const exact = state.places.find((c) => key(c.city) === q);
   if (exact) return exact.city;
-  const starts = state.cities.filter((c) => norm(c.city).startsWith(q));
+  const starts = state.places.filter((c) => key(c.city).startsWith(q));
   return starts.length === 1 ? starts[0].city : null;
 }
 
@@ -141,8 +164,10 @@ function renderCities(selected = $("city").value) {
 function showFee() {
   const text = $("city").value;
   const city = state.cities.find((c) => c.city === text);
+  const known = !city && norm(text) && state.places.find((c) => key(c.city) === key(text));
   $("city-help").textContent = city ? `דמי משלוח: ${money(city.fee)}`
-    : norm(text) && !cityMatches(text).length ? "לעיר הזו אין כרגע משלוחים." : "משלוחים רק לערים שברשימה.";
+    : known ? "לעיר הזו אין כרגע משלוחים. אפשר לבחור איסוף עצמי."
+    : norm(text) && !cityMatches(text).length ? "לא מצאנו יישוב בשם הזה." : "משלוחים רק לערים שמופיע לידן מחיר.";
 }
 
 function initCityCombo() {
@@ -170,7 +195,7 @@ function initCityCombo() {
       const at = q ? norm(c.city).indexOf(q) : -1; // norm keeps the length, so offsets line up
       const name = at < 0 ? el("span", { textContent: c.city })
         : el("span", {}, c.city.slice(0, at), el("mark", { textContent: c.city.slice(at, at + q.length) }), c.city.slice(at + q.length));
-      const li = el("li", { id: `city-opt-${i}` }, name, el("span", { className: "combo-fee", textContent: money(c.fee) }));
+      const li = el("li", { id: `city-opt-${i}` }, name, el("span", { className: "combo-fee", textContent: c.fee === null ? "אין משלוח" : money(c.fee) }));
       li.setAttribute("role", "option");
       return li;
     }));
@@ -353,6 +378,7 @@ export async function initEvent() {
   } catch {
     toast("לא הצלחנו לטעון את השעות הפנויות");
   }
+  state.places = mergePlaces(state.cities, await loadPlaces());
   $("event-date").min = state.earliest;
   renderCities();
   if (!state.cities.length) {  // no zones yet: delivery can't be chosen
