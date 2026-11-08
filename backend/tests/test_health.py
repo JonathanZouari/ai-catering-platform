@@ -72,3 +72,9 @@ def test_city_list_served():
     assert all(isinstance(c, str) and c == c.strip() and c for c in cities)
     assert not [c for c in cities if "שבט" in c]
     assert {"תל אביב - יפו", "אילת", "קרית אונו"} <= set(cities)
+
+
+def test_webp_dish_photos_have_image_type():
+    res = client.get("/assets/img/d-hummus.webp")
+    assert res.status_code == 200
+    assert res.headers["content-type"] == "image/webp"
