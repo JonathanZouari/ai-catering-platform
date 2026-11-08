@@ -34,9 +34,11 @@ const state = {
   category: "", diet: null, editable: false,
   want: new Map(), // dishId -> quantity asked for but not yet confirmed by the server
 };
-// shortcut: placeholder art by category position (matches the seeded menu order); add a
-// per-category icon field if the owner reorders categories.
-const CATEGORY_ART = ["olive", "grill", "pot", "lemon", "plate", "basket", "glass"];
+// shortcut: placeholder art guessed from the category name; add an icon field on categories
+// if the owner wants to choose it.
+const CATEGORY_ART = [[/סלט|מטבל/, "olive"], [/בשר|עוף|עיקר|גריל|דג/, "grill"], [/תוספ/, "pot"],
+  [/קינוח|פירות/, "lemon"], [/מאפ|לחם|פתיח/, "basket"], [/שתי|יין|משקא/, "glass"]];
+const artFor = (name = "") => CATEGORY_ART.find(([re]) => re.test(name))?.[1] ?? "plate";
 
 const money = (v) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(v);
 const num = (v) => new Intl.NumberFormat("he-IL", { maximumFractionDigits: 2 }).format(v);
@@ -259,7 +261,7 @@ function media(d) {
     return el("div", { className: "dish-media" }, img);
   }
   const art = document.createElement("i");
-  art.dataset.ill = CATEGORY_ART[state.categories.findIndex((c) => c.id === d.category_id)] ?? "plate";
+  art.dataset.ill = artFor(state.categories.find((c) => c.id === d.category_id)?.name);
   return el("div", { className: "dish-media no-photo in" }, art); // "in": drawn, no draw-in per card
 }
 
