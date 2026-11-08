@@ -22,12 +22,19 @@ begin
     values (cid, 'birthday', current_date + 30, 20, 5)
     returning id into eid;
 
-    insert into public.orders (customer_id, event_id, status, total)
-    values (cid, eid, 'pending_approval', 1625.00)
+    insert into public.orders (customer_id, event_id, status, fulfillment_type, requested_at, total)
+    values (
+      cid, eid, 'pending_approval', 'pickup',
+      ((current_date + 30) + time '12:00') at time zone 'Asia/Jerusalem', 1625.00
+    )
     returning id into oid;
 
-    insert into public.order_items (order_id, dish_id, quantity)
-    select oid, d.id, q.qty
+    -- Submitted order, so the price snapshot is filled.
+    insert into public.order_items (
+      order_id, dish_id, quantity,
+      snapshot_name, snapshot_pricing_unit, snapshot_unit_price, snapshot_line_total
+    )
+    select oid, d.id, q.qty, d.name, d.pricing_unit, d.unit_price, q.qty * d.unit_price
     from (values ('Green eggs and ham', 25), ('Roast chicken', 2), ('Chocolate cake', 1)) as q (name, qty)
     join public.dishes d on d.name = q.name;
   end if;
