@@ -1,7 +1,10 @@
 // Motion helpers. Every effect here is feedback or arrival (a number changing, a change applied, a section
 // coming into view), never decoration, and every one of them does nothing when the visitor prefers reduced motion.
 
-export const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+// The accessibility menu's "stop animations" (a11y-no-motion on <html>) counts the same as the OS setting.
+export const reduced = () =>
+  document.documentElement.classList.contains("a11y-no-motion") ||
+  (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
 
 /** Animate a number in `el` from `from` to `to`. The final value is always exact. */
 export function tweenNumber(el, from, to, format, ms = 450) {

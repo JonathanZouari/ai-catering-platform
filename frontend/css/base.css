@@ -170,6 +170,8 @@ main {
 }
 
 :focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+/* Chrome moves focus into the date field's own parts (segments, calendar icon); :focus-within keeps the ring on all of them. */
+input[type="date"]:focus-within { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 
 .visually-hidden {
   position: absolute !important;
@@ -222,8 +224,10 @@ main {
   border: var(--outline-width) solid transparent;
   border-radius: var(--radius);
   font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.2;
+  text-align: center;
+  /* Labels may wrap so larger text spacing or text size never pushes a button off a phone screen (WCAG 1.4.10/1.4.12). */
+  white-space: normal;
   cursor: pointer;
   text-decoration: none;
   transition: transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
