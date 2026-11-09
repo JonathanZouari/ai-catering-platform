@@ -10,12 +10,12 @@
   <main>
     <h1>ממשק העסק</h1>
     <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
+    <p>מצב השרת: <span id="status" aria-live="polite">בודק…</span></p>
   </main>
   <script type="module">
     import { api } from "/js/api.js";
     const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+    api("/health").then((r) => (el.textContent = r.status === "ok" ? "תקין" : r.status)).catch(() => (el.textContent = "השרת אינו זמין"));
   </script>
 </body>
 </html>
