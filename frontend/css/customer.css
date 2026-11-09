@@ -12,7 +12,7 @@
 [tabindex="-1"]:focus { outline: none; }
 
 .skip-link {
-  position: absolute;
+  position: fixed;
   inset-block-start: -100px;
   inset-inline-start: var(--space-4);
   z-index: var(--z-toast);
@@ -217,7 +217,7 @@ button.stepper-btn:hover { background: var(--color-surface-2); }
   align-items: center;
   gap: var(--space-1);
   align-self: start;
-  min-height: 32px;
+  min-height: 44px;
   padding: 0;
   background: none;
   border: 0;
@@ -392,7 +392,7 @@ button.stepper-btn:hover { background: var(--color-surface-2); }
 @keyframes blink { 0% { width: 0; } 100% { width: 1.2em; } }
 .chat-prompts { padding: 0 var(--space-4) var(--space-3); }
 .chat-prompts:empty { display: none; }
-.chat-prompts .chip { min-height: 40px; font-size: 0.9375rem; text-align: start; }
+.chat-prompts .chip { min-height: 44px; font-size: 0.9375rem; text-align: start; }
 .chat-form { display: flex; gap: var(--space-2); align-items: flex-end; padding: var(--space-3) var(--space-4) var(--space-4); border-block-start: 1px solid var(--color-line); }
 textarea.input.chat-input { min-height: 44px; max-height: 120px; resize: none; }
 

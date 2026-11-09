@@ -53,17 +53,23 @@ export function mountEvent(root) {
 
   /* ----- guests ----- */
   const total = h("p", { class: "total-line", "aria-live": "polite" });
-  const guestCounters = {};
-  function guestField(name, labelText, hint, opts = {}) {
+  const guestCounters = {}; // name -> { ...counter, wrap }
+  // errorId ties the input to the error message that applies to it (aria-describedby).
+  function guestField(name, labelText, hint, { min = 0, errorId } = {}) {
     const id = `f-${name}`;
-    const c = counter({ id, value: ev()[name], min: opts.min ?? 0, onChange: (n) => update({ [name]: n }), describedBy: `${id}-hint` });
-    guestCounters[name] = c;
-    return h("div", { class: "field" },
+    const c = counter({
+      id, value: ev()[name], min, label: labelText, onChange: (n) => update({ [name]: n }),
+      describedBy: [`${id}-hint`, errorId].filter(Boolean).join(" "),
+    });
+    const wrap = h("div", { class: "field" },
       h("label", { for: id, text: labelText }),
       c.el,
       h("p", { class: "hint", id: `${id}-hint`, text: hint }),
     );
+    guestCounters[name] = { ...c, wrap };
+    return wrap;
   }
+  const DIETARY = ["vegetarian", "vegan", "restricted"];
   const dietaryError = h("p", { class: "error", id: "err-dietary", hidden: true });
   const adultsError = h("p", { class: "error", id: "err-adults", hidden: true });
 
@@ -110,7 +116,7 @@ export function mountEvent(root) {
     h("section", { class: "panel stack" },
       h("h2", { text: "האורחים" }),
       h("div", { class: "grid-2" },
-        h("div", {}, guestField("adults", "מבוגרים", "מגיל 13 ומעלה", { min: 0 }), adultsError),
+        h("div", {}, guestField("adults", "מבוגרים", "מגיל 13 ומעלה", { min: 0, errorId: "err-adults" }), adultsError),
         guestField("children", "ילדים", "עד גיל 12, נחשבים כחצי מנה"),
       ),
       h("fieldset", { class: "stack" },
@@ -118,9 +124,9 @@ export function mountEvent(root) {
         // OPEN_DECISIONS #4: these are treated as a subset of all guests until the business decides.
         h("p", { class: "hint", text: "כמה מהאורחים הכוללים צריכים כל אחת מההגבלות?" }),
         h("div", { class: "grid-3" },
-          guestField("vegetarian", "צמחונים", "לא אוכלים בשר ודגים"),
-          guestField("vegan", "טבעונים", "לא אוכלים מוצרים מהחי"),
-          guestField("restricted", "הגבלה אחרת", "למשל אלרגיה או צליאק"),
+          guestField("vegetarian", "צמחונים", "לא אוכלים בשר ודגים", { errorId: "err-dietary" }),
+          guestField("vegan", "טבעונים", "לא אוכלים מוצרים מהחי", { errorId: "err-dietary" }),
+          guestField("restricted", "הגבלה אחרת", "למשל אלרגיה או צליאק", { errorId: "err-dietary" }),
         ),
         dietaryError,
       ),
@@ -194,8 +200,17 @@ export function mountEvent(root) {
   function showErrors(errors) {
     for (const name of ["type", "date", "slot", "city", "address"]) showError(name, errors[name]);
     showSimpleError(adultsError, errors.adults);
-    guestCounters.adults.input.setAttribute("aria-invalid", errors.adults ? "true" : "false");
+    markGuest("adults", errors.adults);
     showSimpleError(dietaryError, errors.dietary);
+    // The dietary error is about the three counts together, so all three are marked invalid; the
+    // submit handler then focuses the first of them (vegetarian) when it is the only error.
+    for (const name of DIETARY) markGuest(name, errors.dietary);
+  }
+
+  function markGuest(name, message) {
+    const c = guestCounters[name];
+    c.wrap.classList.toggle("invalid", Boolean(message));
+    c.input.setAttribute("aria-invalid", message ? "true" : "false");
   }
 
   function onSubmit(e) {
@@ -203,9 +218,9 @@ export function mountEvent(root) {
     attempted = true;
     const errors = validateEvent(ev());
     showErrors(errors);
-    const firstInvalid = form.querySelector('[aria-invalid="true"]');
-    if (firstInvalid) {
-      firstInvalid.focus();
+    // Any validation error blocks continuing, even one without a marked field.
+    if (Object.keys(errors).length) {
+      form.querySelector('[aria-invalid="true"]')?.focus();
       return;
     }
     goto("menu");

@@ -6,7 +6,7 @@ body { background: var(--color-bg); }
 main { max-width: none; padding: 0; }
 
 .skip-link {
-  position: absolute;
+  position: fixed;
   inset-block-start: -100px;
   inset-inline-start: var(--space-4);
   z-index: var(--z-toast);
@@ -148,4 +148,4 @@ main { max-width: none; padding: 0; }
 .demo-total { font-weight: 700; }
 .demo-total strong { font-size: var(--text-xl); }
 .done-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); position: relative; }
-.link-btn { background: none; border: 0; padding: 0; min-height: 32px; color: var(--color-accent); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link-btn { background: none; border: 0; padding: 0; min-height: 44px; color: var(--color-accent); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

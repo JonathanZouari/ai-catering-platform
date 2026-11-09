@@ -20,8 +20,8 @@ export function mountSummary(root) {
   const contact = getState().order.contact;
   const nameErr = h("p", { class: "error", id: "err-name", hidden: true });
   const phoneErr = h("p", { class: "error", id: "err-phone", hidden: true });
-  const name = h("input", { id: "f-name", class: "input", type: "text", autocomplete: "name", value: contact.name, "aria-describedby": "err-name" });
-  const phone = h("input", { id: "f-phone", class: "input", type: "tel", autocomplete: "tel", inputmode: "tel", value: contact.phone, "aria-describedby": "hint-phone err-phone", dir: "ltr" });
+  const name = h("input", { id: "f-name", class: "input", type: "text", autocomplete: "name", required: true, value: contact.name, "aria-describedby": "err-name" });
+  const phone = h("input", { id: "f-phone", class: "input", type: "tel", autocomplete: "tel", required: true, inputmode: "tel", value: contact.phone, "aria-describedby": "hint-phone err-phone", dir: "ltr" });
   name.addEventListener("input", () => setContact({ name: name.value }));
   phone.addEventListener("input", () => setContact({ phone: phone.value }));
 
@@ -130,7 +130,7 @@ export function mountSummary(root) {
     lastTotal = pricing.total;
 
     if (focusKey) {
-      (linesBox.querySelector(`[data-key="${focusKey}"]`) ?? linesBox.querySelector(".qty-stepper button"))?.focus();
+      (linesBox.querySelector(`[data-key="${focusKey}"]`) ?? linesBox.querySelector("button"))?.focus();
     }
   }
 
