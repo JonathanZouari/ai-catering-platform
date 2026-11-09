@@ -1,5 +1,5 @@
 // C3 + C5 (review): itemized pricing, recommendation hints, contact details, explicit submit.
-import { fill, h, icon } from "../../lib/dom.js";
+import { fill, h, icon, requiredMark } from "../../lib/dom.js";
 import { announce } from "../../lib/announce.js";
 import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
 import { animatedAmount } from "../../lib/motion.js";
@@ -12,7 +12,8 @@ export function mountSummary(root) {
   const linesBox = h("div", { class: "lines-box" });
   const totalsBox = h("div", { class: "totals" });
   const hintsBox = h("div", { class: "stack" });
-  const itemsError = h("p", { class: "error", hidden: true, role: "alert" });
+  // tabindex=-1 lets the "no dishes" error take focus on submit, since it has no field of its own to focus.
+  const itemsError = h("p", { class: "error", hidden: true, role: "alert", tabindex: "-1" });
   let lastItems = null;
   let lastTotal = null;
 
@@ -20,8 +21,8 @@ export function mountSummary(root) {
   const contact = getState().order.contact;
   const nameErr = h("p", { class: "error", id: "err-name", hidden: true });
   const phoneErr = h("p", { class: "error", id: "err-phone", hidden: true });
-  const name = h("input", { id: "f-name", class: "input", type: "text", autocomplete: "name", value: contact.name, "aria-describedby": "err-name" });
-  const phone = h("input", { id: "f-phone", class: "input", type: "tel", autocomplete: "tel", inputmode: "tel", value: contact.phone, "aria-describedby": "hint-phone err-phone", dir: "ltr" });
+  const name = h("input", { id: "f-name", class: "input", type: "text", autocomplete: "name", value: contact.name, "aria-describedby": "err-name", "aria-required": "true" });
+  const phone = h("input", { id: "f-phone", class: "input", type: "tel", autocomplete: "tel", inputmode: "tel", value: contact.phone, "aria-describedby": "hint-phone err-phone", "aria-required": "true", dir: "ltr" });
   name.addEventListener("input", () => setContact({ name: name.value }));
   phone.addEventListener("input", () => setContact({ phone: phone.value }));
 
@@ -54,12 +55,12 @@ export function mountSummary(root) {
     fill(itemsError, ...(errors.items ? [icon("warning"), errors.items] : []));
     const firstInvalid = root.querySelector('[aria-invalid="true"]');
     if (firstInvalid) firstInvalid.focus();
-    else if (errors.items) itemsError.scrollIntoView({ block: "center" });
+    else if (errors.items) itemsError.focus();
   } },
     h("h2", { text: "פרטים ליצירת קשר" }),
     h("div", { class: "grid-2" },
-      h("div", { class: "field" }, h("label", { for: "f-name", text: "שם מלא" }), name, nameErr),
-      h("div", { class: "field" }, h("label", { for: "f-phone", text: "טלפון" }), phone,
+      h("div", { class: "field" }, h("label", { for: "f-name" }, "שם מלא", requiredMark()), name, nameErr),
+      h("div", { class: "field" }, h("label", { for: "f-phone" }, "טלפון", requiredMark()), phone,
         h("p", { class: "hint", id: "hint-phone", text: "העסק ייצור איתכם קשר בנוגע לבקשה." }), phoneErr),
     ),
     itemsError,

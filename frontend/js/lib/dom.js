@@ -34,6 +34,9 @@ export function icon(name, label) {
   return el;
 }
 
+/** Visible "(חובה)" cue after a label. The control itself also needs aria-required so screen readers hear it. */
+export const requiredMark = () => [" ", h("span", { class: "req", text: "(חובה)" })];
+
 export function clear(el) {
   el.replaceChildren();
   return el;

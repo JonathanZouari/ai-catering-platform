@@ -1,7 +1,10 @@
-// Motion helpers. Every effect here is feedback or arrival (a number changing, a change applied, a section
-// coming into view), never decoration, and every one of them does nothing when the visitor prefers reduced motion.
+// Motion helpers. Every effect here is feedback for something the visitor did (a number changing, a change
+// applied), never decoration or page-load animation, and every one of them does nothing when the visitor prefers
+// reduced motion or has turned on "stop animations" in the accessibility menu.
 
-export const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+export const reduced = () =>
+  (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false)
+  || document.documentElement.classList.contains("a11y-no-motion");
 
 /** Animate a number in `el` from `from` to `to`. The final value is always exact. */
 export function tweenNumber(el, from, to, format, ms = 450) {
@@ -84,22 +87,4 @@ export function play(el, cls) {
   Promise.allSettled(running.map((a) => a.finished)).then(() => {
     if (el._playToken === token) el.classList.remove(cls); // a newer play() on the same element owns the class now
   });
-}
-
-/** Reveal elements as they scroll into view (adds `.in`). Visible immediately when motion is reduced. */
-export function reveal(elements) {
-  const els = [...elements];
-  if (reduced() || !("IntersectionObserver" in window)) {
-    els.forEach((e) => e.classList.add("in"));
-    return;
-  }
-  const io = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in");
-        io.unobserve(entry.target);
-      }
-    }
-  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
-  els.forEach((e) => io.observe(e));
 }

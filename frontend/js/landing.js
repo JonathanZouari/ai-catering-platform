@@ -1,12 +1,11 @@
-// Landing page behaviour: scroll reveal, header shadow, gentle pointer parallax on the hero art, and a
+// Landing page behaviour: accessibility menu, header shadow, gentle pointer parallax on the hero art, and a
 // clickable example of the assistant's approval card (it demonstrates the rule that nothing changes until
 // the customer approves). No data leaves the page.
 import { fmtMoney } from "./lib/format.js";
-import { confetti, reduced, reveal, tweenNumber } from "./lib/motion.js";
+import { mountA11yMenu } from "./lib/a11y-menu.js";
+import { confetti, reduced, tweenNumber } from "./lib/motion.js";
 
-// Scroll reveal, with a small stagger inside groups.
-document.querySelectorAll(".occasions li, .steps li").forEach((el, i) => el.style.setProperty("--i", i % 6));
-reveal(document.querySelectorAll(".reveal"));
+mountA11yMenu();
 
 // Header gets a shadow once the page has scrolled.
 const header = document.querySelector(".top");
