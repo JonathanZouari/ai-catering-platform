@@ -392,7 +392,7 @@ button.stepper-btn:hover { background: var(--color-surface-2); }
 @keyframes blink { 0% { width: 0; } 100% { width: 1.2em; } }
 .chat-prompts { padding: 0 var(--space-4) var(--space-3); }
 .chat-prompts:empty { display: none; }
-.chat-prompts .chip { min-height: 40px; font-size: 0.9375rem; text-align: start; }
+.chat-prompts .chip { min-height: var(--touch-target); font-size: 0.9375rem; text-align: start; }
 .chat-form { display: flex; gap: var(--space-2); align-items: flex-end; padding: var(--space-3) var(--space-4) var(--space-4); border-block-start: 1px solid var(--color-line); }
 textarea.input.chat-input { min-height: 44px; max-height: 120px; resize: none; }
 
@@ -533,3 +533,8 @@ textarea.input.chat-input { min-height: 44px; max-height: 120px; resize: none; }
 
 .status-mascot, .status-mascot img { display: block; flex: none; }
 .status-mascot img { height: 160px; width: auto; }
+
+/* ---------- footer ---------- */
+.site-footer { max-width: 1120px; margin-inline: auto; padding: var(--space-4) max(16px, env(safe-area-inset-left, 0px)) var(--space-8); }
+.has-bottom-bar .site-footer { padding-block-end: 96px; } /* keep the link clear of the fixed order bar */
+.site-footer a { display: inline-flex; align-items: center; min-height: var(--touch-target); color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }

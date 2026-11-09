@@ -67,7 +67,7 @@ function bubble(m, isNew) {
 }
 
 export function mountChat(root) {
-  const list = h("ol", { class: "chat-log", role: "log", "aria-live": "polite", "aria-label": "שיחה עם העוזר" });
+  const list = h("ol", { class: "chat-log", "aria-live": "polite", "aria-label": "שיחה עם העוזר" });
   const input = h("textarea", { class: "input chat-input", rows: "1", id: "chat-input", placeholder: "כתבו שאלה על ההזמנה", "aria-label": "הודעה לעוזר" });
   const sendBtn = h("button", { class: "btn btn-primary btn-icon", type: "submit", "aria-label": "שליחה" }, icon("paper-plane-right"));
   const prompts = h("div", { class: "chip-row chat-prompts" });
@@ -108,6 +108,21 @@ export function mountChat(root) {
 
   root.append(backdrop, panel, fab);
 
+  // Below 992px the chat is a bottom sheet over a backdrop, so it behaves as a modal: the page behind it is
+  // inert (no keyboard or screen-reader access) while it is open. On wide screens it is a docked side panel
+  // next to the page, which stays usable.
+  const wide = window.matchMedia("(min-width: 992px)");
+  function setModal(on) {
+    for (const el of document.querySelectorAll("body > :not(#chat-root):not(#announce):not(dialog):not(script)")) el.inert = on;
+    if (on) {
+      panel.setAttribute("role", "dialog");
+      panel.setAttribute("aria-modal", "true");
+    } else {
+      panel.removeAttribute("role");
+      panel.removeAttribute("aria-modal");
+    }
+  }
+
   let last = {};
   function render(state) {
     const available = (state.step === "menu" || state.step === "summary") && state.order.status === "draft";
@@ -118,6 +133,7 @@ export function mountChat(root) {
     fab.setAttribute("aria-expanded", String(open));
     panel.hidden = !open;
     backdrop.hidden = !open;
+    setModal(available && open && !wide.matches);
 
     const sig = { messages, busy, version: state.order.version };
     if (open && (sig.messages !== last.messages || sig.busy !== last.busy || sig.version !== last.version)) {
@@ -134,7 +150,7 @@ export function mountChat(root) {
       );
       if (focusKey) list.querySelector(`[data-key="${focusKey}"]`)?.focus();
       list.scrollTop = list.scrollHeight;
-      // role=log announces new bubbles; applied proposals change the order silently, so announce them.
+      // aria-live on the list announces new bubbles (role=log would hide the list items from assistive tech); applied proposals change the order silently, so announce them.
       const applied = messages.flatMap((m) => m.proposals).filter((p) => p.status === "applied").length;
       if (applied !== last.applied) {
         if (last.applied !== undefined) {
@@ -161,5 +177,6 @@ export function mountChat(root) {
     if (!state.chat.open && wasOpen && !fab.hidden) fab.focus();
     wasOpen = state.chat.open;
   });
+  wide.addEventListener("change", () => render(getState()));
   render(getState());
 }

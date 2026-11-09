@@ -16,3 +16,11 @@ def test_frontend_pages_served():
         response = client.get(path)
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
+
+
+def test_accessibility_statement_served_and_linked():
+    page = client.get("/accessibility/")
+    assert page.status_code == 200
+    assert 'lang="he"' in page.text and "הצהרת נגישות" in page.text
+    for path in ("/", "/customer/"):
+        assert 'href="/accessibility/"' in client.get(path).text
