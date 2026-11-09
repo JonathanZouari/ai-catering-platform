@@ -533,3 +533,7 @@ textarea.input.chat-input { min-height: 44px; max-height: 120px; resize: none; }
 
 .status-mascot, .status-mascot img { display: block; flex: none; }
 .status-mascot img { height: 160px; width: auto; }
+
+/* Accessibility statement link: required on every page (IS 5568). */
+.site-foot { max-width: var(--container); margin-inline: auto; padding: var(--space-4) max(16px, env(safe-area-inset-right, 0px)) var(--space-8); }
+.site-foot a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-accent); font-weight: 600; font-size: var(--text-sm); text-underline-offset: 3px; }

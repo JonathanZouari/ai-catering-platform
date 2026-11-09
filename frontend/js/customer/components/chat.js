@@ -20,7 +20,7 @@ function proposalCard(p) {
   const delta = p.price_after - p.price_before;
   const note = STATUS_NOTE[status];
   return h("section", { class: `proposal is-${status}`, "aria-label": "שינוי מוצע בהזמנה" },
-    h("h4", { class: "proposal-title", text: "שינוי מוצע" }),
+    h("h3", { class: "proposal-title", text: "שינוי מוצע" }),
     h("ul", { class: "proposal-rows" },
       p.diff.map((d) => h("li", { class: "proposal-row" },
         h("span", { class: "proposal-label", text: d.label }),
@@ -57,8 +57,8 @@ function proposalCard(p) {
 // (price, quantities, allergens) is "explaining". The state is chosen here from the message itself.
 function bubble(m, isNew) {
   const fresh = isNew ? " is-new" : "";
-  if (m.role !== "assistant") return h("li", { class: `msg msg-user${fresh}` }, h("div", { class: "msg-text", text: m.text }));
-  return h("li", { class: `msg msg-assistant${fresh}` },
+  if (m.role !== "assistant") return h("div", { class: `msg msg-user${fresh}` }, h("div", { class: "msg-text", text: m.text }));
+  return h("div", { class: `msg msg-assistant${fresh}` },
     mascotAvatar(m.proposals.length ? "suggesting" : "explaining", { size: 36 }),
     h("div", { class: "msg-main" },
       h("div", { class: "msg-text", text: m.text }),
@@ -67,7 +67,8 @@ function bubble(m, isNew) {
 }
 
 export function mountChat(root) {
-  const list = h("ol", { class: "chat-log", role: "log", "aria-live": "polite", "aria-label": "שיחה עם העוזר" });
+  // A div, not a list: role=log would strip list semantics and orphan the items.
+  const list = h("div", { class: "chat-log", role: "log", tabindex: "0", "aria-live": "polite", "aria-label": "שיחה עם העוזר" });
   const input = h("textarea", { class: "input chat-input", rows: "1", id: "chat-input", placeholder: "כתבו שאלה על ההזמנה", "aria-label": "הודעה לעוזר" });
   const sendBtn = h("button", { class: "btn btn-primary btn-icon", type: "submit", "aria-label": "שליחה" }, icon("paper-plane-right"));
   const prompts = h("div", { class: "chip-row chat-prompts" });
@@ -123,12 +124,12 @@ export function mountChat(root) {
     if (open && (sig.messages !== last.messages || sig.busy !== last.busy || sig.version !== last.version)) {
       const focusKey = list.contains(document.activeElement) ? document.activeElement.dataset.key : null;
       fill(list, 
-        messages.length ? null : h("li", { class: "msg msg-assistant" },
+        messages.length ? null : h("div", { class: "msg msg-assistant" },
           mascotAvatar("welcome", { size: 36 }),
           h("div", { class: "msg-main" }, h("div", { class: "msg-text", text: "שלום! אני יכול להמליץ על מנות, לבדוק כמויות ולהסביר את המחיר. אפשר גם לשאול על אלרגנים." }))),
         // Only messages added since the last render animate in; the rest stay put.
         messages.map((m, i) => bubble(m, last.count !== undefined && i >= last.count)),
-        busy ? h("li", { class: "msg msg-assistant is-new" },
+        busy ? h("div", { class: "msg msg-assistant is-new" },
           mascotAvatar("thinking", { size: 36, cls: "is-thinking" }),
           h("div", { class: "msg-main" }, h("div", { class: "msg-text typing", text: "העוזר מקליד" }))) : null,
       );

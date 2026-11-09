@@ -126,6 +126,7 @@ main { max-width: none; padding: 0; }
 .cta h2 { margin: 0; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding-block: var(--space-6); border-block-start: 2px solid var(--color-line); }
 .foot .wordmark { font-size: 1.25rem; }
+.foot-links { display: flex; flex-wrap: wrap; gap: var(--space-4); }
 .foot a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
 
 /* ---------- wider screens ---------- */
