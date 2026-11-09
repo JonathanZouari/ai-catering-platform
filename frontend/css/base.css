@@ -316,3 +316,9 @@ fieldset { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 }
 .mascot-avatar picture { display: block; }
 .mascot-avatar img { position: absolute; left: 50%; top: -3%; transform: translateX(-50%); width: 190%; max-width: none; height: auto; }
+
+/* ---------- shared: skip link and site footer (used by pages that do not load landing.css/customer.css) ---------- */
+.site-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); max-width: 1100px; margin-inline: auto; padding: var(--space-6) var(--space-4); border-block-start: 2px solid var(--color-line); }
+.site-foot a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
+.skip-link-base { position: absolute; inset-block-start: -100px; inset-inline-start: var(--space-4); z-index: var(--z-toast); padding: var(--space-3) var(--space-4); background: var(--color-accent); color: var(--color-on-accent); border-radius: var(--radius); }
+.skip-link-base:focus { inset-block-start: var(--space-3); }
