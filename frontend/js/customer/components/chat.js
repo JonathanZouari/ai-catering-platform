@@ -46,7 +46,7 @@ function proposalCard(p) {
         h("button", { class: "btn btn-secondary", type: "button", "data-key": `rej-${p.id}`, onclick: () => rejectProposal(p.id) }, "דחייה"),
         h("button", { class: "btn btn-primary", type: "button", "data-key": `app-${p.id}`, onclick: () => approveProposalById(p.id) }, "אישור השינוי"),
       )
-      : h("div", { class: "proposal-done" },
+      : h("div", { class: "proposal-done", tabindex: "-1", "data-key": `done-${p.id}` },
         // Celebrating only acknowledges a change the customer approved; it is never shown on a pending proposal.
         status === "applied" ? mascotAvatar("celebrating", { size: 32 }) : null,
         h("p", { class: `badge ${note[0]}` }, status === "applied" ? icon("check") : null, note[1])),
@@ -132,7 +132,12 @@ export function mountChat(root) {
           mascotAvatar("thinking", { size: 36, cls: "is-thinking" }),
           h("div", { class: "msg-main" }, h("div", { class: "msg-text typing", text: "העוזר מקליד" }))) : null,
       );
-      if (focusKey) list.querySelector(`[data-key="${focusKey}"]`)?.focus();
+      if (focusKey) {
+        // The approve/reject buttons are replaced by the outcome note; move focus there so keyboard
+        // users keep their place (and Escape still reaches the panel) instead of dropping to <body>.
+        const target = list.querySelector(`[data-key="${focusKey}"]`) ?? [...list.querySelectorAll(".proposal-done")].at(-1);
+        target?.focus();
+      }
       list.scrollTop = list.scrollHeight;
       // role=log announces new bubbles; applied proposals change the order silently, so announce them.
       const applied = messages.flatMap((m) => m.proposals).filter((p) => p.status === "applied").length;
