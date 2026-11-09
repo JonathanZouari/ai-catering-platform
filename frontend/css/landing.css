@@ -33,11 +33,12 @@ main { max-width: none; padding: 0; }
   position: sticky;
   inset-block-start: env(safe-area-inset-top, 0px);
   z-index: var(--z-sticky);
-  background: rgb(255 249 237 / 0.94);
+  background: var(--color-header-bg);
   backdrop-filter: blur(8px);
   border-block-end: 2px solid var(--color-line);
 }
-.top-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-3); }
+.top-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); padding-block: var(--space-3); }
+.top-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
 .brand { font-size: 1.625rem; line-height: 1; }
 
 .section { padding-block: var(--space-12); }
@@ -108,6 +109,7 @@ main { max-width: none; padding: 0; }
   padding: var(--space-8) var(--space-6);
   margin-block: var(--space-4);
 }
+.assistant > * { min-width: 0; } /* let the text column shrink instead of stretching the page */
 .assistant-mascot { justify-self: center; height: 280px; }
 .assistant-mascot img { height: 100%; width: auto; }
 .assistant h2 { margin-block-end: 0; }
@@ -118,13 +120,14 @@ main { max-width: none; padding: 0; }
 .lproposal .row { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; font-size: 0.9375rem; }
 .lproposal .total { border-block-start: 2px solid var(--color-line); padding-block-start: var(--space-3); font-weight: 700; }
 .lproposal .delta { color: var(--color-warning); display: inline-block; unicode-bidi: isolate; }
-.lproposal .actions { display: flex; gap: var(--space-2); }
+.lproposal .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .lproposal .actions .btn { flex: 1; }
 
 /* ---------- closing CTA + footer ---------- */
 .cta { text-align: center; padding-block: var(--space-12); display: grid; justify-items: center; gap: var(--space-4); }
 .cta h2 { margin: 0; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding-block: var(--space-6); border-block-start: 2px solid var(--color-line); }
+.foot-links { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-5); }
 .foot .wordmark { font-size: 1.25rem; }
 .foot a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
 
@@ -149,3 +152,26 @@ main { max-width: none; padding: 0; }
 .demo-total strong { font-size: var(--text-xl); }
 .done-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); position: relative; }
 .link-btn { background: none; border: 0; padding: 0; min-height: 32px; color: var(--color-accent); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* ---------- short viewports (a phone on its side, or 200% zoom on a laptop) ---------- */
+/* A sticky header would cover most of the screen and hide the focused control. */
+@media (max-height: 480px) {
+  .top { position: relative; inset-block-start: 0; } /* still positioned: the accessibility panel anchors to it */
+}
+
+/* ---------- accessibility statement ---------- */
+.brand-link { color: inherit; text-decoration: none; }
+.brand-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.doc { max-width: 760px; padding-block: var(--space-8) var(--space-12); }
+.doc h1 { font-size: var(--text-hero); margin-block-end: var(--space-2); }
+.doc h2 { font-size: var(--text-xl); margin-block: var(--space-8) var(--space-3); }
+.doc p, .doc li { max-width: 68ch; }
+.doc ul { margin: var(--space-3) 0 0; padding-inline-start: var(--space-6); display: grid; gap: var(--space-2); }
+.doc p + ul, .doc p + dl { margin-block-start: var(--space-3); }
+.doc a { color: var(--color-accent); text-underline-offset: 3px; }
+.callout-note { margin-block-start: var(--space-4); padding: var(--space-3) var(--space-4); border: 2px solid var(--color-warning); border-radius: var(--radius); background: var(--color-warning-soft); color: var(--color-warning); font-weight: 600; }
+.contact { margin: 0; display: grid; gap: var(--space-3); }
+.contact dt { font-weight: 700; }
+.contact dd { margin: 0; }
+.placeholder { padding: 0 var(--space-1); border-radius: 4px; background: var(--color-highlight); color: var(--brand-ink); }
+.updated { margin-block-start: var(--space-8); color: var(--color-muted); }

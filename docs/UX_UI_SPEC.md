@@ -7,6 +7,7 @@ Status: **Draft v0.1**. High-fidelity prototypes (Claude Artifacts) come in the 
 | Area | Status |
 |---|---|
 | Language / direction | Hebrew only, RTL (decision #12, see `OPEN_DECISIONS.md`) |
+| Accessibility | IS 5568 pass done on landing, C1-C5 and a new statement page; automated checks in `backend/tests/test_accessibility.py`, manual checks in `ACCESSIBILITY.md` |
 | Customer C1-C5 | Built in `frontend/customer/` + `frontend/js/customer/`, running on a **mock backend** (`js/customer/mock-backend.js`) that mirrors `API_CONTRACTS.md` shapes |
 | Admin A1-A5 | Not built yet (placeholder page) |
 | Brand (#20) | Still open. Colors are tokens in `css/base.css`; the current forest-green accent is a placeholder |
@@ -18,7 +19,7 @@ Preview without the backend: `python -m http.server 8000 --directory frontend`, 
 ## 1. Principles
 
 - Mobile-first; breakpoints 640 / 1024 px **[RECOMMENDATION]**.
-- Accessibility target WCAG 2.2 AA: 4.5:1 text contrast, visible focus, 44×44 px touch targets, labels on all inputs, `aria-live` for price totals and chat replies, full keyboard use.
+- Accessibility: IS 5568 (WCAG 2.0 AA) is the legal minimum and WCAG 2.2 AA the target: 4.5:1 text contrast, visible focus, 44×44 px touch targets, labels on all inputs (required ones marked "(חובה)"), errors in Hebrew beside the field, `aria-live` for price totals and chat replies, full keyboard use, nothing animating on page load. Every page has an accessibility menu and links to the statement page (`/accessibility/`). See `ACCESSIBILITY.md`.
 - Direction-agnostic CSS (logical properties: `margin-inline-start`, etc.) so RTL can be enabled without rewrites.
 - Premium but calm: generous whitespace, one accent color, restrained motion, `prefers-reduced-motion` respected.
 - Never show a pending quotation as a confirmed booking — status badges use explicit text ("Awaiting business approval").

@@ -1,4 +1,4 @@
-import { play } from "../lib/motion.js";
+import { mountA11yMenu } from "../lib/a11y-menu.js";
 import { renderStepper } from "./components/stepper.js";
 import { mountChat } from "./components/chat.js";
 import { EVENT_TYPES, validateEvent } from "./mock-backend.js";
@@ -53,7 +53,6 @@ function render(state) {
   cleanup?.();
   currentStep = state.step;
   cleanup = VIEWS[currentStep](app);
-  play(app, "enter"); // each step arrives with a short rise; skipped for reduced motion
   document.title = `${TITLES[currentStep]} | yumm.ai`;
 
   // Assigning the hash adds a history entry and works in sandboxed frames, where pushState can throw.
@@ -74,6 +73,7 @@ window.addEventListener("hashchange", () => {
   }
 });
 
+mountA11yMenu();
 mountChat(document.getElementById("chat-root"));
 subscribe(render);
 render(getState());

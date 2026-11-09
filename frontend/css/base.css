@@ -72,6 +72,7 @@
   --color-danger-soft: #fde6e1;
   --color-warning: #6b4a00;
   --color-warning-soft: #fff1c2;
+  --color-header-bg: rgb(255 249 237 / 0.94);
 
   /* ---- spacing ---- */
   --space-1: 4px;
@@ -300,6 +301,10 @@ fieldset { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+/* Same effect when the visitor turns on "stop animations" in the accessibility menu (class set on <html>). */
+html.a11y-no-motion *, html.a11y-no-motion *::before, html.a11y-no-motion *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
 
 /* ---------- mascot avatar (shared by the landing page and the app) ---------- */
 /* Round crop of the mascot's hat and face. Decorative; never placed on or beside approve/reject controls. */
@@ -316,3 +321,96 @@ fieldset { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 }
 .mascot-avatar picture { display: block; }
 .mascot-avatar img { position: absolute; left: 50%; top: -3%; transform: translateX(-50%); width: 190%; max-width: none; height: auto; }
+
+/* ---------- accessibility settings ----------
+   The accessibility menu (js/lib/a11y-menu.js) saves choices in localStorage; js/a11y-boot.js puts the matching
+   classes on <html> before first paint. Statement and test notes: docs/ACCESSIBILITY.md. */
+
+/* Text size: every font size is in rem, so scaling the root scales the whole interface. */
+html.a11y-size-1 { font-size: 125%; }
+html.a11y-size-2 { font-size: 150%; }
+
+/* High contrast: the same tokens, pushed to 7:1 or more for text (checked by backend/tests/test_accessibility.py). */
+:root.a11y-contrast {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f0f0;
+  --color-line: #595959;
+  --color-control-border: #000000;
+  --color-text: #000000;
+  --color-muted: #262626;
+  --color-accent: #1d4a0e;
+  --color-accent-strong: #0f2d06;
+  --color-accent-soft: #e4f1d0;
+  --color-success: #14400a;
+  --color-success-soft: #e4f1d0;
+  --color-danger: #8a1c0c;
+  --color-danger-soft: #fde6e1;
+  --color-warning: #4a3200;
+  --color-warning-soft: #fff1c2;
+  --color-header-bg: #ffffff;
+  --focus-ring: 4px solid #000000;
+}
+
+/* Underline links: links are always underlined, not only on the footer and inline ones. */
+html.a11y-links a { text-decoration: underline !important; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+/* Windows High Contrast and other forced-colors modes repaint backgrounds, which would blank the mask icons. */
+@media (forced-colors: active) {
+  .icon { forced-color-adjust: none; }
+}
+
+/* ---------- accessibility menu ---------- */
+.a11y-wrap { position: relative; }
+html:not(.a11y-ready) .a11y-toggle { display: none; }
+.a11y-panel {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-2));
+  inset-inline-end: 0;
+  z-index: var(--z-toast);
+  display: grid;
+  gap: var(--space-3);
+  /* rem, so the panel grows with the text-size setting; the height limit keeps it reachable under a sticky header. */
+  width: min(22rem, calc(100vw - 32px));
+  max-height: calc(100dvh - 6rem);
+  overflow-y: auto;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--outline-width) solid var(--brand-ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+}
+/* On narrow screens the panel spans the page gutters, anchored to the (positioned) header, so it can never hang off the edge. */
+@media (max-width: 640px) {
+  .a11y-wrap { position: static; }
+  .a11y-panel { inset-inline: var(--space-4); width: auto; }
+}
+.a11y-title { font-weight: 800; font-size: var(--text-lg); }
+.a11y-row { display: grid; gap: var(--space-2); }
+.a11y-label { font-weight: 600; }
+.a11y-size { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.a11y-size .btn { padding: var(--space-2) var(--space-3); font-size: var(--text-sm); line-height: 1.2; white-space: normal; }
+.a11y-size .btn[aria-disabled="true"] { opacity: var(--state-disabled-opacity); cursor: not-allowed; }
+.a11y-size-value { min-width: 3.5ch; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.a11y-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: var(--outline-width) solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+/* On is shown by the word and a filled marker, never by colour alone. */
+.a11y-option[aria-pressed="true"] { background: var(--color-accent-soft); border-color: var(--color-accent); }
+.a11y-option[aria-pressed="true"] .a11y-state::before { content: "\2713\00a0"; }
+.a11y-state { font-weight: 700; white-space: nowrap; }
+.a11y-note { font-size: var(--text-sm); color: var(--color-muted); }
+.a11y-note a { color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
+.a11y-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); }

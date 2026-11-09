@@ -20,7 +20,7 @@ function proposalCard(p) {
   const delta = p.price_after - p.price_before;
   const note = STATUS_NOTE[status];
   return h("section", { class: `proposal is-${status}`, "aria-label": "שינוי מוצע בהזמנה" },
-    h("h4", { class: "proposal-title", text: "שינוי מוצע" }),
+    h("h3", { class: "proposal-title", text: "שינוי מוצע" }),
     h("ul", { class: "proposal-rows" },
       p.diff.map((d) => h("li", { class: "proposal-row" },
         h("span", { class: "proposal-label", text: d.label }),
@@ -108,10 +108,17 @@ export function mountChat(root) {
 
   root.append(backdrop, panel, fab);
 
+  // Below 992px the panel is a sheet over the page (see customer.css). The page behind it is made inert then, so
+  // Tab and screen-reader browsing stay inside the panel; on wide screens the panel is docked beside the page.
+  const docked = window.matchMedia("(min-width: 992px)");
+  const pageBehind = () => [document.querySelector(".site-header"), document.getElementById("app"), document.querySelector(".site-footer")];
+
   let last = {};
   function render(state) {
     const available = (state.step === "menu" || state.step === "summary") && state.order.status === "draft";
     const { open, busy, messages } = state.chat;
+    const covering = available && open && !docked.matches;
+    for (const el of pageBehind()) if (el) el.inert = covering;
     root.hidden = !available;
     document.body.classList.toggle("chat-open", available && open);
     fab.hidden = open;
@@ -161,5 +168,6 @@ export function mountChat(root) {
     if (!state.chat.open && wasOpen && !fab.hidden) fab.focus();
     wasOpen = state.chat.open;
   });
+  docked.addEventListener("change", () => render(getState()));
   render(getState());
 }

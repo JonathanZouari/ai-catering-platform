@@ -28,7 +28,7 @@
   position: sticky;
   inset-block-start: env(safe-area-inset-top, 0px);
   z-index: var(--z-sticky);
-  background: rgb(255 249 237 / 0.94);
+  background: var(--color-header-bg);
   backdrop-filter: blur(8px);
   border-block-end: 1px solid var(--color-line);
 }
@@ -408,7 +408,7 @@ textarea.input.chat-input { min-height: 44px; max-height: 120px; resize: none; }
 .delta { font-weight: 700; }
 .delta.up { color: var(--color-warning); }
 .delta.down { color: var(--color-success); }
-.proposal-actions { display: flex; gap: var(--space-2); }
+.proposal-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .proposal-actions .btn { flex: 1; padding-inline: var(--space-3); }
 
 /* ---------- breakpoints ---------- */
@@ -533,3 +533,33 @@ textarea.input.chat-input { min-height: 44px; max-height: 120px; resize: none; }
 
 .status-mascot, .status-mascot img { display: block; flex: none; }
 .status-mascot img { height: 160px; width: auto; }
+
+/* ---------- accessibility: header button, footer, required marker, short viewports ---------- */
+.site-footer {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-block: var(--space-4) var(--space-8);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-block-start: 1px solid var(--color-line);
+}
+.site-footer a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
+
+/* The visible "(חובה)" next to a label; the input also has aria-required, so this is for sighted users. */
+.req { margin-inline-start: var(--space-1); font-weight: 400; color: var(--color-muted); }
+
+/* The header cannot hold the wordmark, the stepper and the accessibility button on one line at the narrowest widths. */
+@media (max-width: 380px) {
+  .site-header-inner { flex-wrap: wrap; }
+  .a11y-wrap { order: 3; margin-inline-start: auto; }
+}
+
+/* A sticky header and a fixed bottom bar would cover most of a short screen (a phone on its side, or 200% zoom on a
+   laptop) and hide the focused control, so they scroll with the page instead. */
+@media (max-height: 480px) {
+  .site-header { position: relative; inset-block-start: 0; } /* still positioned: the accessibility panel anchors to it */
+  body::before { display: none; }
+  .bottom-bar { position: static; box-shadow: none; }
+  .menu-layout { padding-block-end: var(--space-6); }
+  .order-side { position: static; }
+}
