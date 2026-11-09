@@ -1,9 +1,10 @@
 // Client state for the customer app. Every order mutation bumps `order.version`,
 // matching the optimistic-concurrency contract in docs/API_CONTRACTS.md.
 import {
-  approveProposal, assistantReply, getDish, newOrder, priceOrder, qtyLabel, recommendedQty,
+  approveProposal, assistantReply, DISHES, getDish, newOrder, priceOrder, qtyLabel, recommendedQty,
   validateContact, validateEvent,
 } from "./mock-backend.js";
+import { sb } from "../lib/supabase.js";
 
 const STORAGE_KEY = "catering.customer.draft.v1";
 export const STEPS = ["event", "menu", "summary", "status"];
@@ -88,27 +89,58 @@ export function setContact(patch) {
   commit({ ...state, order: { ...state.order, contact: { ...state.order.contact, ...patch } } });
 }
 
-export function submitOrder() {
+/** Re-render prices and availability after the live catalog changed. */
+export function refreshPrices() {
+  commit({ ...state, order: { ...state.order, items: { ...state.order.items } } });
+}
+
+/** The database calculates the totals; the client never sends a price. */
+export async function submitOrder() {
   const { order } = state;
   const errors = { ...validateContact(order.contact) };
   if (!Object.keys(order.items).length) errors.items = "הוסיפו לפחות מנה אחת להזמנה";
   if (Object.keys(validateEvent(order.event)).length) errors.event = "פרטי האירוע חסרים או לא תקינים";
   if (Object.keys(errors).length) return { errors };
-  const pricing = priceOrder(order);
+  const { data, error } = await sb.rpc("submit_order", {
+    payload: {
+      event: order.event,
+      contact: order.contact,
+      items: Object.entries(order.items).map(([id, quantity]) => ({ dish_id: getDish(id).dbId, quantity })),
+    },
+  });
+  if (error) {
+    return { errors: { items: error.code === "P0001" ? error.message : "השליחה נכשלה. בדקו את החיבור ונסו שוב." } };
+  }
+  const { data: rows, error: readError } = await sb.from("order_items")
+    .select("dish_id,quantity,snapshot_name,snapshot_unit_price,snapshot_line_total")
+    .eq("order_id", data.id);
+  if (readError) {
+    return { errors: { items: "הבקשה נשלחה, אבל לא הצלחנו להציג אותה. רעננו את הדף." } };
+  }
   const snapshot = {
-    submittedAt: new Date().toISOString(),
-    lines: pricing.lines.map((l) => ({ name: l.dish.name, qty: qtyLabel(l.dish, l.qty), unitPrice: l.unitPrice, lineTotal: l.lineTotal })),
-    subtotal: pricing.subtotal,
-    deliveryFee: pricing.deliveryFee,
-    total: pricing.total,
+    submittedAt: data.submitted_at,
+    lines: rows.map((r) => {
+      const dish = DISHES.find((d) => d.dbId === r.dish_id);
+      return { name: r.snapshot_name, qty: dish ? qtyLabel(dish, Number(r.quantity)) : String(r.quantity), unitPrice: Number(r.snapshot_unit_price), lineTotal: Number(r.snapshot_line_total) };
+    }),
+    subtotal: Number(data.subtotal),
+    deliveryFee: Number(data.delivery_fee),
+    total: Number(data.total),
   };
   commit({
     ...state,
     step: "status",
-    order: { ...order, status: "pending_approval", snapshot, version: order.version + 1 },
+    order: { ...order, serverId: data.id, status: "pending_approval", snapshot, version: order.version + 1 },
     chat: { ...state.chat, open: false },
   });
   return { errors: {} };
+}
+
+/** Applies a status change that arrived from the server. */
+export function applyServerOrder({ status, decision_note: note }) {
+  const { order } = state;
+  if (order.status === status && order.ownerNote === (note ?? "")) return;
+  commit({ ...state, order: { ...order, status, ownerNote: note ?? "" } });
 }
 
 export function startOver() {

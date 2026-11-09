@@ -1,6 +1,8 @@
 # Preliminary Database Schema (PostgreSQL / Supabase)
 
-Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
+Status: **v1, live on the dev project.** The source of truth is `supabase/migrations/`.
+
+Added to this draft during implementation: `orders.time_slot_id`; a composite FK from `orders (event_id, customer_id)` to `events (id, customer_id)`; `CHECK`s for frozen prices, `decided_at`, complete snapshots and `executed_at`; explicit delete rules; timestamps on `events`; `customers.auth_user_id` references `auth.users`.
 
 Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
 

@@ -59,14 +59,18 @@ Status: **Draft v0.1** · Phase 0 deliverable
 ## 4. Data access **[RECOMMENDATION]**
 
 - Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
-- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via a public bucket (or signed URLs — to confirm in Phase 2).
-- Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
-- RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies depend on the auth decision **[OPEN #1]**.
+- **Current state:** the browser uses supabase-js with the publishable key, served by `GET /api/public-config`. FastAPI has no database connection yet.
+- Order submission and owner decisions run in Postgres functions (`submit_order`, `decide_order`), so the database calculates prices and clients cannot write `orders`. Move this logic to `services/` when the backend gets its connection.
+- Dish images live in the public `dish-images` bucket. Anyone can read them by URL; only the admin can write.
+- Schema changes are SQL migrations in `supabase/migrations/`, applied to dev first.
+- RLS is enabled on all tables. It is the primary access control while the browser talks to Supabase directly.
+- Realtime publishes `orders` and the catalog and logistics tables. Events respect RLS, so customers only receive their own orders.
 
-## 5. Authentication **[OPEN]**
+## 5. Authentication **[DECIDED 2026-11-05]**
 
-- Admin: one owner account. Recommended: Supabase Auth email login, backend verifies the JWT and checks an `admin` role.
-- Customer: undecided (account vs guest link). Backend dependencies will be written so either option plugs in.
+- Supabase Auth with email and password, for both customers and the owner.
+- A database trigger creates a `customers` row for each new account.
+- The owner is a user with `app_metadata.role = 'admin'`, which only the service role can set. Never authorize from `user_metadata`.
 
 ## 6. Environments and branches **[CONFIRMED]** (separate Supabase projects strongly preferred)
 
