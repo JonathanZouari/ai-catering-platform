@@ -210,7 +210,7 @@ def test_settings_defaults_and_update(client):
         "default_delivery_fee": "150.00",
     }
     public = client.get("/api/catalog/business").json()
-    assert public == {"kashrut_certificate": "כשר בהשגחת רבנות תל אביב"}
+    assert public["kashrut_certificate"] == "כשר בהשגחת רבנות תל אביב"
     cleared = client.put(
         "/api/admin/settings", json={**new, "kashrut_certificate": ""}, headers=AUTH
     )

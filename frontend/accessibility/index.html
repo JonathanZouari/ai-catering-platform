@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>הצהרת נגישות · Yummai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<a class="skip-link" href="#screen">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
+    <nav class="site-nav" aria-label="ניווט ראשי">
+      <a href="/customer/">האזור האישי</a><a href="#" aria-current="page">הצהרת נגישות</a>
+    </nav>
+  </div>
+</header>
+
+<div class="app wrap">
+  <main id="screen" class="prose">
+    <h1>הצהרת נגישות</h1>
+    <p class="lede">אנחנו רוצים שכל אחד ואחת יוכלו להזמין מאיתנו אוכל לאירוע בקלות, כולל אנשים עם מוגבלות. האתר הונגש לפי תקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע"ג-2013.</p>
+
+    <h2>רמת הנגישות</h2>
+    <p>האתר בנוי כך שיעמוד בתקן הישראלי 5568, המבוסס על הנחיות WCAG 2.0, ברמה AA.</p>
+
+    <h2>מה עשינו כדי להנגיש את האתר</h2>
+    <ul>
+      <li>אפשר להפעיל את כל האתר במקלדת בלבד. בכל דף יש קישור "דילוג לתוכן", והרכיב שבפוקוס מסומן במסגרת בולטת.</li>
+      <li>המבנה, הכותרות, הטפסים והכפתורים מסומנים כך שקוראי מסך מקריאים אותם נכון. לכל שדה יש תווית, והודעות שגיאה ועדכונים מוקראים.</li>
+      <li>לכל פעולת גרירה יש גם כפתור. אפשר להוסיף מנה לשולחן בכפתור "+ לשולחן", בלי לגרור.</li>
+      <li>ניגודיות הצבעים מתאימה לטקסט רגיל ולטקסט גדול, ואפשר להגדיל את הטקסט עד 200% בלי לאבד תוכן.</li>
+      <li>האתר מכבד את ההגדרה "הפחתת תנועה" במערכת ההפעלה: מי שהפעיל אותה לא יראה אנימציות.</li>
+      <li>האתר מותאם לטלפון, לטאבלט ולמחשב, ולשפה העברית מימין לשמאל.</li>
+    </ul>
+
+    <h2>איך להשתמש באתר המונגש</h2>
+    <ul>
+      <li><kbd>Tab</kbd> מעביר לרכיב הבא, ו-<kbd>Shift</kbd>+<kbd>Tab</kbd> לרכיב הקודם.</li>
+      <li><kbd>Enter</kbd> או רווח מפעילים כפתור או קישור.</li>
+      <li>הגדלת טקסט: <kbd>Ctrl</kbd> ו-<kbd>+</kbd> (ב-Mac: <kbd>Cmd</kbd> ו-<kbd>+</kbd>).</li>
+      <li>האתר נבדק עם הדפדפנים העדכניים של Chrome, Safari, Edge ו-Firefox.</li>
+    </ul>
+
+    <h2>מה עדיין לא נגיש במלואו</h2>
+    <ul>
+      <li>חלק מתמונות המנות הן תמונות להמחשה. השם והתיאור של כל מנה מופיעים בטקסט, כך שאין צורך בתמונה כדי לבחור.</li>
+      <li>העוזר החכם בהזמנה הוא צ'אט. אם קשה לכם להשתמש בו, אפשר לבחור את כל המנות גם בלעדיו, או לפנות אלינו בדרכים שלמטה ונשלים את ההזמנה איתכם.</li>
+    </ul>
+
+    <h2>נתקלתם בבעיה? פנו אלינו</h2>
+    <p>אם משהו באתר לא נגיש לכם, או שאתם צריכים את המידע בדרך אחרת, נשמח לעזור. נחזור אליכם תוך 60 יום לכל היותר, ובדרך כלל הרבה יותר מהר.</p>
+    <dl class="totals" id="contact">
+      <div><dt>רכז/ת הנגישות</dt><dd id="contact-name">טרם נקבע</dd></div>
+      <div><dt>טלפון</dt><dd id="contact-phone">טרם נקבע</dd></div>
+      <div><dt>דוא"ל</dt><dd id="contact-email">טרם נקבע</dd></div>
+    </dl>
+
+    <p class="fine">ההצהרה עודכנה ב-9 בנובמבר 2026.</p>
+  </main>
+</div>
+
+<footer class="site-footer wrap"><span>Yummai · תל אביב</span><a href="/accessibility/">הצהרת נגישות</a></footer>
+<script type="module">
+  // Contact details come from server config (ACCESSIBILITY_CONTACT_*), shown as text only.
+  const link = (href, text) => Object.assign(document.createElement("a"), { href, textContent: text });
+  try {
+    const { accessibility_contact: c } = await (await fetch("/api/catalog/business")).json();
+    if (c.name) document.getElementById("contact-name").textContent = c.name;
+    if (c.phone) document.getElementById("contact-phone").replaceChildren(link(`tel:${c.phone.replace(/[^\d+]/g, "")}`, c.phone));
+    if (c.email) document.getElementById("contact-email").replaceChildren(link(`mailto:${c.email}`, c.email));
+  } catch { /* keeps "טרם נקבע" */ }
+</script>
+</body>
+</html>

@@ -24,7 +24,7 @@ Common codes: `validation_error` (422), `not_found` (404), `forbidden` (403), `u
 |---|---|---|
 | GET | `/api/catalog/categories` | Active categories, ordered |
 | GET | `/api/catalog/dishes?category_id=&vegan=&vegetarian=&kashrut=` | Available dishes with price, unit, dietary info (unknown fields returned as `null`; `kashrut` is `meat` or `pareve`; `dietary.kashrut_class` null = not food, e.g. disposables) |
-| GET | `/api/catalog/business` | `{kashrut_certificate}` (null = not shown). Public |
+| GET | `/api/catalog/business` | `{kashrut_certificate, accessibility_contact: {name, phone, email}}` (null = not shown; email falls back to `OWNER_EMAIL`). Public |
 | GET | `/api/catalog/dishes/{id}` | Dish detail incl. allergen statuses |
 | GET | `/api/delivery/cities` | `[{city, fee}]`: active zone cities at their fee, then (when `default_delivery_fee` is set) every other Israeli locality from `frontend/data/cities.json` at that fee |
 | GET | `/api/availability?from=&to=` | `{earliest_date, blocked_dates, time_slots, full_slots: [{slot_id, date}]}`. Only which slot is full, never booking counts |

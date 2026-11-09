@@ -25,8 +25,14 @@ class SettingsOut(BaseModel):
     default_delivery_fee: Decimal | None
 
 
+class AccessibilityContact(BaseModel):
+    name: str | None
+    phone: str | None
+    email: str | None
+
+
 class BusinessOut(BaseModel):
     """Public facts about the business."""
 
-    model_config = ConfigDict(from_attributes=True)
     kashrut_certificate: str | None
+    accessibility_contact: AccessibilityContact

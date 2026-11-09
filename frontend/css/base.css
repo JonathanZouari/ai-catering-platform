@@ -46,6 +46,16 @@ h2 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 900; letter-spacing: -.
 p { margin: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* skip link: hidden until keyboard focus, then above the sticky header */
+.skip-link { position: absolute; inset-inline-start: 16px; inset-block-start: -100px; z-index: 40; background: var(--fg); color: var(--bg); padding: 12px 18px; font-weight: 700; text-decoration: none; }
+.skip-link:focus { inset-block-start: 12px; }
+main:focus { outline: none; } /* focus lands here after the skip link; the move itself is the cue */
+/* accessibility statement and other plain-text pages */
+.prose { max-width: 70ch; display: grid; gap: 16px; padding-block: 32px; }
+.prose h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 900; }
+.prose h2 { font-size: 1.5rem; margin-block-start: 16px; }
+.prose ul { margin: 0; padding-inline-start: 1.2em; display: grid; gap: 8px; }
+kbd { font: 600 .9em var(--font-body); border: 1px solid var(--line-strong); border-block-end-width: 2px; padding: 0 5px; }
 .num { font-variant-numeric: tabular-nums; }
 .wrap { max-width: 1240px; margin-inline: auto; }
 .bleed { margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); }
@@ -94,7 +104,7 @@ label, legend, .counter-label { font-weight: 600; }
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 legend { padding: 0; margin-block-end: 10px; }
 .field { display: grid; gap: 6px; min-width: 0; }
-.field-row { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.field-row { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
 /* Autocomplete (ARIA combobox): the list drops under its input, in the site's own style. */
 .combo { position: relative; }
 .combo-list { position: absolute; inset-inline: 0; inset-block-start: 100%; z-index: 20; margin: 0; padding: 0; list-style: none; max-block-size: 264px; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); border: 1.5px solid var(--line-strong); border-block-start: 0; box-shadow: 0 10px 24px rgb(var(--shade) / .12); }
@@ -130,7 +140,7 @@ legend { padding: 0; margin-block-end: 10px; }
 @media (min-width: 1024px) {
   html[data-route="menu"] .app, html[data-route="summary"] .app { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
 }
-#screen { min-width: 0; display: grid; gap: 24px; align-content: start; }
+.app #screen { min-width: 0; display: grid; gap: 24px; align-content: start; }
 .screen-head { display: grid; gap: 8px; max-width: 62ch; }
 .eyebrow { font-size: .8rem; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
 .lede { color: var(--muted); font-size: 1.05rem; }
@@ -139,7 +149,7 @@ legend { padding: 0; margin-block-end: 10px; }
 .progress li::before { content: counter(s) ". "; }
 .progress li[aria-current] { color: var(--fg); font-weight: 700; }
 .event-form { display: grid; gap: 28px; max-width: 760px; }
-.counters { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.counters { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
 .counter { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .counter-text { display: grid; }
 .guest-total, .fee-note { margin-block-start: 12px; }
@@ -298,6 +308,7 @@ html.dragging .tray.away { opacity: 1; visibility: visible; transform: none; } /
 
 /* admin (A1) */
 .admin { display: grid; gap: 24px; }
+.admin > * { min-width: 0; } /* wide tables scroll inside .table-scroll instead of widening the page */
 @media (min-width: 900px) { .admin { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; } }
 .admin-stack { display: grid; gap: 24px; } /* screens with peer sections (A4/A5), no list+detail split */
 .order-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
