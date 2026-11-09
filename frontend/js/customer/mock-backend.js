@@ -62,8 +62,11 @@ export function minEventDate() {
   return toIsoDate(addDays(new Date(), LEAD_DAYS));
 }
 
+// Filled from the database by catalog.js.
+export const BLOCKED_DATES = [];
+
 export function blockedDates() {
-  return [toIsoDate(addDays(new Date(), 5)), toIsoDate(addDays(new Date(), 11))];
+  return BLOCKED_DATES;
 }
 
 export function slotsFor(fulfillment) {

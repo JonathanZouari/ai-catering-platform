@@ -1,8 +1,11 @@
+import { fill, h } from "../lib/dom.js";
 import { play } from "../lib/motion.js";
+import { requireSession, sb, signOut } from "../lib/supabase.js";
+import { loadCatalog, onCatalogChange, watchCatalog } from "./catalog.js";
 import { renderStepper } from "./components/stepper.js";
 import { mountChat } from "./components/chat.js";
 import { EVENT_TYPES, validateEvent } from "./mock-backend.js";
-import { STEPS, canEnter, getState, goto, seedDemo, setEvent, subscribe } from "./store.js";
+import { STEPS, applyServerOrder, canEnter, getState, goto, refreshPrices, seedDemo, setEvent, subscribe } from "./store.js";
 import { mountEvent } from "./views/event.js";
 import { mountMenu } from "./views/menu.js";
 import { mountStatus } from "./views/status.js";
@@ -18,6 +21,20 @@ const TITLES = {
 
 const app = document.getElementById("app");
 const stepperRoot = document.getElementById("stepper");
+
+await requireSession();
+document.getElementById("sign-out").addEventListener("click", signOut);
+
+try {
+  await loadCatalog();
+} catch (error) {
+  fill(app, h("div", { class: "empty", role: "alert" },
+    h("p", { class: "empty-title", text: "לא הצלחנו לטעון את התפריט" }),
+    h("button", { class: "btn btn-secondary", type: "button", onclick: () => location.reload() }, "ניסיון חוזר")));
+  throw error;
+}
+watchCatalog();
+onCatalogChange(refreshPrices);
 
 // Design review shortcut: ?demo=pending|approved|rejected, or #demo-pending etc. when the
 // page is embedded and has no query string. Never used with real data.
@@ -74,6 +91,28 @@ window.addEventListener("hashchange", () => {
   }
 });
 
+/* Live order status: the owner's decision reaches this screen without a reload. */
+let watchedOrder = null;
+let orderChannel = null;
+function watchOrder(state) {
+  const id = state.order.serverId ?? null;
+  if (id === watchedOrder) return;
+  watchedOrder = id;
+  if (orderChannel) sb.removeChannel(orderChannel);
+  orderChannel = null;
+  if (!id) return;
+  orderChannel = sb.channel(`order-${id}`)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${id}` }, (change) => applyServerOrder(change.new))
+    .subscribe(async (status) => {
+      if (status !== "SUBSCRIBED") return;
+      // Catch a decision made while this page was closed.
+      const { data } = await sb.from("orders").select("status,decision_note").eq("id", id).maybeSingle();
+      if (data) applyServerOrder(data);
+    });
+}
+
 mountChat(document.getElementById("chat-root"));
 subscribe(render);
+subscribe(watchOrder);
 render(getState());
+watchOrder(getState());

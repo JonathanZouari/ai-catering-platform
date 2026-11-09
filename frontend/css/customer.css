@@ -96,7 +96,9 @@ button.stepper-btn:hover { background: var(--color-surface-2); }
 .is-done .stepper-mark { background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-accent); }
 
 @media (max-width: 640px) {
-  .site-header-inner { flex-wrap: nowrap; padding-block: var(--space-1); gap: var(--space-2); }
+  /* Brand and sign-out share the first row; the stepper needs the full phone width below them. */
+  .site-header-inner { flex-wrap: wrap; padding-block: var(--space-1); gap: 0 var(--space-2); }
+  .stepper-nav { order: 1; flex-basis: 100%; min-width: 0; }
   .brand { font-size: 1.25rem; }
   .stepper-label { font-size: var(--text-sm); white-space: nowrap; }
   .stepper, .stepper-item { gap: 0; }
