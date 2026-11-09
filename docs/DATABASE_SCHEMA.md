@@ -1,6 +1,11 @@
 # Preliminary Database Schema (PostgreSQL / Supabase)
 
-Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
+Status: **Migrated to Supabase dev** (project `crkfpunzwnoocgflljgu`) on 2026-11-05.
+Source of truth: `supabase/migrations/*.sql` (apply with `supabase db push --remote`), synthetic data in
+`supabase/seed.sql` (`--include-seed`). Money is integer agorot, dietary flags live on `dishes`,
+and the public Data API has no access to app tables (backend-only). Owner login: Supabase Auth with
+sign-ups disabled; accounts via `backend/scripts/create_admin.py` (sets `app_metadata.role = "admin"`).
+The tables below are the original draft and may differ in detail from the migration.
 
 > **Local SQLite (development):** the core ordering tables are implemented for SQLite in
 > `database/migrations/0001_init_sqlite.sql` (money in agorot, UUID text ids, CHECKs for enums),
