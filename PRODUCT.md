@@ -32,7 +32,7 @@ Single business. Dishes carry kashrut (meat, dairy, pareve), vegetarian and vega
 ## Capabilities and Constraints
 
 - Hebrew only, right-to-left (decided 2026-10-29).
-- WCAG 2.2 AA target: 4.5:1 text contrast, visible focus, 44px touch targets, `aria-live` for price totals and chat replies.
+- Accessibility: the Israeli standard IS 5568 (WCAG 2.0 AA) is the legal minimum; the project target stays WCAG 2.2 AA: 4.5:1 text contrast, visible focus, 44px touch targets, `aria-live` for price totals and chat replies. Details and checklist in `docs/ACCESSIBILITY.md`.
 - Customer flow: event details, menu, order summary, AI assistant, quotation submission and status.
 - Undecided: brand name and logo (#20), customer auth (#1), quantity formulas (#3), allergen disclaimer wording (#8).
 
@@ -53,4 +53,4 @@ No real photography, logo, testimonials or customer data exist. Do not fabricate
 
 ## Accessibility & Inclusion
 
-WCAG 2.2 AA, full keyboard use, `prefers-reduced-motion` respected, logical CSS properties so direction never needs a rewrite.
+IS 5568 (WCAG 2.0 AA) as the minimum and WCAG 2.2 AA as the target, full keyboard use, no animation on page load, `prefers-reduced-motion` respected, logical CSS properties so direction never needs a rewrite. An in-house accessibility menu (text size, high contrast, stop animations, underlined links) and a Hebrew accessibility statement page (`/accessibility/`) ship with the site; no third-party overlay widget is used. The statement's contact details are placeholders until the business supplies them.
