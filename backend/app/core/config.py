@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     brevo_api_key: str | None = None
     owner_email: str | None = None  # where "new order awaiting approval" goes
     public_base_url: str = "http://127.0.0.1:8000"  # for links inside emails
+    # Accessibility statement contact (IS 5568 regulations). Email falls back to owner_email.
+    accessibility_contact_name: str | None = None
+    accessibility_contact_phone: str | None = None
+    accessibility_contact_email: str | None = None
     # AI ordering assistant (OPEN_DECISIONS #16: Anthropic Claude). No key = chat answers 503.
     anthropic_api_key: str | None = None
     anthropic_base_url: str | None = None  # local fake for E2E only; unset in real envs

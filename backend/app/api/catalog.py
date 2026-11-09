@@ -6,9 +6,10 @@ from typing import Literal
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.db import get_db
 from app.schemas import catalog as s
-from app.schemas.settings import BusinessOut
+from app.schemas.settings import AccessibilityContact, BusinessOut
 from app.services import catalog as svc
 from app.services import settings as settings_svc
 
@@ -17,8 +18,16 @@ router = APIRouter(prefix="/api/catalog", tags=["catalog"])
 
 @router.get("/business", response_model=BusinessOut)
 def business(db: Session = Depends(get_db)):
-    """Public facts shown with the menu: the kashrut certificate (OPEN_DECISIONS #9)."""
-    return settings_svc.get(db)
+    """Public facts: the kashrut certificate (OPEN_DECISIONS #9), accessibility contact."""
+    env = get_settings()
+    return BusinessOut(
+        kashrut_certificate=settings_svc.get(db).kashrut_certificate,
+        accessibility_contact=AccessibilityContact(
+            name=env.accessibility_contact_name,
+            phone=env.accessibility_contact_phone,
+            email=env.accessibility_contact_email or env.owner_email,
+        ),
+    )
 
 
 @router.get("/categories", response_model=list[s.CategoryOut])
