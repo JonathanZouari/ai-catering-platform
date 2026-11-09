@@ -1,0 +1,114 @@
+/* Accessibility menu (js/lib/a11y-toolbar.js) and the display modes it sets on <html>.
+   Logical properties keep it in the RTL inline-start corner, away from the chat button at inline-end. */
+
+.a11y-menu {
+  position: fixed;
+  inset-inline-start: var(--space-4);
+  inset-block-end: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-chat);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.has-bottom-bar .a11y-menu { inset-block-end: calc(84px + env(safe-area-inset-bottom, 0px)); }
+
+.a11y-fab {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  padding: 0;
+  border: var(--outline-width) solid var(--brand-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+}
+.a11y-fab:hover { background: var(--color-accent-strong); }
+.a11y-fab svg { inline-size: 30px; block-size: 30px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.a11y-fab svg .fill { fill: currentColor; stroke: none; }
+
+.a11y-panel {
+  inline-size: min(280px, calc(100vw - 2 * var(--space-4)));
+  max-block-size: calc(100vh - 120px);
+  overflow-y: auto;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--outline-width) solid var(--brand-ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+}
+.a11y-panel[hidden] { display: none; }
+.a11y-title { margin: 0 0 var(--space-1); font-size: var(--text-lg); }
+.a11y-row { display: flex; align-items: center; gap: var(--space-2); }
+.a11y-row-label { flex: 1; font-weight: 600; }
+.a11y-size-value { min-inline-size: 4.5ch; text-align: center; font-variant-numeric: tabular-nums; }
+
+.a11y-btn {
+  min-block-size: var(--touch-target);
+  min-inline-size: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: var(--outline-width) solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+.a11y-btn:hover { background: var(--color-surface-2); }
+.a11y-toggle[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--brand-ink); }
+.a11y-toggle[aria-pressed="true"]::before { content: "✓ "; }
+.a11y-reset { color: var(--color-danger); }
+.a11y-link { display: inline-flex; align-items: center; min-block-size: var(--touch-target); color: var(--color-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- display modes ---------- */
+
+/* High contrast: push every semantic color to black on white. Components only use these tokens. */
+.a11y-contrast {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f2f2f2;
+  --color-line: #000000;
+  --color-control-border: #000000;
+  --color-text: #000000;
+  --color-muted: #000000;
+  --color-accent: #1d3d10;
+  --color-accent-strong: #000000;
+  --color-accent-soft: #ffffff;
+  --color-danger: #8f1b0c;
+  --color-success: #173a0c;
+  --color-warning: #4a3300;
+  --focus-ring: 4px solid #000000;
+}
+.a11y-contrast img, .a11y-contrast picture { filter: contrast(1.1); }
+
+/* Stop animations: same effect as the OS "reduce motion" setting (motion.css), on request. */
+.a11y-no-motion *, .a11y-no-motion *::before, .a11y-no-motion *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.a11y-no-motion.js .reveal { opacity: 1 !important; transform: none !important; }
+.a11y-no-motion .confetti { display: none; }
+
+/* Larger text: the ordering header's stepper wraps below the logo instead of running off a phone screen. */
+.a11y-text-lg .site-header-inner { flex-wrap: wrap; }
+
+.a11y-underline a { text-decoration: underline !important; text-underline-offset: 3px; }
+
+/* ---------- accessibility statement page ---------- */
+.statement > section { max-width: calc(72ch + 32px); } /* centered reading column; landing.css adds the gutters */
+.top .brand-link { color: inherit; text-decoration: none; }
+.statement { padding-block: var(--space-8) var(--space-16); }
+.statement h1 { font-family: var(--font-display); font-size: var(--text-2xl); }
+.statement h2 { margin-block-start: var(--space-8); font-size: var(--text-xl); }
+.statement li + li { margin-block-start: var(--space-2); }
+.statement kbd { padding: 0 0.3em; border: 1px solid var(--color-control-border); border-radius: 4px; font-family: inherit; font-size: 0.9em; }
+.statement .todo { padding: var(--space-3) var(--space-4); background: var(--color-warning-soft); color: var(--color-warning); border-radius: var(--radius-sm); }

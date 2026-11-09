@@ -67,7 +67,8 @@ function bubble(m, isNew) {
 }
 
 export function mountChat(root) {
-  const list = h("ol", { class: "chat-log", role: "log", "aria-live": "polite", "aria-label": "שיחה עם העוזר" });
+  // A live list, not role="log": that role removes the list semantics the <li> bubbles need (axe "listitem").
+  const list = h("ol", { class: "chat-log", "aria-live": "polite", "aria-relevant": "additions", "aria-label": "שיחה עם העוזר" });
   const input = h("textarea", { class: "input chat-input", rows: "1", id: "chat-input", placeholder: "כתבו שאלה על ההזמנה", "aria-label": "הודעה לעוזר" });
   const sendBtn = h("button", { class: "btn btn-primary btn-icon", type: "submit", "aria-label": "שליחה" }, icon("paper-plane-right"));
   const prompts = h("div", { class: "chip-row chat-prompts" });
@@ -134,7 +135,7 @@ export function mountChat(root) {
       );
       if (focusKey) list.querySelector(`[data-key="${focusKey}"]`)?.focus();
       list.scrollTop = list.scrollHeight;
-      // role=log announces new bubbles; applied proposals change the order silently, so announce them.
+      // The live list announces new bubbles; applied proposals change the order silently, so announce them.
       const applied = messages.flatMap((m) => m.proposals).filter((p) => p.status === "applied").length;
       if (applied !== last.applied) {
         if (last.applied !== undefined) {
