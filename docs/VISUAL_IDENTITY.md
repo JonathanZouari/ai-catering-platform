@@ -71,7 +71,7 @@ Run before each phase review. Last full run: Phase E (see `docs/VISUAL_INTEGRATI
 - [x] AI proposals show current value, proposed value, price difference, explicit approve and reject; no animation or mascot on those buttons.
 - [x] Dish cards use business photography when it exists, never illustrations.
 - [x] Dietary icons are labels beside backend data, never a source of truth.
-- [x] `prefers-reduced-motion` respected; no continuous animation.
+- [x] `prefers-reduced-motion` and the menu's "stop animations" respected; nothing animates on page load; no continuous animation.
 - [x] Existing ordering flow (event, menu, summary, submit, status) still works end to end.
 
 ## Phase C additions
@@ -88,21 +88,28 @@ Run before each phase review. Last full run: Phase E (see `docs/VISUAL_INTEGRATI
 - **Quote status:** after submission the celebrating mascot acknowledges that the request was sent. The badge (clock icon, "ממתין לאישור העסק"), the headline and the sentence "זו בקשה להצעת מחיר ולא הזמנה מאושרת" always accompany it, and the mascot does not appear for approved or rejected states.
 - No animation was added; the mascot is static until the static design is approved.
 
-## Motion layer (added after the static design was approved)
+## Motion layer (added after the static design was approved, trimmed for IS 5568)
 
-Principles: transform and opacity only; every effect marks arrival, feedback or a state change; everything plays once except a gentle wobble on the assistant's avatar while it is thinking; content is visible by default, so a missing script or reduced motion hides nothing. Code: `css/motion.css`, `js/lib/motion.js`, `js/landing.js`.
+Principles: transform and opacity only; an effect only ever answers something the visitor did or a state change. **Nothing plays on page load and nothing hides content waiting for a scroll** (IS 5568 / WCAG 2.2.2); the page-load animations of the first motion layer (hero arrival, scroll reveal, step rise, mascot wave, stepper and status pops, the occasion hop) were removed in the accessibility pass. The assistant's avatar wobbles three times while it is thinking, then stops. Code: `css/motion.css`, `js/lib/motion.js`, `js/landing.js`. `backend/tests/test_accessibility.py` fails if a page-load animation comes back.
 
 | Where | What | Meaning |
 |---|---|---|
-| Landing hero | Headline, text and buttons rise in; the mascot and sun pop in; the art drifts a few pixels toward the pointer (fine pointers only) | Arrival |
-| Landing sections | Occasion cards, steps, assistant intro and the closing call to action reveal as they scroll into view, staggered; the header gains a shadow once scrolled | Arrival, orientation |
+| Landing hero | The art drifts a few pixels toward the pointer (fine pointers only); the header gains a shadow once scrolled | Orientation |
 | Landing occasion cards and steps | The drawing tilts and grows slightly on hover or focus | Affordance |
 | Landing approval example | Clickable: approve (total counts up to 1,350 and confetti), reject (nothing changes), or start over. It demonstrates that nothing changes until approved and sends nothing | Teaches the core rule |
-| Each ordering step | The content rises in; the current step's marker pops | Navigation |
-| Event step | The mascot waves once; choosing an occasion hops its drawing | Feedback |
 | Menu | Adding a dish bumps its card, slides a new line into the order panel, and counts the subtotal up or down | Feedback |
 | Summary | The total counts to its new value | Feedback |
-| Assistant | New messages rise in; the avatar wobbles while it is replying; confetti and the celebrating mascot appear only after an approved change | State change |
-| "Request sent" screen | The celebrating mascot pops in with one burst of confetti, once per visit; the pending text is always beside it | Acknowledgement |
+| Assistant | New messages rise in; the avatar wobbles (three loops at most) while it is replying; confetti and the celebrating mascot appear only after an approved change | State change |
+| "Request sent" screen | One burst of confetti, once, after submitting; the pending text is always beside the mascot | Acknowledgement |
 
-Accessibility: animated numbers are `aria-hidden` while a visually hidden copy holds the real value, so screen readers hear each change once. Confetti is `aria-hidden` and removed from the DOM after a second. Under `prefers-reduced-motion`, numbers jump to their final value, nothing is hidden for reveal, confetti is skipped, and every animation and transition is disabled by the base stylesheet.
+Accessibility: animated numbers are `aria-hidden` while a visually hidden copy holds the real value, so screen readers hear each change once. Confetti is `aria-hidden` and removed from the DOM after a second. Every effect is switched off by `prefers-reduced-motion` and by the accessibility menu's "עצירת אנימציות" (class `a11y-no-motion` on `<html>`, read by `reduced()` in `js/lib/motion.js` and mirrored in `css/base.css`): numbers jump to their final value, confetti is skipped, and every animation and transition is disabled. The two loading indicators that repeat (skeleton shimmer, the "typing" dots) only run while something is loading and are stopped by the same switches.
+
+## Accessibility modes (IS 5568)
+
+Added in the accessibility pass; the full criterion map and manual checklist are in `docs/ACCESSIBILITY.md`.
+
+- **Text size:** `html.a11y-size-1` / `html.a11y-size-2` scale the root to 125% / 150%. Every font size is in rem (a test enforces it), so everything scales.
+- **High contrast:** `:root.a11y-contrast` in `css/base.css` replaces the colour tokens with a white and black palette. Text pairs reach 7:1 or more (tested); the focus ring is 4px black. Components still use only the semantic `--color-*` tokens, so nothing else changes.
+- **Underlined links:** `html.a11y-links`.
+- **Forced colours (Windows High Contrast):** the mask icons keep `forced-color-adjust: none` so they stay visible.
+- **Short viewports** (200% zoom on a laptop, a phone on its side): below 480px of height the sticky header and fixed bottom bar scroll with the page.
