@@ -20,8 +20,8 @@ export function mountSummary(root) {
   const contact = getState().order.contact;
   const nameErr = h("p", { class: "error", id: "err-name", hidden: true });
   const phoneErr = h("p", { class: "error", id: "err-phone", hidden: true });
-  const name = h("input", { id: "f-name", class: "input", type: "text", autocomplete: "name", value: contact.name, "aria-describedby": "err-name" });
-  const phone = h("input", { id: "f-phone", class: "input", type: "tel", autocomplete: "tel", inputmode: "tel", value: contact.phone, "aria-describedby": "hint-phone err-phone", dir: "ltr" });
+  const name = h("input", { id: "f-name", class: "input", type: "text", autocomplete: "name", value: contact.name, "aria-required": "true", "aria-describedby": "err-name" });
+  const phone = h("input", { id: "f-phone", class: "input", type: "tel", autocomplete: "tel", inputmode: "tel", value: contact.phone, "aria-required": "true", "aria-describedby": "hint-phone err-phone", dir: "ltr" });
   name.addEventListener("input", () => setContact({ name: name.value }));
   phone.addEventListener("input", () => setContact({ phone: phone.value }));
 
@@ -53,10 +53,14 @@ export function mountSummary(root) {
     itemsError.hidden = !errors.items;
     fill(itemsError, ...(errors.items ? [icon("warning"), errors.items] : []));
     const firstInvalid = root.querySelector('[aria-invalid="true"]');
-    if (firstInvalid) firstInvalid.focus();
+    if (firstInvalid) {
+      firstInvalid.focus();
+      announce("יש שדות שדורשים תיקון");
+    }
     else if (errors.items) itemsError.scrollIntoView({ block: "center" });
   } },
     h("h2", { text: "פרטים ליצירת קשר" }),
+    h("p", { class: "muted small", text: "כל השדות בטופס הזה הם שדות חובה." }),
     h("div", { class: "grid-2" },
       h("div", { class: "field" }, h("label", { for: "f-name", text: "שם מלא" }), name, nameErr),
       h("div", { class: "field" }, h("label", { for: "f-phone", text: "טלפון" }), phone,
@@ -124,7 +128,7 @@ export function mountSummary(root) {
       state.order.event.fulfillment === "delivery"
         ? totalRow(`דמי משלוח (${state.order.event.city})`, delivery == null ? "ייקבע לפי העיר" : fmtMoney(delivery))
         : totalRow("איסוף עצמי", fmtMoney(0)),
-      h("div", { class: "total-row grand", "aria-live": "polite" }, h("span", { text: "סה״כ" }), animatedAmount(pricing.total, lastTotal, fmtMoney)),
+      h("div", { class: "total-row grand" }, h("span", { text: "סה״כ" }), animatedAmount(pricing.total, lastTotal, fmtMoney)),
     );
     if (lastTotal !== null && lastTotal !== pricing.total) announce(`הסכום הכולל ${fmtMoney(pricing.total)}`);
     lastTotal = pricing.total;

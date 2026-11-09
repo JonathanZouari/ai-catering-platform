@@ -15,6 +15,16 @@ export function dietaryBadges(dish) {
   return out;
 }
 
+/** Allergen status shown on the card itself, so it never depends on opening the dialog.
+ *  null = unknown, which must never read as "safe"; the warning icon plus text carries it, not colour alone. */
+function allergenLine(dish) {
+  if (dish.allergens === null) {
+    return h("p", { class: "allergen-line is-unknown" }, icon("warning"), "אין מידע על אלרגנים במנה הזו");
+  }
+  if (dish.allergens.length === 0) return h("p", { class: "allergen-line", text: "לא סומנו אלרגנים נפוצים" });
+  return h("p", { class: "allergen-line", text: `אלרגנים: ${dish.allergens.join(", ")}` });
+}
+
 /**
  * Dish card. Built once; update(qty, event) patches only the quantity area so keyboard focus
  * on the +/- buttons survives every change.
@@ -33,7 +43,10 @@ export function createDishCard(dish, { onQty }) {
     ),
     h("p", { class: "dish-desc muted", text: dish.description }),
     h("div", { class: "badge-row" }, dietaryBadges(dish)),
-    h("button", { class: "link-btn", type: "button", onclick: () => showAllergenInfo(dish) }, icon("info"), "מידע על אלרגנים"),
+    allergenLine(dish),
+    // The visible text is the start of the name (WCAG 2.5.3); the dish name tells the buttons apart.
+    h("button", { class: "link-btn", type: "button", "aria-label": `מידע על אלרגנים: ${dish.name}`, onclick: () => showAllergenInfo(dish) },
+      icon("info"), "מידע על אלרגנים"),
     qtyArea,
   );
 
@@ -62,7 +75,9 @@ export function createDishCard(dish, { onQty }) {
           h("button", { class: "btn btn-secondary btn-icon", type: "button", "data-key": "minus",
             "aria-label": `הפחתת כמות: ${dish.name}`, onclick: () => onQty(dish.id, Math.max(0, +(qty - step).toFixed(2))) },
             icon(qty - step <= 0 ? "trash" : "minus")),
-          h("span", { class: "qty-value", role: "status", "aria-label": `${dish.name}: ${qtyLabel(dish, qty)}`, text: qtyLabel(dish, qty) }),
+          // aria-label is unreliable on a status region; the dish name is hidden text so the announcement names the dish.
+          h("span", { class: "qty-value", role: "status" },
+            h("span", { class: "visually-hidden", text: `${dish.name}: ` }), qtyLabel(dish, qty)),
           h("button", { class: "btn btn-secondary btn-icon", type: "button", "data-key": "plus",
             "aria-label": `הוספת כמות: ${dish.name}`, onclick: () => onQty(dish.id, +(qty + step).toFixed(2)) },
             icon("plus")),

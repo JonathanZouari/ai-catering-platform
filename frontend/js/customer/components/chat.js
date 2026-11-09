@@ -154,9 +154,18 @@ export function mountChat(root) {
     sendBtn.disabled = busy;
   }
 
+  // Below 992px the panel is a modal bottom sheet over the page: the page behind must not take focus
+  // or be read, so it is made inert while the sheet is open. On wide screens the panel is docked beside it.
+  const sheet = window.matchMedia("(max-width: 991px)");
+  function syncInert(open) {
+    for (const el of document.querySelectorAll(".site-header, #app")) el.inert = open && sheet.matches;
+  }
+  sheet.addEventListener?.("change", () => syncInert(getState().chat.open));
+
   let wasOpen = false;
   subscribe((state) => {
     render(state);
+    syncInert(state.chat.open && !root.hidden);
     if (state.chat.open && !wasOpen) input.focus();
     if (!state.chat.open && wasOpen && !fab.hidden) fab.focus();
     wasOpen = state.chat.open;

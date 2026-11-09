@@ -1,5 +1,6 @@
 // C1: event configuration.
 import { fill, h, icon } from "../../lib/dom.js";
+import { announce } from "../../lib/announce.js";
 import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
 import {
   EVENT_TYPES, ZONES, blockedDates, minEventDate, slotsFor, totalGuests, validateEvent,
@@ -56,8 +57,11 @@ export function mountEvent(root) {
   const guestCounters = {};
   function guestField(name, labelText, hint, opts = {}) {
     const id = `f-${name}`;
-    const c = counter({ id, value: ev()[name], min: opts.min ?? 0, onChange: (n) => update({ [name]: n }), describedBy: `${id}-hint` });
+    const c = counter({ id, value: ev()[name], min: opts.min ?? 0, label: labelText, onChange: (n) => update({ [name]: n }), describedBy: `${id}-hint` });
     guestCounters[name] = c;
+    // Errors are linked to the input so a screen reader reads them when focus lands on it.
+    const errId = { adults: "err-adults", restricted: "err-dietary" }[name];
+    if (errId) c.input.setAttribute("aria-describedby", `${id}-hint ${errId}`);
     return h("div", { class: "field" },
       h("label", { for: id, text: labelText }),
       c.el,
@@ -78,7 +82,7 @@ export function mountEvent(root) {
       h("span", { class: "choice-body" }, icon(ic), h("span", {}, h("strong", { text: labelText }), h("span", { class: "muted small", text: hintText }))));
   }
 
-  const city = h("select", { id: "f-city", class: "input" },
+  const city = h("select", { id: "f-city", class: "input", autocomplete: "address-level2" },
     h("option", { value: "", text: "בחרו עיר" }),
     ZONES.map((z) => h("option", { value: z.city, text: z.city, selected: ev().city === z.city })));
   city.addEventListener("change", () => update({ city: city.value }));
@@ -196,6 +200,8 @@ export function mountEvent(root) {
     showSimpleError(adultsError, errors.adults);
     guestCounters.adults.input.setAttribute("aria-invalid", errors.adults ? "true" : "false");
     showSimpleError(dietaryError, errors.dietary);
+    // The dietary error belongs to the group, so mark its "other restriction" input as the focus target.
+    guestCounters.restricted.input.setAttribute("aria-invalid", errors.dietary ? "true" : "false");
   }
 
   function onSubmit(e) {
@@ -206,6 +212,8 @@ export function mountEvent(root) {
     const firstInvalid = form.querySelector('[aria-invalid="true"]');
     if (firstInvalid) {
       firstInvalid.focus();
+      const count = form.querySelectorAll('[aria-invalid="true"], .occasion-grid.invalid').length;
+      announce(count > 1 ? `יש ${count} שדות שדורשים תיקון` : "יש שדה אחד שדורש תיקון");
       return;
     }
     goto("menu");

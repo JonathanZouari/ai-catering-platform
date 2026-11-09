@@ -217,7 +217,7 @@ button.stepper-btn:hover { background: var(--color-surface-2); }
   align-items: center;
   gap: var(--space-1);
   align-self: start;
-  min-height: 32px;
+  min-height: 44px;
   padding: 0;
   background: none;
   border: 0;
@@ -252,7 +252,7 @@ button.stepper-btn:hover { background: var(--color-surface-2); }
 }
 .dish-card.in-order { border-color: var(--color-accent); box-shadow: 0 0 0 2px var(--color-accent), var(--shadow-1); background: var(--color-accent-soft); }
 .dish-image { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: calc(var(--radius) - 4px); }
-.dish-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.dish-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--space-1) var(--space-3); }
 .dish-name { font-size: 1.0625rem; }
 .dish-price { white-space: nowrap; font-size: 0.9375rem; }
 .dish-desc { font-size: 0.9375rem; }
@@ -533,3 +533,18 @@ textarea.input.chat-input { min-height: 44px; max-height: 120px; resize: none; }
 
 .status-mascot, .status-mascot img { display: block; flex: none; }
 .status-mascot img { height: 160px; width: auto; }
+
+/* ---------- accessibility additions ---------- */
+/* Allergen status on the card. "Unknown" is a warning in words plus an icon, never colour alone. */
+.allergen-line { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9375rem; }
+.allergen-line.is-unknown { color: var(--color-warning); font-weight: 700; }
+
+/* Windows High Contrast / forced colors: backgrounds are overridden, so the mask-drawn icons and the
+   checked state of the choice cards need explicit system colours or they disappear. */
+@media (forced-colors: active) {
+  .icon { background-color: CanvasText; forced-color-adjust: none; }
+  .btn:disabled .icon { background-color: GrayText; }
+  .choice input:checked + .choice-body,
+  .occasion input:checked + .occasion-body { border-color: Highlight; outline: 2px solid Highlight; }
+  .chip[aria-pressed="true"] { border-color: Highlight; outline: 2px solid Highlight; }
+}
