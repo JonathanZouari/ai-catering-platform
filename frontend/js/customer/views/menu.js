@@ -115,7 +115,7 @@ export function mountMenu(root) {
     fill(sidebar,
       h("h2", { class: "side-title" }, icon("shopping-bag-open"), "ההזמנה שלכם"),
       count
-        ? h("ul", { class: "side-lines" }, pricing.lines.map((l) => h("li", { class: `side-line${!firstRender && !seenLines.has(l.dish.id) ? " is-new" : ""}` },
+        ? h("ul", { class: "side-lines", tabindex: "0", "aria-label": "המנות בהזמנה" }, pricing.lines.map((l) => h("li", { class: `side-line${!firstRender && !seenLines.has(l.dish.id) ? " is-new" : ""}` },
           h("span", { class: "side-name" }, h("span", { text: l.dish.name }), h("span", { class: "muted small", text: qtyLabel(l.dish, l.qty) })),
           h("span", { class: "num", text: fmtMoney(l.lineTotal) }))))
         : h("p", { class: "muted", text: "עדיין לא נבחרו מנות. הוסיפו מנות מהתפריט." }),
