@@ -1,6 +1,8 @@
 # ADR 0002 — Supabase Postgres accessed via SQLAlchemy from the backend
 
-Status: Proposed (adopted in Phase 2) · Date: 2026-10-29
+> The Postgres part is replaced by ADR 0007. Supabase remains for Auth and Storage.
+
+Status: Proposed (adopted in Phase 3) · Date: 2026-10-29
 
 ## Context
 Supabase is mandated. Options: supabase-py (PostgREST) or a direct Postgres connection with SQLAlchemy.
