@@ -19,6 +19,24 @@ function button(label, onClick) {
   return b;
 }
 
+// Read-aloud via the browser's built-in speech synthesis (voice quality depends on the device).
+// shortcut: no voice picker or pause/resume; add if users need it.
+function toggleSpeech(btn) {
+  const synth = window.speechSynthesis;
+  if (synth.speaking) { synth.cancel(); btn.setAttribute("aria-pressed", "false"); return; }
+  const text = (String(getSelection()).trim() || document.querySelector("main")?.innerText || "").trim();
+  if (!text) return;
+  // Chunked because Chrome stops long utterances.
+  const chunks = text.match(/[^.!?\n]{1,180}[.!?\n]?/g) ?? [text];
+  chunks.forEach((c, i) => {
+    const u = new SpeechSynthesisUtterance(c);
+    u.lang = "he-IL";
+    if (i === chunks.length - 1) u.onend = u.onerror = () => btn.setAttribute("aria-pressed", "false");
+    synth.speak(u);
+  });
+  btn.setAttribute("aria-pressed", "true");
+}
+
 function mount() {
   const wrap = document.createElement("div");
   wrap.className = "a11y";
@@ -33,11 +51,17 @@ function mount() {
   hc.setAttribute("aria-pressed", prefs.hc);
   const bigger = button("הגדלת טקסט", () => { prefs.size = Math.min(prefs.size + 1, SIZES.length - 1); apply(); });
   const smaller = button("הקטנת טקסט", () => { prefs.size = Math.max(prefs.size - 1, 0); apply(); });
-  const reset = button("איפוס", () => { prefs = { size: 0, hc: false }; hc.setAttribute("aria-pressed", "false"); apply(); });
+  const reset = button("איפוס", () => { window.speechSynthesis?.cancel(); prefs = { size: 0, hc: false }; hc.setAttribute("aria-pressed", "false"); apply(); });
   const statement = document.createElement("a");
   statement.href = "/accessibility/";
   statement.textContent = "הצהרת נגישות";
-  panel.append(bigger, smaller, hc, reset, statement);
+  panel.append(bigger, smaller, hc);
+  if ("speechSynthesis" in window) {
+    const read = button("הקראה", () => toggleSpeech(read));
+    read.setAttribute("aria-pressed", "false");
+    panel.append(read);
+  }
+  panel.append(reset, statement);
 
   const toggle = button("נגישות", () => {
     panel.hidden = !panel.hidden;
