@@ -9,9 +9,12 @@ class Settings(BaseSettings):
     app_env: str = "development"
     # Optional until Phase 2 connects the database.
     database_url: str | None = None
+    # Local SQLite file; relative paths resolve from backend/.
+    sqlite_path: str = "data/yummai.db"
     supabase_url: str | None = None
-    supabase_anon_key: str | None = None
-    supabase_service_role_key: str | None = None
+    # Publishable key (sb_publishable_...) is safe in the browser; the secret key is server-only.
+    supabase_publishable_key: str | None = None
+    supabase_secret_key: str | None = None
 
 
 @lru_cache

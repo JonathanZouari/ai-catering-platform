@@ -5,17 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ממשק העסק</title>
   <link rel="stylesheet" href="/css/base.css">
+  <style>
+    .admin-shell { min-height: 100dvh; display: grid; place-items: center; padding: var(--space-5, 24px) 16px; }
+    .login-card {
+      width: min(100%, 400px); display: grid; gap: var(--space-4, 16px);
+      background: var(--color-surface); border: var(--outline-width) solid var(--brand-ink);
+      border-radius: var(--radius-lg); padding: var(--space-6, 32px);
+    }
+    .login-card h1 { font-family: var(--font-display); font-size: var(--text-xl); margin: 0; }
+    .login-card p { margin: 0; color: var(--color-muted); }
+    .form-error { color: var(--color-danger); background: var(--color-danger-soft);
+      border-radius: var(--radius-sm); padding: var(--space-3, 12px); margin: 0; }
+    .signed-in { display: grid; gap: var(--space-3, 12px); }
+    .signed-in strong { direction: ltr; unicode-bidi: isolate; }
+  </style>
 </head>
 <body>
-  <main>
-    <h1>ממשק העסק</h1>
-    <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
+  <main class="admin-shell">
+    <section class="login-card" aria-live="polite">
+      <h1>ממשק העסק</h1>
+
+      <p id="loading">בודקים חיבור…</p>
+
+      <form id="login-form" hidden novalidate>
+        <div style="display:grid; gap: var(--space-4, 16px)">
+          <p>התחברות לבעלי העסק בלבד.</p>
+          <div class="field">
+            <label for="email">אימייל</label>
+            <input class="input" id="email" name="email" type="email" autocomplete="username" dir="ltr" required>
+          </div>
+          <div class="field">
+            <label for="password">סיסמה</label>
+            <input class="input" id="password" name="password" type="password" autocomplete="current-password" dir="ltr" required>
+          </div>
+          <p class="form-error" id="login-error" role="alert" hidden></p>
+          <button class="btn btn-primary" id="login-submit" type="submit">התחברות</button>
+        </div>
+      </form>
+
+      <div class="signed-in" id="signed-in" hidden>
+        <p>מחוברים בתור <strong id="admin-email"></strong></p>
+        <p>הדשבורד עדיין בבנייה. ראו docs/UX_UI_SPEC.md.</p>
+        <button class="btn btn-secondary" id="logout" type="button">התנתקות</button>
+      </div>
+    </section>
   </main>
+
   <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+    import { currentAdmin, signIn, signOut } from "/js/admin/auth.js";
+
+    const $ = (id) => document.getElementById(id);
+    const form = $("login-form"), errorBox = $("login-error"), submit = $("login-submit");
+
+    function show(admin) {
+      $("loading").hidden = true;
+      form.hidden = Boolean(admin);
+      $("signed-in").hidden = !admin;
+      if (admin) $("admin-email").textContent = admin.email;
+    }
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.hidden = !message;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const email = $("email").value.trim(), password = $("password").value;
+      if (!email || !password) return showError("נא למלא אימייל וסיסמה.");
+      showError("");
+      submit.disabled = true;
+      submit.textContent = "מתחברים…";
+      try {
+        show(await signIn(email, password));
+        $("password").value = "";
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        submit.disabled = false;
+        submit.textContent = "התחברות";
+      }
+    });
+
+    $("logout").addEventListener("click", async () => {
+      await signOut();
+      show(null);
+      $("email").focus();
+    });
+
+    currentAdmin().then(show).catch((error) => { show(null); showError(error.message); });
   </script>
 </body>
 </html>
