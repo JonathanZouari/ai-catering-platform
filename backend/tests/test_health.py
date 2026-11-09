@@ -12,7 +12,7 @@ def test_health_ok():
 
 
 def test_frontend_pages_served():
-    for path in ("/customer/", "/admin/"):
+    for path in ("/customer/", "/admin/", "/accessibility/"):
         response = client.get(path)
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
