@@ -1,3 +1,5 @@
+Manual checklist not yet run.
+
 # Accessibility (IS 5568)
 
 Status: **implemented; automated checks pass; manual checks still to be run** (section 5 is the checklist, section 6 the results log).
