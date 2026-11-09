@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Catering Platform – יומן פרויקט</title>
+<style>
+  body{font-family:Heebo,Arial,sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#222}
+  h1{border-bottom:3px solid #4a7c3a;padding-bottom:.3rem}
+  h2{color:#4a7c3a;margin-top:2rem}
+  table{border-collapse:collapse;width:100%}
+  th,td{border:1px solid #ccc;padding:.4rem .6rem;text-align:right}
+  th{background:#f0f5ee}
+  code{background:#f4f4f4;padding:0 .3rem;direction:ltr;unicode-bidi:embed}
+  pre{background:#f4f4f4;padding:.8rem;direction:ltr;text-align:left;overflow:auto}
+  .ok{color:#2e7d32}.warn{color:#b26a00}
+</style>
+</head>
+<body>
+<h1>AI Catering Platform – יומן פרויקט</h1>
+<p>תאריך עדכון: 2026-11-09 · ריפו מקור: <code>JonathanZouari/ai-catering-platform</code> · Fork: <code>iditwein/ai-catering-platform</code></p>
+
+<h2>1. מהו הפרויקט</h2>
+<p>אפליקציית הזמנות וניהול לעסק קייטרינג יחיד (עברית, RTL, מובייל תחילה). הלקוח בונה הזמנה, הבק-אנד מחשב מחירים וכמויות, ועוזר AI רק מציע שינויים שמתבצעים אחרי אישור מפורש של הלקוח. הבעלים מאשר או דוחה כל הצעת מחיר.</p>
+<table>
+<tr><th>שכבה</th><th>טכנולוגיה</th></tr>
+<tr><td>Backend</td><td>Python 3.12+, FastAPI, Pydantic (SQLAlchemy בשלב 2)</td></tr>
+<tr><td>Frontend</td><td>HTML, CSS ו-JavaScript רגיל, מוגש ע"י FastAPI</td></tr>
+<tr><td>Data</td><td>Supabase (Postgres, Storage, Auth)</td></tr>
+<tr><td>Hosting</td><td>Railway (Dockerfile)</td></tr>
+<tr><td>איכות</td><td>pytest, Ruff, GitHub Actions</td></tr>
+</table>
+
+<h2>2. מה עשינו בסשן הזה</h2>
+<ol>
+<li><b>שיבוט הריפו</b> לתיקייה <code>AI CATERING_2/repo</code> עם כל הענפים כענפים מקומיים: <code>main</code>, <code>dev</code>, <code>feat/supabase-foundation</code>, <code>feat/ui-redesign-catering</code>. (ניסיון ראשון כ-mirror נמחק.)</li>
+<li><b>משיכת שינויים מכל הענפים</b> (<code>fetch --all --prune</code> ו-<code>pull --ff-only</code> לכל ענף). הכול היה מעודכן.</li>
+<li><b>סנכרון ה-Fork</b> של איידית מול הריפו של יונתן: <code>main</code> סונכרן עם <code>gh repo sync</code>; שלושת הענפים האחרים לא היו ב-fork ולכן נדחפו מהשיבוט המקומי. בענפים נוספים ב-fork (<code>feat/backend-supabase</code>, <code>feat/sqlite-db</code>, <code>feat/supabase-cloud</code>) לא נגענו.</li>
+<li><b>יצירת <code>CLAUDE.md</code></b> עם פקודות פיתוח, ארכיטקטורה והערות עבודה.</li>
+<li><b>הוספת סעיף "After completing any change"</b> ל-<code>CLAUDE.md</code>: אחרי כל שינוי מריצים ruff (כולל כללי אבטחה <code>S</code>), בדיקת פורמט, pytest, ובודקים שלא נכנסו סודות ל-staging.</li>
+<li><b>הרצת הבדיקות</b>: ruff check עבר, 12 קבצים מפורמטים, 2 בדיקות pytest עברו (אזהרת deprecation אחת של httpx/starlette). <code>backend/.venv</code> מוחרג ב-<code>.gitignore</code>.</li>
+</ol>
+
+<h2>3. היסטוריית הפרויקט (git)</h2>
+<table>
+<tr><th>תאריך</th><th>מחבר</th><th>שינוי</th></tr>
+<tr><td>2026-10-29</td><td>Jonathan Zouari</td><td>שלב 0: מסמכי מוצר/ארכיטקטורה ושלד שלב 1 (FastAPI, CI, Docker, Railway)</td></tr>
+<tr><td>2026-10-29</td><td>Jonathan Zouari</td><td>יישום עיצוב עברי RTL: דף נחיתה, מסכי לקוח C1–C5, מציין מקום לאדמין</td></tr>
+<tr><td>2026-10-29</td><td>Jonathan Zouari</td><td>תיקוני חיתוך הצעת העוזר, ניגודיות שדות</td></tr>
+<tr><td>2026-10-31</td><td>Sharona Hovav</td><td>ממשק הזמנה ללקוח (עברית RTL) על mock backend</td></tr>
+<tr><td>2026-11-01</td><td>Sharona Hovav</td><td>זהות ויזואלית מאוירת (yumm.ai), ניקוי תנועה</td></tr>
+<tr><td>2026-11-02</td><td>Sharona Hovav</td><td>תיקון תווית שלב בטלפון, צילומי מסך וסיור מסקוט ל-PR</td></tr>
+<tr><td>2026-11-02</td><td>Jonathan Zouari</td><td>מיזוגי PR #24 ו-#26 (<code>dev</code> → <code>main</code>)</td></tr>
+<tr><td>2026-11-09</td><td>Jonathan Zouari</td><td><code>feat/supabase-foundation</code>: סכמה, Auth, RLS, התחברות, אדמין (33 קבצים, כ-1,900 שורות)</td></tr>
+</table>
+
+<h2>4. מצב הענפים</h2>
+<table>
+<tr><th>ענף</th><th>מצב מול main</th></tr>
+<tr><td><code>main</code></td><td>ייצור (ברירת מחדל)</td></tr>
+<tr><td><code>dev</code></td><td>זהה ל-main</td></tr>
+<tr><td><code>feat/ui-redesign-catering</code></td><td>2 קומיטים לפני main (עיצוב RTL ותיקונים)</td></tr>
+<tr><td><code>feat/supabase-foundation</code></td><td>קומיט אחד לפני main: מיגרציות Supabase (<code>init_schema</code>, <code>auth_rls_storage_realtime</code>), <code>seed.sql</code>, <code>config.toml</code>, עמוד login, אדמין, <code>catalog.js</code></td></tr>
+</table>
+
+<h2>5. ארכיטקטורה בקצרה</h2>
+<ul>
+<li>שירות FastAPI אחד מגיש API ופרונטאנד סטטי (<code>frontend/</code> מוצמד ל-<code>/</code> אחרון, כך שנתיבי API מנצחים).</li>
+<li>שכבות מתוכננות: <code>api → services → repositories → models</code> + <code>schemas</code> ו-<code>agents</code>. שכבה תחתונה לא מייבאת עליונה.</li>
+<li>הבק-אנד סמכותי למחירים, כמויות ומצב הזמנה. סוכן ה-AI קורא רק לפונקציות שירות מוגדרות, וכל שינוי עובר הצעה → אישור → ביצוע.</li>
+<li>זרימת לקוח ב-4 שלבים: <code>event → menu → summary → status</code>, על mock backend בשלב זה.</li>
+<li>אלרגן <code>null</code> = לא ידוע, ולעולם לא מוצג כבטוח.</li>
+</ul>
+
+<h2>6. פקודות</h2>
+<pre>cp .env.example .env
+cd backend
+uv sync
+uv run uvicorn app.main:app --reload
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest</pre>
+
+<h2>7. מה עוד לא נעשה / לשים לב</h2>
+<ul>
+<li class="warn">הבק-אנד מכיל רק <code>/health</code>; הבדיקות מכסות רק אותו.</li>
+<li class="warn">הוספת Supabase קיימת רק בענף <code>feat/supabase-foundation</code> ועוד לא מוזגה.</li>
+<li class="warn">אין פרויקט Railway/Supabase מחובר (מתוכנן לשלב 6).</li>
+<li class="warn"><code>CLAUDE.md</code> ו-<code>PROJECT_LOG.html</code> עדיין לא נכנסו לגיט.</li>
+<li class="warn">לא הורצה סריקת תלויות (למשל pip-audit); בדיקת האבטחה היא כללי <code>S</code> של ruff בלבד.</li>
+</ul>
+</body>
+</html>
