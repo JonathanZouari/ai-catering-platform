@@ -1,5 +1,5 @@
 // C1: event configuration.
-import { fill, h, icon } from "../../lib/dom.js";
+import { fill, h, icon, requiredMark } from "../../lib/dom.js";
 import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
 import {
   EVENT_TYPES, ZONES, blockedDates, minEventDate, slotsFor, totalGuests, validateEvent,
@@ -13,16 +13,17 @@ export function mountEvent(root) {
   let attempted = false;
   const fields = {}; // name -> { wrap, error }
 
-  function field(name, labelText, control, { hint, hintId } = {}) {
+  function field(name, labelText, control, { hint, hintId, required } = {}) {
     const errorId = `err-${name}`;
     const error = h("p", { class: "error", id: errorId, hidden: true });
     const wrap = h("div", { class: "field" },
-      h("label", { for: control.id, text: labelText }),
+      h("label", { for: control.id }, labelText, required ? requiredMark() : null),
       control,
       hint ? h("p", { class: "hint", id: hintId, text: hint }) : null,
       error,
     );
     control.setAttribute("aria-describedby", [hint ? hintId : null, errorId].filter(Boolean).join(" "));
+    if (required) control.setAttribute("aria-required", "true");
     fields[name] = { wrap, error, control };
     return wrap;
   }
@@ -31,8 +32,8 @@ export function mountEvent(root) {
   // Occasion picker: real radio inputs wrapped in illustrated cards. The art is decorative (alt="");
   // the visible label is the accessible name, so the choice works with images disabled.
   const typeError = h("p", { class: "error", id: "err-type", hidden: true });
-  const typeGroup = h("fieldset", { class: "occasion-grid", "aria-describedby": "err-type" },
-    h("legend", { class: "visually-hidden", text: "סוג האירוע" }),
+  const typeGroup = h("fieldset", { class: "occasion-grid", role: "radiogroup", "aria-required": "true", "aria-describedby": "err-type" },
+    h("legend", { class: "visually-hidden", text: "סוג האירוע (חובה)" }),
     EVENT_TYPES.map((t, i) => {
       const input = h("input", { type: "radio", name: "event-type", value: t, id: `f-type-${i}`, checked: ev().type === t });
       input.addEventListener("change", () => update({ type: t }));
@@ -56,10 +57,11 @@ export function mountEvent(root) {
   const guestCounters = {};
   function guestField(name, labelText, hint, opts = {}) {
     const id = `f-${name}`;
-    const c = counter({ id, value: ev()[name], min: opts.min ?? 0, onChange: (n) => update({ [name]: n }), describedBy: `${id}-hint` });
+    const describedBy = [`${id}-hint`, opts.errorId].filter(Boolean).join(" ");
+    const c = counter({ id, value: ev()[name], min: opts.min ?? 0, label: labelText, onChange: (n) => update({ [name]: n }), describedBy });
     guestCounters[name] = c;
     return h("div", { class: "field" },
-      h("label", { for: id, text: labelText }),
+      h("label", { for: id }, labelText, opts.required ? requiredMark() : null),
       c.el,
       h("p", { class: "hint", id: `${id}-hint`, text: hint }),
     );
@@ -87,8 +89,8 @@ export function mountEvent(root) {
   const feeLine = h("p", { class: "fee-line", "aria-live": "polite" });
 
   const deliveryBox = h("div", { class: "grid-2 delivery-fields" },
-    field("city", "עיר", city),
-    field("address", "רחוב ומספר בית", address),
+    field("city", "עיר", city, { required: true }),
+    field("address", "רחוב ומספר בית", address, { required: true }),
     feeLine,
   );
 
@@ -103,17 +105,17 @@ export function mountEvent(root) {
     h("section", { class: "panel stack" },
       h("h2", { text: "מתי?" }),
       h("div", { class: "grid-2" },
-        field("date", "תאריך", date, { hint: `תאריכים סגורים להזמנות: ${closed}`, hintId: "hint-date" }),
-        field("slot", "שעת איסוף או משלוח", slot),
+        field("date", "תאריך", date, { hint: `תאריכים סגורים להזמנות: ${closed}`, hintId: "hint-date", required: true }),
+        field("slot", "שעת איסוף או משלוח", slot, { required: true }),
       ),
     ),
     h("section", { class: "panel stack" },
       h("h2", { text: "האורחים" }),
       h("div", { class: "grid-2" },
-        h("div", {}, guestField("adults", "מבוגרים", "מגיל 13 ומעלה", { min: 0 }), adultsError),
+        h("div", {}, guestField("adults", "מבוגרים", "מגיל 13 ומעלה", { min: 0, required: true, errorId: "err-adults" }), adultsError),
         guestField("children", "ילדים", "עד גיל 12, נחשבים כחצי מנה"),
       ),
-      h("fieldset", { class: "stack" },
+      h("fieldset", { class: "stack", "aria-describedby": "err-dietary" },
         h("legend", { class: "label", text: "הגבלות תזונתיות" }),
         // OPEN_DECISIONS #4: these are treated as a subset of all guests until the business decides.
         h("p", { class: "hint", text: "כמה מהאורחים הכוללים צריכים כל אחת מההגבלות?" }),

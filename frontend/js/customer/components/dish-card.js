@@ -33,7 +33,8 @@ export function createDishCard(dish, { onQty }) {
     ),
     h("p", { class: "dish-desc muted", text: dish.description }),
     h("div", { class: "badge-row" }, dietaryBadges(dish)),
-    h("button", { class: "link-btn", type: "button", onclick: () => showAllergenInfo(dish) }, icon("info"), "מידע על אלרגנים"),
+    // Every card has these buttons, so the accessible name adds the dish; the visible words stay at the start of it.
+    h("button", { class: "link-btn", type: "button", "aria-label": `מידע על אלרגנים: ${dish.name}`, onclick: () => showAllergenInfo(dish) }, icon("info"), "מידע על אלרגנים"),
     qtyArea,
   );
 
@@ -51,9 +52,9 @@ export function createDishCard(dish, { onQty }) {
 
     if (qty <= 0) {
       fill(qtyArea, 
-        h("button", { class: "btn btn-secondary", type: "button", "data-key": "add", onclick: () => onQty(dish.id, step) },
+        h("button", { class: "btn btn-secondary", type: "button", "data-key": "add", "aria-label": `הוספה: ${dish.name}`, onclick: () => onQty(dish.id, step) },
           icon("plus"), "הוספה"),
-        hasGuests ? h("button", { class: "link-btn", type: "button", "data-key": "rec", onclick: () => onQty(dish.id, rec) },
+        hasGuests ? h("button", { class: "link-btn", type: "button", "data-key": "rec", "aria-label": `הוסיפו כמות מומלצת: ${qtyLabel(dish, rec)} (${dish.name})`, onclick: () => onQty(dish.id, rec) },
           `הוסיפו כמות מומלצת: ${qtyLabel(dish, rec)}`) : null,
       );
     } else {

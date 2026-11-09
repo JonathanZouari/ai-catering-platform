@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/customer.css">
   <link rel="stylesheet" href="/css/motion.css">
+  <script src="/js/a11y-boot.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#app">דילוג לתוכן</a>
@@ -19,12 +20,19 @@
       <!-- Name confirmed: yumm.ai. A designed logo is still pending (OPEN_DECISIONS #20); this is the typographic wordmark. -->
       <p class="brand wordmark"><a class="brand-link" href="/" aria-label="yumm.ai, לעמוד הבית"><bdi>yumm<span class="dot">.</span>ai</bdi></a></p>
       <nav id="stepper" class="stepper-nav" aria-label="שלבי ההזמנה"></nav>
+      <div class="a11y-wrap" data-a11y-menu>
+        <button class="btn btn-secondary a11y-toggle" type="button" aria-expanded="false">נגישות</button>
+      </div>
     </div>
   </header>
 
   <main id="app" class="app" tabindex="-1">
     <noscript><p>האתר דורש JavaScript כדי להציג את תהליך ההזמנה.</p></noscript>
   </main>
+
+  <footer class="site-footer">
+    <a href="/accessibility/">הצהרת נגישות</a>
+  </footer>
 
   <div id="chat-root" hidden></div>
   <div id="announce" class="visually-hidden" aria-live="polite" role="status"></div>
