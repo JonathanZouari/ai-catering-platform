@@ -7,10 +7,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
     app_env: str = "development"
-    # Optional until Phase 2 connects the database.
+    # Optional so the app and CI can start without a Supabase project.
     database_url: str | None = None
     supabase_url: str | None = None
-    supabase_anon_key: str | None = None
+    supabase_publishable_key: str | None = None
     supabase_service_role_key: str | None = None
 
 
