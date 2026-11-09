@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Landing skip, statement, axe and 320px reflow",
+    "passed": true
+  },
+  {
+    "name": "Dietary/adult errors block navigation, focus and describe inputs",
+    "passed": true
+  },
+  {
+    "name": "Mobile chat traps keyboard, restores focus and releases on resize",
+    "passed": true
+  },
+  {
+    "name": "Catalog dialog, summary removal, validation, demo submission and reload",
+    "passed": true
+  },
+  {
+    "name": "Admin status and statement link",
+    "passed": true
+  }
+]

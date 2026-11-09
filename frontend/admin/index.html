@@ -7,15 +7,17 @@
   <link rel="stylesheet" href="/css/base.css">
 </head>
 <body>
-  <main>
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+  <main id="main" tabindex="-1">
     <h1>ממשק העסק</h1>
-    <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
+    <p>ממשק העסק נמצא בבנייה.</p>
+    <p>מצב השרת: <span id="status" role="status">בודק…</span></p>
   </main>
+  <footer class="accessibility-footer"><a href="/accessibility/">הצהרת נגישות וסיוע</a></footer>
   <script type="module">
     import { api } from "/js/api.js";
     const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
+    api("/health").then(() => (el.textContent = "השרת זמין")).catch(() => (el.textContent = "לא ניתן להתחבר לשרת. נסו לרענן את הדף."));
   </script>
 </body>
 </html>

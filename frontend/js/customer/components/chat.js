@@ -67,13 +67,15 @@ function bubble(m, isNew) {
 }
 
 export function mountChat(root) {
-  const list = h("ol", { class: "chat-log", role: "log", "aria-live": "polite", "aria-label": "שיחה עם העוזר" });
+  const list = h("ol", { class: "chat-log", "aria-live": "polite", "aria-relevant": "additions text", "aria-label": "שיחה עם העוזר" });
   const input = h("textarea", { class: "input chat-input", rows: "1", id: "chat-input", placeholder: "כתבו שאלה על ההזמנה", "aria-label": "הודעה לעוזר" });
   const sendBtn = h("button", { class: "btn btn-primary btn-icon", type: "submit", "aria-label": "שליחה" }, icon("paper-plane-right"));
   const prompts = h("div", { class: "chip-row chat-prompts" });
   const closeBtn = h("button", { class: "btn btn-ghost btn-icon", type: "button", "aria-label": "סגירת העוזר", onclick: () => setChatOpen(false) }, icon("x"));
 
-  const panel = h("aside", { class: "chat-panel", "aria-label": "העוזר החכם", id: "chat-panel" },
+  // role is "complementary" while docked beside the page (wide screens) and "dialog" while it is a
+  // modal bottom sheet over the page (narrow screens); see setModal below.
+  const panel = h("div", { class: "chat-panel", role: "complementary", "aria-label": "העוזר החכם", id: "chat-panel" },
     h("header", { class: "chat-head" },
       h("div", { class: "chat-id" },
         mascotAvatar("welcome", { size: 52 }),
@@ -100,7 +102,49 @@ export function mountChat(root) {
       panel.querySelector("form").requestSubmit();
     }
   });
-  panel.addEventListener("keydown", (e) => { if (e.key === "Escape") setChatOpen(false); });
+  panel.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      setChatOpen(false);
+      return;
+    }
+    // Modal sheet only: wrap Tab inside the panel. The docked desktop panel stays non-modal.
+    if (e.key !== "Tab" || !modal) return;
+    const items = [...panel.querySelectorAll("button, textarea, input, select, a[href], [tabindex]:not([tabindex='-1'])")]
+      .filter((el) => !el.disabled && el.getClientRects().length);
+    if (!items.length) return;
+    const first = items[0];
+    const lastItem = items.at(-1);
+    if (e.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) {
+      e.preventDefault();
+      lastItem.focus();
+    } else if (!e.shiftKey && (document.activeElement === lastItem || !panel.contains(document.activeElement))) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  // Below the docked-panel breakpoint (customer.css, 992px) the chat is a bottom sheet with a
+  // backdrop, so it behaves as a modal dialog: the rest of the page is made inert while it is open.
+  const wide = window.matchMedia("(min-width: 992px)");
+  let modal = false;
+  let inerted = [];
+  function setModal(on) {
+    if (on === modal) return;
+    modal = on;
+    panel.setAttribute("role", on ? "dialog" : "complementary");
+    if (on) {
+      panel.setAttribute("aria-modal", "true");
+      // Keep the shared live region (#announce) outside inert so price/change announcements still read.
+      inerted = [...document.body.children].filter((el) =>
+        el !== root && el.id !== "announce" && el.tagName !== "SCRIPT" && !el.inert);
+      for (const el of inerted) el.inert = true;
+      if (!panel.contains(document.activeElement)) input.focus();
+    } else {
+      panel.removeAttribute("aria-modal");
+      for (const el of inerted) el.inert = false;
+      inerted = [];
+    }
+  }
 
   const fab = h("button", { class: "chat-fab btn btn-primary", type: "button", "aria-controls": "chat-panel", "aria-expanded": "false", onclick: () => setChatOpen(true) },
     mascotAvatar("welcome", { size: 36, cls: "on-dark" }), "שאלו את העוזר");
@@ -118,6 +162,7 @@ export function mountChat(root) {
     fab.setAttribute("aria-expanded", String(open));
     panel.hidden = !open;
     backdrop.hidden = !open;
+    setModal(available && open && !wide.matches);
 
     const sig = { messages, busy, version: state.order.version };
     if (open && (sig.messages !== last.messages || sig.busy !== last.busy || sig.version !== last.version)) {
@@ -132,9 +177,9 @@ export function mountChat(root) {
           mascotAvatar("thinking", { size: 36, cls: "is-thinking" }),
           h("div", { class: "msg-main" }, h("div", { class: "msg-text typing", text: "העוזר מקליד" }))) : null,
       );
-      if (focusKey) list.querySelector(`[data-key="${focusKey}"]`)?.focus();
+      if (focusKey) (list.querySelector(`[data-key="${focusKey}"]`) ?? input).focus();
       list.scrollTop = list.scrollHeight;
-      // role=log announces new bubbles; applied proposals change the order silently, so announce them.
+      // The live list announces bubbles; applied proposals also get an explicit announcement.
       const applied = messages.flatMap((m) => m.proposals).filter((p) => p.status === "applied").length;
       if (applied !== last.applied) {
         if (last.applied !== undefined) {
@@ -146,20 +191,34 @@ export function mountChat(root) {
       }
       Object.assign(last, sig, { count: messages.length });
     }
-    fill(prompts, 
+    const promptHadFocus = prompts.contains(document.activeElement);
+    fill(prompts,
       messages.length === 0 && open
         ? suggestedPrompts().map((q) => h("button", { class: "chip", type: "button", onclick: () => sendChat(q) }, q))
         : null,
     );
     sendBtn.disabled = busy;
+    if (promptHadFocus) input.focus();
   }
 
   let wasOpen = false;
+  let opener = null;
   subscribe((state) => {
+    // Read focus before render: hiding the panel drops focus to <body>.
+    const active = document.activeElement;
+    const focusWasInChat = panel.contains(active) || active === document.body;
+    if (state.chat.open && !wasOpen) opener = active !== document.body && !panel.contains(active) ? active : null;
     render(state);
     if (state.chat.open && !wasOpen) input.focus();
-    if (!state.chat.open && wasOpen && !fab.hidden) fab.focus();
+    if (!state.chat.open && wasOpen && focusWasInChat) {
+      // Return focus to whatever opened the chat, falling back to the floating button.
+      const target = opener?.isConnected && opener.getClientRects().length ? opener : fab;
+      target.focus();
+      opener = null;
+    }
     wasOpen = state.chat.open;
   });
+  // Crossing the breakpoint while open switches between docked (non-modal) and sheet (modal).
+  wide.addEventListener("change", () => render(getState()));
   render(getState());
 }

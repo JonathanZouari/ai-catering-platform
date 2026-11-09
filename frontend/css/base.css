@@ -171,6 +171,21 @@ main {
 
 :focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 
+/* Leave room for sticky headers and floating order controls when keyboard focus scrolls. */
+html { scroll-padding-block: 96px 140px; }
+:where(a, button, input, select, textarea, [tabindex]) { scroll-margin-block: 16px; }
+.skip-link { position: fixed; inset-block-start: -100px; inset-inline-start: 16px;
+  z-index: var(--z-toast); padding: 12px 16px; background: var(--color-accent);
+  color: var(--color-on-accent); border-radius: var(--radius); }
+.skip-link:focus { inset-block-start: 12px; }
+.accessibility-footer { display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 16px; padding: 24px 16px; }
+.accessibility-footer a { display: inline-flex; align-items: center; min-height: 44px; }
+.accessibility-footer a, .accessibility-statement a { color: var(--color-accent); text-underline-offset: 3px; }
+.accessibility-statement { max-width: 800px; display: grid; gap: 24px; overflow-wrap: anywhere; }
+.accessibility-statement section { display: grid; gap: 12px; }
+.accessibility-statement li + li { margin-block-start: 12px; }
+
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;
