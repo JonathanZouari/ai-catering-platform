@@ -23,7 +23,7 @@
     </div>
   </header>
 
-  <main id="main">
+  <main id="main" tabindex="-1">
 
     <!-- Hero: the one place the mascot is large. Art is decorative; the headline and CTA carry the message. -->
     <section class="hero" aria-labelledby="hero-title">
@@ -108,6 +108,7 @@
         <!-- Clickable example of the approval card, labelled as an example. It never sends anything. -->
         <figure class="example" aria-label="דוגמה להצעה של העוזר">
           <figcaption>דוגמה להצעה. אפשר ללחוץ ולנסות.</figcaption>
+          <div class="visually-hidden" id="demo-live" role="status" aria-live="polite"></div>
           <div class="lproposal" id="demo-proposal">
             <h3>שינוי מוצע</h3>
             <p class="row"><span>ירקות שורש קלויים</span><span><span class="muted">לא בהזמנה</span> ← <b>2 מגשים</b></span></p>
@@ -117,10 +118,10 @@
               <button class="btn btn-primary" type="button" id="demo-approve">אישור השינוי</button>
             </div>
             <div class="done" id="demo-done" hidden>
-              <p class="demo-total" id="demo-total" hidden aria-live="polite">ההזמנה עכשיו: <strong class="n" id="demo-total-n">1,200 ₪</strong></p>
+              <p class="demo-total" id="demo-total" hidden>ההזמנה עכשיו: <strong class="n" id="demo-total-n">1,200 ₪</strong></p>
               <div class="done-row">
                 <span class="mascot-avatar" id="demo-avatar" style="--avatar:36px" aria-hidden="true"><picture><source type="image/webp" srcset="/assets/mascot/celebrating/mascot-celebrating.webp"><img src="/assets/mascot/celebrating/mascot-celebrating.png" alt="" width="654" height="900" loading="lazy" decoding="async"></picture></span>
-                <p class="badge" id="demo-note" role="status"></p>
+                <p class="badge" id="demo-note"></p>
                 <button class="link-btn" type="button" id="demo-reset">להתחיל מחדש</button>
               </div>
             </div>
@@ -138,7 +139,7 @@
 
   <footer class="foot">
     <p class="wordmark"><bdi>yumm<span class="dot">.</span>ai</bdi></p>
-    <a class="small" href="/admin/">ממשק העסק</a>
+    <nav aria-label="קישורים בתחתית העמוד" class="foot-links"><a class="small" href="/accessibility/">הצהרת נגישות</a><a class="small" href="/admin/">ממשק העסק</a></nav>
   </footer>
 
   <script type="module" src="/js/landing.js"></script>

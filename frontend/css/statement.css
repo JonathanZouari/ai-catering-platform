@@ -1,0 +1,12 @@
+/* Accessibility statement: a plain reading page. Builds on landing.css for the header and footer. */
+main:focus { outline: none; }
+.statement { max-width: 760px; padding-block: var(--space-8) var(--space-12); }
+.statement h1 { font-size: clamp(2rem, 1.4rem + 3vw, 3rem); margin-block-end: var(--space-4); }
+.statement h2 { font-size: var(--text-xl); margin-block: var(--space-8) var(--space-3); }
+.statement .lead { max-width: none; }
+.statement ul { padding-inline-start: var(--space-6); display: grid; gap: var(--space-2); margin: 0; }
+.statement p + p, .statement p + .contact, .statement .contact + p { margin-block-start: var(--space-4); }
+.statement a { color: var(--color-accent); text-underline-offset: 3px; }
+.contact { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); margin: var(--space-4) 0 0; }
+.contact dt { font-weight: 700; }
+.contact dd { margin: 0; text-align: start; }

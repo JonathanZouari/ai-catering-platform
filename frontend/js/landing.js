@@ -58,8 +58,12 @@ if (demo) {
     demo.classList.toggle("is-rejected", !applied);
     note.className = `badge ${applied ? "badge-green" : ""}`;
     note.textContent = applied ? "השינוי הוחל בהזמנה" : "השינוי נדחה. ההזמנה נשארה כמו שהייתה.";
+    totalNum.dataset.final = fmtMoney(applied ? AFTER : BEFORE);
     tweenNumber(totalNum, BEFORE, applied ? AFTER : BEFORE, fmtMoney);
     if (applied) confetti(avatar);
+    const live = $("demo-live");
+    live.textContent = "";
+    setTimeout(() => (live.textContent = `${note.textContent} ההזמנה עכשיו: ${totalNum.dataset.final}`), 50);
     $("demo-reset").focus();
   };
 
