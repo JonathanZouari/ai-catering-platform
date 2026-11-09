@@ -3,7 +3,7 @@
 Status: Accepted (Phase 0) · Date: 2026-10-29
 
 ## Context
-Mandated stack: Python 3.12+, FastAPI, plain HTML/CSS/JS, Railway. One business, modest traffic.
+Mandated stack: Python 3.12+, FastAPI, plain HTML/CSS/JS, Railway. Modest traffic. Originally written for one business; the decision still holds for many caterers (see ADR 0005).
 
 ## Decision
 One FastAPI app exposes the REST API and serves `frontend/` as static files. Internal layers: `api → services → repositories → models`, plus isolated `agents/`.

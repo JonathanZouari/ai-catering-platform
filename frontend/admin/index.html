@@ -3,19 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ממשק העסק</title>
+  <title>ניהול העסק</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/img/brand/logo.jpg">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/icons.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-  <main>
-    <h1>ממשק העסק</h1>
-    <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+  <div id="app"><div class="loading" role="status"><span class="spinner" aria-hidden="true"></span><span>טוען…</span></div></div>
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="/js/admin/main.js"></script>
 </body>
 </html>

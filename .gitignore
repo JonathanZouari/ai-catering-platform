@@ -16,6 +16,11 @@ build/
 .env.*
 !.env.example
 
+# SQLite databases and backups hold customer data
+*.db
+*.db-shm
+*.db-wal
+
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/
@@ -25,3 +30,7 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+e2e/screenshots/
+
+# Stitch design export, a local design reference (ADR 0008)
+stitch_catering_website_ux_design/
