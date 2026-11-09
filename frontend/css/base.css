@@ -171,6 +171,30 @@ main {
 
 :focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 
+/* First focusable element on every page. */
+.skip-link {
+  position: absolute;
+  inset-block-start: -100px;
+  inset-inline-start: var(--space-4);
+  z-index: var(--z-toast);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-radius: var(--radius);
+}
+.skip-link:focus { inset-block-start: var(--space-3); }
+
+/* Footer on the app pages: holds the link to the accessibility statement, which every page must reach. */
+.site-foot {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.site-foot a { display: inline-flex; align-items: center; min-height: var(--touch-target); color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
+
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;

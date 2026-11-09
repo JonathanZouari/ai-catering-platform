@@ -11,17 +11,6 @@
 /* Headings take programmatic focus on step change; no ring needed since they are not interactive. */
 [tabindex="-1"]:focus { outline: none; }
 
-.skip-link {
-  position: absolute;
-  inset-block-start: -100px;
-  inset-inline-start: var(--space-4);
-  z-index: var(--z-toast);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-accent);
-  color: var(--color-on-accent);
-  border-radius: var(--radius);
-}
-.skip-link:focus { inset-block-start: var(--space-3); }
 
 /* ---------- header + stepper ---------- */
 .site-header {

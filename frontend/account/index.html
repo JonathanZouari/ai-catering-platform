@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body>
-  <main class="auth-page">
+  <a class="skip-link" href="#main">דילוג לתוכן</a>
+  <main class="auth-page" id="main">
     <div class="topbar">
       <h1 id="hello">ההזמנות שלי</h1>
       <div style="display:flex;gap:12px">
@@ -29,6 +30,7 @@
       </div>
     </section>
   </main>
+  <footer class="site-foot"><a href="/accessibility/">הצהרת נגישות</a></footer>
   <script type="module">
     import { supabase, requireRole, signOut, shekels, STATUS_LABEL } from "/js/auth.js";
 

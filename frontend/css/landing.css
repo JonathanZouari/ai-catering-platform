@@ -5,17 +5,6 @@ body { background: var(--color-bg); }
 /* The sections own their gutters, so cancel base.css's generic main padding and width. */
 main { max-width: none; padding: 0; }
 
-.skip-link {
-  position: absolute;
-  inset-block-start: -100px;
-  inset-inline-start: var(--space-4);
-  z-index: var(--z-toast);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-accent);
-  color: var(--color-on-accent);
-  border-radius: var(--radius);
-}
-.skip-link:focus { inset-block-start: var(--space-3); }
 
 .muted { color: var(--color-muted); }
 .small { font-size: var(--text-sm); }

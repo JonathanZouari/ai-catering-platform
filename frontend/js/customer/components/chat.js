@@ -67,7 +67,7 @@ function bubble(m, isNew) {
 }
 
 export function mountChat(root) {
-  const list = h("ol", { class: "chat-log", role: "log", "aria-live": "polite", "aria-label": "שיחה עם העוזר" });
+  const list = h("ol", { class: "chat-log", "aria-label": "שיחה עם העוזר" });
   const input = h("textarea", { class: "input chat-input", rows: "1", id: "chat-input", placeholder: "כתבו שאלה על ההזמנה", "aria-label": "הודעה לעוזר" });
   const sendBtn = h("button", { class: "btn btn-primary btn-icon", type: "submit", "aria-label": "שליחה" }, icon("paper-plane-right"));
   const prompts = h("div", { class: "chip-row chat-prompts" });
@@ -108,6 +108,16 @@ export function mountChat(root) {
 
   root.append(backdrop, panel, fab);
 
+  // Below 992px the chat is a bottom sheet over a dimmed page, so the page behind it is made inert:
+  // Tab and screen readers stay inside the sheet. On wide screens it is a docked side panel and the page stays usable.
+  const sheet = matchMedia("(max-width: 991.98px)");
+  const setInert = () => {
+    const on = sheet.matches && !panel.hidden && !root.hidden;
+    // Everything except the chat and the screen-reader announcer (skip link, header, page, footer).
+    for (const el of document.body.children) if (el !== root && el.id !== "announce") el.inert = on;
+  };
+  sheet.addEventListener("change", setInert);
+
   let last = {};
   function render(state) {
     const available = (state.step === "menu" || state.step === "summary") && state.order.status === "draft";
@@ -134,7 +144,15 @@ export function mountChat(root) {
       );
       if (focusKey) list.querySelector(`[data-key="${focusKey}"]`)?.focus();
       list.scrollTop = list.scrollHeight;
-      // role=log announces new bubbles; applied proposals change the order silently, so announce them.
+      // Read out only what is new: the typing state, then each new reply and whether it proposes a change.
+      if (busy && !last.busy) announce("העוזר מקליד");
+      if (last.count !== undefined && messages.length > last.count) {
+        const replies = messages.slice(last.count).filter((m) => m.role === "assistant");
+        if (replies.length) {
+          announce(replies.map((m) => m.text + (m.proposals.length ? " יש הצעה לשינוי בהזמנה. אפשר לאשר או לדחות אותה." : "")).join(" "));
+        }
+      }
+      // Applied proposals change the order silently, so announce them.
       const applied = messages.flatMap((m) => m.proposals).filter((p) => p.status === "applied").length;
       if (applied !== last.applied) {
         if (last.applied !== undefined) {
@@ -152,6 +170,7 @@ export function mountChat(root) {
         : null,
     );
     sendBtn.disabled = busy;
+    setInert();
   }
 
   let wasOpen = false;

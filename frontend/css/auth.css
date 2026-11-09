@@ -30,3 +30,17 @@ tr.flash { animation: flash 2s ease-out; }
 .upload-label { cursor: pointer; }
 .upload-label input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .upload-label:focus-within { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+/* Accessibility statement page. */
+.statement { max-width: 760px; }
+.statement h1 { font-family: var(--font-display); }
+.statement ul { margin: 0; padding-inline-start: var(--space-6); display: grid; gap: var(--space-2); }
+.statement .back-link, .site-foot a { color: var(--color-accent); font-weight: 600; text-underline-offset: 3px; }
+.statement .back-link { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+.statement kbd { font: inherit; font-size: 0.9em; padding: 0 6px; border: 1px solid var(--color-control-border); border-radius: 6px; background: var(--color-surface-2); white-space: nowrap; }
+.statement .contact { margin: 0; display: grid; gap: var(--space-2); }
+.statement .contact div { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.statement .contact dt { font-weight: 700; }
+.statement .contact dt::after { content: ":"; }
+.statement .contact dd { margin: 0; }
+/* Missing details are shown loudly so the page is never published with them unnoticed. */
+.statement .todo { color: var(--color-danger); font-weight: 700; }

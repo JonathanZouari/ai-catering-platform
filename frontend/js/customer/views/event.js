@@ -56,7 +56,8 @@ export function mountEvent(root) {
   const guestCounters = {};
   function guestField(name, labelText, hint, opts = {}) {
     const id = `f-${name}`;
-    const c = counter({ id, value: ev()[name], min: opts.min ?? 0, onChange: (n) => update({ [name]: n }), describedBy: `${id}-hint` });
+    const describedBy = [`${id}-hint`, opts.errorId].filter(Boolean).join(" ");
+    const c = counter({ id, value: ev()[name], min: opts.min ?? 0, onChange: (n) => update({ [name]: n }), describedBy });
     guestCounters[name] = c;
     return h("div", { class: "field" },
       h("label", { for: id, text: labelText }),
@@ -110,10 +111,10 @@ export function mountEvent(root) {
     h("section", { class: "panel stack" },
       h("h2", { text: "האורחים" }),
       h("div", { class: "grid-2" },
-        h("div", {}, guestField("adults", "מבוגרים", "מגיל 13 ומעלה", { min: 0 }), adultsError),
+        h("div", {}, guestField("adults", "מבוגרים", "מגיל 13 ומעלה", { min: 0, errorId: "err-adults" }), adultsError),
         guestField("children", "ילדים", "עד גיל 12, נחשבים כחצי מנה"),
       ),
-      h("fieldset", { class: "stack" },
+      h("fieldset", { class: "stack", "aria-describedby": "err-dietary" },
         h("legend", { class: "label", text: "הגבלות תזונתיות" }),
         // OPEN_DECISIONS #4: these are treated as a subset of all guests until the business decides.
         h("p", { class: "hint", text: "כמה מהאורחים הכוללים צריכים כל אחת מההגבלות?" }),
