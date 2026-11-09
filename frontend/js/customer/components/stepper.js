@@ -21,6 +21,8 @@ export function renderStepper(container) {
         const content = [
           h("span", { class: "stepper-mark" }, done ? icon("check") : String(i + 1)),
           h("span", { class: "stepper-label", text: label }),
+          // The check mark is a drawing; say it in words too.
+          done ? h("span", { class: "visually-hidden", text: "(הושלם)" }) : null,
         ];
         return h("li", { class: `stepper-item${current ? " is-current" : ""}${done ? " is-done" : ""}` },
           reachable
