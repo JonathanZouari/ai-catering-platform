@@ -94,7 +94,8 @@ The database password for the CLI goes in `SUPABASE_DB_PASSWORD` (see `.env.exam
 
 ## Railway / Supabase status
 
-Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 6.
+- **Supabase:** the repo is linked to the `ai-catering-dev` project. All migrations in `supabase/migrations/` are applied there, along with the demo data. The production project does not exist yet.
+- **Railway:** configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project is connected yet. That is planned for Phase 6.
 
 ## Documentation
 
