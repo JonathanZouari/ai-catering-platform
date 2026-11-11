@@ -1,9 +1,10 @@
-// MOCK BACKEND for UI development only.
+// UI rules and assistant simulation. Catalog and submitted orders now use the real server.
 // The real backend is authoritative for prices, quantities and order state (ADR-0003).
 // Everything here mirrors the shapes in docs/API_CONTRACTS.md so views can be switched to
 // api() calls without changing their markup. Values marked PLACEHOLDER are NOT business rules.
 
 import { addDays, toIsoDate } from "../lib/format.js";
+import { allergenStatus, allergenSummary } from "./allergens.js";
 
 export const CATEGORIES = [
   { id: "salads", name: "סלטים ומטבלים" },
@@ -16,39 +17,14 @@ export const CATEGORIES = [
 
 export const UNIT_LABELS = { tray: "מגש", kg: "ק״ג", item: "יחידה", guest: "לאורח" };
 
-// allergens: array = verified list ([] means verified none); null = unknown, never shown as safe.
-export const DISHES = [
-  { id: "d1", categoryId: "salads", name: "חומוס ביתי", description: "חומוס חם עם טחינה גולמית, שמן זית ופפריקה.", price: 85, unit: "tray", kashrut: "pareve", vegetarian: true, vegan: true, allergens: ["שומשום"] },
-  { id: "d2", categoryId: "salads", name: "סלט חצילים קלויים", description: "חצילים שרופים על האש עם טחינה, לימון ופטרוזיליה.", price: 90, unit: "tray", kashrut: "pareve", vegetarian: true, vegan: true, allergens: [] },
-  { id: "d3", categoryId: "salads", name: "סלט סלק וגבינת עיזים", description: "סלק אפוי, גבינת עיזים, אגוזי מלך וויניגרט הדרים.", price: 110, unit: "tray", kashrut: "dairy", vegetarian: true, vegan: false, allergens: ["חלב", "אגוזים"] },
-  { id: "d4", categoryId: "salads", name: "טבולה פטרוזיליה", description: "פטרוזיליה קצוצה, בורגול, עגבניות ולימון.", price: 80, unit: "tray", kashrut: "pareve", vegetarian: true, vegan: true, allergens: ["גלוטן"] },
-  { id: "d5", categoryId: "mains", name: "עוף בתנור בעשבי תיבול", description: "ירכי עוף אפויות עם שום, רוזמרין ולימון.", price: 74, unit: "kg", kashrut: "meat", vegetarian: false, vegan: false, allergens: [] },
-  { id: "d6", categoryId: "mains", name: "קציצות בקר ברוטב עגבניות", description: "קציצות בקר רכות ברוטב עגבניות וכוסברה.", price: 240, unit: "tray", kashrut: "meat", vegetarian: false, vegan: false, allergens: ["גלוטן", "ביצים"] },
-  { id: "d7", categoryId: "mains", name: "פשטידת ברוקולי וגבינות", description: "פשטידה אפויה עם ברוקולי ושלוש גבינות.", price: 190, unit: "tray", kashrut: "dairy", vegetarian: true, vegan: false, allergens: ["חלב", "גלוטן", "ביצים"] },
-  { id: "d8", categoryId: "mains", name: "תבשיל קדרה צמחי", description: "ירקות עונה, חומוס ותבלינים בבישול איטי.", price: 170, unit: "tray", kashrut: "pareve", vegetarian: true, vegan: true, allergens: null },
-  { id: "d9", categoryId: "fish", name: "פילה סלמון בלימון", description: "פילה סלמון אפוי עם לימון, שמיר ושמן זית.", price: 98, unit: "item", perGuest: 0.6, step: 1, kashrut: "pareve", vegetarian: false, vegan: false, allergens: ["דגים"] },
-  { id: "d10", categoryId: "fish", name: "דג מושט בצ׳רמולה", description: "דג מושט שלם בתנור עם צ׳רמולה ביתית.", price: 145, unit: "kg", kashrut: "pareve", vegetarian: false, vegan: false, allergens: ["דגים"] },
-  { id: "d11", categoryId: "sides", name: "אורז בסמטי ושקדים", description: "אורז בסמטי עם שקדים קלויים ובצל מקורמל.", price: 120, unit: "tray", kashrut: "pareve", vegetarian: true, vegan: true, allergens: ["אגוזים"] },
-  { id: "d12", categoryId: "sides", name: "ירקות שורש קלויים", description: "גזר, בטטה וסלק קלויים עם דבש או סילאן.", price: 105, unit: "tray", kashrut: "pareve", vegetarian: true, vegan: true, allergens: [] },
-  { id: "d13", categoryId: "sides", name: "פוקאצ׳ה ביתית", description: "פוקאצ׳ה אפויה עם רוזמרין ומלח גס.", price: 18, unit: "item", perGuest: 1.5, step: 4, kashrut: "pareve", vegetarian: true, vegan: true, allergens: ["גלוטן"] },
-  { id: "d14", categoryId: "desserts", name: "עוגת שוקולד ללא קמח", description: "עוגת שוקולד מריר לחה, 12 פרוסות.", price: 160, unit: "item", perGuest: 0.1, step: 1, kashrut: "pareve", vegetarian: true, vegan: false, allergens: ["ביצים", "אגוזים"] },
-  { id: "d15", categoryId: "desserts", name: "פלטת פירות העונה", description: "פירות טריים חתוכים, לכ-10 סועדים.", price: 140, unit: "item", perGuest: 0.1, step: 1, kashrut: "pareve", vegetarian: true, vegan: true, allergens: [] },
-  { id: "d16", categoryId: "desserts", name: "מיני טארטלטים", description: "טארטלטים עם קרם וניל ופירות יער.", price: 9, unit: "item", perGuest: 2, step: 6, kashrut: "dairy", vegetarian: true, vegan: false, allergens: ["חלב", "גלוטן", "ביצים"] },
-  { id: "d17", categoryId: "drinks", name: "שתייה קלה ומים", description: "מבחר שתייה קלה ומים מינרליים לכל אורח.", price: 14, unit: "guest", kashrut: "pareve", vegetarian: true, vegan: true, allergens: [] },
-];
+// Legacy allergen lists establish contains only; omissions remain unknown.
+export const DISHES = [];
 
 // "יום נישואין" (anniversary) added for the illustrated occasion picker; the client brief lists it as an occasion.
 export const EVENT_TYPES = ["יום הולדת", "אירוע משפחתי", "בר או בת מצווה", "ארוחת שבת", "יום נישואין", "חגיגה פרטית", "אחר"];
 
 // PLACEHOLDER zones and fees (OPEN #19).
-export const ZONES = [
-  { city: "תל אביב-יפו", fee: 60 },
-  { city: "רמת גן", fee: 60 },
-  { city: "גבעתיים", fee: 60 },
-  { city: "הרצליה", fee: 90 },
-  { city: "פתח תקווה", fee: 100 },
-  { city: "ראשון לציון", fee: 110 },
-];
+export const ZONES = [];
 
 // PLACEHOLDER slots (OPEN #5).
 const SLOTS = {
@@ -222,8 +198,8 @@ export function assistantReply(order, rawText) {
   const allergen = ALLERGEN_WORDS.find((a) => text.includes(a));
   if (allergen) {
     if (!inOrder.length) return reply(`ההזמנה עדיין ריקה. אפשר לבדוק לגבי ${allergen} אחרי שתבחרו מנות.`);
-    const contains = inOrder.map(getDish).filter((d) => d.allergens?.includes(allergen));
-    const unknown = inOrder.map(getDish).filter((d) => d.allergens === null);
+    const contains = inOrder.map(getDish).filter((d) => allergenStatus(d, allergen) === 'contains');
+    const unknown = inOrder.map(getDish).filter((d) => allergenStatus(d, allergen) === 'unknown');
     const parts = [contains.length ? `לפי המידע שהוזן לעסק, ${allergen} מופיע ב: ${contains.map((d) => d.name).join(", ")}.` : `אין בהזמנה מנות שמסומנות כמכילות ${allergen}.`];
     if (unknown.length) parts.push(`אין מידע על אלרגנים עבור: ${unknown.map((d) => d.name).join(", ")}. אי אפשר להניח שהן בטוחות.`);
     parts.push("מומלץ לוודא מול העסק לפני האירוע.");
@@ -241,7 +217,7 @@ export function assistantReply(order, rawText) {
     const candidates = DISHES.filter((d) => d.vegan && ["mains", "sides"].includes(d.categoryId) && !(d.id in order.items));
     if (!candidates.length) return reply("כל המנות הטבעוניות מהקטגוריות העיקריות כבר בהזמנה.");
     const dish = candidates[0];
-    const note = dish.allergens === null ? " שימו לב: אין לעסק מידע על אלרגנים במנה הזו." : "";
+    const note = allergenSummary(dish).incomplete ? " שימו לב: מידע האלרגנים במנה הזו אינו מלא." : "";
     return reply(`${dish.name} מסומנת כטבעונית ומתאימה כמנה עיקרית.${note}`, [{ op: "add_item", dish_id: dish.id, quantity: recommendedQty(dish, order.event) }]);
   }
 
@@ -271,4 +247,11 @@ export function assistantReply(order, rawText) {
   }
 
   return reply("אני יכול לעזור עם המלצות על מנות מהתפריט, כמויות, מחיר ומידע על אלרגנים. שום שינוי בהזמנה לא יתבצע בלי האישור שלכם.");
+}
+
+export async function loadCatalog() {
+  const { api } = await import("../api.js");
+  const catalog = await api("/api/catalog");
+  DISHES.splice(0, DISHES.length, ...catalog.dishes);
+  ZONES.splice(0, ZONES.length, ...catalog.zones);
 }

@@ -1,0 +1,13 @@
+.test-tools/
+.temp/
+.branches/
+.env
+
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local

@@ -34,7 +34,7 @@ Single business. Dishes carry kashrut (meat, dairy, pareve), vegetarian and vega
 - Hebrew only, right-to-left (decided 2026-10-29).
 - WCAG 2.2 AA target: 4.5:1 text contrast, visible focus, 44px touch targets, `aria-live` for price totals and chat replies.
 - Customer flow: event details, menu, order summary, AI assistant, quotation submission and status.
-- Undecided: brand name and logo (#20), customer auth (#1), quantity formulas (#3), allergen disclaimer wording (#8).
+- Undecided: logo and final colors (#20), customer auth (#1), quantity formulas (#3), allergen disclaimer wording (#8). Business name is confirmed below.
 
 ## Brand Commitments
 

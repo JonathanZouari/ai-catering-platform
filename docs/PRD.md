@@ -78,11 +78,13 @@ Details: `AI_AGENT_DESIGN.md`.
 | UX | Mobile-first, responsive, accessible (WCAG 2.2 AA target), premium look | CONFIRMED / target RECOMMENDATION |
 | Quote integrity | Price snapshot at submission | CONFIRMED |
 | Testing | pytest, Ruff, API integration tests, AI action validation tests | CONFIRMED |
-| Environments | `dev` → Railway dev + Supabase dev; `main` → Railway prod + Supabase prod | CONFIRMED (separate Supabase projects strongly preferred) |
+| Environments | `dev` → Railway dev; `main` → Railway prod; each with its own SQLite database (ADR 0005) | CONFIRMED |
 
 ## 9. Out of scope **[CONFIRMED]**
 
 Multi-business marketplace · admin AI agent · corporate customers · staff/waiter management · advanced inventory · supplier procurement · accounting/invoicing · payment gateway · calorie/nutrition database · automated dish generation · autonomous order approval · native mobile apps.
+
+**Review scope correction (2026-11-05):** employees, dispatch execution, income receipts/refunds, equipment and ingredient inventory belong to a separate optional operations change. They are not installed or displayed by the MVP. Existing historical data is preserved; splitting the code is not permission to delete it. Building those workflows still requires the decisions below (#2 payments, #7 cancellation/refunds, #10 equipment).
 
 Unresolved and **not** to be built until decided: serving utensils/disposables, alcohol, voice AI, customer auth method, notifications, cancellation/refund, owner-proposed revisions, post-submission customer edits.
 

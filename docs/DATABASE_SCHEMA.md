@@ -1,148 +1,68 @@
-# Preliminary Database Schema (PostgreSQL / Supabase)
+# Database schema — MVP
 
-Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
+The primary application database is Supabase Postgres. SQLite remains an explicit local fallback with the same customer quotation contract. A cloud failure never silently writes to SQLite.
 
-Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
+## Scope and identifiers
 
-## Enums
+PR 37 contains customer quotations, a normalized menu, owner catalog access, availability configuration and the schema foundation for the customer AI assistant. Employees, dispatch execution, payments, equipment and ingredient inventory are an optional, separate operations extension.
 
-| Enum | Values | Source |
-|---|---|---|
-| `pricing_unit` | `per_guest`, `per_tray`, `per_weight`, `per_item` | Decision 6 |
-| `kashrut_class` | `meat`, `dairy`, `pareve` | Decision 9 |
-| `fulfillment_type` | `pickup`, `delivery` | Decision 8 |
-| `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
-| `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
-| `allergen_status` | `contains`, `free`, `unknown` | Decision 9 — unknown ≠ free |
+Domain identifiers use integer keys (`bigint` identities in Postgres, `INTEGER PRIMARY KEY` in SQLite). Join tables use composite integer foreign keys. The public API keeps legacy dish codes such as `d1` as a compatibility alias so stored carts and retry payloads remain valid; these are not database primary keys. Receipt tokens are unique credentials, not entity identifiers.
 
-## Tables
+Money is stored as integer minor units. Quantities use integer thousandths. Submitted order names, units and prices are snapshots; editing the catalog cannot change an existing receipt.
 
-### customers
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| auth_user_id | uuid null unique | FK `auth.users` if accounts are chosen **[OPEN #1]** |
-| full_name | text not null | |
-| email | text null | |
-| phone | text null | |
-| created_at, updated_at | timestamptz | |
+## Core tables
 
-### events
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| customer_id | uuid FK → customers, not null | |
-| event_type | text not null | Private event label; list configurable **[RECOMMENDATION]** |
-| event_date | date not null | |
-| adults | int not null ≥ 0 | |
-| children | int not null ≥ 0 | |
-| vegetarian_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| vegan_guests | int not null ≥ 0 | Subset semantics **[OPEN #4]** |
-| restricted_guests | int not null ≥ 0 | |
-| dietary_notes | text null | Free text, shown to owner; never parsed into safety claims |
-| CHECK | `adults + children > 0` | |
+- `customers`: contact details, with email or telephone required.
+- `addresses`: address book entries associated with a customer.
+- `events`: private event date and guest composition; at least one guest.
+- `orders`: quotation state, version, fulfillment, frozen totals and timestamps. Composite foreign keys ensure the event and delivery address belong to the order's customer.
+- `order_items`: integer dish references and historical line snapshots.
+- `order_submissions`: unique hashed retry/retrieval credential and original request payload. No anonymous or browser access.
+- `delivery_zones`: integer identity, unique city and fee in minor units.
 
-### dish_categories
-`id` uuid PK · `name` text not null unique · `sort_order` int not null default 0 · `is_active` bool default true
+## Normalized catalog
 
-### dishes
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| category_id | uuid FK → dish_categories not null | index |
-| name | text not null | |
-| description | text null | |
-| image_path | text null | Supabase Storage object path |
-| pricing_unit | pricing_unit not null | |
-| unit_price | numeric(10,2) not null CHECK ≥ 0 | |
-| unit_label | text null | e.g., tray size / weight unit text **[OPEN #18]** |
-| currency | char(3) not null default from config | **[OPEN #17]** |
-| min_quantity | numeric(10,2) null | **[OPEN #15]** |
-| is_available | bool not null default true | |
-| created_at, updated_at | timestamptz | |
+- `dish_categories`: category identities and owner-managed names/order/availability.
+- `dishes`: integer identity, unique legacy code, category FK, name, description, pricing unit, canonical integer price, quantity step and image reference. There is no authoritative JSON metadata catalog or second price.
+- `dish_dietary`: one row per dish, nullable kashrut/vegetarian/vegan properties. Null means unknown.
+- `allergens`: named allergen identities.
+- `dish_allergens`: dish/allergen relation with `contains`, `free` or `unknown`. A missing relation means unknown, never free. A historical empty array does not establish that a dish is allergen-free.
 
-### dish_dietary (1:1 with dishes)
-`dish_id` uuid PK/FK → dishes · `kashrut_class` kashrut_class **null** (null = not provided) · `is_vegetarian` bool null · `is_vegan` bool null · `verified_at` timestamptz null
+Migration snapshots retain original metadata for recovery/audit only. They are not exposed by the catalog API. The legacy code remains available for old media paths and customer payload compatibility.
 
-Null booleans mean **unknown** and must be presented as unknown, never as "no"/"yes".
+## Availability (Postgres)
 
-### allergens
-`id` smallint PK · `name` text unique (list maintained by owner)
+- `time_slots`: fulfillment type, optional weekday, start/end time, optional positive capacity, active flag.
+- `blocked_dates`: unique date and optional reason.
+- `orders.time_slot_id`: nullable reference, allowing old quotations to remain intact.
 
-### dish_allergens
-`dish_id` FK · `allergen_id` FK · `status` allergen_status not null · PK(`dish_id`,`allergen_id`)
-A missing row = **unknown**.
+These tables are schema foundations. The existing customer slot rules are still demonstrations: this change does not claim reservation/capacity enforcement or a complete scheduling UI.
 
-### delivery_zones
-`id` uuid PK · `name` text not null · `fee` numeric(10,2) not null ≥ 0 · `definition` jsonb not null (shape depends on **[OPEN #19]**) · `is_active` bool
+## Customer assistant foundation (Postgres)
 
-### time_slots
-`id` uuid PK · `fulfillment_type` fulfillment_type · `weekday` smallint 0–6 null · `start_time` time · `end_time` time · `capacity` int null **[OPEN #5]** · `is_active` bool · CHECK `end_time > start_time`
+- `ai_conversations`: associated order and timestamp.
+- `ai_messages`: conversation FK, role (`user`, `assistant`, `tool`), structured content and timestamp.
+- `ai_change_proposals`: order/conversation association, base order version, proposed operations, integer before/after prices, decision and execution timestamps.
 
-### blocked_dates
-`id` uuid PK · `date` date unique · `reason` text null
+Composite references prevent a proposal from using another order's conversation. Executed proposal records cannot be rewritten or deleted. Browser roles cannot access these tables. No AI executor or customer approval endpoint is enabled by this schema change. A future implementation must enforce authenticated/capability-based order ownership, check the order version and apply approved changes once under a transaction; see `AI_AGENT_DESIGN.md`.
 
-### orders
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| customer_id | uuid FK not null | index |
-| event_id | uuid FK not null unique | |
-| status | order_status not null default `draft` | index |
-| version | int not null default 1 | Incremented on every mutation; optimistic locking for proposals |
-| fulfillment_type | fulfillment_type not null | |
-| requested_at | timestamptz not null | Requested pickup/delivery time |
-| delivery_address | text null | CHECK: required when `delivery` |
-| delivery_zone_id | uuid FK null | |
-| subtotal, delivery_fee, total | numeric(10,2) null | Computed by backend; frozen at submission |
-| submitted_at, decided_at | timestamptz null | |
-| decision_note | text null | Owner's note on approve/reject |
-| created_at, updated_at | timestamptz | |
+## Access control
 
-### order_items
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| order_id | uuid FK not null | index |
-| dish_id | uuid FK not null | |
-| quantity | numeric(10,2) not null CHECK > 0 | |
-| UNIQUE | (`order_id`, `dish_id`) | |
-| snapshot_name | text null | **Price snapshot** — filled on submission |
-| snapshot_pricing_unit | pricing_unit null | |
-| snapshot_unit_price | numeric(10,2) null | |
-| snapshot_line_total | numeric(10,2) null | |
+Every exposed Postgres table has RLS enabled and explicit grants. Owner access uses server-controlled `app_metadata`, never editable user metadata. Customer writes and private receipt reads go through backend-only invoker RPCs. Server credentials stay in the ignored environment file.
 
-While `draft`, prices are read live from `dishes`; on `pending_approval` the snapshot columns become authoritative.
+## Migration paths
 
-### ai_conversations
-`id` uuid PK · `order_id` FK not null · `created_at` · index on `order_id`
+Fresh Postgres installs start with `mvp_core_baseline`, then apply the availability and normalized-catalog migrations. The baseline skips an already initialized course database; it does not delete its rows. The previous broad bootstraps are preserved on the operations history branch and are no longer part of the MVP install path.
 
-### ai_messages
-`id` uuid PK · `conversation_id` FK · `role` text CHECK in (`user`,`assistant`,`tool`) · `content` jsonb · `created_at`
+The existing hosted project was initially created through the SQL editor, not tracked CLI migrations. Reconcile the exact applied versions before any CLI push. Never reset the hosted project to perform this split. Original optional tables remain historical data until a separate, reviewed transition is performed.
 
-### ai_change_proposals
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | |
-| order_id | uuid FK not null | index |
-| conversation_id | uuid FK null | |
-| base_order_version | int not null | Must equal `orders.version` at execution |
-| changes | jsonb not null | Validated list of typed operations |
-| price_before, price_after | numeric(10,2) not null | Computed by backend at proposal time |
-| status | proposal_status not null default `pending` | |
-| created_at, decided_at, executed_at | timestamptz | `executed_at` set once → idempotency |
-| PARTIAL UNIQUE | one `pending` per order? **[RECOMMENDATION]** — simplifies UI | |
+SQLite fresh installs apply migrations `0004` and `0005`. Existing course databases with exact known checksums for `0001`–`0003` are recognized and upgraded without rewriting their ledger or deleting optional tables. Unknown checksums fail closed. Catalog IDs/FKs are migrated transactionally; receipt snapshots and hashed credentials are preserved.
 
-## Status transitions **[RECOMMENDATION]**
+## Validation
 
-| From | To | Actor |
-|---|---|---|
-| draft | pending_approval | Customer (owner of order) |
-| pending_approval | approved | Owner |
-| pending_approval | rejected | Owner |
+- `backend/tests`: local order submission/recovery, normalized catalog constraints, migration integrity and mocked cloud failures.
+- `frontend/tests`: receipt recovery and three-state allergen behavior.
+- `supabase/tests/mvp-postgres.mjs`: fresh MVP scope, RLS, schedule constraints and proposal association/history.
+- Catalog migration tests cover upgrade preservation and normalized catalog RPC behavior.
 
-Proposals may only execute while order is `draft`.
-
-## Business rules storage
-
-Quantity rules (Decision 5) will live in a `quantity_rules` table once formulas are known **[OPEN #3]**. Shape intentionally not designed yet.
+Local SQL execution uses PGlite with Auth/Storage stubs. It is not proof of hosted authentication, Realtime, Storage API or concurrent connections. Historical hosted restart screenshots predate this review revision.

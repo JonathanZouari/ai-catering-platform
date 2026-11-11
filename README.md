@@ -2,24 +2,24 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Phase 1 — scaffolding**. No business features yet. See `docs/` for the specs.
+> Status: **Customer quotations connected to Supabase or explicit local SQLite**. The form loads a normalized catalog, submits a priced quotation atomically and retrieves its receipt after restart. The owner admin reads the same cloud orders. AI execution, scheduling enforcement and order approval workflows remain unfinished. Operations/inventory are a separate optional extension. See `docs/DATABASE_SCHEMA.md` for review corrections and upgrade boundaries.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
+| Backend | Python 3.12+, FastAPI, Pydantic, standard-library `sqlite3` |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Data | **Supabase Postgres** for cloud orders/admin; **SQLite** for explicit local mode. Auth, private Storage and Realtime support the owner interface. |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
 ## Repository layout
 
 ```
-backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
+backend/        FastAPI app (api, core, db, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+database/       migrations/NNNN_name.sql (SQLite, forward-only)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -35,10 +35,15 @@ Requires [uv](https://docs.astral.sh/uv/) (it installs a matching Python automat
 cp .env.example .env          # fill values when needed; .env is git-ignored
 cd backend
 uv sync                       # install dependencies
+uv run python -m app.db       # create/upgrade data/catering.sqlite3 (safe to repeat)
 uv run uvicorn app.main:app --reload
 ```
 
-- API health: http://127.0.0.1:8000/health
+The app also applies pending migrations on startup (`DB_AUTO_MIGRATE=true`). Migrations never drop
+data; `uv run python -m app.db status` lists what is applied. Schema and rules:
+[docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md).
+
+- API health (includes database status): http://127.0.0.1:8000/health
 - Customer UI: http://127.0.0.1:8000/customer/
 - Admin UI: http://127.0.0.1:8000/admin/
 
@@ -49,6 +54,8 @@ cd backend
 uv run ruff check .
 uv run ruff format --check .
 uv run pytest
+# From repository root, with Node 22+:
+node --test frontend/tests/order-store.test.mjs
 ```
 
 ## Dependencies and why
@@ -58,27 +65,28 @@ uv run pytest
 | `fastapi` | Mandated web framework |
 | `uvicorn[standard]` | ASGI server for FastAPI |
 | `pydantic-settings` | Typed config from environment variables |
+| `tzdata` | Convert Israel event times correctly on Windows and Linux |
 | `pytest` (dev) | Mandated test runner |
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 2, when database code exists.
+SQLite (3.37+) ships with Python. Cloud mode uses the pinned server HTTP client and a vendored browser SDK. Set `ORDER_DATABASE_BACKEND=supabase`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` and the server-only `SUPABASE_SECRET_KEY` in an ignored environment file. Never expose the secret key to the browser. Follow the reviewed migration procedure in `docs/DATABASE_SCHEMA.md` before connecting a fresh cloud database.
 
 ## Branches and environments
 
-| Branch | Purpose | Railway env | Supabase project |
+| Branch | Purpose | Railway env | Database |
 |---|---|---|---|
-| `main` | Production (default branch) | `production` | prod project |
-| `dev` | Integration | `development` | dev project |
+| `main` | Production (default branch) | `production` | own SQLite file (volume) |
+| `dev` | Integration | `development` | own SQLite file (volume) |
 
 - Feature work → PR into `dev` (CI must pass).
 - Release → PR `dev` → `main`.
 - Production deploys are manual and need explicit approval.
 - Each Railway environment holds its own variables from `.env.example`. **Never commit secrets.** The service-role key stays server-side.
 
-## Railway / Supabase status
+## Railway status
 
-Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 6.
+Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project is connected yet. That is planned for Phase 6. Railway's container disk is ephemeral, so each environment needs a volume, with `SQLITE_PATH` pointing into it (the image defaults to `/srv/data/catering.sqlite3`).
 
 ## Documentation
 

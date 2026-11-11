@@ -5,6 +5,7 @@ __pycache__/
 venv/
 .pytest_cache/
 .ruff_cache/
+.uv-cache/
 .coverage
 htmlcov/
 *.egg-info/
@@ -16,12 +17,20 @@ build/
 .env.*
 !.env.example
 
+# Local SQLite databases (created by `python -m app.db` or on app startup)
+data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/
 
 # OS / editors
+.claude/worktrees/
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+.claude/task-skills/

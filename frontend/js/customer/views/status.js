@@ -67,6 +67,7 @@ export function mountStatus(root) {
 
     h("section", { class: "panel stack", "aria-labelledby": "snap-title" },
       h("h2", { id: "snap-title", text: "פירוט הבקשה" }),
+      Number.isInteger(order.id) ? h("p", { text: `מספר הבקשה: ${order.id}` }) : null,
       h("p", { class: "muted", text: `${e.type}, ${fmtDate(e.date)}, ${e.slot}` }),
       h("ul", { class: "lines" }, snap.lines.map((l) => h("li", { class: "line line-static" },
         h("div", { class: "line-info" }, h("strong", { text: l.name }), h("span", { class: "muted small", text: l.qty })),

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <title>החלפת סיסמה</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <main class="center-page"><div class="auth-card">
+    <h1>החלפת סיסמה</h1>
+    <p id="status" role="status">בודק את קישור השחזור…</p>
+    <form id="recovery" class="stack" hidden>
+      <label for="password">סיסמה חדשה — לפחות 12 תווים</label>
+      <input class="input" id="password" type="password" dir="ltr" autocomplete="new-password" minlength="12" required>
+      <label for="confirm">הקלדת הסיסמה שוב</label>
+      <input class="input" id="confirm" type="password" dir="ltr" autocomplete="new-password" minlength="12" required>
+      <button class="btn btn-primary" type="submit">שמירת הסיסמה החדשה</button>
+    </form>
+    <p><a href="/admin/">חזרה לכניסת הצוות</a></p>
+  </div></main>
+  <script src="/vendor/supabase/supabase.js"></script>
+  <script type="module" src="/admin/js/recovery.js"></script>
+</body>
+</html>
