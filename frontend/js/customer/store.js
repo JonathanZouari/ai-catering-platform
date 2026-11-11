@@ -1,5 +1,6 @@
 // Client state for the customer app. Every order mutation bumps `order.version`,
 // matching the optimistic-concurrency contract in docs/API_CONTRACTS.md.
+import { api } from "../api.js";
 import {
   approveProposal, assistantReply, getDish, newOrder, priceOrder, qtyLabel, recommendedQty,
   validateContact, validateEvent,
@@ -88,27 +89,56 @@ export function setContact(patch) {
   commit({ ...state, order: { ...state.order, contact: { ...state.order.contact, ...patch } } });
 }
 
-export function submitOrder() {
+let submitting = false;
+
+export async function restoreOrder() {
+  const { order } = state;
+  if (order.accessToken) {
+    try {
+      const saved = await api("/api/orders/receipt", { headers: { "X-Order-Token": order.accessToken }, cache: "no-store" });
+      // A late response must not revive a previous order or roll back a newer decision.
+      if (state.order.accessToken !== order.accessToken) return;
+      if (state.order.status !== "draft" && saved.version < state.order.version) return;
+      if (state.step === "status" && JSON.stringify(state.order) === JSON.stringify({ ...saved, accessToken: order.accessToken })) return;
+      commit({ ...state, order: { ...saved, accessToken: order.accessToken }, step: "status" });
+    } catch (error) {
+      if (error.status !== 404 || order.status !== "draft") throw error;
+    }
+  } else if (order.status !== "draft") {
+    // Old mock submissions are drafts, never proof of a server receipt.
+    commit({ ...state, order: { ...order, id: "draft-local", status: "draft", snapshot: null }, step: "summary" });
+  }
+}
+
+export async function submitOrder() {
+  if (submitting) return { errors: { server: "הבקשה נשלחת, נא להמתין" } };
   const { order } = state;
   const errors = { ...validateContact(order.contact) };
   if (!Object.keys(order.items).length) errors.items = "הוסיפו לפחות מנה אחת להזמנה";
   if (Object.keys(validateEvent(order.event)).length) errors.event = "פרטי האירוע חסרים או לא תקינים";
   if (Object.keys(errors).length) return { errors };
   const pricing = priceOrder(order);
-  const snapshot = {
-    submittedAt: new Date().toISOString(),
-    lines: pricing.lines.map((l) => ({ name: l.dish.name, qty: qtyLabel(l.dish, l.qty), unitPrice: l.unitPrice, lineTotal: l.lineTotal })),
-    subtotal: pricing.subtotal,
-    deliveryFee: pricing.deliveryFee,
-    total: pricing.total,
-  };
-  commit({
-    ...state,
-    step: "status",
-    order: { ...order, status: "pending_approval", snapshot, version: order.version + 1 },
-    chat: { ...state.chat, open: false },
-  });
-  return { errors: {} };
+  const accessToken = order.accessToken ?? Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+  submitting = true;
+  try {
+    commit({ ...state, order: { ...order, accessToken } });
+    // Persist the capability before sending, so a lost response can be retried safely.
+    if (JSON.parse(localStorage.getItem(STORAGE_KEY))?.order?.accessToken !== accessToken) {
+      throw new Error("נדרשת אפשרות שמירה בדפדפן כדי לשלוח ולפתוח את ההזמנה מחדש.");
+    }
+    const saved = await api("/api/orders", {
+      method: "POST",
+      headers: { "X-Order-Token": accessToken },
+      body: JSON.stringify({ event: order.event, contact: order.contact, items: order.items, expected_total_minor: Math.round(pricing.total * 100) }),
+    });
+    commit({ ...state, step: "status", order: { ...saved, accessToken }, chat: { ...state.chat, open: false } });
+    return { errors: {} };
+  } catch (error) {
+    const connectionError = error instanceof TypeError || ["AbortError", "TimeoutError"].includes(error.name);
+    return { errors: { server: connectionError ? "לא התקבל אישור מהשרת. בדקו את החיבור ונסו לשלוח שוב; ניסיון חוזר לא ייצור הזמנה כפולה." : error.message } };
+  } finally {
+    submitting = false;
+  }
 }
 
 export function startOver() {

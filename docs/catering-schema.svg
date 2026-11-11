@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2130" height="1227" viewBox="0 0 2130 1227">
+<style>text{font-family:Arial,sans-serif}.code{font-family:Consolas,monospace}</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#64748b"/></marker></defs>
+<rect width="100%" height="100%" fill="#f1f5f9"/>
+<text x="40" y="42" font-size="28" font-weight="bold" fill="#0f172a">yumm.ai — reviewed MVP schema</text>
+<text x="40" y="72" font-size="17" fill="#475569">17 public tables · bigint domain keys · FK arrows point to the referenced table · schema foundation, not a live cloud screenshot</text>
+<text x="40" y="98" font-size="15" fill="#475569">PK primary key | FK foreign key | AI records and submission credentials: server only | operations extension excluded</text>
+<path d="M815,567 H1065 V705 H1315" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M1740,215 H1284.5 V157 H815" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M2090,405 H2126 V157 H1740" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M1740,639 H1277.5 V157 H815" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M2090,661 H2118 V157 H1740" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M390,471 H426 V157 H40" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M390,859 H410 V157 H40" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M465,215 H434.5 V157 H390" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M465,237 H441.5 V801 H390" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M465,347 H427.5 V413 H390" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M815,713 H843 V157 H465" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M815,735 H866.5 V391 H890" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M815,991 H835 V157 H465" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M1240,515 H1268 V157 H890" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M1240,793 H1276 V391 H890" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M1315,361 H1277.5 V391 H1240" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<path d="M1665,383 H1693 V157 H1315" fill="none" stroke="#94a3b8" stroke-width="1.5" opacity="0.7" marker-end="url(#arrow)"/>
+<rect x="40" y="125" width="350" height="208" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="40" y="125" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="54" y="154" font-size="19" font-weight="bold" fill="white">customers</text>
+<text class="code" x="53" y="194" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="53" y="216" font-size="14" fill="#334155">full_name</text>
+<text class="code" x="53" y="238" font-size="14" fill="#334155">email ?</text>
+<text class="code" x="53" y="260" font-size="14" fill="#334155">phone ?</text>
+<text class="code" x="53" y="282" font-size="14" fill="#334155">created_at</text>
+<text class="code" x="53" y="304" font-size="14" fill="#334155">updated_at</text>
+<rect x="40" y="381" width="350" height="340" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="40" y="381" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="54" y="410" font-size="19" font-weight="bold" fill="white">addresses</text>
+<text class="code" x="53" y="450" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="53" y="472" font-size="14" fill="#334155">customer_id [FK] ?</text>
+<text class="code" x="53" y="494" font-size="14" fill="#334155">label ?</text>
+<text class="code" x="53" y="516" font-size="14" fill="#334155">street</text>
+<text class="code" x="53" y="538" font-size="14" fill="#334155">house_number ?</text>
+<text class="code" x="53" y="560" font-size="14" fill="#334155">apartment ?</text>
+<text class="code" x="53" y="582" font-size="14" fill="#334155">floor ?</text>
+<text class="code" x="53" y="604" font-size="14" fill="#334155">city</text>
+<text class="code" x="53" y="626" font-size="14" fill="#334155">postal_code ?</text>
+<text class="code" x="53" y="648" font-size="14" fill="#334155">access_notes ?</text>
+<text class="code" x="53" y="670" font-size="14" fill="#334155">created_at</text>
+<text class="code" x="53" y="692" font-size="14" fill="#334155">updated_at</text>
+<rect x="40" y="769" width="350" height="340" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="40" y="769" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="54" y="798" font-size="19" font-weight="bold" fill="white">events</text>
+<text class="code" x="53" y="838" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="53" y="860" font-size="14" fill="#334155">customer_id [FK]</text>
+<text class="code" x="53" y="882" font-size="14" fill="#334155">event_type</text>
+<text class="code" x="53" y="904" font-size="14" fill="#334155">event_date</text>
+<text class="code" x="53" y="926" font-size="14" fill="#334155">adults</text>
+<text class="code" x="53" y="948" font-size="14" fill="#334155">children</text>
+<text class="code" x="53" y="970" font-size="14" fill="#334155">vegetarian_guests</text>
+<text class="code" x="53" y="992" font-size="14" fill="#334155">vegan_guests</text>
+<text class="code" x="53" y="1014" font-size="14" fill="#334155">restricted_guests</text>
+<text class="code" x="53" y="1036" font-size="14" fill="#334155">dietary_notes ?</text>
+<text class="code" x="53" y="1058" font-size="14" fill="#334155">created_at</text>
+<text class="code" x="53" y="1080" font-size="14" fill="#334155">updated_at</text>
+<rect x="465" y="125" width="350" height="472" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="465" y="125" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="479" y="154" font-size="19" font-weight="bold" fill="white">orders</text>
+<text class="code" x="478" y="194" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="478" y="216" font-size="14" fill="#334155">customer_id [FK]</text>
+<text class="code" x="478" y="238" font-size="14" fill="#334155">event_id [FK]</text>
+<text class="code" x="478" y="260" font-size="14" fill="#334155">status</text>
+<text class="code" x="478" y="282" font-size="14" fill="#334155">version</text>
+<text class="code" x="478" y="304" font-size="14" fill="#334155">fulfillment_type</text>
+<text class="code" x="478" y="326" font-size="14" fill="#334155">requested_at</text>
+<text class="code" x="478" y="348" font-size="14" fill="#334155">delivery_address_id [FK] ?</text>
+<text class="code" x="478" y="370" font-size="14" fill="#334155">currency</text>
+<text class="code" x="478" y="392" font-size="14" fill="#334155">subtotal_minor ?</text>
+<text class="code" x="478" y="414" font-size="14" fill="#334155">delivery_fee_minor ?</text>
+<text class="code" x="478" y="436" font-size="14" fill="#334155">total_minor ?</text>
+<text class="code" x="478" y="458" font-size="14" fill="#334155">submitted_at ?</text>
+<text class="code" x="478" y="480" font-size="14" fill="#334155">decided_at ?</text>
+<text class="code" x="478" y="502" font-size="14" fill="#334155">decision_note ?</text>
+<text class="code" x="478" y="524" font-size="14" fill="#334155">created_at</text>
+<text class="code" x="478" y="546" font-size="14" fill="#334155">updated_at</text>
+<text class="code" x="478" y="568" font-size="14" fill="#334155">time_slot_id [FK] ?</text>
+<rect x="465" y="645" width="350" height="230" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="465" y="645" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="479" y="674" font-size="19" font-weight="bold" fill="white">order_items</text>
+<text class="code" x="478" y="714" font-size="14" fill="#0f766e">order_id [PK/FK]</text>
+<text class="code" x="478" y="736" font-size="14" fill="#0f766e">dish_id [PK/FK]</text>
+<text class="code" x="478" y="758" font-size="14" fill="#334155">name</text>
+<text class="code" x="478" y="780" font-size="14" fill="#334155">unit</text>
+<text class="code" x="478" y="802" font-size="14" fill="#334155">quantity_milli</text>
+<text class="code" x="478" y="824" font-size="14" fill="#334155">unit_price_minor</text>
+<text class="code" x="478" y="846" font-size="14" fill="#334155">line_total_minor</text>
+<rect x="465" y="923" width="350" height="142" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="465" y="923" width="350" height="45" rx="9" fill="#334155"/>
+<text class="code" x="479" y="952" font-size="19" font-weight="bold" fill="white">order_submissions</text>
+<text class="code" x="478" y="992" font-size="14" fill="#0f766e">order_id [PK/FK]</text>
+<text class="code" x="478" y="1014" font-size="14" fill="#334155">token_hash</text>
+<text class="code" x="478" y="1036" font-size="14" fill="#334155">payload</text>
+<rect x="890" y="125" width="350" height="186" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="890" y="125" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="904" y="154" font-size="19" font-weight="bold" fill="white">dish_categories</text>
+<text class="code" x="903" y="194" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="903" y="216" font-size="14" fill="#334155">legacy_code</text>
+<text class="code" x="903" y="238" font-size="14" fill="#334155">name</text>
+<text class="code" x="903" y="260" font-size="14" fill="#334155">sort_order</text>
+<text class="code" x="903" y="282" font-size="14" fill="#334155">is_active</text>
+<rect x="890" y="359" width="350" height="318" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="890" y="359" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="904" y="388" font-size="19" font-weight="bold" fill="white">dishes</text>
+<text class="code" x="903" y="428" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="903" y="450" font-size="14" fill="#334155">legacy_code</text>
+<text class="code" x="903" y="472" font-size="14" fill="#334155">name</text>
+<text class="code" x="903" y="494" font-size="14" fill="#334155">description ?</text>
+<text class="code" x="903" y="516" font-size="14" fill="#334155">category_id [FK]</text>
+<text class="code" x="903" y="538" font-size="14" fill="#334155">pricing_unit</text>
+<text class="code" x="903" y="560" font-size="14" fill="#334155">per_guest ?</text>
+<text class="code" x="903" y="582" font-size="14" fill="#334155">price_minor</text>
+<text class="code" x="903" y="604" font-size="14" fill="#334155">step_milli</text>
+<text class="code" x="903" y="626" font-size="14" fill="#334155">is_available</text>
+<text class="code" x="903" y="648" font-size="14" fill="#334155">image_path ?</text>
+<rect x="890" y="725" width="350" height="186" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="890" y="725" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="904" y="754" font-size="19" font-weight="bold" fill="white">dish_dietary</text>
+<text class="code" x="903" y="794" font-size="14" fill="#0f766e">dish_id [PK/FK]</text>
+<text class="code" x="903" y="816" font-size="14" fill="#334155">kashrut_class ?</text>
+<text class="code" x="903" y="838" font-size="14" fill="#334155">is_vegetarian ?</text>
+<text class="code" x="903" y="860" font-size="14" fill="#334155">is_vegan ?</text>
+<text class="code" x="903" y="882" font-size="14" fill="#334155">verified_at ?</text>
+<rect x="1315" y="125" width="350" height="120" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1315" y="125" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="1329" y="154" font-size="19" font-weight="bold" fill="white">allergens</text>
+<text class="code" x="1328" y="194" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="1328" y="216" font-size="14" fill="#334155">name</text>
+<rect x="1315" y="293" width="350" height="142" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1315" y="293" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="1329" y="322" font-size="19" font-weight="bold" fill="white">dish_allergens</text>
+<text class="code" x="1328" y="362" font-size="14" fill="#0f766e">dish_id [PK/FK]</text>
+<text class="code" x="1328" y="384" font-size="14" fill="#0f766e">allergen_id [PK/FK]</text>
+<text class="code" x="1328" y="406" font-size="14" fill="#334155">status</text>
+<rect x="1315" y="483" width="350" height="142" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1315" y="483" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="1329" y="512" font-size="19" font-weight="bold" fill="white">delivery_zones</text>
+<text class="code" x="1328" y="552" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="1328" y="574" font-size="14" fill="#334155">city</text>
+<text class="code" x="1328" y="596" font-size="14" fill="#334155">fee_minor</text>
+<rect x="1315" y="673" width="350" height="252" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1315" y="673" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="1329" y="702" font-size="19" font-weight="bold" fill="white">time_slots</text>
+<text class="code" x="1328" y="742" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="1328" y="764" font-size="14" fill="#334155">fulfillment_type</text>
+<text class="code" x="1328" y="786" font-size="14" fill="#334155">weekday ?</text>
+<text class="code" x="1328" y="808" font-size="14" fill="#334155">start_time</text>
+<text class="code" x="1328" y="830" font-size="14" fill="#334155">end_time</text>
+<text class="code" x="1328" y="852" font-size="14" fill="#334155">capacity ?</text>
+<text class="code" x="1328" y="874" font-size="14" fill="#334155">is_active</text>
+<text class="code" x="1328" y="896" font-size="14" fill="#334155">created_at</text>
+<rect x="1315" y="973" width="350" height="164" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1315" y="973" width="350" height="45" rx="9" fill="#0f766e"/>
+<text class="code" x="1329" y="1002" font-size="19" font-weight="bold" fill="white">blocked_dates</text>
+<text class="code" x="1328" y="1042" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="1328" y="1064" font-size="14" fill="#334155">date</text>
+<text class="code" x="1328" y="1086" font-size="14" fill="#334155">reason ?</text>
+<text class="code" x="1328" y="1108" font-size="14" fill="#334155">created_at</text>
+<rect x="1740" y="125" width="350" height="142" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1740" y="125" width="350" height="45" rx="9" fill="#334155"/>
+<text class="code" x="1754" y="154" font-size="19" font-weight="bold" fill="white">ai_conversations</text>
+<text class="code" x="1753" y="194" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="1753" y="216" font-size="14" fill="#334155">order_id [FK]</text>
+<text class="code" x="1753" y="238" font-size="14" fill="#334155">created_at</text>
+<rect x="1740" y="315" width="350" height="186" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1740" y="315" width="350" height="45" rx="9" fill="#334155"/>
+<text class="code" x="1754" y="344" font-size="19" font-weight="bold" fill="white">ai_messages</text>
+<text class="code" x="1753" y="384" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="1753" y="406" font-size="14" fill="#334155">conversation_id [FK]</text>
+<text class="code" x="1753" y="428" font-size="14" fill="#334155">role</text>
+<text class="code" x="1753" y="450" font-size="14" fill="#334155">content</text>
+<text class="code" x="1753" y="472" font-size="14" fill="#334155">created_at</text>
+<rect x="1740" y="549" width="350" height="318" rx="9" fill="white" stroke="#cbd5e1"/>
+<rect x="1740" y="549" width="350" height="45" rx="9" fill="#334155"/>
+<text class="code" x="1754" y="578" font-size="19" font-weight="bold" fill="white">ai_change_proposals</text>
+<text class="code" x="1753" y="618" font-size="14" fill="#0f766e">id [PK]</text>
+<text class="code" x="1753" y="640" font-size="14" fill="#334155">order_id [FK]</text>
+<text class="code" x="1753" y="662" font-size="14" fill="#334155">conversation_id [FK] ?</text>
+<text class="code" x="1753" y="684" font-size="14" fill="#334155">base_order_version</text>
+<text class="code" x="1753" y="706" font-size="14" fill="#334155">changes</text>
+<text class="code" x="1753" y="728" font-size="14" fill="#334155">price_before_minor</text>
+<text class="code" x="1753" y="750" font-size="14" fill="#334155">price_after_minor</text>
+<text class="code" x="1753" y="772" font-size="14" fill="#334155">status</text>
+<text class="code" x="1753" y="794" font-size="14" fill="#334155">created_at</text>
+<text class="code" x="1753" y="816" font-size="14" fill="#334155">decided_at ?</text>
+<text class="code" x="1753" y="838" font-size="14" fill="#334155">executed_at ?</text>
+<text x="40" y="1202" font-size="16" fill="#475569">Allergen status: contains / free / unknown. Missing data is unknown. Prices have one canonical source; order lines retain receipt snapshots.</text></svg>

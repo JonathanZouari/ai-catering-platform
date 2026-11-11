@@ -1,8 +1,8 @@
 import { play } from "../lib/motion.js";
 import { renderStepper } from "./components/stepper.js";
 import { mountChat } from "./components/chat.js";
-import { EVENT_TYPES, validateEvent } from "./mock-backend.js";
-import { STEPS, canEnter, getState, goto, seedDemo, setEvent, subscribe } from "./store.js";
+import { EVENT_TYPES, loadCatalog, validateEvent } from "./mock-backend.js";
+import { STEPS, canEnter, getState, goto, restoreOrder, seedDemo, setEvent, subscribe } from "./store.js";
 import { mountEvent } from "./views/event.js";
 import { mountMenu } from "./views/menu.js";
 import { mountStatus } from "./views/status.js";
@@ -18,6 +18,21 @@ const TITLES = {
 
 const app = document.getElementById("app");
 const stepperRoot = document.getElementById("stepper");
+
+try {
+  await loadCatalog();
+  await restoreOrder();
+} catch {
+  app.replaceChildren();
+  const message = document.createElement("p");
+  message.textContent = "לא ניתן לטעון את התפריט או לאמת את ההזמנה מהשרת. בדקו את החיבור ונסו שוב.";
+  message.setAttribute("role", "alert");
+  const retry = document.createElement("button");
+  retry.textContent = "ניסיון נוסף";
+  retry.onclick = () => location.reload();
+  app.append(message, retry);
+  throw new Error("Customer startup failed; cached order is not shown as verified.");
+}
 
 // Design review shortcut: ?demo=pending|approved|rejected, or #demo-pending etc. when the
 // page is embedded and has no query string. Never used with real data.

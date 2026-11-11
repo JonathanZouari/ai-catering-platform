@@ -13,6 +13,7 @@ export function mountSummary(root) {
   const totalsBox = h("div", { class: "totals" });
   const hintsBox = h("div", { class: "stack" });
   const itemsError = h("p", { class: "error", hidden: true, role: "alert" });
+  const serverError = h("p", { class: "error", hidden: true, role: "alert" });
   let lastItems = null;
   let lastTotal = null;
 
@@ -45,9 +46,16 @@ export function mountSummary(root) {
 
   const submitBtn = h("button", { class: "btn btn-primary btn-block", type: "submit" }, "שליחת בקשה להצעת מחיר");
 
-  const form = h("form", { class: "panel stack", novalidate: true, onsubmit: (ev) => {
+  const form = h("form", { class: "panel stack", novalidate: true, onsubmit: async (ev) => {
     ev.preventDefault();
-    const { errors } = submitOrder();
+    if (submitBtn.disabled) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "שומר את הבקשה…";
+    const { errors } = await submitOrder();
+    submitBtn.disabled = false;
+    submitBtn.textContent = "שליחת בקשה להצעת מחיר";
+    serverError.hidden = !(errors.server || errors.event);
+    serverError.textContent = errors.server || errors.event || "";
     showErr(nameErr, name, errors.name);
     showErr(phoneErr, phone, errors.phone);
     itemsError.hidden = !errors.items;
@@ -63,6 +71,7 @@ export function mountSummary(root) {
         h("p", { class: "hint", id: "hint-phone", text: "העסק ייצור איתכם קשר בנוגע לבקשה." }), phoneErr),
     ),
     itemsError,
+    serverError,
     h("div", { class: "callout" }, icon("info"),
       h("p", {}, "שליחה היא בקשה להצעת מחיר, ", h("strong", { text: "לא הזמנה מאושרת" }), ". ההזמנה תיחשב מאושרת רק לאחר שהעסק יאשר אותה.")),
     submitBtn,

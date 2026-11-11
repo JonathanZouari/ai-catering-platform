@@ -21,7 +21,7 @@ Format: **Question** · *Why it matters* · **Blocks**
 | 14 | VAT & rounding | Are catalog prices VAT-inclusive? VAT rate handling? Rounding rules for totals and weight-based prices? | Deterministic pricing correctness | Phase 3 pricing engine final rules |
 | 15 | Minimum order quantities | Minimum per dish, per order, or minimum guests? Minimum for delivery? | Validation rules | Phase 2/3 validation |
 | 16 | LLM provider | Which model provider (e.g., Anthropic Claude) and budget? | API keys, tool-calling format, cost | Phase 4 |
-| 17 | Currency | Single currency (e.g., ILS)? Display format? | Money formatting and storage | Phase 2 pricing fields (stored as numeric + currency code until decided) |
+| 17 | Currency | Single currency (e.g., ILS)? Display format? | Money formatting and storage | Phase 2 pricing fields (stored as INTEGER minor units + currency code, default `ILS`, until decided) |
 | 18 | Weight unit | kg, 100 g, or configurable per dish? | Per-weight pricing math | Phase 2 pricing units |
 | 19 | Delivery zone definition | Zones by city list, postal code, or radius/polygon? | Address → zone lookup method | Phase 2 delivery zones |
 | 20 | Brand | Business name, logo, colors, fonts | Visual identity | Phase 3 UI polish (neutral tokens until then) |

@@ -1,6 +1,47 @@
 # API Contracts (preliminary)
 
-Status: **Draft v0.1**. Only `GET /health` is implemented (Phase 1). Everything else is a design target and may change.
+Status: **Customer submission and owner decisions implemented; other endpoints below remain a draft target unless explicitly marked implemented**.
+
+## Implemented owner decision flow
+
+`POST /api/admin/orders/{id}/decision`
+
+Authorization: the owner's Supabase access token in `Authorization: Bearer ...`. The server checks the user with Supabase Auth and requires the server-controlled `app_metadata.role` to equal `catering_owner`; a customer receipt capability never authorizes a decision.
+
+```json
+{"decision":"approved","expected_version":1,"note":"Optional customer-visible message"}
+```
+
+- `decision` is `approved` or `rejected`; note is trimmed, at most 2,000 characters.
+- Only a pending quotation at `expected_version` can transition. Saving increments the version exactly once and records the decision timestamp and note.
+- Replaying the same decision, original version and normalized note returns the saved result. Stale/conflicting decisions return 409. Missing/invalid authentication returns 401, non-owner 403, missing order 404, unavailable configuration/cloud 503.
+- The response contains `id`, `status`, `version`, `decision_note`, and `decided_at`; no-store applies.
+- Submission details, item names/quantities/prices, totals and customer capability remain unchanged. The cloud RPC is server-only; browser roles cannot directly update orders.
+- Customer receipt reads return the current status/version/owner note with the original price snapshot. The status page checks every 15 seconds while pending and visible, on returning to the tab, and via its manual refresh button. A failed check retains the last receipt with an explicit stale-state message.
+- This replaces the preliminary separate approve/reject routes below. Email/SMS notifications, cross-device receipt recovery, draft persistence and AI proposals remain outside this implementation.
+
+## Implemented customer flow
+
+- `GET /api/catalog`: normalized dishes and delivery zones from the configured database (Supabase or SQLite). Legacy dish codes remain API aliases. Per-allergen statuses distinguish contains/free/unknown; missing relations are unknown. Demonstration prices still require business confirmation.
+- `POST /api/orders`: submits the complete quotation (not a draft). Body: `contact`, `event`,
+  `items` (dish ID to quantity), `expected_total_minor`. Returns the persisted UI order shape.
+  The server validates data, prices from its catalog and saves everything in one transaction.
+  Price mismatch returns 409 instead of silently accepting a changed total.
+- `GET /api/orders/{id}`: retrieve a submitted order.
+- `GET /api/orders/receipt`: recover by credential when the submission response was lost.
+- All order calls require `X-Order-Token`, 32 random bytes encoded as 64 lowercase hexadecimal
+  characters. The browser persists it before sending; the database stores only its SHA-256 hash.
+  It is a bearer capability for one order, not a customer login. Never put it in URLs/logs.
+  Clearing browser storage loses access; cross-device/account recovery remains future work.
+- Repeated submission with the same token and same normalized body returns the existing order
+  (200); a changed body returns 409. Initial creation returns 201 only after commit.
+- Reads return `Cache-Control: no-store`. Missing/wrong credentials cannot enumerate order details.
+- Current errors use FastAPI's `detail` format, handled by the frontend wrapper.
+
+The lifecycle tables below describe future endpoints. Their draft `POST /api/orders` semantics
+are superseded by the complete-submission flow above for this increment. Drafts remain local;
+submission freezes item names, units, quantities and prices. No owner approval or AI endpoint
+is implemented by this increment. Dates/slots/fees are still demonstration business rules.
 
 Base: same origin as the frontend. JSON only. All bodies validated with Pydantic.
 

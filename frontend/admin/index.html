@@ -3,19 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ממשק העסק</title>
+  <meta name="theme-color" content="#fff9ed">
+  <meta name="robots" content="noindex">
+  <title>ניהול העסק</title>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
-  <main>
-    <h1>ממשק העסק</h1>
-    <p>בבנייה. ראו docs/UX_UI_SPEC.md.</p>
-    <p>מצב השרת: <span id="status" aria-live="polite">checking…</span></p>
-  </main>
-  <script type="module">
-    import { api } from "/js/api.js";
-    const el = document.getElementById("status");
-    api("/health").then((r) => (el.textContent = r.status)).catch((e) => (el.textContent = e.message));
-  </script>
+  <div id="app"></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <noscript><p class="center-page">המסך הזה דורש הפעלת סקריפטים בדפדפן.</p></noscript>
+  <script src="/vendor/supabase/supabase.js"></script>
+  <script type="module" src="/admin/js/app.js"></script>
 </body>
 </html>
