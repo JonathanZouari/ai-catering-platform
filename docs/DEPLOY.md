@@ -41,8 +41,9 @@ The app never creates or alters tables on Postgres. Only the migrations do. `cre
 | `OWNER_EMAIL` | where new orders are sent |
 | `PUBLIC_BASE_URL` | `https://<railway-domain>` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Project Settings → API Keys → secret / service_role key. Only the dish-photo upload uses it (server-side, `core/storage.py`); without it the upload answers 503 `storage_unavailable` and the rest of the app works. Never expose it to the browser |
+| `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys. Turns on the ordering assistant on the menu screen (model `ASSISTANT_MODEL`, default `claude-sonnet-5-5`). Without it the chat panel stays hidden and the chat API answers 503. Usage is billed; the owner caps it per customer per day in Availability → order rules ("הודעות לעוזר ה-AI, ללקוח ביממה") |
 
-Leave `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` unset. The chat panel then stays hidden and the API answers 503 (the assistant is tested locally against a fake Claude).
+Leave `ANTHROPIC_BASE_URL` unset: it only points local E2E tests at a fake Claude.
 
 ### 3. Dish photo bucket (Supabase Storage)
 The owner uploads dish photos in the admin screen; the server stores them in the public bucket `dish-images`. Create it once per project (SQL editor):
