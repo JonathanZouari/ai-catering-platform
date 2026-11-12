@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<title>Yumm ERD</title>
+<style>
+  @page { size: 420mm 297mm; margin: 0; }
+  html, body { margin: 0; background: #fff; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #page {
+    position: relative; width: 1587px; height: 1122px; box-sizing: border-box;
+    padding: 26px 34px; font-family: "Segoe UI", Arial, sans-serif; color: #1f2933; overflow: hidden;
+  }
+  header {
+    direction: rtl; display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 2px solid #1f2933; padding-bottom: 10px; margin-bottom: 26px;
+  }
+  h1 { margin: 0; font-size: 27px; }
+  .sub { font-size: 13px; color: #52606d; margin-top: 3px; }
+  .meta { font-size: 12px; color: #52606d; text-align: left; direction: ltr; }
+  #grid { display: flex; justify-content: center; gap: 44px; position: relative; z-index: 1; }
+  .col { display: flex; flex-direction: column; gap: 30px; width: 268px; }
+  .tbl {
+    background: #fff; border: 1.5px solid #9aa5b1; border-radius: 7px; overflow: hidden;
+    font-size: 11.5px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .tbl h2 {
+    margin: 0; font-size: 13.5px; padding: 6px 9px; color: #fff; background: #2f6f4f;
+    font-family: Consolas, monospace; display: flex; justify-content: space-between; align-items: center;
+  }
+  .tbl h2 small { font-family: "Segoe UI", sans-serif; font-size: 10px; font-weight: 400; opacity: .9; }
+  .tbl.later { border-style: dashed; }
+  .tbl.later h2 { background: #7b8794; }
+  .desc { direction: rtl; font-size: 11.5px; line-height: 1.35; padding: 5px 9px; background: #eef6f1; color: #1f3d2e; border-bottom: 1px solid #d3e6db; }
+  .tbl.later .desc { background: #f0f2f4; color: #323f4b; border-bottom-color: #dde1e5; }
+  .row { display: flex; align-items: center; gap: 5px; padding: 0 8px; height: 20px; border-top: 1px solid #edf0f3; }
+  .badges { display: flex; gap: 2px; width: 40px; }
+  .badge { font-size: 8.5px; font-weight: 700; padding: 0 3px; border-radius: 3px; line-height: 13px; }
+  .pk { background: #f7c948; color: #5c4400; }
+  .fk { background: #bee3f8; color: #0b4f71; }
+  .uq { background: #e4e7eb; color: #3e4c59; }
+  .name { flex: 1; font-family: Consolas, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row.isfk .name { color: #0b4f71; font-weight: 600; }
+  .row.ispk .name { font-weight: 700; }
+  .type { color: #7b8794; font-family: Consolas, monospace; font-size: 10.5px; white-space: nowrap; }
+  .type b { color: #c05621; font-weight: 700; }
+  .note {
+    font-size: 10.5px; color: #3e4c59; padding: 4px 8px; background: #f5f7fa;
+    border-top: 1px solid #e4e7eb; direction: rtl; line-height: 1.35;
+  }
+  .note code { font-family: Consolas, monospace; font-size: 10px; direction: ltr; unicode-bidi: isolate; }
+  svg#wires { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0; }
+  footer {
+    position: absolute; left: 34px; right: 34px; bottom: 22px; direction: rtl;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #cbd2d9; padding-top: 10px; font-size: 12px; color: #3e4c59;
+  }
+  .legend { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 22px; height: 12px; border-radius: 3px; display: inline-block; }
+  .rules { direction: rtl; font-size: 11.5px; color: #52606d; text-align: left; }
+  .rules code { font-family: Consolas, monospace; direction: ltr; unicode-bidi: isolate; color: #1f2933; }
+</style>
+</head>
+<body>
+<div id="page">
+  <svg id="wires"></svg>
+  <header>
+    <div>
+      <h1>מבנה מסד הנתונים: פלטפורמת הקייטרינג</h1>
+      <div class="sub">דיאגרמת ישויות וקשרים (ERD), גרסת SQLite, מבוססת על docs/DATABASE_SCHEMA.md (טיוטה v0.1)</div>
+    </div>
+    <div class="meta">15 tables · 13 relationships<br>2026-11-02</div>
+  </header>
+
+  <div id="grid"></div>
+
+  <footer>
+    <div class="legend">
+      <span><i class="swatch" style="background:#2f6f4f"></i>MVP: לבנות עכשיו</span>
+      <span><i class="swatch" style="background:#7b8794"></i>שלב מאוחר יותר</span>
+      <span><b class="badge pk">PK</b>מפתח ראשי</span>
+      <span><b class="badge fk">FK</b>מפתח זר</span>
+      <span><b class="badge uq">U</b>ייחודי</span>
+      <span><b style="color:#c05621">?</b>&nbsp;ניתן ל-NULL</span>
+      <span><svg width="44" height="16"><path d="M2 8H42M30 8L42 2M30 8L42 14M42 2V14" stroke="#1f2933" fill="none" stroke-width="1.5"/></svg>רבים</span>
+      <span><svg width="44" height="16"><path d="M2 8H42M32 2V14M37 2V14" stroke="#1f2933" fill="none" stroke-width="1.5"/></svg>בדיוק אחד</span>
+      <span><svg width="44" height="16"><path d="M2 8H42M30 8L42 2M30 8L42 14" stroke="#1f2933" fill="none" stroke-width="1.5"/><circle cx="24" cy="8" r="3.5" fill="#fff" stroke="#1f2933" stroke-width="1.5"/></svg>אופציונלי (FK שיכול להיות NULL)</span>
+    </div>
+    <div class="rules">
+      כסף: <code>INTEGER</code> באגורות · תאריכים: <code>TEXT</code> ISO-8601 UTC · enum: <code>TEXT + CHECK</code><br>
+      בכל חיבור: <code>PRAGMA foreign_keys = ON;</code>
+    </div>
+  </footer>
+</div>
+
+<script>
+// [name, type, flags] — flags: P=PK, F=FK, U=unique, N=nullable
+const T = {
+  customers: { cols: [
+    ["id","TEXT","P"], ["auth_user_id","TEXT","UN"], ["full_name","TEXT",""], ["email","TEXT","N"],
+    ["phone","TEXT","N"], ["created_at","TEXT",""], ["updated_at","TEXT",""] ],
+    note: "<code>auth_user_id</code> רק אם יוחלט על חשבונות משתמש (OPEN #1)" },
+  events: { cols: [
+    ["id","TEXT","P"], ["customer_id","TEXT","F"], ["event_type","TEXT",""], ["event_date","TEXT",""],
+    ["adults","INTEGER",""], ["children","INTEGER",""], ["vegetarian_guests","INTEGER",""],
+    ["vegan_guests","INTEGER",""], ["restricted_guests","INTEGER",""], ["dietary_notes","TEXT","N"] ],
+    note: "<code>CHECK (adults + children &gt; 0)</code><br>כל הספירות ≥ 0" },
+  delivery_zones: { later: true, cols: [
+    ["id","TEXT","P"], ["name","TEXT",""], ["fee_agorot","INTEGER",""], ["definition","TEXT (JSON)",""],
+    ["is_active","INTEGER",""] ] },
+  orders: { cols: [
+    ["id","TEXT","P"], ["customer_id","TEXT","F"], ["event_id","TEXT","FU"], ["status","TEXT",""],
+    ["version","INTEGER",""], ["fulfillment_type","TEXT",""], ["requested_at","TEXT",""],
+    ["delivery_address","TEXT","N"], ["delivery_zone_id","TEXT","FN"], ["subtotal_agorot","INTEGER","N"],
+    ["delivery_fee_agorot","INTEGER","N"], ["total_agorot","INTEGER","N"], ["submitted_at","TEXT","N"],
+    ["decided_at","TEXT","N"], ["decision_note","TEXT","N"], ["created_at","TEXT",""], ["updated_at","TEXT",""] ],
+    note: "<code>status: draft → pending_approval → approved / rejected</code><br>במשלוח (delivery) חובה <code>delivery_address</code>" },
+  ai_conversations: { later: true, cols: [
+    ["id","TEXT","P"], ["order_id","TEXT","F"], ["created_at","TEXT",""] ] },
+  ai_messages: { later: true, cols: [
+    ["id","TEXT","P"], ["conversation_id","TEXT","F"], ["role","TEXT",""], ["content","TEXT (JSON)",""],
+    ["created_at","TEXT",""] ],
+    note: "<code>role: user / assistant / tool</code>" },
+  order_items: { cols: [
+    ["id","TEXT","P"], ["order_id","TEXT","F"], ["dish_id","TEXT","F"], ["quantity","REAL",""],
+    ["snapshot_name","TEXT","N"], ["snapshot_pricing_unit","TEXT","N"],
+    ["snapshot_unit_price_agorot","INTEGER","N"], ["snapshot_line_total_agorot","INTEGER","N"] ],
+    note: "<code>UNIQUE (order_id, dish_id)</code>, <code>quantity &gt; 0</code><br>snapshot נשמר בהגשה ומקבע את המחיר" },
+  ai_change_proposals: { later: true, cols: [
+    ["id","TEXT","P"], ["order_id","TEXT","F"], ["conversation_id","TEXT","FN"],
+    ["base_order_version","INTEGER",""], ["changes","TEXT (JSON)",""], ["price_before_agorot","INTEGER",""],
+    ["price_after_agorot","INTEGER",""], ["status","TEXT",""], ["created_at","TEXT",""],
+    ["decided_at","TEXT","N"], ["executed_at","TEXT","N"] ],
+    note: "מבוצע רק אם <code>base_order_version = orders.version</code><br>הצעה אחת במצב pending לכל הזמנה" },
+  dishes: { cols: [
+    ["id","TEXT","P"], ["category_id","TEXT","F"], ["name","TEXT",""], ["description","TEXT","N"],
+    ["image_path","TEXT","N"], ["pricing_unit","TEXT",""], ["unit_price_agorot","INTEGER",""],
+    ["unit_label","TEXT","N"], ["currency","TEXT",""], ["min_quantity","REAL","N"],
+    ["is_available","INTEGER",""], ["kashrut_class","TEXT","N"], ["is_vegetarian","INTEGER","N"],
+    ["is_vegan","INTEGER","N"], ["dietary_verified_at","TEXT","N"], ["created_at","TEXT",""], ["updated_at","TEXT",""] ],
+    note: "<code>pricing_unit: per_guest / per_tray / per_weight / per_item</code><br><code>kashrut_class: meat / dairy / pareve</code><br>ערך <code>NULL</code> בשדות התזונה פירושו לא ידוע" },
+  dish_categories: { cols: [
+    ["id","TEXT","P"], ["name","TEXT","U"], ["sort_order","INTEGER",""], ["is_active","INTEGER",""] ] },
+  dish_allergens: { cols: [
+    ["dish_id","TEXT","PF"], ["allergen_id","INTEGER","PF"], ["status","TEXT",""] ],
+    note: "<code>status: contains / free / unknown</code><br>שורה חסרה = לא ידוע (לא \"נקי\")" },
+  allergens: { cols: [ ["id","INTEGER","P"], ["name","TEXT","U"] ] },
+  time_slots: { later: true, cols: [
+    ["id","TEXT","P"], ["fulfillment_type","TEXT",""], ["weekday","INTEGER","N"], ["start_time","TEXT",""],
+    ["end_time","TEXT",""], ["capacity","INTEGER","N"], ["is_active","INTEGER",""] ],
+    note: "<code>CHECK (end_time &gt; start_time)</code><br>ללא קשרים" },
+  blocked_dates: { later: true, cols: [ ["id","TEXT","P"], ["date","TEXT","U"], ["reason","TEXT","N"] ],
+    note: "ללא קשרים" },
+};
+
+const DESC = {
+  customers: "הלקוחות שמזמינים קייטרינג: שם ופרטי קשר.",
+  events: "האירוע שהלקוח מתכנן: סוג, תאריך, מספר אורחים ודרישות תזונה.",
+  delivery_zones: "אזורי המשלוח ודמי המשלוח של כל אזור.",
+  orders: "ההזמנה עצמה: סטטוס, איסוף או משלוח, מחירים והחלטת בעל העסק.",
+  ai_conversations: "שיחה עם עוזר ה-AI על הזמנה מסוימת.",
+  ai_messages: "כל הודעה בשיחה עם ה-AI: של הלקוח, של העוזר או של כלי.",
+  order_items: "המנות שנבחרו בהזמנה והכמות של כל מנה.",
+  ai_change_proposals: "שינויים בהזמנה שה-AI מציע. מתבצעים רק אחרי אישור.",
+  dishes: "תפריט המנות: מחיר, יחידת תמחור, כשרות והתאמה לצמחונים וטבעונים.",
+  dish_categories: "קטגוריות התפריט (ראשונות, עיקריות, קינוחים וכו') וסדר התצוגה.",
+  dish_allergens: "טבלת קישור: אילו אלרגנים יש או אין בכל מנה.",
+  allergens: "רשימת האלרגנים שבעל העסק מנהל (גלוטן, אגוזים וכו').",
+  time_slots: "חלונות הזמן שבהם אפשר לאסוף או לקבל משלוח.",
+  blocked_dates: "תאריכים שבהם לא מקבלים הזמנות (חגים, חופשות).",
+};
+
+const COLS = [  ["customers", "events", "delivery_zones"],
+  ["orders", "ai_conversations", "ai_messages"],
+  ["order_items", "ai_change_proposals"],
+  ["dishes", "dish_categories"],
+  ["dish_allergens", "allergens", "time_slots", "blocked_dates"],
+];
+
+// [fromTable.col, toTable.col, opts]
+const EDGES = [
+  ["events.customer_id", "customers.id"],
+  ["orders.customer_id", "customers.id"],
+  ["orders.event_id", "events.id", { oneToOne: true }],
+  ["orders.delivery_zone_id", "delivery_zones.id"],
+  ["ai_conversations.order_id", "orders.id", { side: "right" }],
+  ["ai_messages.conversation_id", "ai_conversations.id", { side: "right" }],
+  ["order_items.order_id", "orders.id"],
+  ["order_items.dish_id", "dishes.id"],
+  ["ai_change_proposals.order_id", "orders.id"],
+  ["ai_change_proposals.conversation_id", "ai_conversations.id"],
+  ["dishes.category_id", "dish_categories.id", { side: "right" }],
+  ["dish_allergens.dish_id", "dishes.id"],
+  ["dish_allergens.allergen_id", "allergens.id", { side: "right" }],
+];
+const COLORS = ["#d64545","#2680c2","#8e44ad","#c05621","#0e7c86","#5c940d","#e8590c",
+                "#1971c2","#a61e4d","#2b8a3e","#6741d9","#d6336c","#495057"];
+
+const grid = document.getElementById("grid");
+for (const names of COLS) {
+  const col = document.createElement("div");
+  col.className = "col";
+  for (const n of names) {
+    const t = T[n];
+    const el = document.createElement("div");
+    el.className = "tbl" + (t.later ? " later" : "");
+    let html = `<h2>${n}<small>${t.later ? "בהמשך" : "MVP"}</small></h2><div class="desc">${DESC[n]}</div>`;
+    for (const [c, type, f] of t.cols) {
+      const b = (f.includes("P") ? '<b class="badge pk">PK</b>' : "") +
+                (f.includes("F") ? '<b class="badge fk">FK</b>' : "") +
+                (f.includes("U") ? '<b class="badge uq">U</b>' : "");
+      const cls = "row" + (f.includes("F") ? " isfk" : "") + (f.includes("P") ? " ispk" : "");
+      html += `<div class="${cls}" data-k="${n}.${c}"><span class="badges">${b}</span>` +
+              `<span class="name">${c}</span><span class="type">${type}${f.includes("N") ? "<b>?</b>" : ""}</span></div>`;
+    }
+    if (t.note) html += `<div class="note">${t.note}</div>`;
+    el.innerHTML = html;
+    col.appendChild(el);
+  }
+  grid.appendChild(col);
+}
+
+const page = document.getElementById("page").getBoundingClientRect();
+const svg = document.getElementById("wires");
+const NS = "http://www.w3.org/2000/svg";
+function anchor(key) {
+  const row = document.querySelector(`[data-k="${key}"]`);
+  const r = row.getBoundingClientRect();
+  const tb = row.closest(".tbl").getBoundingClientRect();
+  return { l: tb.left - page.left, r: tb.right - page.left, y: r.top + r.height / 2 - page.top,
+           nullable: row.querySelector(".type b") !== null };
+}
+function path(d, color, w = 1.6, fill = "none") {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", d); p.setAttribute("stroke", color); p.setAttribute("stroke-width", w);
+  p.setAttribute("fill", fill); p.setAttribute("stroke-linecap", "round");
+  svg.appendChild(p);
+}
+function circle(x, y, color) {
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 3.6);
+  c.setAttribute("fill", "#fff"); c.setAttribute("stroke", color); c.setAttribute("stroke-width", 1.6);
+  svg.appendChild(c);
+}
+// d = direction pointing away from the table edge (+1 right, -1 left)
+function many(x, y, d, color, optional) {
+  path(`M${x + d * 13} ${y} L${x} ${y - 6} M${x + d * 13} ${y} L${x} ${y} M${x + d * 13} ${y} L${x} ${y + 6}`, color);
+  if (optional) circle(x + d * 20, y, color);
+  else path(`M${x + d * 18} ${y - 6} V${y + 6}`, color);
+}
+function one(x, y, d, color) {
+  path(`M${x + d * 8} ${y - 6} V${y + 6} M${x + d * 13} ${y - 6} V${y + 6}`, color);
+}
+
+EDGES.forEach(([from, to, opts = {}], i) => {
+  const color = COLORS[i % COLORS.length];
+  const a = anchor(from), b = anchor(to);
+  let x1, x2, d1, d2, dpath;
+  if (Math.abs(a.l - b.l) < 5) {
+    const right = opts.side === "right";
+    d1 = d2 = right ? 1 : -1;
+    x1 = right ? a.r : a.l; x2 = right ? b.r : b.l;
+    const bulge = 30 + Math.min(30, Math.abs(a.y - b.y) / 12);
+    dpath = `M${x1} ${a.y} C${x1 + d1 * bulge} ${a.y} ${x2 + d2 * bulge} ${b.y} ${x2} ${b.y}`;
+  } else {
+    if (a.r < b.l) { x1 = a.r; x2 = b.l; d1 = 1; d2 = -1; }
+    else { x1 = a.l; x2 = b.r; d1 = -1; d2 = 1; }
+    const k = Math.max(28, Math.abs(x2 - x1) / 2);
+    dpath = `M${x1} ${a.y} C${x1 + d1 * k} ${a.y} ${x2 + d2 * k} ${b.y} ${x2} ${b.y}`;
+  }
+  path(dpath, color);
+  if (opts.oneToOne) one(x1, a.y, d1, color); else many(x1, a.y, d1, color, a.nullable);
+  one(x2, b.y, d2, color);
+});
+</script>
+</body>
+</html>
