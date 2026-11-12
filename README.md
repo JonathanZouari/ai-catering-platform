@@ -2,15 +2,15 @@
 
 Ordering and management web app for a **single catering business**. Customers plan private events, pick dishes, get backend-calculated quantities and prices, and chat with an AI assistant whose suggested changes only apply after the customer approves them. The business owner manages the catalog and approves or rejects every quotation.
 
-> Status: **Phase 1 — scaffolding**. No business features yet. See `docs/` for the specs.
+> Status: **Phase 1 — scaffolding**, plus SQLite persistence for the catalog and order submission (ADR-0005). See `docs/` for the specs.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
+| Backend | Python 3.12+, FastAPI, Pydantic |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Data | SQLite via stdlib for now ([ADR-0005](docs/ADR/0005-sqlite-for-local-persistence.md)); Supabase planned (ADR-0002) |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -19,7 +19,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+database/       migrations/ (SQLite schema + seed, applied at startup)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -38,6 +38,7 @@ uv sync                       # install dependencies
 uv run uvicorn app.main:app --reload
 ```
 
+- The SQLite file is created on first start (`SQLITE_PATH`, default `backend/catering.db`, git-ignored). On Railway it is lost on redeploy unless a volume is mounted.
 - API health: http://127.0.0.1:8000/health
 - Customer UI: http://127.0.0.1:8000/customer/
 - Admin UI: http://127.0.0.1:8000/admin/
@@ -62,7 +63,7 @@ uv run pytest
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 2, when database code exists.
+Persistence uses the stdlib `sqlite3` module. `sqlalchemy`, `psycopg`, and the Supabase client are added only if ADR-0002 is adopted.
 
 ## Branches and environments
 

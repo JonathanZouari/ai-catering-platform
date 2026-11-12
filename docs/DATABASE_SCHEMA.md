@@ -1,5 +1,7 @@
 # Preliminary Database Schema (PostgreSQL / Supabase)
 
+> Note: the running app currently uses a simplified SQLite schema, see [ADR-0005](ADR/0005-sqlite-for-local-persistence.md) and `database/migrations/`. There money is integer whole shekels (columns `price`, `fee`, `subtotal`, `delivery_fee`, `total`, `snapshot_unit_price`, `snapshot_line_total`). This document is the longer-term Postgres target.
+
 Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
 
 Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
