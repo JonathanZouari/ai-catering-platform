@@ -38,6 +38,13 @@ uv sync                       # install dependencies
 uv run uvicorn app.main:app --reload
 ```
 
+Without `DATABASE_URL` the backend uses a local SQLite file, `backend/catering.db`. Create the catalog tables (dish categories, dishes) and the demo menu with:
+
+```bash
+cd backend
+uv run python -m app.seed      # safe to re-run
+```
+
 - API health: http://127.0.0.1:8000/health
 - Customer UI: http://127.0.0.1:8000/customer/
 - Admin UI: http://127.0.0.1:8000/admin/
@@ -84,3 +91,17 @@ Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No 
 
 - [PRD](docs/PRD.md) · [Architecture](docs/ARCHITECTURE.md) · [Database schema](docs/DATABASE_SCHEMA.md) · [API contracts](docs/API_CONTRACTS.md)
 - [AI agent design](docs/AI_AGENT_DESIGN.md) · [UX/UI spec](docs/UX_UI_SPEC.md) · [Open decisions](docs/OPEN_DECISIONS.md) · [ADRs](docs/ADR/)
+
+## Supabase (dev project)
+
+The dev project is **ai-catering-dev** (organization YummaiTal, region eu-central-1). Schema changes are SQL files in `database/migrations/`, applied in filename order to the dev project, then to prod at release time:
+
+```bash
+supabase db query --remote=<project-ref> -f database/migrations/<file>.sql
+supabase db advisors --remote=<project-ref>      # run after every change
+```
+
+- **RLS**: the catalog is public to read and owner-only to write. The owner is a user whose `app_metadata.role` is `owner` (set with the secret key only; `user_metadata` is user-editable and never trusted).
+- **Realtime**: every catalog write bumps one row in `catalog_changes`; open customer menus subscribe to it and refetch.
+- **Storage**: `dish-images` (public, 5 MB, JPEG/PNG/WebP) and `signed-quotes` (private, 10 MB, PDF/JPEG/PNG). Neither has browser write policies; uploads go through the backend.
+- **Owner screen**: `/admin/` signs in with Supabase Auth and uploads dish photos.

@@ -3,14 +3,15 @@ import { fill, h, icon } from "../../lib/dom.js";
 import { announce } from "../../lib/announce.js";
 import { fmtDate, fmtMoney, fmtNumber } from "../../lib/format.js";
 import { CATEGORIES, DISHES, priceOrder, qtyLabel, totalGuests } from "../mock-backend.js";
+import { loadCatalog as fetchCatalog, watchCatalog } from "../catalog.js";
 import { CATEGORY_ART, illustration } from "../../lib/illustrations.js";
 import { animatedAmount } from "../../lib/motion.js";
 import { createDishCard } from "../components/dish-card.js";
 import { getState, goto, setQty, subscribe } from "../store.js";
 
-// Stand-in for GET /api/catalog/categories and /dishes. The delay lets the skeleton state be reviewed.
+// GET /api/catalog/categories + /dishes (main.js has usually loaded it already; this is cached).
 function loadCatalog() {
-  return new Promise((resolve) => setTimeout(() => resolve({ categories: CATEGORIES, dishes: DISHES }), 350));
+  return fetchCatalog().then(() => ({ categories: CATEGORIES, dishes: DISHES }));
 }
 
 export function mountMenu(root) {
@@ -159,6 +160,16 @@ export function mountMenu(root) {
   boot();
   renderOrder(getState());
 
+  // Live menu: rebuild the cards (price, photo, badges may have changed) and reprice the order.
+  const unwatch = watchCatalog(() => {
+    if (!catalog) return;
+    cards.clear();
+    if (activeCategory !== "all" && !catalog.categories.some((c) => c.id === activeCategory)) activeCategory = "all";
+    renderControls();
+    renderCatalog();
+    renderOrder(getState());
+  });
+
   const unsubscribe = subscribe((state) => {
     if (state.step !== "menu") return;
     if (state.order.items !== lastItems) {
@@ -172,6 +183,7 @@ export function mountMenu(root) {
   lastItems = getState().order.items;
 
   return () => {
+    unwatch();
     unsubscribe();
     document.body.classList.remove("has-bottom-bar");
   };

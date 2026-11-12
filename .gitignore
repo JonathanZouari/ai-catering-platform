@@ -25,3 +25,9 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local SQLite database (uv run python -m app.seed)
+*.db
+
+# Supabase CLI scratch state
+supabase/.temp/

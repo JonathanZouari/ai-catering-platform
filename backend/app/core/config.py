@@ -7,11 +7,13 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
     app_env: str = "development"
-    # Optional until Phase 2 connects the database.
+    # Empty locally to use the SQLite file (app/core/database.py).
     database_url: str | None = None
     supabase_url: str | None = None
-    supabase_anon_key: str | None = None
-    supabase_service_role_key: str | None = None
+    # Safe in the browser; access is limited by RLS.
+    supabase_publishable_key: str | None = None
+    # Server-side only (Storage uploads, Auth admin). Never sent to the browser or committed.
+    supabase_secret_key: str | None = None
 
 
 @lru_cache

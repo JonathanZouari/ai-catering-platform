@@ -1,4 +1,6 @@
+import { fill, h } from "../lib/dom.js";
 import { play } from "../lib/motion.js";
+import { loadCatalog } from "./catalog.js";
 import { renderStepper } from "./components/stepper.js";
 import { mountChat } from "./components/chat.js";
 import { EVENT_TYPES, validateEvent } from "./mock-backend.js";
@@ -74,6 +76,27 @@ window.addEventListener("hashchange", () => {
   }
 });
 
-mountChat(document.getElementById("chat-root"));
-subscribe(render);
-render(getState());
+// Prices and dishes come from the backend, so nothing that prices an order renders before the
+// catalog is in. A saved draft is carried over to it inside loadCatalog().
+function start() {
+  mountChat(document.getElementById("chat-root"));
+  subscribe(render);
+  render(getState());
+}
+
+function boot() {
+  app.setAttribute("aria-busy", "true");
+  loadCatalog().then(() => {
+    app.removeAttribute("aria-busy");
+    start();
+  }).catch(() => {
+    app.removeAttribute("aria-busy");
+    fill(app,
+      h("div", { class: "empty", role: "alert" },
+        h("p", { class: "empty-title", text: "לא הצלחנו לטעון את התפריט" }),
+        h("p", { class: "muted", text: "בדקו את החיבור ונסו שוב." }),
+        h("button", { class: "btn btn-secondary", type: "button", onclick: boot }, "ניסיון חוזר")));
+  });
+}
+
+boot();
