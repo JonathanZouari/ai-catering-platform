@@ -25,3 +25,6 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local SQLite practice database (rebuilt by database/sqlite/build_db.py)
+database/sqlite/*.db
