@@ -8,6 +8,8 @@ Supabase is mandated. Options: supabase-py (PostgREST) or a direct Postgres conn
 ## Decision
 The backend uses SQLAlchemy 2.x + psycopg against Supabase Postgres (`DATABASE_URL`). Supabase client/SDK used only where needed (Storage, Auth verification). Schema changes are SQL migrations in `database/migrations/`.
 
+Amendment (2026-11-02): local development and tests use SQLite (`backend/yummai.db`, or in-memory in tests) when `DATABASE_URL` is unset. Production stays on Supabase Postgres; SQLite lacks `FOR UPDATE`, exact `numeric`, `uuid` and enums.
+
 ## Consequences
 + Real transactions and row locks (`SELECT … FOR UPDATE`), needed for safe proposal execution.
 + Testable with a local Postgres / Supabase CLI stack.
