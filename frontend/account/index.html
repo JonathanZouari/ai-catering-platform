@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>yumm.ai | ההזמנות שלי</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+  <main class="auth-page">
+    <div class="topbar">
+      <h1 id="hello">ההזמנות שלי</h1>
+      <div style="display:flex;gap:12px">
+        <a class="btn btn-primary" href="/customer/">הזמנה חדשה</a>
+        <button class="btn btn-secondary" type="button" id="logout">יציאה</button>
+      </div>
+    </div>
+    <section class="panel" aria-labelledby="orders-title">
+      <div class="topbar">
+        <h2 id="orders-title">הזמנות</h2>
+        <span class="live" id="live" aria-live="polite">מתחבר לעדכונים…</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>תאריך האירוע</th><th>אירוע</th><th>סועדים</th><th>סטטוס</th><th>סה״כ</th></tr></thead>
+          <tbody id="orders"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import { supabase, requireRole, signOut, shekels, STATUS_LABEL } from "/js/auth.js";
+
+    const me = await requireRole("customer");
+    document.getElementById("hello").textContent = `שלום, ${me.profile.full_name}`;
+    document.getElementById("logout").onclick = signOut;
+
+    const ordersEl = document.getElementById("orders");
+    const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+    // RLS returns only this customer's orders.
+    async function load(flashId) {
+      const { data, error } = await supabase
+        .from("orders").select("id, event_date, event_type, status, adults, children, total_agorot")
+        .order("event_date", { ascending: false });
+      if (error) { ordersEl.innerHTML = `<tr><td colspan="5">${esc(error.message)}</td></tr>`; return; }
+      ordersEl.innerHTML = data.length ? data.map((o) => `
+        <tr class="${o.id === flashId ? "flash" : ""}">
+          <td class="num">${new Date(o.event_date).toLocaleDateString("he-IL")}</td>
+          <td>${esc(o.event_type)}</td>
+          <td class="num">${o.adults + o.children}</td>
+          <td><span class="pill ${o.status}">${STATUS_LABEL[o.status]}</span></td>
+          <td class="num">${shekels(o.total_agorot)}</td>
+        </tr>`).join("") : `<tr><td colspan="5">עדיין אין הזמנות.</td></tr>`;
+    }
+    await load();
+
+    // The status changes live when the business approves or rejects.
+    const live = document.getElementById("live");
+    supabase.channel("my-orders")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `customer_id=eq.${me.profile.id}` },
+          (change) => load(change.new?.id))
+      .subscribe((status) => {
+        const on = status === "SUBSCRIBED";
+        live.classList.toggle("on", on);
+        live.textContent = on ? "מתעדכן בזמן אמת" : "העדכונים החיים מנותקים";
+      });
+  </script>
+</body>
+</html>
