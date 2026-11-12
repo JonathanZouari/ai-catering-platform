@@ -6,3 +6,9 @@
 **/.pytest_cache
 **/.ruff_cache
 docs
+**/.env
+**/.env.*
+**/*.db
+**/*.db-journal
+**/*.db-wal
+**/*.db-shm
