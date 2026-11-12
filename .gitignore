@@ -16,6 +16,10 @@ build/
 .env.*
 !.env.example
 
+# Local SQLite database, created per machine by `uv run python -m app.db`
+database/*.db
+database/*.db-journal
+
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/
