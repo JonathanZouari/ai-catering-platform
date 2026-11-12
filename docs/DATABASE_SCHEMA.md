@@ -1,6 +1,6 @@
 # Preliminary Database Schema (PostgreSQL / Supabase)
 
-Status: **Draft v0.1** — not yet migrated. First migration is planned for Phase 2.
+Status: **Draft v0.1**. A SQLite translation is implemented in `database/migrations/0001_initial.sql` for the prototype; the type differences are listed in [ADR 0005](ADR/0005-sqlite-prototype-database.md) and the diagram is in [DATABASE_ERD.md](DATABASE_ERD.md). This document remains the Postgres target.
 
 Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
 

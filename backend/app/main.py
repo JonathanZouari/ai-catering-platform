@@ -1,13 +1,28 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, closing
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app.api.catalog import router as catalog_router
 from app.core.config import get_settings
+from app.core.db import connect, migrate
+from app.core.errors import install_error_handlers
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
-app = FastAPI(title="AI Catering Platform")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    with closing(connect()) as conn:  # create the schema on first start; no-op afterwards
+        migrate(conn)
+    yield
+
+
+app = FastAPI(title="AI Catering Platform", lifespan=lifespan)
+install_error_handlers(app)
+app.include_router(catalog_router)
 
 
 @app.get("/health")

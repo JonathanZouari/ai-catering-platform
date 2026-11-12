@@ -10,7 +10,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 |---|---|
 | Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
 | Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Data | SQLite file for the prototype ([ADR 0005](docs/ADR/0005-sqlite-prototype-database.md)); Supabase Postgres planned for production ([ADR 0002](docs/ADR/0002-supabase-postgres-sqlalchemy.md)) |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -19,7 +19,7 @@ Ordering and management web app for a **single catering business**. Customers pl
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
 frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+database/       migrations/ (numbered SQL files), seeds/ (dev placeholder data)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -36,6 +36,13 @@ cp .env.example .env          # fill values when needed; .env is git-ignored
 cd backend
 uv sync                       # install dependencies
 uv run uvicorn app.main:app --reload
+```
+
+The app creates the SQLite database (`data/catering.db`, git-ignored) on first start. To manage it by hand:
+
+```bash
+uv run python -m app.core.db migrate   # apply pending migrations
+uv run python -m app.core.db seed      # load dev placeholder catalog (safe to re-run)
 ```
 
 - API health: http://127.0.0.1:8000/health
