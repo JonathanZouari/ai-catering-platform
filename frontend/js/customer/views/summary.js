@@ -45,16 +45,19 @@ export function mountSummary(root) {
 
   const submitBtn = h("button", { class: "btn btn-primary btn-block", type: "submit" }, "שליחת בקשה להצעת מחיר");
 
-  const form = h("form", { class: "panel stack", novalidate: true, onsubmit: (ev) => {
+  const form = h("form", { class: "panel stack", novalidate: true, onsubmit: async (ev) => {
     ev.preventDefault();
-    const { errors } = submitOrder();
+    submitBtn.disabled = true; // the request goes to the server; avoid double submits
+    const { errors } = await submitOrder();
+    submitBtn.disabled = false;
     showErr(nameErr, name, errors.name);
     showErr(phoneErr, phone, errors.phone);
-    itemsError.hidden = !errors.items;
-    fill(itemsError, ...(errors.items ? [icon("warning"), errors.items] : []));
+    const message = errors.items ?? errors.event ?? errors.server;
+    itemsError.hidden = !message;
+    fill(itemsError, ...(message ? [icon("warning"), message] : []));
     const firstInvalid = root.querySelector('[aria-invalid="true"]');
     if (firstInvalid) firstInvalid.focus();
-    else if (errors.items) itemsError.scrollIntoView({ block: "center" });
+    else if (message) itemsError.scrollIntoView({ block: "center" });
   } },
     h("h2", { text: "פרטים ליצירת קשר" }),
     h("div", { class: "grid-2" },

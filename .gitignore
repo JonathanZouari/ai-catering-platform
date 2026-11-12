@@ -25,3 +25,8 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local SQLite
+*.db
+*.db-wal
+*.db-shm

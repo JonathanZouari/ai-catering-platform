@@ -58,12 +58,21 @@ const SLOTS = {
 
 const LEAD_DAYS = 2; // PLACEHOLDER minimum lead time (OPEN #5)
 
+// GET /api/availability replaces the placeholders above (zones, slots, closed dates, lead time).
+let remote = null;
+
+export function applyAvailability(a) {
+  remote = { min: a.min_date, blocked: a.blocked_dates };
+  ZONES.splice(0, ZONES.length, ...a.zones.map((z) => ({ city: z.city, fee: z.fee / 100 })));
+  Object.assign(SLOTS, a.slots);
+}
+
 export function minEventDate() {
-  return toIsoDate(addDays(new Date(), LEAD_DAYS));
+  return remote?.min ?? toIsoDate(addDays(new Date(), LEAD_DAYS));
 }
 
 export function blockedDates() {
-  return [toIsoDate(addDays(new Date(), 5)), toIsoDate(addDays(new Date(), 11))];
+  return remote?.blocked ?? [toIsoDate(addDays(new Date(), 5)), toIsoDate(addDays(new Date(), 11))];
 }
 
 export function slotsFor(fulfillment) {
@@ -153,7 +162,9 @@ export function priceOrder(order) {
 
 export function missingCategories(order) {
   const picked = new Set(Object.keys(order.items).map((id) => getDish(id).categoryId));
-  return ["salads", "mains", "sides", "desserts"].filter((c) => !picked.has(c)).map(getCategory);
+  // Matched by name prefix so it works for both the mock and the API catalog (different ids).
+  const wanted = ["סלטים", "עיקריות", "תוספות", "קינוחים"];
+  return CATEGORIES.filter((c) => wanted.some((w) => c.name.startsWith(w)) && !picked.has(c.id));
 }
 
 const UNIT_PLURAL = { tray: "מגשים", kg: "ק״ג", item: "יחידות", guest: "אורחים" };
@@ -231,9 +242,10 @@ export function assistantReply(order, rawText) {
   }
 
   if (/קינוח|מתוק|עוגה|סוכר/.test(text)) {
-    const hasDessert = inOrder.some((id) => getDish(id).categoryId === "desserts");
-    if (hasDessert) return reply("כבר יש בהזמנה קינוח. אפשר לשנות את הכמות בסיכום ההזמנה.");
-    const dish = getDish("d15");
+    const isDessert = (d) => getCategory(d.categoryId)?.name.startsWith("קינוחים");
+    if (inOrder.some((id) => isDessert(getDish(id)))) return reply("כבר יש בהזמנה קינוח. אפשר לשנות את הכמות בסיכום ההזמנה.");
+    const dish = DISHES.find((d) => isDessert(d) && d.vegan);
+    if (!dish) return reply("אין כרגע קינוח טבעוני בתפריט.");
     return reply(`אפשר להוסיף את ${dish.name}, שמתאימה גם לאורחים טבעוניים.`, [{ op: "add_item", dish_id: dish.id, quantity: recommendedQty(dish, order.event) }]);
   }
 
