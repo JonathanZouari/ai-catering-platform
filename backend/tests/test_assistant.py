@@ -276,15 +276,21 @@ def test_failures_leave_a_usable_history(client, order, claude):
         msg("tool_use", call("get_menu")),
         anthropic.APIConnectionError(request=None),
     ]
+    before = client.get(o["chat"], headers=o["headers"]).json()["remaining_today"]
     res = chat(client, o)
     assert res.status_code == 502 and res.json()["error"]["code"] == "assistant_failed"
+    # the unanswered message is dropped: not shown, not counted against the daily limit
+    view = client.get(o["chat"], headers=o["headers"]).json()
+    assert view["messages"] == [] and view["remaining_today"] == before
 
     claude.script = [msg("refusal")]
     view = chat(client, o, "שוב").json()
     assert view["messages"][-1] == {"role": "assistant", "text": assistant.FALLBACK_REPLY}
-    # the failed turn stored only the customer's message: no tool call without its result
+    # a fallback reply still counts: the customer got an answer
+    assert view["remaining_today"] == before - 1
+    # the failed turn left nothing behind: no tool call without its result
     sent = claude.requests[-1]["messages"]
-    assert [m["role"] for m in sent] == ["user", "user"]
+    assert [m["role"] for m in sent] == ["user"]
     assert all(b["type"] == "text" for m in sent for b in m["content"])
 
     claude.script = [msg("tool_use", call("get_menu"))] * assistant.MAX_ROUNDS

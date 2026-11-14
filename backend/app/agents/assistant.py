@@ -92,6 +92,7 @@ def reply(db: Session, who: CustomerIdentity, order_id: uuid.UUID, text: str) ->
             response = _call(client, history + turn)
         except anthropic.APIError as exc:
             log.error("assistant call failed: %s", type(exc).__name__)
+            store.discard_turn(db, conversation_id)
             raise AppError(502, "assistant_failed", "The assistant didn't answer") from exc
         content = [b.model_dump(mode="json", exclude_none=True) for b in response.content]
         if response.stop_reason in ("end_turn", "stop_sequence"):
