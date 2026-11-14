@@ -3,6 +3,7 @@
 The model loop itself lives in app/agents/assistant.py and reaches the database only through
 this module and the other services. One conversation per order, chat only on the customer's own
 draft. Messages are appended, never edited (the model needs its earlier blocks back unchanged).
+The only deletion is a customer message the model never answered (discard_turn).
 """
 
 import uuid
@@ -97,6 +98,21 @@ def append(db: Session, conversation_id: uuid.UUID, messages: list[dict]) -> Non
             )
         )
     db.commit()
+
+
+def discard_turn(db: Session, conversation_id: uuid.UUID) -> None:
+    """Drop the customer's message when the model failed to answer it, so it doesn't count
+    against the daily limit. Only the newest message, and only if it is still that message."""
+    db.rollback()
+    last = db.scalars(
+        select(AiMessage)
+        .where(AiMessage.conversation_id == conversation_id)
+        .order_by(AiMessage.position.desc())
+        .limit(1)
+    ).first()
+    if last is not None and last.customer_text is not None:
+        db.delete(last)
+        db.commit()
 
 
 def _next_position(db: Session, conversation_id: uuid.UUID) -> int:
