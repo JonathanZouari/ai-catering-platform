@@ -119,7 +119,15 @@ async function showAccount() {
       status.append(" ", Object.assign(document.createElement("span"), { className: "pill s-pending_approval", textContent: "הצעת שינוי ממתינה לך" }));
     }
     const total = Object.assign(document.createElement("td"), { className: "num", textContent: money(o.total) });
-    tr.append(event, status, total);
+    // the same link as the event name, as a button that says what happens next
+    const go = Object.assign(document.createElement("a"), {
+      className: `btn ${o.status === "draft" ? "primary" : "ghost"}`, href: `/customer/${page}/?order=${encodeURIComponent(o.id)}`,
+      textContent: o.status === "draft" ? "המשך תכנון" : "לסטטוס ההזמנה",
+    });
+    go.setAttribute("aria-label", `${go.textContent}: ${o.event_type}`);
+    const action = document.createElement("td");
+    action.append(go);
+    tr.append(event, status, total, action);
     return tr;
   }));
 }

@@ -11,6 +11,7 @@ export function initMotion() {
   const setNav = (open) => { toggle.setAttribute("aria-expanded", String(open)); nav.classList.toggle("open", open); };
   toggle?.addEventListener("click", () => setNav(toggle.getAttribute("aria-expanded") !== "true"));
   nav?.addEventListener("click", (e) => { if (toggle && e.target.closest("a")) setNav(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && nav?.classList.contains("open")) { setNav(false); toggle.focus(); } });
   if (reduceMotion) return;
   document.documentElement.classList.add("motion");
 

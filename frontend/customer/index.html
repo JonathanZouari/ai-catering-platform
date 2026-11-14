@@ -23,11 +23,10 @@
   </div>
 </header>
 
-<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/table.jpg" alt="" width="900" height="600"><span class="band-note hand"><i data-ill="calendar"></i>מספרים לנו על האירוע</span></div>
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/table.jpg" alt="" width="900" height="600"><span class="band-note hand"><i data-ill="plate"></i>האירועים וההזמנות שלכם</span></div>
 <div class="app wrap">
   <main id="screen">
     <div class="screen-head">
-      <p class="eyebrow">האזור האישי</p>
       <h2 id="title">כניסה</h2>
       <p class="lede" id="lede">בלי סיסמה: שולחים לכם קוד לאימייל, ומקלידים אותו כאן.</p>
     </div>
@@ -71,26 +70,26 @@
       <div class="actions"><button class="btn primary" type="submit">שמירה</button></div>
     </form>
 
-    <section id="account" class="admin-stack" aria-labelledby="orders-h" hidden>
+    <section id="account" class="account-grid" aria-labelledby="orders-h" hidden>
+      <div class="order-detail">
+        <div class="detail-head"><h3 id="orders-h"><i data-ill="calendar"></i>ההזמנות שלי</h3><a class="btn add" href="/customer/event/">תכנון אירוע חדש +</a></div>
+        <div class="table-scroll">
+          <table class="lines orders-table">
+            <thead><tr><th scope="col">אירוע</th><th scope="col">סטטוס</th><th scope="col">סה"כ</th><th scope="col"><span class="sr-only">פעולה</span></th></tr></thead>
+            <tbody id="order-rows"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="no-orders" hidden><img src="/assets/img/art-pot.webp" alt="" width="433" height="358"><p>עוד אין לכם הזמנות.</p><a class="btn primary" href="/customer/event/">מתחילים לתכנן אירוע</a></div>
+      </div>
       <div class="order-detail">
         <div class="detail-head">
-          <h3>הפרטים שלי</h3>
+          <h3><i data-ill="sign"></i>הפרטים שלי</h3>
           <div class="actions">
             <button class="btn ghost" type="button" id="edit-profile">עריכה</button>
             <button class="btn ghost" type="button" id="sign-out">יציאה</button>
           </div>
         </div>
         <dl class="totals" id="profile-facts"></dl>
-      </div>
-      <div class="order-detail">
-        <div class="detail-head"><h3 id="orders-h">ההזמנות שלי</h3><a class="btn add" href="/customer/event/">תכנון אירוע חדש +</a></div>
-        <div class="table-scroll">
-          <table class="lines">
-            <thead><tr><th scope="col">אירוע</th><th scope="col">סטטוס</th><th scope="col">סה"כ</th></tr></thead>
-            <tbody id="order-rows"></tbody>
-          </table>
-        </div>
-        <p class="empty" id="no-orders" hidden>עוד אין לכם הזמנות. מתחילים ב"תכנון אירוע חדש".</p>
       </div>
     </section>
   </main>

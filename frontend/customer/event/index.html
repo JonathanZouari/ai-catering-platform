@@ -40,8 +40,8 @@
     <p class="notice warn" id="blocked-notice" role="alert" hidden></p>
 
     <form id="event-form" class="event-form" novalidate hidden>
-      <fieldset>
-        <legend>סוג האירוע</legend>
+      <fieldset class="form-card">
+        <legend><i data-ill="glass"></i>סוג האירוע</legend>
         <div class="chips" id="event-types"></div>
         <div class="field" id="other-type-field" hidden>
           <label for="other-type">איזה אירוע?</label>
@@ -49,6 +49,8 @@
         </div>
       </fieldset>
 
+      <div class="form-card">
+      <h3><i data-ill="calendar"></i>מתי ואיך מקבלים את האוכל</h3>
       <div class="field-row">
         <div class="field">
           <label for="event-date">תאריך האירוע</label>
@@ -88,14 +90,15 @@
           <input id="address" autocomplete="address-line1" maxlength="300">
         </div>
       </div>
+      </div>
 
-      <fieldset>
-        <legend>אורחים</legend>
+      <fieldset class="form-card">
+        <legend><i data-ill="plate"></i>אורחים</legend>
         <div class="counters" id="counters"></div>
         <p class="help">צמחונים, טבעונים ובעלי הגבלות הם חלק מסך האורחים, לא בנוסף. צמחונים וטבעונים הם קבוצות נפרדות: טבעוני לא נספר שוב כצמחוני.</p>
       </fieldset>
 
-      <div class="field">
+      <div class="field form-card">
         <label for="notes">הערות תזונה ואלרגיות</label>
         <textarea id="notes" rows="3" maxlength="1000" aria-describedby="notes-help"></textarea>
         <span class="help" id="notes-help">למשל: ילד אחד עם אלרגיה לאגוזים. בעל העסק יקרא את זה.</span>
