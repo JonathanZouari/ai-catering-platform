@@ -1,4 +1,5 @@
-// Landing page depth layer: parallax hero with floating plates, word-by-word headline, scroll-driven 3D menu ring.
+// Landing page depth layer: the hero table (round plates that drift with scroll and pointer), word-by-word
+// headline, painted accents that drift on scroll, scroll-driven 3D menu ring.
 import { initMotion, reduceMotion as reduce } from "/js/motion.js";
 
 initMotion();
@@ -6,8 +7,10 @@ initMotion();
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-const hero = $("#hero"), heroImg = $(".hero-bg img"), heroCopy = $(".hero-copy"), stage = $(".hero-stage");
-const floats = [...document.querySelectorAll(".float")];
+const hero = $("#hero");
+const plates = [...document.querySelectorAll(".plate")], paints = [...document.querySelectorAll(".paint")];
+plates.forEach((p, i) => p.style.setProperty("--i", i));
+paints.forEach((p, i) => { p.style.setProperty("--i", i); p.pageTop = p.getBoundingClientRect().top + scrollY; });
 const ring = $("#ring"), cards = [...ring.children], ringSec = $("#ring-sec"), ringNow = $("#ring-now");
 const N = cards.length, STEP = 360 / N;
 
@@ -22,14 +25,16 @@ function frame() {
   queued = false;
   const y = scrollY, H = innerHeight;
   if (!reduce) {
-    const hp = clamp(y / hero.offsetHeight, 0, 1);
-    heroImg.style.transform = `translate3d(0, ${y * 0.4}px, 0) scale(${1.08 + hp * 0.1})`;
-    heroCopy.style.transform = `translate3d(0, ${y * -0.15}px, 0)`;
-    heroCopy.style.opacity = String(1 - hp * 1.2);
     cpx += (px - cpx) * 0.08;
     cpy += (py - cpy) * 0.08;
-    stage.style.transform = `rotateX(${cpy * -7}deg) rotateY(${cpx * 9}deg)`;
-    floats.forEach((f) => f.style.setProperty("--sy", `${-y * f.dataset.depth * 0.5}px`));
+    plates.forEach((p, i) => {
+      const d = Number(p.dataset.depth);
+      p.style.setProperty("--sy", `${-y * d * 0.1}px`);
+      p.style.setProperty("--px", `${cpx * d * -22}px`);
+      p.style.setProperty("--py", `${cpy * d * -18}px`);
+      p.style.setProperty("--rot", `${y * 0.05 * (i % 2 ? -1 : 1)}deg`);
+    });
+    paints.forEach((p) => p.style.setProperty("--sy", `${clamp((p.pageTop - y - H / 2) * -0.08, -60, 60)}px`));
     if (Math.abs(px - cpx) + Math.abs(py - cpy) > 0.002) kick();
   }
 

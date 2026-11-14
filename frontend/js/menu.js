@@ -11,7 +11,7 @@ const UNIT_ONE = { per_tray: "מגש", per_guest: "מנה", per_weight: 'ק"ג',
 // per-guest lines read "for N guests": the unit is a guest, whether food or a place setting
 const qtyText = (q, unit) => unit === "per_guest" ? (Number(q) === 1 ? "לאורח אחד" : `ל-${num(q)} אורחים`)
   : `${num(q)} ${(Number(q) === 1 ? UNIT_ONE : UNIT)[unit] ?? ""}`;
-const PER = { per_tray: "למגש", per_guest: "לאורח", per_weight: 'לק"ג', per_item: "ליחידה" };
+export const PER = { per_tray: "למגש", per_guest: "לאורח", per_weight: 'לק"ג', per_item: "ליחידה" };
 const CODES = {
   below_minimum: "הכמות נמוכה מהמינימום של המנה",
   dish_unavailable: "המנה הזו כבר לא זמינה",
@@ -31,23 +31,31 @@ const DEBOUNCE_MS = 450;
 const $ = (id) => document.getElementById(id);
 const state = {
   orderId: null, order: null, dishes: [], categories: [], recs: new Map(),
-  category: "", diet: null, editable: false,
+  category: "", diet: null, q: "", editable: false,
   want: new Map(), // dishId -> quantity asked for but not yet confirmed by the server
 };
 // shortcut: placeholder art guessed from the category name; add an icon field on categories
 // if the owner wants to choose it.
-const CATEGORY_ART = [[/סלט|מטבל/, "olive"], [/בשר|עוף|עיקר|גריל|דג/, "grill"], [/תוספ/, "pot"],
-  [/קינוח|פירות/, "lemon"], [/מאפ|לחם|פתיח/, "basket"], [/שתי|יין|משקא/, "glass"]];
-const artFor = (name = "") => CATEGORY_ART.find(([re]) => re.test(name))?.[1] ?? "plate";
+const CATEGORY_ART = [[/סלט|מטבל/, "olive"], [/דג/, "fish"], [/בשר|עוף|עיקר|גריל/, "grill"], [/תוספ/, "pot"],
+  [/קינוח|פירות/, "cake"], [/מאפ|לחם|פתיח/, "bread"], [/שתי|יין|משקא/, "glass"], [/אירוח|מגש/, "tray"], [/כלים/, "fork"]];
+export const artFor = (name = "") => CATEGORY_ART.find(([re]) => re.test(name))?.[1] ?? "plate";
+// An <i data-ill> placeholder; hydrateIllustrations() turns it into the drawing.
+export function icon(name) {
+  const i = document.createElement("i");
+  i.dataset.ill = name;
+  return i;
+}
+// Our own static photos or the server-built Storage URL; never javascript:/data: or the like.
+export const safePhoto = (d) => /^(\/assets\/img\/[\w-]+\.(jpg|png|webp)|https:\/\/[^"'\s]+)$/.test(d.image_url ?? "");
 
-const money = (v) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(v);
+export const money = (v) => new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(v);
 const num = (v) => new Intl.NumberFormat("he-IL", { maximumFractionDigits: 2 }).format(v);
 const day = (iso) => new Intl.DateTimeFormat("he-IL", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00Z`));
 const stepOf = (dish) => (dish.pricing_unit === "per_weight" ? 0.5 : 1);
 const quantityOf = (dishId) => Number(state.order.items.find((i) => i.dish_id === dishId)?.quantity ?? 0);
 const qty = (dishId) => state.want.get(dishId) ?? quantityOf(dishId); // what the customer sees
 
-function el(tag, props = {}, ...children) {
+export function el(tag, props = {}, ...children) {
   const node = Object.assign(document.createElement(tag), props);
   node.append(...children);
   return node;
@@ -164,7 +172,7 @@ function keepFocus(render) {
 }
 
 // --- rendering ---
-function badges(d) {
+export function badges(d) {
   const k = KASHRUT[d.dietary.kashrut_class]; // null = not food (disposables): no food badges
   const out = k ? [el("span", { className: `badge ${k[1]}`, textContent: k[0] })] : [];
   if (!k) { /* not food */ } else if (d.dietary.is_vegan) out.push(el("span", { className: "badge diet", textContent: "טבעוני" }));
@@ -173,7 +181,7 @@ function badges(d) {
   return el("div", { className: "badges" }, ...out);
 }
 
-function allergens(d) {
+export function allergens(d) {
   if (d.dietary.kashrut_class === null) return ""; // not food: no allergen info to show
   const contains = d.allergens.filter((a) => a.status === "contains").map((a) => a.name);
   const free = d.allergens.filter((a) => a.status === "free").map((a) => a.name);
@@ -210,7 +218,8 @@ function recommendation(d) {
 }
 
 function visible(d) {
-  if (state.category && d.category_id !== state.category) return false;
+  // a search looks through the whole menu, not only the open category
+  if (state.q ? !`${d.name} ${d.description ?? ""}`.includes(state.q) : state.category && d.category_id !== state.category) return false;
   if (d.dietary.kashrut_class === null) return true; // not food: diet filters don't apply
   if (state.diet === "vegan") return d.dietary.is_vegan === true;
   if (state.diet === "vegetarian") return d.dietary.is_vegetarian === true || d.dietary.is_vegan === true;
@@ -277,14 +286,12 @@ function draggable(node, label, onDrop) {
 
 // --- rendering ---
 function media(d) {
-  // Our own static photos or the server-built Storage URL; never javascript:/data: or the like.
-  if (/^(\/assets\/img\/[\w-]+\.(jpg|png|webp)|https:\/\/[^"'\s]+)$/.test(d.image_url ?? "")) {
+  if (safePhoto(d)) {
     const img = el("img", { src: d.image_url, alt: "", loading: "lazy", width: 400, height: 300, draggable: false });
     const note = d.image_is_placeholder ? el("span", { className: "photo-note", textContent: "תמונה להמחשה" }) : "";
     return el("div", { className: "dish-media" }, img, note);
   }
-  const art = document.createElement("i");
-  art.dataset.ill = artFor(state.categories.find((c) => c.id === d.category_id)?.name);
+  const art = icon(artFor(state.categories.find((c) => c.id === d.category_id)?.name));
   return el("div", { className: "dish-media no-photo in" }, art); // "in": drawn, no draw-in per card
 }
 
@@ -328,11 +335,10 @@ function syncCard(d) {
 function renderDishes() {
   const shown = state.dishes.filter(visible);
   $("no-dishes").hidden = shown.length > 0;
-  // "All" reads as a menu: one titled section per category, in the owner's order.
-  const groups = state.category ? [[null, shown]]
-    : state.categories.map((c) => [c, shown.filter((d) => d.category_id === c.id)]).filter(([, ds]) => ds.length);
+  // One titled section per category, in the owner's order ("whole menu" and a search show several).
+  const groups = state.categories.map((c) => [c, shown.filter((d) => d.category_id === c.id)]).filter(([, ds]) => ds.length);
   $("dishes").replaceChildren(...groups.map(([c, ds]) => el("section", { className: "dish-group" },
-    c ? el("h3", { className: "group-h", textContent: c.name }) : "",
+    el("h3", { className: "group-h" }, icon(artFor(c.name)), c.name, el("small", { textContent: ds.length === 1 ? "מנה אחת" : `${ds.length} מנות` })),
     el("div", { className: "dish-grid" }, ...ds.map(card)))));
   hydrateIllustrations($("dishes"));
 }
@@ -359,6 +365,8 @@ function renderSide() {
     const ds = chosen.filter((d) => d.category_id === id);
     return ds.length ? el("div", { className: "tray-group" }, el("h4", { textContent: names.get(id) ?? "אחר" }), el("ul", {}, ...ds.map(trayItem))) : "";
   }), chosen.length ? "" : el("p", { className: "empty", textContent: "השולחן עוד ריק. גררו לכאן מנות." }));
+  // the first few chosen dishes sit on the bar as small plates
+  $("tray-plates").replaceChildren(...chosen.filter(safePhoto).slice(0, 5).map((d) => el("img", { src: d.image_url, alt: "", width: 34, height: 34 })));
   renderCategories();
 }
 
@@ -366,7 +374,7 @@ function renderCategories() {
   const chosen = state.dishes.filter((d) => qty(d.id) > 0);
   const chip = (id, name) => {
     const count = chosen.filter((d) => !id || d.category_id === id).length;
-    const b = el("button", { type: "button", className: "chip-btn", textContent: name });
+    const b = el("button", { type: "button", className: "chip-btn cat-tab" }, icon(id ? artFor(name) : "plate"), name);
     if (count) b.append(el("span", { className: "chip-count", textContent: String(count) }));
     b.dataset.key = `cat:${id}`;
     b.setAttribute("aria-label", count ? `${name}, ${count} נבחרו` : name);
@@ -374,7 +382,8 @@ function renderCategories() {
     b.addEventListener("click", () => { state.category = id; keepFocus(() => { renderCategories(); renderDishes(); }); });
     return b;
   };
-  $("categories").replaceChildren(chip("", "הכל"), ...state.categories.map((c) => chip(c.id, c.name)));
+  $("categories").replaceChildren(...state.categories.map((c) => chip(c.id, c.name)), chip("", "כל התפריט"));
+  hydrateIllustrations($("categories"));
 }
 
 const fact = (term, value, cls = "") => el("div", { className: cls }, el("dt", { textContent: term }), el("dd", { textContent: value }));
@@ -484,6 +493,7 @@ export async function initMenu() {
     $("kashrut-line").textContent = `המטבח כשר${cert ? ` (${cert})` : ""}: מנות בשריות ופרווה בלבד, בלי חלבי.`;
     state.dishes = dishes;
     state.categories = categories;
+    state.category = categories[0]?.id ?? ""; // open on the first category instead of the whole menu
     state.recs = new Map(recs.map((r) => [r.dish_id, r]));
   } catch (err) {
     if (err.status === 401) { location.href = "/customer/"; return; }
@@ -497,6 +507,7 @@ export async function initMenu() {
       renderDishes();
     });
   }
+  $("dish-search").addEventListener("input", (e) => { state.q = e.target.value.trim(); renderDishes(); });
   $("submit").addEventListener("click", submit);
   $("edit-event").href = `/customer/event/?order=${encodeURIComponent(state.orderId)}`;
   $("tray-toggle").addEventListener("click", () => {

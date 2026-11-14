@@ -1,40 +1,35 @@
 /* Landing page only: parallax hero with floating plates, day-of-event strip, marquee, 3D menu ring, stories. */
 
-/* hero */
-.hero { position: relative; overflow: hidden; height: clamp(600px, 86vh, 860px); color: var(--photo-ink); perspective: 1200px; background: rgb(var(--shade)); }
-.hero-bg { position: absolute; inset: 0; }
-.hero-bg img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); will-change: transform; }
-.hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to left, rgb(var(--shade) / .78), rgb(var(--shade) / .15) 70%), linear-gradient(to top, rgb(var(--shade) / .6), transparent 50%); }
-.hero-stage { position: absolute; inset-block: 0; inset-inline-end: 0; width: 56%; transform-style: preserve-3d; will-change: transform; }
-.float { position: absolute; margin: 0; width: clamp(130px, 15vw, 230px); padding: 8px 8px 0; background: var(--paper); color: var(--paper-ink); box-shadow: 0 30px 60px rgb(var(--shade) / .45), 0 8px 16px rgb(var(--shade) / .3); transform: translate3d(0, var(--sy, 0px), var(--tz)) rotate(var(--rot)); will-change: transform; }
-.float img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
-.float figcaption { font: 700 .85rem/1 var(--font-body); padding: 10px 2px 12px; }
-.f1 { top: 12%; inset-inline-end: 12%; --tz: 140px; --rot: -7deg; }
-.f2 { top: 44%; inset-inline-end: 40%; --tz: 40px; --rot: 5deg; }
-.f3 { top: 52%; inset-inline-end: 8%; --tz: 260px; --rot: -3deg; width: clamp(150px, 18vw, 270px); }
-.scribble { position: absolute; bottom: calc(100% + 4px); inset-inline-start: -10%; display: flex; align-items: end; gap: 2px; color: var(--photo-ink); white-space: nowrap; pointer-events: none; }
-.scribble .ill { width: 46px; height: 34px; color: inherit; transform: scaleX(-1); }
-.hero-copy { position: absolute; z-index: 2; inset-inline: 0; bottom: 0; padding-block: 40px; will-change: transform, opacity; }
-.hero-copy .wrap { display: grid; gap: 16px; justify-items: start; }
-.hero h1 { font-size: clamp(2.6rem, 6.4vw, 5.6rem); font-weight: 900; max-width: 12ch; line-height: 1.02; }
-.hero p { font-size: 1.15rem; max-width: 42ch; }
-.hero .btn { background: var(--accent); color: var(--accent-fg); box-shadow: 0 10px 24px -10px rgb(var(--shade) / .6); }
-.hero .btn:hover { background: color-mix(in oklab, var(--accent), var(--fg) 18%); }
-.scroll-cue { font-size: .85rem; letter-spacing: .1em; opacity: .85; display: inline-flex; align-items: center; gap: 10px; }
-.scroll-cue::after { content: ""; width: 1px; height: 34px; background: currentColor; animation: cue 1.8s ease-in-out infinite; transform-origin: top; }
-@keyframes cue { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
-@media (max-width: 760px) {
-  .hero { height: 680px; }
-  .hero-stage { width: 100%; height: 52%; }
-  .f1 { top: 8%; inset-inline-end: 8%; width: 132px; }
-  .f2 { top: 16%; inset-inline-end: 52%; width: 118px; }
-  .f3, .scribble { display: none; }
-  .hero-bg::after { background: linear-gradient(to top, rgb(var(--shade) / .85), rgb(var(--shade) / .1) 75%); }
-}
+/* hero: the table from above. Dish photos cut round like plates, painted garnish between them. */
+.hero { position: relative; overflow: hidden; padding-block: clamp(24px, 5vw, 64px) clamp(40px, 7vw, 88px); }
+.hero-in { display: grid; gap: 32px; align-items: center; }
+@media (min-width: 900px) { .hero-in { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
+.hero-copy { position: relative; z-index: 2; display: grid; gap: 18px; justify-items: start; }
+.hero h1 { font-size: clamp(2.6rem, 5.6vw, 5rem); font-weight: 900; max-width: 12ch; line-height: 1.04; }
+.hero-copy p { font-size: 1.15rem; max-width: 42ch; color: var(--muted); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero-table { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1 / .92; justify-self: center; }
+.hero-table::before { content: ""; position: absolute; inset: 6% 2% 4% 4%; background: var(--spark-soft); border-radius: 58% 42% 55% 45% / 48% 56% 44% 52%; }
+.plate { position: absolute; width: var(--w); aspect-ratio: 1; overflow: hidden; border-radius: 50%; border: clamp(6px, 1vw, 12px) solid var(--surface); box-shadow: 0 0 0 1px var(--line), 0 26px 40px -18px rgb(var(--shade) / .55); translate: var(--px, 0px) calc(var(--py, 0px) + var(--sy, 0px)); rotate: var(--rot, 0deg); will-change: translate, rotate; }
+.plate img { width: 100%; height: 100%; object-fit: cover; scale: 1.2; }
+.p1 { --w: 44%; top: 25%; inset-inline-start: 27%; z-index: 2; }
+.p2 { --w: 30%; top: 2%; inset-inline-start: 5%; }
+.p3 { --w: 28%; top: 5%; inset-inline-end: 3%; }
+.p4 { --w: 30%; bottom: 1%; inset-inline-end: 3%; }
+.p5 { --w: 26%; bottom: 3%; inset-inline-start: 3%; }
+/* painted illustrations (assets/img/art-*.webp): decoration only, they drift a little on scroll */
+.paint { position: absolute; width: var(--w, 180px); height: auto; pointer-events: none; translate: 0 var(--sy, 0px); rotate: var(--r, 0deg); }
+.hero .pa1 { --w: 27%; top: -3%; inset-inline-start: 36%; --r: 12deg; z-index: 1; }
+.hero .pa2 { --w: 30%; bottom: -4%; inset-inline-start: 31%; --r: -8deg; z-index: 3; }
+.hero .pa3 { --w: 22%; top: 40%; inset-inline-end: -3%; --r: 10deg; z-index: 3; }
+@media (max-width: 899px) { .hero-table { max-width: 440px; } }
 .motion .hero h1 .w { display: inline-block; opacity: 0; translate: 0 .5em; animation: word-in .9s cubic-bezier(.2, .8, .2, 1) forwards; animation-delay: calc(var(--i) * 70ms + 150ms); }
 @keyframes word-in { to { opacity: 1; translate: none; } }
-.motion .scribble { opacity: 0; transition: opacity .6s ease 1.2s; }
-.motion .in .scribble { opacity: 1; }
+/* the one load moment: plates land on the table one after another, then the garnish fades in */
+.motion .plate { scale: .5; opacity: 0; animation: plate-in .9s cubic-bezier(.2, .9, .25, 1.15) forwards; animation-delay: calc(var(--i) * 110ms + 200ms); }
+@keyframes plate-in { to { scale: 1; opacity: 1; } }
+.motion .hero .paint { opacity: 0; animation: paint-in 1s ease forwards; animation-delay: calc(var(--i) * 140ms + 800ms); }
+@keyframes paint-in { to { opacity: 1; } }
 
 /* sections */
 .section { padding-block: 56px 16px; display: grid; gap: 24px; }
@@ -95,6 +90,19 @@
 .how li::before { content: counter(h); font: 900 2.6rem/1 var(--font-display); color: var(--accent-ink); }
 .how strong { font-size: 1.15rem; }
 .how .ill { position: absolute; top: 14px; inset-inline-end: 0; width: 56px; height: 56px; }
+
+/* v2: softer sections. Hand-drawn rule under headings, rounded photos, painted accents. */
+.section { position: relative; }
+.section-head, .ring-head { border-block-end: 0; }
+.section-head h2, .ring-head h2 { padding-block-end: 14px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6c14-6 22 5 38 0s24-5 40 0 24 3 38-2' fill='none' stroke='%23b8780f' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") bottom / 100% 10px no-repeat; }
+.day img, .story img { border-radius: var(--radius); }
+.ring-card a { border-radius: var(--radius); overflow: hidden; }
+.marquee { border-color: var(--line); }
+.how li { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px 20px; }
+.how .ill { top: 18px; inset-inline-end: 18px; }
+.section > .paint { z-index: -1; }
+.deco-pot { --w: clamp(120px, 15vw, 210px); top: 12px; inset-inline-end: 0; --r: -6deg; }
+@media (max-width: 760px) { .section > .paint { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .ring-sec { height: auto; }

@@ -5,6 +5,12 @@ export const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").match
 
 export function initMotion() {
   hydrateIllustrations();
+  // Phone header: the links fold behind a button.
+  const toggle = document.querySelector(".nav-toggle");
+  const nav = document.getElementById("site-nav");
+  const setNav = (open) => { toggle.setAttribute("aria-expanded", String(open)); nav.classList.toggle("open", open); };
+  toggle?.addEventListener("click", () => setNav(toggle.getAttribute("aria-expanded") !== "true"));
+  nav?.addEventListener("click", (e) => { if (toggle && e.target.closest("a")) setNav(false); });
   if (reduceMotion) return;
   document.documentElement.classList.add("motion");
 
