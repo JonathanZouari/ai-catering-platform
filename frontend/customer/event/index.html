@@ -13,9 +13,12 @@
 <a class="skip-link" href="#screen">דילוג לתוכן</a>
 <header class="site-header">
   <div class="header-inner wrap">
-    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
-    <nav class="site-nav" aria-label="ניווט ראשי">
-      <a href="/customer/">האזור האישי</a><a href="/customer/event/" aria-current="page">תכנון אירוע</a>
+    <a class="brand" href="/"><i data-ill="pom"></i>Yummai<small>קייטרינג לאירועים</small></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">תפריט</span><i></i></button>
+    <nav class="site-nav" id="site-nav" aria-label="ניווט ראשי">
+      <a href="/">דף הבית</a><a href="/menu/">התפריט</a><a href="/#how-h">איך מזמינים</a><a href="/customer/" aria-current="page">האזור האישי</a>
+      <a class="nav-cta" href="/customer/">תכנון אירוע</a>
+      <a class="nav-biz" href="/admin/">כניסת עסק</a>
     </nav>
   </div>
 </header>
@@ -24,8 +27,11 @@
 <div class="app wrap">
   <main id="screen">
     <div class="screen-head">
-      <ol class="progress" aria-label="שלבי ההזמנה">
-        <li aria-current="step"><strong>האירוע</strong></li><li>המנות</li><li>סיכום ושליחה</li>
+      <ol class="steps" aria-label="שלבי ההזמנה">
+        <li aria-current="step"><span><i data-ill="calendar"></i><span>האירוע</span></span></li>
+        <li><span><i data-ill="plate"></i><span>המנות</span></span></li>
+        <li><span><i data-ill="sign"></i><span>סיכום ושליחה</span></span></li>
+        <li><span><i data-ill="glass"></i><span>אישור העסק</span></span></li>
       </ol>
       <h2 id="title">תכנון האירוע</h2>
       <p class="lede">נשמר כטיוטה. אפשר לחזור ולשנות עד שליחת ההזמנה.</p>

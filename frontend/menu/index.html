@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-route="catalog">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>התפריט · Yummai</title>
+  <meta name="description" content="כל המנות של Yummai לאירועים: סלטים, עיקריות, תוספות, קינוחים ושתייה, עם מחירים ומידע על אלרגנים.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<a class="skip-link" href="#screen">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/"><i data-ill="pom"></i>Yummai<small>קייטרינג לאירועים</small></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">תפריט</span><i></i></button>
+    <nav class="site-nav" id="site-nav" aria-label="ניווט ראשי">
+      <a href="/">דף הבית</a><a href="/menu/" aria-current="page">התפריט</a><a href="/#how-h">איך מזמינים</a><a href="/customer/">האזור האישי</a>
+      <a class="nav-cta" href="/customer/">תכנון אירוע</a>
+      <a class="nav-biz" href="/admin/">כניסת עסק</a>
+    </nav>
+  </div>
+</header>
+
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/spread.jpg" alt="" width="900" height="600"><span class="band-note hand"><i data-ill="basket"></i>כל מה שיוצא מהמטבח</span></div>
+<div class="app wrap">
+  <main id="screen">
+    <div class="screen-head">
+      <h1 class="page-title">התפריט שלנו</h1>
+      <p class="lede">כל המנות שאנחנו מבשלים לאירועים. כדי לקבל כמויות ומחיר לאירוע שלכם, מתחילים לתכנן אירוע ובוחרים מנות מתוך התפריט הזה.</p>
+      <p class="fine" id="kashrut-line"></p>
+      <a class="btn primary" href="/customer/">מתחילים לתכנן אירוע</a>
+    </div>
+
+    <p class="notice warn" id="page-notice" role="alert" hidden></p>
+
+    <div id="menu" hidden>
+      <div class="menu-bar">
+        <div class="cat-tabs" role="group" aria-label="קטגוריה" id="categories"></div>
+        <div class="menu-tools">
+          <label class="search"><span class="sr-only">חיפוש מנה</span><i data-ill="search"></i><input id="dish-search" type="search" placeholder="חיפוש מנה" autocomplete="off"></label>
+          <div class="chips" role="group" aria-label="סינון לפי תזונה" id="diet-filters">
+            <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegetarian">רק צמחוני</button>
+            <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegan">רק טבעוני</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="notice warn">
+        במטבח שלנו יש אגוזים, גלוטן, שומשום, ביצים, סויה ודגים, וייתכן מגע צולב בין מנות.
+        מה שמסומן "לא ידוע" לא נבדק. באלרגיה חמורה דברו איתנו לפני ההזמנה.
+      </p>
+
+      <div class="dish-groups" id="dishes"></div>
+      <p class="empty" id="no-dishes" hidden>אין מנות שמתאימות לחיפוש או לסינון.</p>
+
+      <div class="actions"><a class="btn primary" href="/customer/">מתחילים לתכנן אירוע</a></div>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer wrap"><span>Yummai, תל אביב</span><a href="/accessibility/">הצהרת נגישות</a></footer>
+<script type="module">
+  import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initPublicMenu } from "/js/public-menu.js";
+  initMotion();
+  initRouteBand();
+  initPublicMenu();
+</script>
+</body>
+</html>

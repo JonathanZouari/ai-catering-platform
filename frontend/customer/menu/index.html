@@ -13,9 +13,12 @@
 <a class="skip-link" href="#screen">דילוג לתוכן</a>
 <header class="site-header">
   <div class="header-inner wrap">
-    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
-    <nav class="site-nav" aria-label="ניווט ראשי">
-      <a href="/customer/">האזור האישי</a><a id="nav-event" href="/customer/event/">האירוע</a><a href="#" aria-current="page">המנות</a>
+    <a class="brand" href="/"><i data-ill="pom"></i>Yummai<small>קייטרינג לאירועים</small></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">תפריט</span><i></i></button>
+    <nav class="site-nav" id="site-nav" aria-label="ניווט ראשי">
+      <a href="/">דף הבית</a><a href="/menu/">התפריט</a><a href="/#how-h">איך מזמינים</a><a href="/customer/" aria-current="page">האזור האישי</a>
+      <a class="nav-cta" href="/customer/">תכנון אירוע</a>
+      <a class="nav-biz" href="/admin/">כניסת עסק</a>
     </nav>
   </div>
 </header>
@@ -24,26 +27,31 @@
 <div class="app wrap">
   <main id="screen">
     <div class="screen-head">
-      <ol class="progress" aria-label="שלבי ההזמנה">
-        <li>האירוע</li><li aria-current="step"><strong>המנות</strong></li><li>סיכום ושליחה</li>
+      <ol class="steps" aria-label="שלבי ההזמנה">
+        <li class="done"><a id="nav-event" href="/customer/event/"><i data-ill="calendar"></i><span>האירוע</span></a></li>
+        <li aria-current="step"><a href="#categories"><i data-ill="plate"></i><span>המנות</span></a></li>
+        <li><a href="#summary"><i data-ill="sign"></i><span>סיכום ושליחה</span></a></li>
+        <li><span><i data-ill="glass"></i><span>אישור העסק</span></span></li>
       </ol>
       <h2>בחירת מנות</h2>
-      <p class="fine">גררו מנה אל השולחן בתחתית המסך, או לחצו "לשולחן" על הכרטיס. במגע: לחיצה ארוכה ואז גרירה.</p>
-      <p class="lede" id="event-line"></p>
+      <p class="event-ticket" id="event-line"></p>
       <p class="fine" id="kashrut-line"></p>
     </div>
 
     <p class="notice warn" id="page-notice" role="alert" hidden></p>
 
     <div id="menu" hidden>
-      <div class="field">
-        <span class="counter-label" id="cat-label">קטגוריה</span>
-        <div class="chips" role="group" aria-labelledby="cat-label" id="categories"></div>
+      <div class="menu-bar">
+        <div class="cat-tabs" role="group" aria-label="קטגוריה" id="categories"></div>
+        <div class="menu-tools">
+          <label class="search"><span class="sr-only">חיפוש מנה</span><i data-ill="search"></i><input id="dish-search" type="search" placeholder="חיפוש מנה" autocomplete="off"></label>
+          <div class="chips" role="group" aria-label="סינון לפי תזונה" id="diet-filters">
+            <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegetarian">רק צמחוני</button>
+            <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegan">רק טבעוני</button>
+          </div>
+        </div>
       </div>
-      <div class="chips" role="group" aria-label="סינון לפי תזונה" id="diet-filters">
-        <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegetarian">רק צמחוני</button>
-        <button type="button" class="chip-btn" aria-pressed="false" data-diet="vegan">רק טבעוני</button>
-      </div>
+      <p class="fine">גררו מנה אל השולחן בתחתית המסך, או לחצו "לשולחן" על הכרטיס. במגע: לחיצה ארוכה ואז גרירה.</p>
 
       <p class="notice warn" id="allergen-notice">
         במטבח שלנו יש אגוזים, גלוטן, שומשום, ביצים, סויה ודגים, וייתכן מגע צולב בין מנות.
@@ -88,6 +96,7 @@
           <button type="button" class="tray-toggle" id="tray-toggle" aria-expanded="false" aria-controls="tray-list">
             <i data-ill="basket"></i>
             <span><strong id="tray-h">השולחן שלכם</strong> <span id="bar-text" aria-live="polite"></span></span>
+            <span class="tray-plates" id="tray-plates" aria-hidden="true"></span>
           </button>
           <a class="btn primary" href="#summary">לסיכום</a>
         </div>

@@ -13,9 +13,12 @@
 <a class="skip-link" href="#screen">דילוג לתוכן</a>
 <header class="site-header">
   <div class="header-inner wrap">
-    <a class="brand" href="/">Yummai<small>קייטרינג לאירועים</small></a>
-    <nav class="site-nav" aria-label="ניווט ראשי">
-      <a href="/customer/">האזור האישי</a><a href="#" aria-current="page">הצהרת נגישות</a>
+    <a class="brand" href="/"><i data-ill="pom"></i>Yummai<small>קייטרינג לאירועים</small></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">תפריט</span><i></i></button>
+    <nav class="site-nav" id="site-nav" aria-label="ניווט ראשי">
+      <a href="/">דף הבית</a><a href="/menu/">התפריט</a><a href="/#how-h">איך מזמינים</a><a href="/customer/">האזור האישי</a>
+      <a class="nav-cta" href="/customer/">תכנון אירוע</a>
+      <a class="nav-biz" href="/admin/">כניסת עסק</a>
     </nav>
   </div>
 </header>
@@ -66,6 +69,8 @@
 
 <footer class="site-footer wrap"><span>Yummai · תל אביב</span><a href="/accessibility/">הצהרת נגישות</a></footer>
 <script type="module">
+  import { initMotion } from "/js/motion.js";
+  initMotion(); // header icon and the phone menu button
   // Contact details come from server config (ACCESSIBILITY_CONTACT_*), shown as text only.
   const link = (href, text) => Object.assign(document.createElement("a"), { href, textContent: text });
   try {

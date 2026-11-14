@@ -22,6 +22,7 @@ def test_frontend_pages_served():
         "/admin/availability/",
         "/admin/orders/",
         "/accessibility/",
+        "/menu/",
     ):
         response = client.get(path)
         assert response.status_code == 200
@@ -66,6 +67,7 @@ def test_design_assets_served():
         "/js/customer-session.js",
         "/js/event.js",
         "/js/menu.js",
+        "/js/public-menu.js",
         "/js/order-status.js",
         "/js/assistant.js",
         "/assets/img/table.jpg",
