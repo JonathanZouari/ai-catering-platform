@@ -1,11 +1,11 @@
-"""Writes one self-contained HTML report on the lead score and the purchase model.
+"""Writes one self-contained HTML report on the lead purchase model.
 
     uv run --with plotly --with scikit-learn python -m scripts.lead_report [--out report.html]
 
 Reads `lead_outcomes` from the throwaway synthetic database (name must contain "test"),
-trains the logistic regression on a random split, and compares it with the rule-based score
-`rules-1`. It also lists every lead with the model's chance to buy next to what really
-happened. The file works offline: the charts and their script are inside it. It only reads.
+trains the logistic regression on a random split, and reports how well it predicts. It also
+lists every lead with the model's chance to buy next to what really happened. The file works
+offline: the charts and their script are inside it. It only reads.
 """
 
 import argparse
@@ -50,19 +50,16 @@ h1{margin:0 0 4px}h2{margin:32px 0 10px;font-size:1.15rem}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
 .kpi{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px #0001}
 .kpi b{display:block;font-size:1.6rem}.kpi span{color:#596273;font-size:.85rem}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(480px,1fr));gap:14px}
-.card{background:#fff;border-radius:10px;padding:8px;box-shadow:0 1px 3px #0001}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:14px}
+.card{background:#fff;border-radius:10px;padding:8px;box-shadow:0 1px 3px #0001;min-width:0}
 table{border-collapse:collapse;width:100%;background:#fff;border-radius:10px}
 th,td{padding:8px 12px;text-align:right;border-bottom:1px solid #e6e9ef}
 th:first-child,td:first-child{text-align:left}
-.win{font-weight:700;color:#12713a}
 .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
 .tools select,.tools input{padding:7px 10px;border:1px solid #cfd5df;border-radius:8px;font:inherit}
 #leads th{cursor:pointer;position:sticky;top:0;background:#eef1f6;white-space:nowrap}
 #leads td.l,#leads th.l{text-align:left}
-.pill{padding:2px 9px;border-radius:99px;font-size:.8rem;font-weight:600}
-.high{background:#d9f2e3;color:#12713a}.medium{background:#fff1c9;color:#8a6100}
-.low{background:#fbdcdc;color:#a02323}.ok{color:#12713a}.bad{color:#a02323}
+.ok{color:#12713a}.bad{color:#a02323}
 .scroll{max-height:640px;overflow:auto;border-radius:10px;box-shadow:0 1px 3px #0001}
 @media(max-width:560px){.grid{grid-template-columns:1fr}}
 """
@@ -94,7 +91,6 @@ COLUMNS = [
     ("Guests", ""),
     ("Total (ILS)", ""),
     ("Model chance to buy", ""),
-    ("rules-1 score", ""),
     ("Actual outcome", ""),
     ("Model at 50%", ""),
     ("Set", ""),
@@ -114,7 +110,8 @@ def metrics(truth, probability, threshold=0.5) -> dict:
 
 def chart(figure) -> str:
     figure.update_layout(margin={"l": 50, "r": 20, "t": 50, "b": 45}, height=380)
-    return f'<div class="card">{figure.to_html(full_html=False, include_plotlyjs=False)}</div>'
+    body = figure.to_html(full_html=False, include_plotlyjs=False, config={"responsive": True})
+    return f'<div class="card">{body}</div>'
 
 
 def load_leads(url: str) -> list[dict]:
@@ -133,11 +130,7 @@ def load_leads(url: str) -> list[dict]:
         return [dict(row._mapping) for row in connection.execute(query)]
 
 
-def band_of(score: float) -> str:
-    return "low" if score < 0.4 else "medium" if score < 0.65 else "high"
-
-
-def lead_row(row, actual, rule, chance, in_test) -> str:
+def lead_row(row, actual, chance, in_test) -> str:
     right = int(chance >= 0.5) == actual
     return (
         f"<tr data-outcome='{'won' if actual else 'lost'}' "
@@ -148,17 +141,15 @@ def lead_row(row, actual, rule, chance, in_test) -> str:
         f"<td>{row['features']['guests']}</td>"
         f"<td>{float(row['total']):,.0f}</td>"
         f"<td data-v='{chance:.4f}'><b>{chance:.0%}</b></td>"
-        f"<td data-v='{rule:.4f}'>{rule:.0%} <span class='pill {band_of(rule)}'>"
-        f"{band_of(rule)}</span></td>"
         f"<td>{'won' if actual else 'lost'}</td>"
         f"<td class='{'ok' if right else 'bad'}'>{'correct' if right else 'wrong'}</td>"
         f"<td>{'test' if in_test else 'train'}</td></tr>"
     )
 
 
-def leads_table(rows, labels, rules, chance, test_mask) -> str:
+def leads_table(rows, labels, chance, test_mask) -> str:
     order = np.argsort(-chance)
-    body = "".join(lead_row(rows[i], labels[i], rules[i], chance[i], test_mask[i]) for i in order)
+    body = "".join(lead_row(rows[i], labels[i], chance[i], test_mask[i]) for i in order)
     head = "".join(
         f"<th class='{css}' data-col='{i}'>{title}</th>" for i, (title, css) in enumerate(COLUMNS)
     )
@@ -187,13 +178,12 @@ def build(url: str, train_share: float, seed: int, cdn: bool = False) -> str:
         ]
     )
     labels = np.array([1 if r["outcome"] == "won" else 0 for r in rows])
-    rules = np.array([float(r["score_at_decision"]) for r in rows])
 
     train_idx, test_idx = train_test_split(
         np.arange(len(rows)), train_size=train_share, random_state=seed, stratify=labels
     )
     train_x, test_x = matrix[train_idx], matrix[test_idx]
-    train_y, test_y, test_rules = labels[train_idx], labels[test_idx], rules[test_idx]
+    train_y, test_y = labels[train_idx], labels[test_idx]
 
     model = make_pipeline(
         SimpleImputer(strategy="median", add_indicator=True, keep_empty_features=True),
@@ -214,67 +204,27 @@ def build(url: str, train_share: float, seed: int, cdn: bool = False) -> str:
     )[:, 1]
     test_mask = np.isin(np.arange(len(rows)), test_idx)
 
-    scores = {"Logistic regression": metrics(test_y, prob), "rules-1": metrics(test_y, test_rules)}
-    best = {
-        key: max(scores, key=lambda n: scores[n][key] * (-1 if "Brier" in key else 1))
-        for key in scores["rules-1"]
-    }
-    metric_rows = "".join(
-        f"<tr><td>{key}</td>"
-        + "".join(
-            f'<td class="{"win" if best[key] == name else ""}">{scores[name][key]:.3f}</td>'
-            for name in scores
-        )
-        + "</tr>"
-        for key in best
-    )
-    head = "<tr><th>Test set</th><th>Logistic regression</th><th>rules-1</th></tr>"
-    table = f"<table>{head}{metric_rows}</table>"
+    results = metrics(test_y, prob)
+    metric_rows = "".join(f"<tr><td>{k}</td><td>{v:.3f}</td></tr>" for k, v in results.items())
+    table = f"<table><tr><th>Test set</th><th>Logistic regression</th></tr>{metric_rows}</table>"
 
     roc = go.Figure()
-    for name, p in (("Logistic regression", prob), ("rules-1", test_rules)):
-        fpr, tpr, _ = roc_curve(test_y, p)
-        roc.add_scatter(x=fpr, y=tpr, name=f"{name} (AUC {roc_auc_score(test_y, p):.2f})")
+    fpr, tpr, _ = roc_curve(test_y, prob)
+    roc.add_scatter(x=fpr, y=tpr, name=f"Logistic regression (AUC {results['ROC AUC']:.2f})")
     roc.add_scatter(x=[0, 1], y=[0, 1], name="Chance", line={"dash": "dot", "color": "gray"})
     roc.update_layout(
         title="ROC curve", xaxis_title="False positive rate", yaxis_title="True positive rate"
     )
 
     cal = go.Figure()
-    for name, p in (("Logistic regression", prob), ("rules-1", test_rules)):
-        actual, predicted = calibration_curve(test_y, p, n_bins=6, strategy="quantile")
-        cal.add_scatter(x=predicted, y=actual, mode="lines+markers", name=name)
+    actual, predicted = calibration_curve(test_y, prob, n_bins=6, strategy="quantile")
+    cal.add_scatter(x=predicted, y=actual, mode="lines+markers", name="Logistic regression")
     cal.add_scatter(x=[0, 1], y=[0, 1], name="Perfect", line={"dash": "dot", "color": "gray"})
     cal.update_layout(
         title="Calibration: does a 60% score win ~60% of the time?",
         xaxis_title="Predicted probability",
         yaxis_title="Share that actually won",
     )
-
-    frame = pd.DataFrame({"rules-1 score": rules, "Outcome": np.where(labels == 1, "won", "lost")})
-    dist = px.histogram(
-        frame,
-        x="rules-1 score",
-        color="Outcome",
-        nbins=25,
-        barmode="overlay",
-        opacity=0.65,
-        title="rules-1 score by outcome (all decided leads)",
-    )
-
-    band_names = pd.cut(
-        rules, [0, 0.4, 0.65, 1.0], labels=["low", "medium", "high"], include_lowest=True
-    )
-    rates = pd.DataFrame({"band": band_names, "won": labels}).groupby("band", observed=True)["won"]
-    rates = rates.agg(["mean", "count"]).reset_index()
-    band_chart = px.bar(
-        rates,
-        x="band",
-        y="mean",
-        text=rates["count"].map(lambda n: f"{n} leads"),
-        title="Win rate per rules-1 band (what the caterer sees)",
-    )
-    band_chart.update_yaxes(range=[0, 1], tickformat=".0%", title="Win rate")
 
     names = NAMES + [f"{NAMES[i]} (missing)" for i in model[0].indicator_.features_]
     effects = pd.DataFrame({"feature": names, "coefficient": model[-1].coef_[0]})
@@ -307,8 +257,8 @@ def build(url: str, train_share: float, seed: int, cdn: bool = False) -> str:
         (f"{folds.mean():.3f}", f"5-fold CV AUC on train (± {folds.std():.3f})"),
     ]
     kpi_html = "".join(f'<div class="kpi"><b>{v}</b><span>{k}</span></div>' for v, k in kpis)
-    charts = "".join(chart(f) for f in (roc, cal, dist, band_chart, coef, conf))
-    leads_html = leads_table(rows, labels, rules, chance, test_mask)
+    charts = "".join(chart(f) for f in (roc, cal, coef, conf))
+    leads_html = leads_table(rows, labels, chance, test_mask)
     plotly_tag = (
         f'<script src="https://cdn.plot.ly/plotly-{get_plotlyjs_version()}.min.js"></script>'
         if cdn
@@ -322,7 +272,7 @@ def build(url: str, train_share: float, seed: int, cdn: bool = False) -> str:
 <p class="note">The outcomes are synthetic, generated by a hidden formula plus noise, so this shows
 the pipeline works, not how real customers behave. The model is not used by the app yet.</p>
 <div class="kpis">{kpi_html}</div>
-<h2>Model vs. rule-based score (test set, best value in green)</h2>{table}
+<h2>Model results (test set)</h2>{table}
 <h2>Charts</h2><div class="grid">{charts}</div>
 <h2>Every lead: chance to buy vs. what happened</h2>
 <p class="note">"Model chance to buy" is out-of-fold: each lead is scored by a model trained on
