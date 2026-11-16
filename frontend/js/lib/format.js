@@ -5,6 +5,8 @@ const money = new Intl.NumberFormat("he-IL", { style: "currency", currency: CURR
 const moneyWhole = new Intl.NumberFormat("he-IL", { style: "currency", currency: CURRENCY, maximumFractionDigits: 0 });
 const number = new Intl.NumberFormat("he-IL", { maximumFractionDigits: 2 });
 const dateLong = new Intl.DateTimeFormat("he-IL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+const dateShort = new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "numeric", year: "numeric" });
+const percent = new Intl.NumberFormat("he-IL", { style: "percent", maximumFractionDigits: 0 });
 
 export function fmtMoney(value) {
   const n = Number(value);
@@ -26,6 +28,18 @@ export function fmtDate(isoDate) {
   if (!isoDate) return "";
   const [y, m, d] = isoDate.split("-").map(Number);
   return dateLong.format(new Date(y, m - 1, d));
+}
+
+/** Numeric date for dense tables, e.g. 8.12.2026. */
+export function fmtDateShort(isoDate) {
+  if (!isoDate) return "";
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return dateShort.format(new Date(y, m - 1, d));
+}
+
+/** A share between 0 and 1 as a whole percentage, e.g. 0.72 -> 72%. */
+export function fmtPercent(share) {
+  return percent.format(Number(share));
 }
 
 export function toIsoDate(date) {

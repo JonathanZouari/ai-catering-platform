@@ -49,6 +49,23 @@ The app needs `DATABASE_URL` in `.env` and does not start without it (see `.env.
 
 Add a schema change as a new numbered file (`0002_….sql`); never edit a file that has already run.
 
+### Leads and the purchase model
+
+`/admin/leads/` lists leads with the estimated chance that each open lead ends in a purchase. **The leads are synthetic and the model was trained only on them, so the percentages are demo values, not a forecast about real customers.**
+
+- `backend/scripts/sample_leads.py` generates the leads and writes `database/seeds/0003_sample_leads.sql`.
+- `backend/scripts/train_lead_model.py` fits a logistic regression on the closed leads (won or lost) and writes `backend/app/services/lead_model.json`: the coefficients plus metrics from a 25% holdout.
+- The server reads that file and computes each probability in `app/services/lead_scoring.py`. It does not need scikit-learn.
+
+To regenerate both files, from `backend/`:
+
+```bash
+uv run python -m scripts.sample_leads
+uv run python -m scripts.train_lead_model
+```
+
+The leads API (`/api/admin/leads`) has no login yet. It is served only when `APP_ENV=development` and answers 404 otherwise, so production must set `APP_ENV=production`. A development database must hold sample leads only.
+
 ### Storage
 
 Dish images go in a public Supabase Storage bucket, `dish-images`. It is not created by the migrations, because CI's plain Postgres has no `storage` schema. Run this once in each Supabase project (SQL Editor):
@@ -83,6 +100,7 @@ Database tests need `DATABASE_URL` and are skipped without it. Each test builds 
 | `pytest` (dev) | Mandated test runner |
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
+| `scikit-learn` (dev) | Trains the lead purchase model; not installed in the production image |
 
 The Supabase client is added when the app needs Storage or Auth.
 
