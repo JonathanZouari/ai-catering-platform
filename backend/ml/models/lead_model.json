@@ -1,0 +1,10 @@
+{
+  "C": 0.1,
+  "test": {
+    "roc_auc": 0.7356994061871468,
+    "average_precision": 0.4160390662969947,
+    "brier": 0.14857372334523722,
+    "log_loss": 0.4601397972626713
+  },
+  "trained_on": "leads_synthetic.csv"
+}

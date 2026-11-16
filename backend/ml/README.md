@@ -72,3 +72,14 @@ Trains the same logistic regression with both split methods, 10 times each, in t
 a stable market and a market that changes over time (`generate(..., drift=1.0)`). Each estimate
 is compared with the actual score on a fresh, unseen future year. Results:
 `reports/split_comparison.md`.
+
+## Final model
+
+```bash
+uv run --group ml python -m ml.train_model   # writes models/lead_model.joblib + .json, reports/final_model.md
+```
+
+Time-based protocol: tune C with `TimeSeriesSplit` on the first 80% of leads, score once on the
+last 20%, then refit on all leads. To score new leads, pass them through `compare_splits.features`
+and call `predict_proba`. The model file is a pickle (joblib): only load files this project
+produced, never one from an upload or an outside source.
