@@ -25,3 +25,8 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+
+# ML: exported training data and trained models stay local
+backend/data/
+backend/models/
+preview_leads.html
