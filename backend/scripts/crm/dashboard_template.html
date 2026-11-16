@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRM Lead Dashboard</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --ink: #1f2430; --muted: #6b7280; --line: #e5e2d9;
+    --buyer: #1d8a6f; --non: #d9a066; --accent: #3b5bdb; --neg: #c2474d; --grid: #ece9e0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171c; --card: #1d2128; --ink: #e8eaee; --muted: #9aa3b2; --line: #2b313b;
+      --buyer: #3fc3a1; --non: #e0a96d; --accent: #7c93ff; --neg: #ef7b80; --grid: #272c35;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171c; --card: #1d2128; --ink: #e8eaee; --muted: #9aa3b2; --line: #2b313b;
+    --buyer: #3fc3a1; --non: #e0a96d; --accent: #7c93ff; --neg: #ef7b80; --grid: #272c35;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  h2 { font-size: 1.05rem; margin: 40px 0 12px; }
+  h3 { font-size: .95rem; margin: 0 0 2px; }
+  .sub, .note { color: var(--muted); font-size: .85rem; margin: 0 0 12px; }
+  .legend { display: flex; gap: 16px; font-size: .85rem; color: var(--muted); margin: 8px 0 0; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .kpi, .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .kpi b { display: block; font-size: 1.6rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .kpi span { color: var(--muted); font-size: .8rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+  svg text.val { fill: var(--ink); }
+  .grid-line { stroke: var(--grid); }
+  table.cm { border-collapse: collapse; margin: 8px auto 0; text-align: center; }
+  table.cm td, table.cm th { padding: 10px 14px; font-size: .85rem; }
+  table.cm td { border-radius: 6px; font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 600; }
+  .ok { background: color-mix(in srgb, var(--buyer) 22%, transparent); }
+  .bad { background: color-mix(in srgb, var(--neg) 22%, transparent); }
+  th { color: var(--muted); font-weight: 500; }
+  #tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg);
+    padding: 4px 8px; border-radius: 6px; font-size: .8rem; display: none; z-index: 5; }
+  footer { margin-top: 32px; color: var(--muted); font-size: .8rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>CRM lead dashboard</h1>
+  <p class="sub">Synthetic leads. Purchase prediction with logistic regression, 80% train / 20% test.</p>
+  <div class="legend"><span><i style="background:var(--buyer)"></i>Buyer</span><span><i style="background:var(--non)"></i>Non-buyer</span></div>
+
+  <div class="kpis" id="kpis" style="margin-top:16px"></div>
+
+  <h2>Lead distribution</h2>
+  <div class="grid" id="dist"></div>
+
+  <h2>Model evaluation (200 held-out test leads)</h2>
+  <div class="kpis" id="mkpis"></div>
+  <div class="grid" id="model" style="margin-top:16px"></div>
+
+  <footer>Data is synthetic: metrics show the pipeline works, not real-world accuracy.</footer>
+</main>
+<div id="tip"></div>
+<script>
+const D = /*DATA*/null;
+const NS = "http://www.w3.org/2000/svg";
+const tip = document.getElementById("tip");
+const pct = (x, d = 0) => (x * 100).toFixed(d) + "%";
+
+function el(tag, attrs = {}, parent) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function text(parent, x, y, s, attrs = {}) {
+  const t = el("text", { x, y, ...attrs }, parent); t.textContent = s; return t;
+}
+function hover(node, msg) {
+  node.addEventListener("mousemove", e => {
+    tip.textContent = msg; tip.style.display = "block";
+    tip.style.left = e.clientX + 12 + "px"; tip.style.top = e.clientY + 12 + "px";
+  });
+  node.addEventListener("mouseleave", () => tip.style.display = "none");
+}
+function card(parent, title, sub) {
+  const c = document.createElement("div"); c.className = "card";
+  c.innerHTML = `<h3>${title}</h3><p class="note">${sub || ""}</p>`;
+  parent.appendChild(c); return c;
+}
+function kpi(parent, value, label) {
+  const k = document.createElement("div"); k.className = "kpi";
+  k.innerHTML = `<b>${value}</b><span>${label}</span>`; parent.appendChild(k);
+}
+function svgIn(parent, w, h) {
+  const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" }); parent.appendChild(s); return s;
+}
+
+// Stacked columns: buyers (bottom) + non-buyers (top) per bin.
+function columns(parent, bins, stacked = true) {
+  const W = 420, H = 220, m = { l: 36, r: 8, t: 10, b: 30 };
+  const s = svgIn(parent, W, H);
+  const max = Math.max(...bins.map(b => b.buyers + b.non)) || 1;
+  const ph = H - m.t - m.b, pw = W - m.l - m.r, bw = pw / bins.length;
+  for (let i = 0; i <= 4; i++) {
+    const y = m.t + ph - (ph * i) / 4;
+    el("line", { x1: m.l, x2: W - m.r, y1: y, y2: y, class: "grid-line" }, s);
+    text(s, m.l - 6, y + 4, Math.round((max * i) / 4), { "text-anchor": "end" });
+  }
+  bins.forEach((b, i) => {
+    const x = m.l + i * bw + bw * 0.12, w = bw * 0.76;
+    const hb = (b.buyers / max) * ph, hn = (b.non / max) * ph;
+    const yb = m.t + ph - hb, yn = yb - hn;
+    const r1 = el("rect", { x, y: yb, width: w, height: hb, fill: "var(--buyer)" }, s);
+    const r2 = el("rect", { x, y: yn, width: w, height: hn, fill: "var(--non)" }, s);
+    const n = b.buyers + b.non, rate = n ? b.buyers / n : 0;
+    const msg = `${b.label}: ${n} leads, ${pct(rate)} buyers`;
+    hover(r1, msg); hover(r2, msg);
+    text(s, x + w / 2, H - m.b + 15, b.label, { "text-anchor": "middle" });
+  });
+}
+
+// Horizontal stacked bar per category, labelled with the buyer rate.
+function hbars(parent, items) {
+  const rowH = 30, W = 420, m = { l: 96, r: 70 };
+  const H = items.length * rowH + 8;
+  const s = svgIn(parent, W, H);
+  const max = Math.max(...items.map(b => b.buyers + b.non)) || 1;
+  items.forEach((b, i) => {
+    const y = 4 + i * rowH, n = b.buyers + b.non, full = W - m.l - m.r;
+    const wb = (b.buyers / max) * full, wn = (b.non / max) * full;
+    text(s, m.l - 8, y + 16, b.label.replace("_", " "), { "text-anchor": "end", class: "val" });
+    const r1 = el("rect", { x: m.l, y, width: wb, height: 22, fill: "var(--buyer)" }, s);
+    const r2 = el("rect", { x: m.l + wb, y, width: wn, height: 22, fill: "var(--non)" }, s);
+    text(s, m.l + wb + wn + 6, y + 16, `${n} · ${pct(b.buyers / n)}`);
+    const msg = `${b.label}: ${n} leads, ${pct(b.buyers / n)} buyers`;
+    hover(r1, msg); hover(r2, msg);
+  });
+}
+
+// Predicted vs actual buyer rate per score band (calibration).
+function bandChart(parent, bands) {
+  const W = 420, H = 220, m = { l: 36, r: 8, t: 14, b: 40 };
+  const s = svgIn(parent, W, H);
+  const ph = H - m.t - m.b, pw = W - m.l - m.r, bw = pw / bands.length;
+  for (let i = 0; i <= 4; i++) {
+    const y = m.t + ph - (ph * i) / 4;
+    el("line", { x1: m.l, x2: W - m.r, y1: y, y2: y, class: "grid-line" }, s);
+    text(s, m.l - 6, y + 4, pct(i / 4), { "text-anchor": "end" });
+  }
+  bands.forEach((b, i) => {
+    const x = m.l + i * bw + bw * 0.1, w = bw * 0.38;
+    const h1 = b.avg_score * ph, h2 = b.actual_rate * ph;
+    const r1 = el("rect", { x, y: m.t + ph - h1, width: w, height: h1, fill: "var(--accent)", opacity: .55 }, s);
+    const r2 = el("rect", { x: x + w + 2, y: m.t + ph - h2, width: w, height: h2, fill: "var(--buyer)" }, s);
+    const msg = `${b.label}: predicted ${pct(b.avg_score)}, actual ${pct(b.actual_rate)} (n=${b.n})`;
+    hover(r1, msg); hover(r2, msg);
+    text(s, x + w, H - m.b + 15, "Q" + (i + 1), { "text-anchor": "middle" });
+  });
+  text(s, m.l, H - 6, "Predicted (blue) vs actual (green) buyer rate, by score quintile");
+}
+
+function rocChart(parent, pts, auc) {
+  const W = 420, H = 260, m = { l: 40, r: 12, t: 10, b: 36 };
+  const s = svgIn(parent, W, H);
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const X = v => m.l + v * pw, Y = v => m.t + ph - v * ph;
+  for (let i = 0; i <= 4; i++) {
+    el("line", { x1: m.l, x2: W - m.r, y1: Y(i / 4), y2: Y(i / 4), class: "grid-line" }, s);
+    text(s, m.l - 6, Y(i / 4) + 4, (i / 4).toFixed(2), { "text-anchor": "end" });
+    text(s, X(i / 4), H - m.b + 14, (i / 4).toFixed(2), { "text-anchor": "middle" });
+  }
+  el("line", { x1: X(0), y1: Y(0), x2: X(1), y2: Y(1), stroke: "var(--muted)", "stroke-dasharray": "4 4" }, s);
+  const d = pts.map((p, i) => `${i ? "L" : "M"}${X(p[0])},${Y(p[1])}`).join("");
+  el("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": 2.5 }, s);
+  text(s, X(0.55), Y(0.15), `AUC = ${auc}`, { class: "val", "font-size": 14 });
+  text(s, X(0.5), H - 4, "False positive rate", { "text-anchor": "middle" });
+  text(s, 10, Y(0.5), "TPR", { transform: `rotate(-90 10 ${Y(0.5)})`, "text-anchor": "middle" });
+}
+
+function coefChart(parent, coefs) {
+  const entries = Object.entries(coefs).slice(0, 12);
+  const rowH = 22, W = 420, mid = 250, scale = 90 / Math.max(...entries.map(e => Math.abs(e[1])));
+  const s = svgIn(parent, W, entries.length * rowH + 8);
+  el("line", { x1: mid, x2: mid, y1: 0, y2: entries.length * rowH + 8, stroke: "var(--muted)" }, s);
+  entries.forEach(([k, v], i) => {
+    const y = 4 + i * rowH, w = Math.abs(v) * scale;
+    const r = el("rect", { x: v >= 0 ? mid : mid - w, y, width: w, height: 16,
+      fill: v >= 0 ? "var(--buyer)" : "var(--neg)" }, s);
+    hover(r, `${k}: ${v > 0 ? "+" : ""}${v}`);
+    text(s, v >= 0 ? mid - 6 : mid + 6, y + 12, k.replaceAll("_", " "),
+      { "text-anchor": v >= 0 ? "end" : "start", class: "val" });
+    text(s, v >= 0 ? mid + w + 4 : mid - w - 4, y + 12, (v > 0 ? "+" : "") + v,
+      { "text-anchor": v >= 0 ? "start" : "end" });
+  });
+}
+
+function confusion(parent, c) {
+  const t = document.createElement("table"); t.className = "cm";
+  t.innerHTML = `<tr><th></th><th>Predicted non-buyer</th><th>Predicted buyer</th></tr>
+    <tr><th>Actual non-buyer</th><td class="ok">${c.tn}</td><td class="bad">${c.fp}</td></tr>
+    <tr><th>Actual buyer</th><td class="bad">${c.fn}</td><td class="ok">${c.tp}</td></tr>`;
+  parent.appendChild(t);
+}
+
+// ---- Render ----
+const r = D.report, t = r.test;
+const k = document.getElementById("kpis");
+kpi(k, D.total, "Leads");
+kpi(k, D.buyers, "Buyers");
+kpi(k, pct(D.buyers / D.total, 1), "Buyer rate");
+kpi(k, r.n_train + " / " + r.n_test, "Train / test split");
+
+const dist = document.getElementById("dist");
+const specs = [
+  ["Lead source", "Count and buyer rate by acquisition channel", "source", hbars],
+  ["Event type", "Count and buyer rate by event", "event_type", hbars],
+  ["Quote submitted", "Leads that asked for a quote", "quote_submitted", hbars],
+  ["Days until event", "Lead time at enquiry", "days_until_event", columns],
+  ["Guest count", "Size of the event", "guest_count", columns],
+  ["Dishes selected", "Menu items picked", "dishes_selected", columns],
+];
+specs.forEach(([title, sub, key, fn]) => fn(card(dist, title, sub), D.distribution[key]));
+
+const mk = document.getElementById("mkpis");
+kpi(mk, t.roc_auc, "ROC AUC (test)");
+kpi(mk, pct(t.accuracy, 1), "Accuracy");
+kpi(mk, pct(t.precision, 1), "Precision");
+kpi(mk, pct(t.recall, 1), "Recall");
+kpi(mk, t.f1, "F1");
+kpi(mk, r.cv_auc_train_mean + " ± " + r.cv_auc_train_std, "5-fold CV AUC (train)");
+
+const model = document.getElementById("model");
+rocChart(card(model, "ROC curve", "Higher and further left is better; dashed = random guessing"), D.roc, t.roc_auc);
+confusion(card(model, "Confusion matrix", "Threshold 0.5 on the test set"), t.confusion);
+columns(card(model, "Predicted probability", "Test leads by score; colour = actual outcome"), D.score_hist);
+bandChart(card(model, "Calibration by score quintile", "Does a higher score mean more buyers?"), D.bands);
+coefChart(card(model, "Feature weights", "Standardised logistic coefficients (top 12)"), r.coefficients_standardised);
+</script>
+</body>
+</html>
