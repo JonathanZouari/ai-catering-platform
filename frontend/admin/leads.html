@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>לידים וחיזוי</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <style>
+    main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-block: 16px; }
+    .kpi { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 12px; padding: 14px; }
+    .kpi b { display: block; font-size: 1.6rem; color: var(--color-accent); }
+    .kpi span { color: var(--color-muted); font-size: .9rem; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 12px; }
+    .filters button { border: 1px solid var(--color-control-border); background: var(--color-surface); color: var(--color-text);
+      border-radius: 999px; padding: 6px 14px; font: inherit; cursor: pointer; }
+    .filters button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); }
+    .table-wrap { overflow-x: auto; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 12px; }
+    table { border-collapse: collapse; width: 100%; min-width: 760px; }
+    th, td { text-align: start; padding: 10px 12px; border-bottom: 1px solid var(--color-line); vertical-align: top; }
+    th { font-weight: 600; color: var(--color-muted); font-size: .85rem; }
+    .tier { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .85rem; font-weight: 600; }
+    .tier.hot { background: var(--color-success-soft); color: var(--color-success); }
+    .tier.warm { background: var(--color-warning-soft); color: var(--color-warning); }
+    .tier.cold { background: var(--color-line); color: var(--color-muted); }
+    .small { color: var(--color-muted); font-size: .85rem; }
+    .months { display: grid; gap: 6px; margin-block: 8px 16px; }
+    .month { display: grid; grid-template-columns: 70px 1fr 110px; align-items: center; gap: 8px; }
+    .bar { height: 12px; background: var(--color-fill); border-radius: 6px; }
+    #error { color: var(--color-danger); }
+  </style>
+</head>
+<body>
+  <main>
+    <p><a href="/admin/">← ממשק העסק</a></p>
+    <h1>לידים וחיזוי</h1>
+    <p class="small">ליד הוא לקוח ללא הזמנה מאושרת. הסיכוי מחושב ממודל שלמד מההזמנות הראשונות של כל הלקוחות.</p>
+    <p id="error" role="alert"></p>
+    <section class="kpis" id="kpis" aria-label="סיכום"></section>
+    <h2>הכנסה צפויה לפי חודש האירוע</h2>
+    <div class="months" id="months"></div>
+    <h2>רשימת לידים</h2>
+    <div class="filters" id="filters" role="group" aria-label="סינון"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>לקוח</th><th>סיכוי</th><th>סטטוס</th><th>אירוע</th><th>הצעה</th><th>פעולה מומלצת</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+  <script type="module">
+    import { api } from "/js/api.js";
+
+    // Phone numbers keep their left-to-right order inside Hebrew text.
+    const ltr = (text) => Object.assign(document.createElement("bdi"), { dir: "ltr", textContent: text });
+
+    const TIERS = { hot: "חם", warm: "בינוני", cold: "קר" };
+    const STATUS = { pending_approval: "ממתין לאישור", draft: "טיוטה", rejected: "נדחה" };
+    const money = (n) => `₪${Math.round(n).toLocaleString("he-IL")}`;
+    const el = (tag, props = {}, ...kids) => {
+      const node = Object.assign(document.createElement(tag), props);
+      node.append(...kids);
+      return node;
+    };
+
+    let filter = "all";
+    const FILTERS = [["all", "הכל"], ["hot", "חם"], ["warm", "בינוני"], ["cold", "קר"]];
+
+    function renderKpis(f) {
+      const items = [
+        [f.total_leads, "לידים פתוחים"],
+        [f.tiers.hot.count, "לידים חמים"],
+        [f.expected_conversions, "הזמנות צפויות"],
+        [money(f.expected_revenue), "הכנסה צפויה"],
+      ];
+      document.getElementById("kpis").replaceChildren(
+        ...items.map(([value, label]) => el("div", { className: "kpi" }, el("b", { textContent: value }), el("span", { textContent: label }))),
+      );
+    }
+
+    function renderMonths(months) {
+      const max = Math.max(...months.map((m) => m.expected_revenue), 1);
+      document.getElementById("months").replaceChildren(
+        ...months.map((m) => {
+          const bar = el("div", { className: "bar" });
+          bar.style.width = `${(m.expected_revenue / max) * 100}%`;
+          return el("div", { className: "month" },
+            el("span", { textContent: m.month }), bar, el("span", { className: "small", textContent: money(m.expected_revenue) }));
+        }),
+      );
+    }
+
+    function renderRows(items) {
+      document.getElementById("rows").replaceChildren(
+        ...items.map((lead) => {
+          const contact = el("div", { className: "small" }, ltr(lead.phone));
+          const name = el("td", {}, el("b", { textContent: lead.full_name }), el("div", { className: "small", textContent: lead.city }), contact);
+          const chance = el("td", {}, el("span", { className: `tier ${lead.tier}`, textContent: `${TIERS[lead.tier]} ${Math.round(lead.probability * 100)}%` }),
+            ...lead.reasons.map((r) => el("div", { className: "small", textContent: r })));
+          const event = lead.event_date
+            ? el("td", {}, lead.event_type, el("div", { className: "small", textContent: `${lead.event_date} (${lead.days_to_event} ימים), ${lead.guests} אורחים` }))
+            : el("td", { className: "small", textContent: "ללא אירוע" });
+          return el("tr", {}, name, chance,
+            el("td", { textContent: lead.order_status ? STATUS[lead.order_status] : "נרשם בלבד" }), event,
+            el("td", { textContent: lead.quote_total ? money(lead.quote_total) : "-" }),
+            el("td", { textContent: lead.action }));
+        }),
+      );
+    }
+
+    async function loadRows() {
+      const params = new URLSearchParams({ limit: "100" });
+      if (filter !== "all") params.set("tier", filter);
+      renderRows((await api(`/api/leads?${params}`)).items);
+    }
+
+    function renderFilters() {
+      document.getElementById("filters").replaceChildren(
+        ...FILTERS.map(([key, label]) => {
+          const button = el("button", { type: "button", textContent: label });
+          button.setAttribute("aria-pressed", String(filter === key));
+          button.addEventListener("click", () => { filter = key; renderFilters(); loadRows().catch(showError); });
+          return button;
+        }),
+      );
+    }
+
+    const showError = (e) => { document.getElementById("error").textContent = e.message; };
+
+    renderFilters();
+    Promise.all([api("/api/leads/forecast"), loadRows()])
+      .then(([f]) => { renderKpis(f); renderMonths(f.by_event_month); })
+      .catch(showError);
+  </script>
+</body>
+</html>
