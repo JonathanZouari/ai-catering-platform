@@ -1,0 +1,350 @@
+{
+  "synthetic_only": true,
+  "model": {
+    "version": "synthetic-logistic-v1",
+    "synthetic_only": true,
+    "target": "approved_order_within_30_days_of_website_inquiry",
+    "prediction_time": "initial_website_form_submission",
+    "features": [
+      "guest_count",
+      "days_until_event",
+      "budget_per_guest",
+      "date_provided",
+      "budget_provided"
+    ],
+    "mean": [
+      128.72,
+      79.85555555555555,
+      120.1211111111111,
+      0.8533333333333334,
+      0.7455555555555555
+    ],
+    "scale": [
+      68.40840948954221,
+      57.57734143665879,
+      92.47015013198627,
+      0.35377331097124115,
+      0.43554846933010727
+    ],
+    "coefficients": [
+      0.3609748255484358,
+      -0.5521683724406657,
+      1.207893554107544,
+      0.5302136180961454,
+      -0.22107527692872436
+    ],
+    "intercept": -0.5539468226808866,
+    "threshold": 0.5,
+    "metrics": {
+      "evaluation": "SYNTHETIC ONLY — not evidence of real conversion performance",
+      "train_rows": 900,
+      "test_rows": 300,
+      "threshold": 0.5,
+      "roc_auc": 0.833767926988266,
+      "brier_score": 0.15956155342274475,
+      "baseline_brier_score": 0.2386234567901235,
+      "precision": 0.7659574468085106,
+      "recall": 0.6101694915254238,
+      "confusion_matrix_actual_rows_predicted_columns": [
+        [
+          160,
+          22
+        ],
+        [
+          46,
+          72
+        ]
+      ]
+    }
+  },
+  "leads": [
+    {
+      "id": "synthetic-1201",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1201",
+      "email": "lead-1201@example.invalid",
+      "guest_count": 111,
+      "days_until_event": null,
+      "budget_per_guest": 46,
+      "demo_probability": 0.0946687653439312,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1202",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1202",
+      "email": "lead-1202@example.invalid",
+      "guest_count": 134,
+      "days_until_event": 119,
+      "budget_per_guest": 144,
+      "demo_probability": 0.3777994340574508,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1203",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1203",
+      "email": "lead-1203@example.invalid",
+      "guest_count": 240,
+      "days_until_event": 164,
+      "budget_per_guest": 102,
+      "demo_probability": 0.2850109382955449,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1204",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1204",
+      "email": "lead-1204@example.invalid",
+      "guest_count": 230,
+      "days_until_event": 60,
+      "budget_per_guest": 64,
+      "demo_probability": 0.38425649748319574,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1205",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1205",
+      "email": "lead-1205@example.invalid",
+      "guest_count": 194,
+      "days_until_event": null,
+      "budget_per_guest": 228,
+      "demo_probability": 0.6358585548639928,
+      "demo_class": "higher",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1206",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1206",
+      "email": "lead-1206@example.invalid",
+      "guest_count": 90,
+      "days_until_event": 176,
+      "budget_per_guest": null,
+      "demo_probability": 0.06591923793982807,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1207",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1207",
+      "email": "lead-1207@example.invalid",
+      "guest_count": 160,
+      "days_until_event": 177,
+      "budget_per_guest": 127,
+      "demo_probability": 0.24232259364875738,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1208",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1208",
+      "email": "lead-1208@example.invalid",
+      "guest_count": 195,
+      "days_until_event": 36,
+      "budget_per_guest": 142,
+      "demo_probability": 0.6440143847753347,
+      "demo_class": "higher",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1209",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1209",
+      "email": "lead-1209@example.invalid",
+      "guest_count": 101,
+      "days_until_event": 66,
+      "budget_per_guest": 239,
+      "demo_probability": 0.7457702450398521,
+      "demo_class": "higher",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1210",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1210",
+      "email": "lead-1210@example.invalid",
+      "guest_count": 111,
+      "days_until_event": 8,
+      "budget_per_guest": 87,
+      "demo_probability": 0.4254755450444557,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1211",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1211",
+      "email": "lead-1211@example.invalid",
+      "guest_count": 95,
+      "days_until_event": 123,
+      "budget_per_guest": 107,
+      "demo_probability": 0.22681805524820364,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1212",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1212",
+      "email": "lead-1212@example.invalid",
+      "guest_count": 218,
+      "days_until_event": null,
+      "budget_per_guest": 198,
+      "demo_probability": 0.5725347189073859,
+      "demo_class": "higher",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1213",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1213",
+      "email": "lead-1213@example.invalid",
+      "guest_count": 39,
+      "days_until_event": 75,
+      "budget_per_guest": null,
+      "demo_probability": 0.1243730679789841,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1214",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1214",
+      "email": "lead-1214@example.invalid",
+      "guest_count": 90,
+      "days_until_event": 17,
+      "budget_per_guest": 201,
+      "demo_probability": 0.729417712072076,
+      "demo_class": "higher",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1215",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1215",
+      "email": "lead-1215@example.invalid",
+      "guest_count": 234,
+      "days_until_event": 4,
+      "budget_per_guest": 200,
+      "demo_probability": 0.8656615598799688,
+      "demo_class": "higher",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1216",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1216",
+      "email": "lead-1216@example.invalid",
+      "guest_count": 168,
+      "days_until_event": null,
+      "budget_per_guest": null,
+      "demo_probability": 0.11400808640555779,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1217",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1217",
+      "email": "lead-1217@example.invalid",
+      "guest_count": 61,
+      "days_until_event": 156,
+      "budget_per_guest": 207,
+      "demo_probability": 0.39747559161230317,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1218",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1218",
+      "email": "lead-1218@example.invalid",
+      "guest_count": 105,
+      "days_until_event": 136,
+      "budget_per_guest": 189,
+      "demo_probability": 0.4434573892045145,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1219",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1219",
+      "email": "lead-1219@example.invalid",
+      "guest_count": 246,
+      "days_until_event": 40,
+      "budget_per_guest": 197,
+      "demo_probability": 0.823758799264233,
+      "demo_class": "higher",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1220",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1220",
+      "email": "lead-1220@example.invalid",
+      "guest_count": 208,
+      "days_until_event": null,
+      "budget_per_guest": 97,
+      "demo_probability": 0.2535283050122401,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1221",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1221",
+      "email": "lead-1221@example.invalid",
+      "guest_count": 123,
+      "days_until_event": 106,
+      "budget_per_guest": 85,
+      "demo_probability": 0.23094872186263132,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1222",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1222",
+      "email": "lead-1222@example.invalid",
+      "guest_count": 60,
+      "days_until_event": 132,
+      "budget_per_guest": 156,
+      "demo_probability": 0.2979038790980356,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1223",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1223",
+      "email": "lead-1223@example.invalid",
+      "guest_count": 94,
+      "days_until_event": null,
+      "budget_per_guest": 92,
+      "demo_probability": 0.1484581437294525,
+      "demo_class": "lower",
+      "stage": "new"
+    },
+    {
+      "id": "synthetic-1224",
+      "is_synthetic": true,
+      "name": "פונה לדוגמה 1224",
+      "email": "lead-1224@example.invalid",
+      "guest_count": 86,
+      "days_until_event": 160,
+      "budget_per_guest": 147,
+      "demo_probability": 0.2485823992686198,
+      "demo_class": "lower",
+      "stage": "new"
+    }
+  ]
+}
