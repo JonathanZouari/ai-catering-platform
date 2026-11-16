@@ -22,6 +22,15 @@ const LEAD_STATUS = {
   lost: ["badge-danger", "לא רלוונטי"],
 };
 
+// Tiers come from the lead_priority view (supabase/migrations/*_lead_priority.sql).
+const LEAD_TIER = {
+  today: ["badge-green", "לחזור היום"],
+  week: ["badge-warning", "לחזור השבוע"],
+  low: ["badge-pareve", "עדיפות נמוכה"],
+  skip: ["badge-danger", "לא כדאי לחזור"],
+  closed: ["badge-pareve", "סגור"],
+};
+
 const head = h("header", { class: "admin-head" },
   h("h1", { class: "auth-title", text: "ממשק העסק" }),
   h("button", { class: "btn btn-ghost", type: "button", onclick: signOut }, "יציאה"));
@@ -79,6 +88,7 @@ if (!isAdmin(session)) {
 
   function leadCard(l) {
     const [badge, label] = LEAD_STATUS[l.status];
+    const [tierBadge, tierLabel] = LEAD_TIER[l.tier];
     const intl = `972${l.phone.slice(1)}`;
     const details = [
       l.event_type,
@@ -88,7 +98,10 @@ if (!isAdmin(session)) {
     return h("li", { class: "panel admin-order" },
       h("div", { class: "admin-order-head" },
         h("strong", { text: l.full_name }),
-        h("span", { class: `badge ${badge}`, text: label })),
+        h("span", { class: "admin-actions" },
+          h("span", { class: `badge ${tierBadge}`, text: `${tierLabel} · ${l.score}` }),
+          h("span", { class: `badge ${badge}`, text: label }))),
+      l.reasons.length ? h("p", { class: "small", text: l.reasons.join(" · ") }) : null,
       h("p", { class: "muted small", text: `התקבל ${new Date(l.created_at).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })}` }),
       details ? h("p", { class: "muted", text: details }) : null,
       l.message ? h("p", { text: l.message }) : null,
@@ -108,8 +121,9 @@ if (!isAdmin(session)) {
   }
 
   async function loadLeads() {
-    const { data, error } = await sb.from("leads")
-      .select("id,full_name,phone,email,event_type,event_date,guests,message,status,notes,created_at")
+    const { data, error } = await sb.from("lead_priority")
+      .select("id,full_name,phone,email,event_type,event_date,guests,message,status,notes,created_at,score,tier,reasons")
+      .order("score", { ascending: false })
       .order("created_at", { ascending: false });
     if (error) return showError("לא הצלחנו לטעון את הלידים.");
     const fresh = data.filter((l) => l.status === "new").length;

@@ -106,7 +106,9 @@ def remove_order(service: httpx.Client, order_id: str) -> None:
     service.delete("/rest/v1/events", params={"id": f"eq.{event['event_id']}"}).raise_for_status()
 
 
-@pytest.mark.parametrize("table", ["dishes", "orders", "customers", "ai_messages", "leads"])
+@pytest.mark.parametrize(
+    "table", ["dishes", "orders", "customers", "ai_messages", "leads", "lead_priority"]
+)
 def test_anonymous_visitor_reads_nothing(table):
     with client_for(None) as anon:
         assert anon.get(f"/rest/v1/{table}").status_code == 401
@@ -253,3 +255,36 @@ def test_honeypot_lead_is_dropped_silently(service):
         response = anon.post("/rest/v1/rpc/submit_lead", json=lead_payload(phone, company="x"))
         assert response.status_code in (200, 204)
     assert service.get("/rest/v1/leads", params={"phone": f"eq.{phone}"}).json() == []
+
+
+def test_lead_priority_is_admin_only_and_ranks_leads(customer, owner, service):
+    soon, past = random_phone(), random_phone()
+    rows = [
+        {
+            "full_name": "ליד חם",
+            "phone": soon,
+            "guests": 120,
+            "event_type": "בדיקה",
+            "event_date": (dt.date.today() + dt.timedelta(days=20)).isoformat(),
+        },
+        {
+            "full_name": "ליד שעבר",
+            "phone": past,
+            "guests": 120,
+            "event_date": (dt.date.today() - dt.timedelta(days=2)).isoformat(),
+        },
+    ]
+    service.post("/rest/v1/leads", json=rows).raise_for_status()
+    try:
+        phones = f"in.({soon},{past})"
+        assert customer.get("/rest/v1/lead_priority", params={"phone": phones}).json() == []
+        ranked = owner.get(
+            "/rest/v1/lead_priority",
+            params={"select": "phone,tier,score,reasons", "phone": phones, "order": "score.desc"},
+        ).json()
+        assert [r["phone"] for r in ranked] == [soon, past]
+        assert ranked[0]["tier"] == "today"
+        assert ranked[1]["tier"] == "skip" and ranked[1]["score"] == 0
+        assert "תאריך האירוע כבר עבר" in ranked[1]["reasons"]
+    finally:
+        service.delete("/rest/v1/leads", params={"phone": f"in.({soon},{past})"}).raise_for_status()
