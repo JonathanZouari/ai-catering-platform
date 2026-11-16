@@ -83,6 +83,10 @@ Proposal shape:
 | GET/POST/DELETE | `/api/admin/blocked-dates` |
 | GET | `/api/admin/orders?status=` · GET `/api/admin/orders/{id}` |
 | POST | `/api/admin/orders/{id}/approve` · `/api/admin/orders/{id}/reject` `{note}` |
+| GET | `/api/admin/leads` (built) |
+| PATCH | `/api/admin/leads/{id}` `{status}` (built) |
+
+Leads: `GET` returns every lead, open leads first by `purchase_probability` (0 to 1) from highest to lowest, then closed leads with `purchase_probability: null`. `PATCH` sets `status` to one of `new`, `contacted`, `quoted`, `won`, `lost` and returns the updated lead; 404 for an unknown id, 422 for an unknown status. There is no owner login yet, so both are served only when `APP_ENV=development` and answer 404 otherwise. The probability comes from a model trained on synthetic leads and is a demo value.
 
 ## Order status transitions
 
