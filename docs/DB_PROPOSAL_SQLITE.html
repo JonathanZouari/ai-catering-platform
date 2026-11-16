@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yumm.ai DB Proposal</title>
+<style>
+  :root {
+    --bg: #fbf8f1; --surface: #ffffff; --surface-2: #f3efe4; --text: #22261f; --muted: #5d6357;
+    --border: #e2dccd; --accent: #3f6b2a; --accent-soft: #e6efdc; --warn: #8a4b00; --warn-soft: #fff1dc;
+    --pk: #3f6b2a; --fk: #1f5f8b; --chk: #7a3f8f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161814; --surface: #1f221c; --surface-2: #272b23; --text: #ebeee5; --muted: #a5ab9c;
+      --border: #363b30; --accent: #9fd27f; --accent-soft: #26331d; --warn: #ffbe6b; --warn-soft: #33270f;
+      --pk: #9fd27f; --fk: #7fbbe6; --chk: #d29ee6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161814; --surface: #1f221c; --surface-2: #272b23; --text: #ebeee5; --muted: #a5ab9c;
+    --border: #363b30; --accent: #9fd27f; --accent-soft: #26331d; --warn: #ffbe6b; --warn-soft: #33270f;
+    --pk: #9fd27f; --fk: #7fbbe6; --chk: #d29ee6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.6 "Segoe UI", "Heebo", system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 20px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code, .mono { font-family: "Cascadia Code", Consolas, monospace; font-size: 13px; direction: ltr; unicode-bidi: isolate; }
+  .callout { background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 10px; padding: 14px 18px; }
+  .callout strong { color: var(--warn); }
+  .callout ul { margin: 6px 0 0; padding-inline-start: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .diagram { padding: 16px; overflow-x: auto; direction: ltr; }
+  .diagram .mermaid { margin: 0; }
+  .diagram .mermaid svg { display: block; margin: 0 auto; height: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: start; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 500px), 1fr)); gap: 16px; }
+  .tbl header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+    padding: 12px 14px; background: var(--surface-2); border-bottom: 1px solid var(--border); border-radius: 10px 10px 0 0; }
+  .tbl header h3 { margin: 0; font-size: 16px; direction: ltr; font-family: "Cascadia Code", Consolas, monospace; }
+  .tbl header span { color: var(--muted); font-size: 13px; }
+  .tbl .scroll { overflow-x: auto; }
+  .tbl td.col { white-space: nowrap; direction: ltr; text-align: left; }
+  .tbl td.type { white-space: nowrap; color: var(--muted); direction: ltr; text-align: left; }
+  .tbl td.note { font-size: 13px; }
+  .tbl .rules { padding: 10px 14px; font-size: 13px; border-top: 1px solid var(--border); color: var(--muted); }
+  .tbl .rules li { margin: 2px 0; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: 4px; margin-inline-start: 6px; border: 1px solid; }
+  .tag.pk { color: var(--pk); } .tag.fk { color: var(--fk); } .tag.uq { color: var(--chk); }
+  .group { font-size: 14px; color: var(--accent); font-weight: 700; margin: 24px 0 8px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .pill { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 600; }
+  ol li, ul li { margin: 4px 0; }
+  table.icons img { width: 48px; height: 48px; object-fit: contain; display: block; }
+  table.icons td.none { color: var(--muted); font-size: 13px; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>הצעת מסד נתונים ב-SQLite ל-yumm.ai</h1>
+  <p class="sub">הצעה לפני מימוש · 19 טבלאות · מבוססת על מסמך הסכמה הקיים ועל ה-mock של ה-UI</p>
+  <p><span class="pill">ה-DDL נבדק ב-SQLite 3.50 · כל 35 האילוצים שנבדקו נאכפים</span></p>
+
+  <div class="callout">
+    <strong>⚠️ SQLite סותר את ADR 0002, שבו הוחלט על Supabase Postgres</strong>
+    <ul>
+      <li><b>Railway:</b> מערכת הקבצים נמחקת בכל deploy. בלי Volume מחובר, כל ההזמנות יימחקו בכל עדכון גרסה.</li>
+      <li><b>תיעוד:</b> צריך ADR חדש שמחליף את 0002.</li>
+      <li><b>מה כן עובד:</b> לעסק יחיד SQLite מספיק. גם נעילה אופטימית (<code>version</code>) וגם ביצוע אטומי של הצעות AI עובדים בו.</li>
+    </ul>
+  </div>
+
+  <h2>תרשים קשרים</h2>
+  <div class="card diagram"><pre class="mermaid">
+erDiagram
+  dish_categories ||--o{ dishes : "מכילה"
+  dishes ||--o{ dish_allergens : ""
+  allergens ||--o{ dish_allergens : ""
+  dishes ||--o{ dish_images : "תמונות"
+  dishes ||--o| dish_nutrition : "ערכים תזונתיים"
+  allergens ||--o{ label_icons : "סימון"
+  couriers |o--o{ orders : "חברת משלוח"
+  inventory_items ||--o{ inventory_movements : "תנועות מלאי"
+  orders |o--o{ inventory_movements : "צריכה להזמנה"
+  customers |o--o{ orders : "שולח"
+  time_slots |o--o{ orders : "חלון זמן"
+  delivery_zones |o--o{ orders : "אזור משלוח"
+  orders ||--o{ order_items : "כוללת"
+  dishes ||--o{ order_items : ""
+  orders ||--o{ ai_messages : "שיחה"
+  orders ||--o{ ai_change_proposals : "הצעות"
+  ai_messages |o--o{ ai_change_proposals : "מקור"
+
+  dish_categories { INTEGER id PK
+    TEXT slug UK
+    TEXT name UK }
+  dishes { INTEGER id PK
+    INTEGER category_id FK
+    TEXT pricing_unit
+    INTEGER unit_price_agorot
+    REAL qty_step
+    TEXT kashrut "NULL = unknown"
+    TEXT allergens_verified_at "NULL = unknown" }
+  allergens { INTEGER id PK
+    TEXT code UK
+    TEXT name UK }
+  dish_images { INTEGER id PK
+    INTEGER dish_id FK
+    TEXT path UK
+    TEXT alt_text
+    INTEGER is_primary }
+  dish_nutrition { INTEGER dish_id PK,FK
+    REAL serving_g
+    REAL energy_kcal
+    REAL protein_g
+    REAL carbs_g
+    REAL fat_g
+    REAL sodium_mg }
+  label_icons { INTEGER id PK
+    TEXT kind "contains, free_from, dietary"
+    INTEGER allergen_id FK
+    TEXT dietary
+    TEXT path }
+  inventory_items { INTEGER id PK
+    TEXT kind "food, packaging"
+    TEXT name
+    TEXT unit
+    REAL qty_on_hand ">= 0"
+    REAL reorder_level
+    TEXT storage }
+  inventory_movements { INTEGER id PK
+    INTEGER item_id FK
+    TEXT type
+    REAL qty_delta
+    INTEGER order_id FK
+    TEXT expires_on }
+  couriers { INTEGER id PK
+    TEXT name UK
+    TEXT kind "in_house, external"
+    INTEGER is_active }
+  dish_allergens { INTEGER dish_id PK,FK
+    INTEGER allergen_id PK,FK }
+  delivery_zones { INTEGER id PK
+    TEXT city UK
+    INTEGER fee_agorot }
+  time_slots { INTEGER id PK
+    TEXT fulfillment_type
+    TEXT start_time
+    TEXT end_time }
+  customers { INTEGER id PK
+    TEXT full_name
+    TEXT phone UK }
+  orders { INTEGER id PK
+    TEXT public_id UK
+    TEXT access_token_hash
+    INTEGER customer_id FK
+    TEXT status
+    INTEGER version
+    INTEGER time_slot_id FK
+    INTEGER delivery_zone_id FK
+    INTEGER courier_id FK
+    INTEGER total_agorot "frozen on submit" }
+  order_items { INTEGER order_id PK,FK
+    INTEGER dish_id PK,FK
+    REAL quantity
+    INTEGER snap_unit_price_agorot }
+  ai_messages { INTEGER id PK
+    INTEGER order_id FK
+    TEXT role
+    TEXT content "JSON" }
+  ai_change_proposals { INTEGER id PK
+    TEXT public_id UK
+    INTEGER order_id FK
+    INTEGER message_id FK
+    INTEGER base_order_version
+    TEXT changes "JSON array"
+    TEXT status }
+  blocked_dates { TEXT date PK
+    TEXT reason }
+  app_settings { TEXT key PK
+    TEXT value }
+</pre></div>
+
+  <h2>מה כל טבלה עושה</h2>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <tr><th>טבלה</th><th>בשביל מה היא קיימת</th><th>מי כותב אליה</th><th>מתי</th><th>דוגמה</th></tr>
+    <tr><td class="mono">dish_categories</td><td>מחלקת את התפריט לקבוצות, וקובעת את סדר ההצגה במסך התפריט</td><td>בעלים</td><td>הקמת התפריט</td><td>סלטים ומטבלים, עיקריות, קינוחים</td></tr>
+    <tr><td class="mono">dishes</td><td>כל מנה בתפריט: מחיר, יחידת מכירה, צעד כמות, כשרות ומידע תזונתי</td><td>בעלים</td><td>הוספה או עדכון של מנה</td><td>חומוס ביתי · מגש · 85 ש״ח · פרווה</td></tr>
+    <tr><td class="mono">allergens</td><td>רשימה קבועה של שמות אלרגנים, כדי שלא יהיו כפילויות כמו "אגוז" מול "אגוזים"</td><td>בעלים</td><td>לעיתים רחוקות</td><td>גלוטן, שומשום, חלב</td></tr>
+    <tr><td class="mono">dish_allergens</td><td>מקשרת בין מנה לאלרגנים שהיא מכילה (רבים-לרבים)</td><td>בעלים</td><td>עדכון מידע על אלרגנים</td><td>חומוס ← שומשום</td></tr>
+    <tr><td class="mono">dish_images</td><td>תמונות של כל מנה. לכל מנה יכולות להיות כמה תמונות, ואחת מהן ראשית ומוצגת בכרטיס המנה</td><td>בעלים</td><td>העלאת תמונה</td><td>hummus-1.webp · "צלחת חומוס עם שמן זית"</td></tr>
+    <tr><td class="mono">dish_nutrition</td><td>ערכים תזונתיים של מנה, לכל מנה אחת. NULL פירושו "לא ידוע"</td><td>בעלים</td><td>כשיש נתונים מתזונאית או מספק</td><td>100 ג׳ · 166 קק״ל · 8 ג׳ חלבון</td></tr>
+    <tr><td class="mono">label_icons</td><td>הסימונים הגרפיים: "מכיל", "ללא" ותזונתי (טבעוני, צמחוני, כשרות)</td><td>בעלים</td><td>הקמה, ולעיתים רחוקות אחר כך</td><td>icon-gluten-free.webp · "ללא גלוטן"</td></tr>
+    <tr><td class="mono">inventory_items</td><td>כל פריט במלאי: חומרי גלם (<code>kind = food</code>) וכלי אריזה (<code>kind = packaging</code>). שומרת כמה יש עכשיו ומתי צריך להזמין עוד</td><td>בעלים</td><td>הוספת פריט חדש</td><td>גרגירי חומוס · 6 ק״ג · מזווה</td></tr>
+    <tr><td class="mono">inventory_movements</td><td>יומן של כל כניסה ויציאה מהמלאי. כל שורה מעדכנת את הכמות במלאי אוטומטית</td><td>בעלים / המערכת</td><td>קנייה, שימוש, פחת, ספירת מלאי</td><td>קנייה · +10 ק״ג · תוקף 01/2027</td></tr>
+    <tr><td class="mono">couriers</td><td>חברות המשלוח (או השליח הפנימי). הבעלים בוחר אחת מהן להזמנת משלוח</td><td>בעלים</td><td>הוספת חברת משלוח, ושיוך להזמנה שאושרה</td><td>שליח פנימי · חברה חיצונית</td></tr>
+    <tr><td class="mono">delivery_zones</td><td>הערים שאליהן יש משלוח, ודמי המשלוח לכל עיר</td><td>בעלים</td><td>שינוי אזורי שירות</td><td>הרצליה · 90 ש״ח</td></tr>
+    <tr><td class="mono">time_slots</td><td>חלונות הזמן שהלקוח יכול לבחור לאיסוף או למשלוח</td><td>בעלים</td><td>שינוי שעות פעילות</td><td>משלוח 09:00–11:00</td></tr>
+    <tr><td class="mono">blocked_dates</td><td>תאריכים שבהם העסק לא מקבל הזמנות</td><td>בעלים</td><td>חגים, חופשות, עומס</td><td>2026-12-25 · חופשה</td></tr>
+    <tr><td class="mono">app_settings</td><td>ערכים בודדים שהבעלים יכול לשנות בלי לשנות קוד</td><td>בעלים</td><td>לעיתים רחוקות</td><td>lead_days = 2</td></tr>
+    <tr><td class="mono">customers</td><td>פרטי הקשר של מי ששלח הזמנה, כדי לזהות לקוח חוזר</td><td>המערכת</td><td>בשליחת הזמנה</td><td>נועה לוי · 050-1234567</td></tr>
+    <tr><td class="mono">orders</td><td>ההזמנה עצמה: פרטי האירוע, האורחים, האיסוף או המשלוח, הסטטוס והסכום שמוקפא בשליחה</td><td>לקוח, ואז בעלים</td><td>נוצרת כטיוטה בשלב הראשון, הבעלים מאשר או דוחה</td><td>בר מצווה · 38 אורחים · ממתינה לאישור</td></tr>
+    <tr><td class="mono">order_items</td><td>אילו מנות בהזמנה ובאיזו כמות. בשליחה נשמר בה גם המחיר של אותו רגע</td><td>לקוח, וגם AI אחרי אישור הלקוח</td><td>בחירת מנות</td><td>קציצות בקר · 3 מגשים</td></tr>
+    <tr><td class="mono">ai_messages</td><td>היסטוריית הצ׳אט עם העוזר, לכל הזמנה בנפרד</td><td>המערכת</td><td>כל הודעה בצ׳אט</td><td>"האם הכמויות מספיקות?"</td></tr>
+    <tr><td class="mono">ai_change_proposals</td><td>שינוי שה-AI הציע. ההזמנה עצמה לא משתנה עד שהלקוח מאשר</td><td>AI יוצר, לקוח מאשר או דוחה</td><td>כשהעוזר מציע שינוי</td><td>הוספת פלטת פירות · 1,200 ← 1,340 ש״ח</td></tr>
+  </table></div></div>
+
+  <h2>קשרים בין הטבלאות</h2>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <tr><th>מטבלה</th><th>לטבלה</th><th>סוג</th><th>דרך העמודה</th><th>חובה?</th><th>מה קורה במחיקה</th></tr>
+    <tr><td class="mono">dish_categories</td><td class="mono">dishes</td><td>1 ← רבים</td><td class="mono">dishes.category_id</td><td>כן</td><td>חסום אם יש בקטגוריה מנות</td></tr>
+    <tr><td class="mono">dishes</td><td class="mono">allergens</td><td>רבים ↔ רבים</td><td class="mono">dish_allergens</td><td>לא</td><td>מחיקת מנה מוחקת את הקישורים שלה. מחיקת אלרגן שבשימוש חסומה</td></tr>
+    <tr><td class="mono">dishes</td><td class="mono">dish_images</td><td>1 ← רבים</td><td class="mono">dish_images.dish_id</td><td>לא</td><td>נמחקות יחד עם המנה</td></tr>
+    <tr><td class="mono">dishes</td><td class="mono">dish_nutrition</td><td>1 ← 0 או 1</td><td class="mono">dish_nutrition.dish_id</td><td>לא</td><td>נמחקת יחד עם המנה</td></tr>
+    <tr><td class="mono">allergens</td><td class="mono">label_icons</td><td>1 ← עד 2 (מכיל / ללא)</td><td class="mono">label_icons.allergen_id</td><td>רק לסימוני אלרגנים</td><td>נמחקים יחד עם האלרגן</td></tr>
+    <tr><td class="mono">inventory_items</td><td class="mono">inventory_movements</td><td>1 ← רבים</td><td class="mono">inventory_movements.item_id</td><td>כן</td><td>חסום אם לפריט יש תנועות. מכבים אותו עם is_active</td></tr>
+    <tr><td class="mono">orders</td><td class="mono">inventory_movements</td><td>1 ← רבים</td><td class="mono">inventory_movements.order_id</td><td>לא. רק בתנועת שימוש</td><td>חסום אם נרשמה צריכה להזמנה</td></tr>
+    <tr><td class="mono">couriers</td><td class="mono">orders</td><td>1 ← רבים</td><td class="mono">orders.courier_id</td><td>לא. מותר רק בהזמנת משלוח</td><td>חסום. מכבים את החברה עם is_active</td></tr>
+    <tr><td class="mono">customers</td><td class="mono">orders</td><td>1 ← רבים</td><td class="mono">orders.customer_id</td><td>רק אחרי שליחה</td><td>חסום אם ללקוח יש הזמנות</td></tr>
+    <tr><td class="mono">time_slots</td><td class="mono">orders</td><td>1 ← רבים</td><td class="mono">orders.time_slot_id</td><td>רק אחרי שליחה</td><td>חסום. מכבים את החלון עם is_active</td></tr>
+    <tr><td class="mono">delivery_zones</td><td class="mono">orders</td><td>1 ← רבים</td><td class="mono">orders.delivery_zone_id</td><td>רק במשלוח שנשלח</td><td>חסום. מכבים את האזור עם is_active</td></tr>
+    <tr><td class="mono">orders</td><td class="mono">order_items</td><td>1 ← רבים</td><td class="mono">order_items.order_id</td><td>כן</td><td>נמחקות יחד עם ההזמנה</td></tr>
+    <tr><td class="mono">dishes</td><td class="mono">order_items</td><td>1 ← רבים</td><td class="mono">order_items.dish_id</td><td>כן</td><td>חסום אם המנה מופיעה בהזמנה. מכבים אותה עם is_available</td></tr>
+    <tr><td class="mono">orders</td><td class="mono">ai_messages</td><td>1 ← רבים</td><td class="mono">ai_messages.order_id</td><td>כן</td><td>נמחקות יחד עם ההזמנה</td></tr>
+    <tr><td class="mono">orders</td><td class="mono">ai_change_proposals</td><td>1 ← רבים</td><td class="mono">ai_change_proposals.order_id</td><td>כן</td><td>נמחקות יחד עם ההזמנה</td></tr>
+    <tr><td class="mono">ai_messages</td><td class="mono">ai_change_proposals</td><td>1 ← רבים</td><td class="mono">ai_change_proposals.message_id</td><td>לא</td><td>נמחקות יחד כשנמחקת ההזמנה</td></tr>
+    <tr><td class="mono">blocked_dates, app_settings</td><td>—</td><td>עצמאיות</td><td>—</td><td>—</td><td>אין קשרים</td></tr>
+  </table></div></div>
+  <p class="sub" style="margin-top:8px">התנהגות המחיקה נבדקה ב-SQLite: מחיקה של קטגוריה עם מנות, של אלרגן בשימוש, של מנה שמופיעה בהזמנה ושל חברת משלוח שמשויכת להזמנה נחסמת. מחיקת הזמנה מוחקת גם את השורות, ההודעות וההצעות שלה. מחיקת מנה מוחקת גם את התמונות והערכים התזונתיים שלה.</p>
+
+  <h2>סימוני אלרגנים ותזונה</h2>
+  <p class="sub" style="margin-bottom:12px">14 האלרגנים העיקריים לפי הרשימה האירופית (EU 1169/2011), שעליה מבוססים גם כללי הסימון בישראל. האייקונים בעמודות הם הקבצים שכבר קיימים בריפו, תחת <code>frontend/assets/icons/illustrated/</code>.</p>
+  <div class="card"><div style="overflow-x:auto"><table class="icons">
+    <tr><th>אלרגן</th><th class="mono">code</th><th>אייקון "מכיל"</th><th>אייקון "ללא"</th><th>בתפריט היום</th></tr>
+    <tr><td>גלוטן</td><td class="mono">gluten</td><td class="none">אין</td><td><img src="../frontend/assets/icons/illustrated/icon-gluten-free.webp" alt="ללא גלוטן"></td><td>✓</td></tr>
+    <tr><td>חלב</td><td class="mono">milk</td><td class="none">אין</td><td><img src="../frontend/assets/icons/illustrated/icon-dairy-free.webp" alt="ללא חלב"></td><td>✓</td></tr>
+    <tr><td>אגוזים</td><td class="mono">tree_nuts</td><td class="none">אין</td><td><img src="../frontend/assets/icons/illustrated/icon-nut-free.webp" alt="ללא אגוזים"></td><td>✓</td></tr>
+    <tr><td>דגים</td><td class="mono">fish</td><td><img src="../frontend/assets/icons/illustrated/icon-fish.webp" alt="מכיל דגים"></td><td class="none">אין</td><td>✓</td></tr>
+    <tr><td>ביצים</td><td class="mono">eggs</td><td class="none">אין</td><td class="none">אין</td><td>✓</td></tr>
+    <tr><td>שומשום</td><td class="mono">sesame</td><td class="none">אין</td><td class="none">אין</td><td>✓</td></tr>
+    <tr><td>בוטנים</td><td class="mono">peanuts</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+    <tr><td>סויה</td><td class="mono">soy</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+    <tr><td>סרטנים</td><td class="mono">crustaceans</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+    <tr><td>רכיכות</td><td class="mono">molluscs</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+    <tr><td>סלרי</td><td class="mono">celery</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+    <tr><td>חרדל</td><td class="mono">mustard</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+    <tr><td>תורמוס</td><td class="mono">lupin</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+    <tr><td>סולפיטים</td><td class="mono">sulphites</td><td class="none">אין</td><td class="none">אין</td><td></td></tr>
+  </table></div></div>
+
+  <div class="card" style="margin-top:16px"><div style="overflow-x:auto"><table class="icons">
+    <tr><th>סימון תזונתי</th><th class="mono">dietary</th><th>אייקון</th><th>מוצג רק כש...</th></tr>
+    <tr><td>טבעוני</td><td class="mono">vegan</td><td><img src="../frontend/assets/icons/illustrated/icon-vegan.webp" alt="טבעוני"></td><td><code>dishes.is_vegan = 1</code></td></tr>
+    <tr><td>צמחוני</td><td class="mono">vegetarian</td><td><img src="../frontend/assets/icons/illustrated/icon-vegetarian.webp" alt="צמחוני"></td><td><code>dishes.is_vegetarian = 1</code></td></tr>
+    <tr><td>בשרי / חלבי / פרווה</td><td class="mono">meat · dairy · pareve</td><td class="none">אין</td><td><code>dishes.kashrut</code> לא NULL</td></tr>
+  </table></div></div>
+
+  <div class="callout" style="margin-top:16px">
+    <strong>⚠️ "ללא" הוא לא ההפך של "מכיל"</strong>
+    <ul>
+      <li>מותר להציג אייקון "ללא" רק אם <code>allergens_verified_at</code> לא NULL, ואין שורה ב-<code>dish_allergens</code> לאותו אלרגן. אחרת זו טענה בטיחותית שלא נבדקה.</li>
+      <li>אסור להשתמש באייקון "ללא גלוטן" כדי לסמן "מכיל גלוטן". לרוב האלרגנים אין בריפו אייקון "מכיל", אז עד שיעוצבו אייקונים כאלה מציגים שם בטקסט, כמו ש-UI עושה היום.</li>
+      <li>אין סט אייקונים אחד שמחייב בחוק. מה שמחייב הוא שם האלרגן בטקסט.</li>
+    </ul>
+  </div>
+
+  <h2>ערכים תזונתיים</h2>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <tr><th>ערך</th><th class="mono">עמודה</th><th>יחידה</th><th>דוגמה: חומוס ביתי, ל-100 ג׳</th></tr>
+    <tr><td>גודל מנה</td><td class="mono">serving_g · serving_desc</td><td>גרם · טקסט</td><td>100 · "כ-4 כפות"</td></tr>
+    <tr><td>אנרגיה</td><td class="mono">energy_kcal</td><td>קק״ל</td><td>166</td></tr>
+    <tr><td>חלבונים</td><td class="mono">protein_g</td><td>גרם</td><td>8</td></tr>
+    <tr><td>פחמימות</td><td class="mono">carbs_g</td><td>גרם</td><td>14</td></tr>
+    <tr><td>&nbsp;&nbsp;מתוכן סוכרים</td><td class="mono">sugars_g</td><td>גרם · ≤ פחמימות</td><td>0.3</td></tr>
+    <tr><td>שומנים</td><td class="mono">fat_g</td><td>גרם</td><td>10</td></tr>
+    <tr><td>&nbsp;&nbsp;מתוכם רוויים</td><td class="mono">saturated_fat_g</td><td>גרם · ≤ שומנים</td><td>1.4</td></tr>
+    <tr><td>סיבים תזונתיים</td><td class="mono">fiber_g</td><td>גרם</td><td>6</td></tr>
+    <tr><td>נתרן</td><td class="mono">sodium_mg</td><td>מ״ג</td><td>380</td></tr>
+    <tr><td>מקור הנתון</td><td class="mono">source · verified_at</td><td>טקסט · תאריך</td><td>"תזונאית" · 2026-11-02</td></tr>
+  </table></div></div>
+  <p class="sub" style="margin-top:8px">הערכים בדוגמה הם להמחשה בלבד, ולא נתון אמיתי של העסק. הערכים נשמרים כ-<code>REAL</code> כי יש בהם עשרוניים, וכל ערך יכול להיות NULL ("לא ידוע"). הטבלה מוגבלת לשורה אחת לכל מנה, ומנה בלי שורה לא מציגה ערכים תזונתיים בכלל.</p>
+
+  <h2>בחירת חברת משלוח</h2>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <tr><th>שלב</th><th>מה קורה</th><th>מה נשמר ב-DB</th></tr>
+    <tr><td>1. הגדרה</td><td>הבעלים מוסיף את חברות המשלוח שהוא עובד איתן, וגם את השליח הפנימי אם יש</td><td class="mono">couriers(name, kind, contact_phone)</td></tr>
+    <tr><td>2. הזמנה</td><td>הלקוח בוחר "משלוח", עיר וכתובת. הוא לא בוחר חברת משלוח</td><td class="mono">orders.courier_id = NULL</td></tr>
+    <tr><td>3. אישור</td><td>הבעלים מאשר את ההזמנה ובוחר חברת משלוח מהרשימה הפעילה</td><td class="mono">orders.courier_id = 2</td></tr>
+    <tr><td>4. הפסקת עבודה עם חברה</td><td>מכבים אותה. ההזמנות הישנות ממשיכות להראות מי שלח אותן</td><td class="mono">couriers.is_active = 0</td></tr>
+  </table></div></div>
+  <p class="sub" style="margin-top:8px">ה-DB לא יקבל חברת משלוח בהזמנת איסוף עצמי. דמי המשלוח ללקוח נשארים לפי <code>delivery_zones</code>, בלי קשר לחברה שנבחרה.</p>
+
+  <h2>ניהול מלאי</h2>
+  <p class="sub" style="margin-bottom:12px">ב-DB יש טבלת פריטים אחת עם עמודה <code>kind</code>, ויומן תנועות אחד. העמוד מציג אותן כשתי טבלאות, כי כך עובדים איתן ביום-יום. הסיבה לטבלה אחת: מזון ואריזות מתנהגים אותו דבר (כמות, סף הזמנה, קנייה, שימוש), ויומן אחד נותן היסטוריה אחת לכל המלאי. השורות כאן הן דוגמה בלבד.</p>
+
+  <div class="group">מלאי מזון · <span class="mono">kind = 'food'</span></div>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <tr><th>פריט</th><th>יחידה</th><th>במלאי</th><th>סף הזמנה</th><th>אחסון</th><th>עלות ליחידה</th><th>ספק</th><th>מצב</th></tr>
+    <tr><td>גרגירי חומוס</td><td>ק״ג</td><td>6</td><td>5</td><td>מזווה</td><td>₪12.00</td><td>ספק א׳</td><td>תקין</td></tr>
+    <tr><td>טחינה גולמית</td><td>ק״ג</td><td>2</td><td>4</td><td>מזווה</td><td>₪28.00</td><td>ספק א׳</td><td><b style="color:var(--warn)">להזמין</b></td></tr>
+    <tr><td>ירכי עוף</td><td>ק״ג</td><td>18</td><td>10</td><td>מקפיא</td><td>₪32.00</td><td>ספק ב׳</td><td>תקין</td></tr>
+    <tr><td>פילה סלמון</td><td>ק״ג</td><td>4</td><td>3</td><td>מקרר</td><td>₪95.00</td><td>ספק ג׳</td><td>תקין</td></tr>
+  </table></div></div>
+
+  <div class="group">מלאי כלי אריזה · <span class="mono">kind = 'packaging'</span></div>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <tr><th>פריט</th><th>יחידה</th><th>במלאי</th><th>סף הזמנה</th><th>עלות ליחידה</th><th>ספק</th><th>מצב</th></tr>
+    <tr><td>מגש אלומיניום גדול</td><td>יחידה</td><td>50</td><td>40</td><td>₪3.50</td><td>ספק ד׳</td><td>תקין</td></tr>
+    <tr><td>מכסה למגש גדול</td><td>יחידה</td><td>30</td><td>40</td><td>₪1.20</td><td>ספק ד׳</td><td><b style="color:var(--warn)">להזמין</b></td></tr>
+    <tr><td>קופסת קינוח</td><td>מארז</td><td>12</td><td>5</td><td>₪22.00</td><td>ספק ד׳</td><td>תקין</td></tr>
+    <tr><td>סכו״ם חד-פעמי</td><td>מארז</td><td>8</td><td>10</td><td>₪15.00</td><td>ספק ה׳</td><td><b style="color:var(--warn)">להזמין</b></td></tr>
+  </table></div></div>
+  <p class="sub" style="margin-top:8px">"מצב" לא נשמר ב-DB. הוא מחושב: <code>qty_on_hand &lt; reorder_level</code>. לכלי אריזה אין עמודת אחסון, וה-DB לא יקבל ערך אחסון לפריט אריזה.</p>
+
+  <div class="group">יומן תנועות · <span class="mono">inventory_movements</span></div>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <tr><th>סוג</th><th class="mono">type</th><th>כמות</th><th>שדות מיוחדים</th><th>דוגמה</th></tr>
+    <tr><td>קנייה</td><td class="mono">purchase</td><td>חיובית בלבד</td><td>תאריך תפוגה (<code>expires_on</code>)</td><td>+10 ק״ג גרגירי חומוס, תוקף 01/2027</td></tr>
+    <tr><td>שימוש</td><td class="mono">usage</td><td>שלילית בלבד</td><td>הזמנה (<code>order_id</code>)</td><td>‎-4 ק״ג להזמנה של בר המצווה</td></tr>
+    <tr><td>פחת</td><td class="mono">waste</td><td>שלילית בלבד</td><td>הערה</td><td>‎-1 ק״ג סלמון, פג תוקף</td></tr>
+    <tr><td>ספירת מלאי</td><td class="mono">adjustment</td><td>חיובית או שלילית</td><td>הערה</td><td>‎-2 מכסים, תיקון אחרי ספירה</td></tr>
+  </table></div></div>
+  <div class="callout" style="margin-top:16px">
+    <strong>איך המלאי נשאר נכון</strong>
+    <ul>
+      <li>לא מעדכנים את <code>qty_on_hand</code> ישירות. מוסיפים תנועה ליומן, וטריגר ב-DB מעדכן את הכמות.</li>
+      <li>ה-DB לא יקבל תנועה שמורידה את המלאי מתחת לאפס. התנועה נדחית והכמות נשארת כמו שהייתה. זה נבדק ב-SQLite.</li>
+      <li>אין עדיין קשר בין מנה לחומרי הגלם שלה (מתכון), ולכן הורדה מהמלאי לפי הזמנה היא ידנית.</li>
+    </ul>
+  </div>
+
+  <h2>עקרונות</h2>
+  <div class="card"><div class="scroll" style="overflow-x:auto"><table>
+    <tr><th>נושא</th><th>ההחלטה</th><th>למה</th></tr>
+    <tr><td>כסף</td><td><code>INTEGER</code> באגורות</td><td>בלי בעיות עיגול של float</td></tr>
+    <tr><td>כמויות</td><td><code>REAL</code></td><td>צריך חצאי ק״ג (צעד של 0.5)</td></tr>
+    <tr><td>מצב "לא ידוע"</td><td><code>NULL</code></td><td>‏NULL אומר "אין מידע", אף פעם לא "לא". כך מנה בלי מידע לא תוצג כבטוחה</td></tr>
+    <tr><td>Enums</td><td><code>CHECK IN (...)</code></td><td>ל-SQLite אין טיפוס enum</td></tr>
+    <tr><td>תאריכים</td><td><code>TEXT</code> ISO-8601, UTC</td><td></td></tr>
+    <tr><td>טבלאות</td><td><code>STRICT</code></td><td>SQLite לא יקבל בשקט טקסט בעמודה מספרית</td></tr>
+    <tr><td>מזהים</td><td><code>INTEGER</code> בפנים, ו-<code>public_id</code> (UUID) כלפי חוץ</td><td>אי אפשר לנחש מספרי הזמנות של אחרים</td></tr>
+    <tr><td>מפתחות זרים</td><td><code>PRAGMA foreign_keys=ON</code> בכל חיבור</td><td>ב-SQLite הם כבויים כברירת מחדל</td></tr>
+  </table></div></div>
+
+  <h2>הטבלאות</h2>
+  <div class="legend"><span><span class="tag pk">PK</span> מפתח ראשי</span><span><span class="tag fk">FK</span> מפתח זר</span><span><span class="tag uq">UQ</span> ייחודי</span></div>
+  <div id="tables"></div>
+
+  <h2>איפה סטיתי מהמסמך הקיים</h2>
+  <ol>
+    <li><b>איחדתי את <code>events</code> לתוך <code>orders</code>.</b> היחס ביניהן הוא 1:1, וגם ה-UI מחזיק את האירוע בתוך ההזמנה. טבלה נפרדת רק מוסיפה JOIN.</li>
+    <li><b>הורדתי את <code>ai_conversations</code>.</b> יש שיחה אחת לכל הזמנה, אז ההודעות מקושרות ישירות ל-<code>order_id</code>.</li>
+    <li><b>הורדתי את <code>dish_dietary</code>.</b> גם היא ביחס 1:1, אז העמודות עברו ל-<code>dishes</code>.</li>
+    <li><b>החלפתי את <code>requested_at</code> ב-<code>time_slot_id</code>, ושומרים העתק של שעות החלון בשליחה.</b> ה-UI עובד עם חלונות זמן. ההעתק מבטיח ששינוי של חלון זמן לא ישנה הזמנות שכבר נשלחו.</li>
+    <li><b>הוספתי <code>access_token_hash</code>.</b> בלי החלטה על חשבונות משתמש (OPEN #1), כל מי שמחזיק את ה-ID של הזמנה יכול לפתוח אותה. נשמר רק hash של הטוקן.</li>
+    <li><b>הלקוח נוצר רק בשליחת ההזמנה, ומזוהה לפי טלפון.</b> זה מה שה-UI אוסף בפועל.</li>
+  </ol>
+
+  <h2>מה השארתי בחוץ, בכוונה</h2>
+  <ul>
+    <li><b>משתמשי admin:</b> יש בעלים אחד, אז מספיקה סיסמה במשתני סביבה.</li>
+    <li><b>היסטוריית סטטוסים:</b> <code>decided_at</code> ו-<code>decision_note</code> מספיקים כרגע.</li>
+    <li><b>טבלת כללי כמויות:</b> הנוסחאות עוד לא הוחלטו (OPEN #3). השדות <code>rec_per_guest</code> ו-<code>qty_step</code> מחזיקים את הערכים הזמניים.</li>
+    <li><b>מתכונים (מנה ← חומרי גלם וכלי אריזה):</b> בלי זה המלאי לא יורד אוטומטית כשהזמנה מאושרת. זו התוספת הבאה, אם תרצה הורדה אוטומטית.</li>
+    <li><b>מעקב משלוח מול חברת המשלוח</b> (מספר משלוח, סטטוס): עד שתבחר חברה ונדע איזה API יש לה.</li>
+    <li><b>טריגרים ל-<code>updated_at</code>:</b> SQLAlchemy מעדכן את השדה בצד האפליקציה.</li>
+  </ul>
+
+  <footer>טיוטה, לפני מימוש · לא נבדקו ביצועים ולא נבדקו migrations</footer>
+</main>
+
+<script>
+// [column, type, constraints/note, tag]
+const T = [
+  ["קטלוג"],
+  ["dish_categories", "קטגוריות התפריט", [
+    ["id", "INTEGER", "", "PK"], ["slug", "TEXT", "", "UQ"], ["name", "TEXT", "", "UQ"],
+    ["image_path", "TEXT", "NULL מותר"], ["sort_order", "INTEGER", "ברירת מחדל 0"], ["is_active", "INTEGER", "0 או 1"]]],
+  ["dishes", "מנות", [
+    ["id", "INTEGER", "", "PK"], ["category_id", "INTEGER", "→ dish_categories", "FK"],
+    ["name", "TEXT", ""], ["description", "TEXT", "התמונות ב-dish_images"],
+    ["pricing_unit", "TEXT", "tray · kg · item · guest"], ["unit_price_agorot", "INTEGER", "≥ 0"],
+    ["qty_step", "REAL", "> 0. למשל 0.5 לק״ג, 6 לטארטלטים"], ["min_qty", "REAL", "OPEN #15"],
+    ["rec_per_guest", "REAL", "כמות מומלצת לאורח. זמני, OPEN #3"],
+    ["kashrut", "TEXT", "meat · dairy · pareve · NULL = לא ידוע"],
+    ["is_vegetarian", "INTEGER", "0/1 · NULL = לא ידוע"], ["is_vegan", "INTEGER", "0/1 · NULL = לא ידוע"],
+    ["allergens_verified_at", "TEXT", "NULL = אלרגנים לא ידועים"],
+    ["is_available", "INTEGER", "0 או 1"], ["sort_order", "INTEGER", ""], ["created_at / updated_at", "TEXT", "UTC"]],
+    ["אם is_vegan = 1, אז is_vegetarian לא יכול להיות 0"]],
+  ["dish_images", "תמונות המנות", [
+    ["id", "INTEGER", "", "PK"], ["dish_id", "INTEGER", "→ dishes, ON DELETE CASCADE", "FK"],
+    ["path", "TEXT", "נתיב הקובץ", "UQ"], ["alt_text", "TEXT", "תיאור לקורא מסך. חובה, לא ריק"],
+    ["is_primary", "INTEGER", "0 או 1"], ["sort_order", "INTEGER", ""]],
+    ["לכל היותר תמונה ראשית אחת לכל מנה (UNIQUE חלקי)"]],
+  ["dish_nutrition", "ערכים תזונתיים, לכל מנה אחת", [
+    ["dish_id", "INTEGER", "→ dishes, ON DELETE CASCADE", "PK"], ["serving_desc / serving_g", "TEXT / REAL", "גודל מנה"],
+    ["energy_kcal", "REAL", "≥ 0"], ["protein_g / carbs_g / sugars_g", "REAL", "≥ 0"],
+    ["fat_g / saturated_fat_g", "REAL", "≥ 0"], ["fiber_g", "REAL", "≥ 0"], ["sodium_mg", "REAL", "≥ 0"],
+    ["source / verified_at", "TEXT", "מקור ותאריך בדיקה"]],
+    ["sugars_g ≤ carbs_g", "saturated_fat_g ≤ fat_g", "כל ערך NULL = לא ידוע"]],
+  ["allergens", "רשימת אלרגנים", [["id", "INTEGER", "", "PK"], ["code", "TEXT", "gluten, milk...", "UQ"], ["name", "TEXT", "", "UQ"]]],
+  ["label_icons", "אייקוני סימון", [
+    ["id", "INTEGER", "", "PK"], ["kind", "TEXT", "contains · free_from · dietary"],
+    ["allergen_id", "INTEGER", "→ allergens. רק בסימוני אלרגנים", "FK"],
+    ["dietary", "TEXT", "vegetarian · vegan · meat · dairy · pareve"],
+    ["path", "TEXT", ""], ["alt_text", "TEXT", "חובה, לא ריק"]],
+    ["סימון אלרגן חייב allergen_id. סימון תזונתי חייב dietary", "אייקון אחד לכל שילוב של סוג ואלרגן, או של סוג וערך תזונתי"]],
+  ["dish_allergens", "אילו אלרגנים יש בכל מנה", [
+    ["dish_id", "INTEGER", "→ dishes, ON DELETE CASCADE", "PK"], ["allergen_id", "INTEGER", "→ allergens", "PK"]],
+    ["אין שורות + allergens_verified_at עם תאריך = נבדק, אין אלרגנים", "allergens_verified_at = NULL = לא ידוע, ולא מוצג כבטוח"]],
+  ["זמינות ומשלוחים"],
+  ["delivery_zones", "אזורי משלוח לפי עיר", [
+    ["id", "INTEGER", "", "PK"], ["city", "TEXT", "", "UQ"], ["fee_agorot", "INTEGER", "≥ 0"], ["is_active", "INTEGER", "0 או 1"]]],
+  ["time_slots", "חלונות איסוף ומשלוח", [
+    ["id", "INTEGER", "", "PK"], ["fulfillment_type", "TEXT", "pickup · delivery"],
+    ["start_time", "TEXT", "HH:MM"], ["end_time", "TEXT", "HH:MM"], ["is_active", "INTEGER", "0 או 1"]],
+    ["end_time > start_time", "UNIQUE (fulfillment_type, start_time, end_time)"]],
+  ["couriers", "חברות משלוח", [
+    ["id", "INTEGER", "", "PK"], ["name", "TEXT", "", "UQ"], ["kind", "TEXT", "in_house · external"],
+    ["contact_phone", "TEXT", ""], ["is_active", "INTEGER", "0 או 1"]]],
+  ["blocked_dates", "תאריכים סגורים להזמנות", [["date", "TEXT", "YYYY-MM-DD", "PK"], ["reason", "TEXT", ""]]],
+  ["app_settings", "הגדרות שהבעלים יכול לשנות", [["key", "TEXT", "", "PK"], ["value", "TEXT", "למשל ימי התראה מראש, מקדם ילדים, מע״מ"]]],
+  ["לקוחות והזמנות"],
+  ["customers", "לקוחות", [
+    ["id", "INTEGER", "", "PK"], ["full_name", "TEXT", ""], ["phone", "TEXT", "מנורמל", "UQ"],
+    ["email", "TEXT", "NULL מותר"], ["created_at", "TEXT", ""]]],
+  ["orders", "הזמנה, כולל פרטי האירוע", [
+    ["id", "INTEGER", "", "PK"], ["public_id", "TEXT", "UUID שחשוף ב-API", "UQ"],
+    ["access_token_hash", "TEXT", "hash בלבד, לא הטוקן"], ["customer_id", "INTEGER", "→ customers · NULL כל עוד טיוטה", "FK"],
+    ["status", "TEXT", "draft · pending_approval · approved · rejected"], ["version", "INTEGER", "נעילה אופטימית"],
+    ["event_type / event_date", "TEXT", ""], ["time_slot_id", "INTEGER", "→ time_slots", "FK"],
+    ["fulfillment_type", "TEXT", "pickup · delivery"], ["delivery_zone_id", "INTEGER", "→ delivery_zones", "FK"],
+    ["delivery_address", "TEXT", ""], ["courier_id", "INTEGER", "→ couriers · הבעלים בוחר", "FK"],
+    ["adults / children", "INTEGER", "≥ 0"],
+    ["vegetarian / vegan / restricted_guests", "INTEGER", "≥ 0"], ["dietary_notes", "TEXT", ""],
+    ["slot_start / slot_end", "TEXT", "מוקפא בשליחה"], ["subtotal / delivery_fee / total_agorot", "INTEGER", "מוקפא בשליחה"],
+    ["submitted_at / decided_at", "TEXT", ""], ["decision_note", "TEXT", "הערת הבעלים"], ["created_at / updated_at", "TEXT", ""]],
+    ["סכום אורחים עם הגבלות תזונה ≤ adults + children",
+     "הזמנה שאינה טיוטה חייבת: לקוח, סוג ותאריך אירוע, חלון זמן, ≥ 1 מבוגר, סכום מוקפא",
+     "הזמנת משלוח שאינה טיוטה חייבת: אזור משלוח + כתובת",
+     "חברת משלוח מותרת רק בהזמנת משלוח"]],
+  ["order_items", "שורות הזמנה", [
+    ["order_id", "INTEGER", "→ orders, ON DELETE CASCADE", "PK"], ["dish_id", "INTEGER", "→ dishes", "PK"],
+    ["quantity", "REAL", "> 0"], ["snap_name", "TEXT", "מוקפא בשליחה"], ["snap_pricing_unit", "TEXT", "מוקפא בשליחה"],
+    ["snap_unit_price_agorot", "INTEGER", "מוקפא בשליחה"], ["snap_line_total_agorot", "INTEGER", "מוקפא בשליחה"]],
+    ["בטיוטה המחיר נקרא מ-dishes. אחרי השליחה עמודות ה-snap הן הקובעות"]],
+  ["מלאי"],
+  ["inventory_items", "פריטי מלאי: מזון ואריזות", [
+    ["id", "INTEGER", "", "PK"], ["kind", "TEXT", "food · packaging"], ["name", "TEXT", "ייחודי בתוך kind"],
+    ["unit", "TEXT", "g · kg · ml · l · unit · pack"], ["qty_on_hand", "REAL", "≥ 0 · מתעדכן מהיומן"],
+    ["reorder_level", "REAL", "סף הזמנה"], ["unit_cost_agorot", "INTEGER", "≥ 0"], ["supplier", "TEXT", ""],
+    ["storage", "TEXT", "dry · fridge · freezer · רק למזון"], ["is_active", "INTEGER", "0 או 1"]],
+    ["UNIQUE (kind, name)", "storage מותר רק כש-kind = food"]],
+  ["inventory_movements", "יומן תנועות מלאי", [
+    ["id", "INTEGER", "", "PK"], ["item_id", "INTEGER", "→ inventory_items", "FK"],
+    ["type", "TEXT", "purchase · usage · waste · adjustment"], ["qty_delta", "REAL", "≠ 0"],
+    ["order_id", "INTEGER", "→ orders · רק ב-usage", "FK"], ["expires_on", "TEXT", "רק ב-purchase"],
+    ["note", "TEXT", ""], ["created_at", "TEXT", ""]],
+    ["purchase חיובי · usage ו-waste שליליים", "טריגר מעדכן את qty_on_hand. תנועה שמורידה מתחת לאפס נדחית"]],
+  ["עוזר AI"],
+  ["ai_messages", "הודעות הצ׳אט", [
+    ["id", "INTEGER", "", "PK"], ["order_id", "INTEGER", "→ orders", "FK"],
+    ["role", "TEXT", "user · assistant · tool"], ["content", "TEXT", "JSON תקין"], ["created_at", "TEXT", ""]]],
+  ["ai_change_proposals", "הצעות שינוי של ה-AI", [
+    ["id", "INTEGER", "", "PK"], ["public_id", "TEXT", "", "UQ"], ["order_id", "INTEGER", "→ orders", "FK"],
+    ["message_id", "INTEGER", "→ ai_messages", "FK"], ["base_order_version", "INTEGER", "חייב להיות שווה ל-orders.version בביצוע"],
+    ["changes", "TEXT", "מערך JSON"], ["price_before / after_agorot", "INTEGER", ""],
+    ["status", "TEXT", "pending · applied · rejected · expired · failed"],
+    ["created_at / decided_at / executed_at", "TEXT", ""]],
+    ["status = applied אם ורק אם executed_at לא NULL, כך שכל הצעה מתבצעת פעם אחת בלבד",
+     "UNIQUE INDEX על order_id WHERE status = 'pending': לכל היותר הצעה ממתינה אחת להזמנה"]],
+];
+const el = (tag, cls, html) => Object.assign(document.createElement(tag), cls ? { className: cls } : {}, html != null ? { innerHTML: html } : {});
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+const root = document.getElementById("tables");
+let grid;
+for (const [name, desc, cols, rules] of T) {
+  if (!cols) { root.append(el("div", "group", esc(name))); grid = root.appendChild(el("div", "grid")); continue; }
+  const card = el("section", "card tbl");
+  card.append(el("header", null, `<h3>${esc(name)}</h3><span>${esc(desc)}</span>`));
+  const rows = cols.map(([c, t, n, tag]) =>
+    `<tr><td class="col mono">${esc(c)}${tag ? `<span class="tag ${tag.toLowerCase()}">${tag}</span>` : ""}</td><td class="type mono">${t}</td><td class="note">${esc(n)}</td></tr>`).join("");
+  card.append(el("div", "scroll", `<table><tr><th>עמודה</th><th>טיפוס</th><th>הערות</th></tr>${rows}</table>`));
+  if (rules) card.append(el("div", "rules", `<b>אילוצים:</b><ul>${rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>`));
+  grid.append(card);
+}
+</script>
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "neutral", er: { useMaxWidth: true } });
+</script>
+</body>
+</html>
