@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
+from app.api import leads
 from app.core.config import get_settings
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
@@ -26,6 +27,8 @@ def public_config() -> dict[str, str]:
         "supabasePublishableKey": settings.supabase_publishable_key,
     }
 
+
+app.include_router(leads.router)
 
 # Mounted last so API routes take precedence.
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

@@ -1,0 +1,25 @@
+{
+  "trained_on": "synthetic leads (scripts/sample_leads.py)",
+  "training_rows": 251,
+  "holdout_rows": 63,
+  "holdout_auc": 0.74,
+  "holdout_brier": 0.192,
+  "intercept": -2.223584,
+  "coefficients": {
+    "budget_per_guest": 0.012982,
+    "event_type=אחר": -0.986178,
+    "event_type=אירוע משפחתי": 0.664564,
+    "event_type=ארוחת שבת": 0.258278,
+    "event_type=בר או בת מצווה": 0.288936,
+    "event_type=חגיגה פרטית": 0.525313,
+    "event_type=יום הולדת": -0.387632,
+    "event_type=יום נישואין": -0.234786,
+    "guests": -0.004696,
+    "is_returning": 0.830498,
+    "lead_days": 0.01491,
+    "source=google": -0.076681,
+    "source=instagram": -1.057068,
+    "source=referral": 0.737212,
+    "source=website": 0.18567
+  }
+}

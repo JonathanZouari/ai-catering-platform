@@ -16,6 +16,8 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
 | `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
 | `allergen_status` | `contains`, `free`, `unknown` | Decision 9 — unknown ≠ free |
+| `lead_status` | `new`, `contacted`, `quoted`, `won`, `lost` | Leads (not in the PRD) |
+| `lead_source` | `referral`, `google`, `instagram`, `website` | Leads (not in the PRD) |
 
 ## Tables
 
@@ -83,6 +85,11 @@ A missing row = **unknown**.
 
 ### blocked_dates
 `id` uuid PK · `date` date unique · `reason` text null
+
+### leads
+A person who asked about catering an event, before any order exists. `won` means the lead ended in an approved order. Not linked to `customers` or `orders` yet. Synthetic rows only (`supabase/seed_leads.sql`). RLS: only the admin reads; the admin may update `status` and nothing else.
+
+`id` uuid PK · `full_name` text not null · `phone` text null · `email` text null · `event_type` text not null (same labels as `events.event_type`) · `event_date` date not null · `guests` int not null > 0 · `budget_per_guest` numeric(10,2) not null ≥ 0 · `source` lead_source · `is_returning` bool · `status` lead_status default `new` · `created_at`, `updated_at` timestamptz
 
 ### orders
 | Column | Type | Notes |

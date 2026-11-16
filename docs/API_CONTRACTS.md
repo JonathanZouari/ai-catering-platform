@@ -83,6 +83,9 @@ Proposal shape:
 | GET/POST/DELETE | `/api/admin/blocked-dates` |
 | GET | `/api/admin/orders?status=` · GET `/api/admin/orders/{id}` |
 | POST | `/api/admin/orders/{id}/approve` · `/api/admin/orders/{id}/reject` `{note}` |
+| GET | `/api/admin/leads` (built) |
+
+Leads: send the signed-in user's Supabase token as `Authorization: Bearer …`. The backend passes it on to Supabase, where RLS lets only the admin read leads; any other signed-in user gets `[]`. Each lead carries `purchase_probability` (0 to 1). Open leads come first, from the highest probability to the lowest, then closed leads. 401 without a valid token, 502 when Supabase cannot be reached, 503 when Supabase is not configured. The probability comes from a model trained on synthetic leads and is a demo value. A status change is not an endpoint: the admin page updates `leads.status` through supabase-js.
 
 ## Order status transitions
 

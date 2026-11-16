@@ -59,7 +59,7 @@ Status: **Draft v0.1** · Phase 0 deliverable
 ## 4. Data access **[RECOMMENDATION]**
 
 - Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
-- **Current state:** the browser uses supabase-js with the publishable key, served by `GET /api/public-config`. FastAPI has no database connection yet.
+- **Current state:** the browser uses supabase-js with the publishable key, served by `GET /api/public-config`. FastAPI has no database connection yet. One endpoint, `GET /api/admin/leads`, reads through Supabase's REST API with the caller's own token, so RLS still decides what it may read.
 - Order submission and owner decisions run in Postgres functions (`submit_order`, `decide_order`), so the database calculates prices and clients cannot write `orders`. Move this logic to `services/` when the backend gets its connection.
 - Dish images live in the public `dish-images` bucket. Anyone can read them by URL; only the admin can write.
 - Schema changes are SQL migrations in `supabase/migrations/`, applied to dev first.

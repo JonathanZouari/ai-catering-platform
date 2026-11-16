@@ -31,6 +31,7 @@ if (!isAdmin(session)) {
   };
 
   fill(root, head, message,
+    h("p", {}, h("a", { href: "/admin/leads/" }, "לידים וסיכויי רכישה")),
     h("section", { class: "stack", "aria-labelledby": "orders-title" },
       h("h2", { id: "orders-title", text: "בקשות להצעת מחיר" }), ordersBox),
     h("section", { class: "stack", "aria-labelledby": "dishes-title" },
