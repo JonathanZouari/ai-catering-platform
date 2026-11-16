@@ -24,9 +24,7 @@ def bin_counts(values, y, edges, labels):
     out = []
     for i, label in enumerate(labels):
         mask = idx == i
-        out.append(
-            {"label": label, "buyers": int(y[mask].sum()), "non": int((1 - y[mask]).sum())}
-        )
+        out.append({"label": label, "buyers": int(y[mask].sum()), "non": int((1 - y[mask]).sum())})
     return out
 
 
@@ -88,7 +86,8 @@ def main() -> None:
     for i, chunk in enumerate(np.array_split(order, 5)):
         bands.append(
             {
-                "label": f"Band {i + 1}" + (" (lowest)" if i == 0 else " (highest)" if i == 4 else ""),
+                "label": f"Band {i + 1}"
+                + (" (lowest)" if i == 0 else " (highest)" if i == 4 else ""),
                 "avg_score": round(float(proba[chunk].mean()), 3),
                 "actual_rate": round(float(y_test[chunk].mean()), 3),
                 "n": int(len(chunk)),

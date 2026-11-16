@@ -20,7 +20,7 @@ NUMERIC = [
 ]
 CATEGORICAL = ["source", "event_type"]
 
-# SQLite mirror of database/migrations/0001_crm_leads.sql (enums become TEXT).
+# SQLite mirror of supabase/migrations/20261116120000_crm_leads.sql (enums become TEXT).
 SCHEMA = """
 create table if not exists leads (
     id integer primary key autoincrement,

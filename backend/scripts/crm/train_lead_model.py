@@ -59,8 +59,8 @@ def main() -> None:
     pred = (proba >= 0.5).astype(int)
     tn, fp, fn, tp = confusion_matrix(y_test, pred).ravel()
 
-    cat_names = model.named_steps["pre"].named_transformers_["cat"].get_feature_names_out(
-        CATEGORICAL
+    cat_names = (
+        model.named_steps["pre"].named_transformers_["cat"].get_feature_names_out(CATEGORICAL)
     )
     names = NUMERIC + list(cat_names)
     coefs = sorted(
