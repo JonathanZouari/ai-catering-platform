@@ -59,18 +59,18 @@ Status: **Draft v0.1** · Phase 0 deliverable
 ## 4. Data access **[RECOMMENDATION]**
 
 - Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
-- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via a public bucket (or signed URLs — to confirm in Phase 2).
-- Schema changes as SQL migrations in `database/supabase/migrations/` (Supabase CLI, `--workdir database`), applied to dev first.
-- RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies depend on the auth decision **[OPEN #1]**.
+- **Current state:** the browser uses supabase-js with the publishable key, served by `GET /api/public-config`. FastAPI has no database connection yet.
+- Order submission and owner decisions run in Postgres functions (`submit_order`, `decide_order`), so the database calculates prices and clients cannot write `orders`. Move this logic to `services/` when the backend gets its connection.
+- Dish images live in the public `dish-images` bucket. Anyone can read them by URL; only the admin can write.
+- Schema changes are SQL migrations in `supabase/migrations/`, applied to dev first.
+- RLS is enabled on all tables. It is the primary access control while the browser talks to Supabase directly.
+- Realtime publishes `orders` and the catalog and logistics tables. Events respect RLS, so customers only receive their own orders.
 
 ## 5. Authentication **[DECIDED 2026-11-05]**
 
-- Supabase Auth, email + password, for both customers and the owner. Email confirmation required; min password length 8.
-- Admin = auth user with `app_metadata.role = "admin"` (server-controlled). Granted with `backend/scripts/make_admin.py <email>`.
-- Signup trigger (`private.handle_new_user`) creates the matching `customers` row.
-- Backend verifies the access token against the project JWKS (`app/core/auth.py`); `User` / `Admin` dependencies guard routes.
-- RLS (`database/supabase/migrations/*_auth_and_rls.sql`): a customer can only read their own customer row, events, orders, order items and AI data; admin can read/write all of it. `anon` has no table access.
-- Frontend: `/login/` (login, sign-up, password reset); `/customer/` and `/admin/` require sign-in; `/admin/` also checks the role.
+- Supabase Auth with email and password, for both customers and the owner.
+- A database trigger creates a `customers` row for each new account.
+- The owner is a user with `app_metadata.role = 'admin'`, which only the service role can set. Never authorize from `user_metadata`.
 
 ## 6. Environments and branches **[CONFIRMED]** (separate Supabase projects strongly preferred)
 

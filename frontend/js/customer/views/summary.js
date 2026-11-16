@@ -45,9 +45,13 @@ export function mountSummary(root) {
 
   const submitBtn = h("button", { class: "btn btn-primary btn-block", type: "submit" }, "שליחת בקשה להצעת מחיר");
 
-  const form = h("form", { class: "panel stack", novalidate: true, onsubmit: (ev) => {
+  let submitting = false;
+  const form = h("form", { class: "panel stack", novalidate: true, onsubmit: async (ev) => {
     ev.preventDefault();
-    const { errors } = submitOrder();
+    if (submitting) return;
+    submitting = true;
+    const { errors } = await submitOrder();
+    submitting = false;
     showErr(nameErr, name, errors.name);
     showErr(phoneErr, phone, errors.phone);
     itemsError.hidden = !errors.items;

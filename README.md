@@ -8,9 +8,9 @@ Ordering and management web app for a **single catering business**. Customers pl
 
 | Layer | Tech |
 |---|---|
-| Backend | Python 3.12+, FastAPI, Pydantic (SQLAlchemy added in Phase 2) |
-| Frontend | Plain HTML, CSS, JavaScript (served by FastAPI) |
-| Data | Supabase (Postgres, Storage, Auth when approved) |
+| Backend | Python 3.12+, FastAPI, Pydantic |
+| Frontend | Plain HTML, CSS, JavaScript (served by FastAPI), vendored supabase-js |
+| Data | Supabase (Postgres, Auth, Storage, Realtime) |
 | Hosting | Railway (Dockerfile build) |
 | Quality | pytest, Ruff, GitHub Actions |
 
@@ -18,8 +18,8 @@ Ordering and management web app for a **single catering business**. Customers pl
 
 ```
 backend/        FastAPI app (api, core, models, schemas, services, repositories, agents) + tests
-frontend/       customer/ and admin/ pages, css/, js/, assets/
-database/       migrations/ (SQL, Supabase CLI format — first migration in Phase 2)
+frontend/       login/, customer/ and admin/ pages, css/, js/, assets/
+supabase/       CLI config, migrations/ and seed.sql (synthetic data)
 docs/           PRD, architecture, schema, API, AI agent, UX/UI, ADRs, open decisions
 .github/        CI workflow
 Dockerfile      Production image used by Railway
@@ -62,7 +62,7 @@ uv run pytest
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
 
-`sqlalchemy`, `psycopg`, and the Supabase client are added in Phase 2, when database code exists.
+`sqlalchemy` and `psycopg` are added when backend database code exists. Today the browser talks to Supabase directly, protected by RLS.
 
 ## Branches and environments
 
@@ -78,7 +78,22 @@ uv run pytest
 
 ## Railway / Supabase status
 
-Configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project or Supabase project is connected yet. That is planned for Phase 6.
+Railway: configuration templates only (`railway.json`, `Dockerfile`, `.env.example`). No Railway project is connected yet. That is planned for Phase 6.
+
+Supabase: the dev project `ai-catering-dev` (organization `yumm.ai`, region `eu-central-1`) is live. There is no prod project yet.
+
+To set up a Supabase project from scratch, fill `.env`, then:
+
+```bash
+supabase link --project-ref <ref>
+supabase db push --linked
+supabase config push                                              # dev auth settings; see the note below
+(cd backend && uv run --env-file ../.env python scripts/create_demo_users.py)
+supabase db query --linked -f supabase/seed.sql                  # dev only: synthetic data
+(cd backend && uv run --env-file ../.env pytest)                 # includes live access-control tests
+```
+
+`supabase/config.toml` turns email confirmation off, because Supabase's built-in email only reaches organization members. Before production, set up custom SMTP and enable confirmations. Do not load the seed or create the demo users in production.
 
 ## Documentation
 
