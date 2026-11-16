@@ -106,7 +106,7 @@ def remove_order(service: httpx.Client, order_id: str) -> None:
     service.delete("/rest/v1/events", params={"id": f"eq.{event['event_id']}"}).raise_for_status()
 
 
-@pytest.mark.parametrize("table", ["dishes", "orders", "customers", "ai_messages"])
+@pytest.mark.parametrize("table", ["dishes", "orders", "customers", "ai_messages", "leads"])
 def test_anonymous_visitor_reads_nothing(table):
     with client_for(None) as anon:
         assert anon.get(f"/rest/v1/{table}").status_code == 401
@@ -195,3 +195,43 @@ def test_only_admin_writes_dish_images(customer, owner):
         )
     finally:
         owner.delete(f"/storage/v1/object/dish-images/{path}").raise_for_status()
+
+
+def one_lead(service: httpx.Client) -> dict:
+    return service.get(
+        "/rest/v1/leads", params={"select": "id,status,full_name", "limit": "1"}
+    ).json()[0]
+
+
+def lead_now(service: httpx.Client, lead_id: str) -> dict:
+    return service.get(
+        "/rest/v1/leads", params={"select": "id,status,full_name", "id": f"eq.{lead_id}"}
+    ).json()[0]
+
+
+def test_only_the_admin_reads_leads(customer, owner):
+    assert rest_count(customer, "leads") == 0
+    assert rest_count(owner, "leads") > 0
+
+
+def test_customer_cannot_change_a_lead(customer, service):
+    lead = one_lead(service)
+    customer.patch("/rest/v1/leads", params={"id": f"eq.{lead['id']}"}, json={"status": "won"})
+    assert lead_now(service, lead["id"]) == lead
+
+
+def test_admin_changes_a_leads_status_and_nothing_else(owner, service):
+    lead = one_lead(service)
+    new_status = "quoted" if lead["status"] == "contacted" else "contacted"
+    target = {"id": f"eq.{lead['id']}"}
+    try:
+        owner.patch("/rest/v1/leads", params=target, json={"status": new_status}).raise_for_status()
+        assert lead_now(service, lead["id"])["status"] == new_status
+
+        renamed = owner.patch("/rest/v1/leads", params=target, json={"full_name": "שם אחר"})
+        assert renamed.status_code >= 400
+        assert lead_now(service, lead["id"])["full_name"] == lead["full_name"]
+    finally:
+        service.patch(
+            "/rest/v1/leads", params=target, json={"status": lead["status"]}
+        ).raise_for_status()
