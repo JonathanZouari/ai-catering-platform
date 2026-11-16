@@ -16,3 +16,9 @@
 .admin-dish-controls .input { width: 110px; }
 .admin-dish-controls input[type="file"] { width: 100%; max-width: 280px; }
 .admin-check { display: flex; align-items: center; gap: var(--space-2); min-height: var(--touch-target); }
+.lead-score-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.lead-score { font-size: 1.75rem; line-height: 1; }
+.lead-reasons { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); list-style: none; margin: 0; padding: 0; }
+.lead-reasons .is-up span[aria-hidden] { color: var(--color-success); }
+.lead-reasons .is-down span[aria-hidden] { color: var(--color-danger); }
+.lead-message { overflow-wrap: anywhere; max-width: 70ch; }
