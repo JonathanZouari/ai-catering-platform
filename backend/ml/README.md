@@ -83,3 +83,11 @@ Time-based protocol: tune C with `TimeSeriesSplit` on the first 80% of leads, sc
 last 20%, then refit on all leads. To score new leads, pass them through `compare_splits.features`
 and call `predict_proba`. The model file is a pickle (joblib): only load files this project
 produced, never one from an upload or an outside source.
+
+## PR charts
+
+```bash
+uv run --group ml python -m ml.make_charts   # renders docs/pr-assets/ml-*.png
+```
+
+The Hebrew one-page summary is in `docs/ml/lead-model-summary.html`.
