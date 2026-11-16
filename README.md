@@ -42,6 +42,20 @@ uv run uvicorn app.main:app --reload
 - Customer UI: http://127.0.0.1:8000/customer/
 - Admin UI: http://127.0.0.1:8000/admin/
 
+### Local SQLite database (lesson 15 homework)
+
+The backend can read a local SQLite database. The schema is `database/schema.sql`,
+the diagram is `docs/ERD.md`, and the database file is git-ignored (each machine creates its own).
+
+```bash
+cd backend
+uv run python -m app.db       # creates database/catering.db and seeds demo data (safe to re-run)
+uv run uvicorn app.main:app --reload
+```
+
+- Menu from the database: http://127.0.0.1:8000/api/menu
+- The customer and admin pages still use their mock data; connecting them is the Supabase step.
+
 ### Tests and lint
 
 ```bash

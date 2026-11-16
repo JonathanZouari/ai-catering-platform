@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1030" font-family="Helvetica, Arial, sans-serif">
+<rect width="1500" height="1030" fill="#ffffff"/>
+<text x="60" y="36" font-size="20" font-weight="700" fill="#222">ERD: local SQLite schema (database/schema.sql)</text>
+<text x="1440" y="36" font-size="13" fill="#666" text-anchor="end">1 ──&lt; N  one-to-many   ·   PK primary key   ·   FK foreign key   ·   NULL = unknown, never "no"</text>
+<rect x="60" y="60" width="380" height="152" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="60" y="60" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="60" y="86" width="380" height="6" fill="#2f6f4e"/>
+<text x="72" y="82" font-size="15" font-weight="700" fill="#fff">customers</text>
+<text x="72" y="108" font-size="13" fill="#222" font-weight="700">id</text>
+<text x="230" y="108" font-size="12" fill="#777">INTEGER</text>
+<text x="430" y="108" font-size="11" fill="#555" text-anchor="end">PK</text>
+<text x="72" y="130" font-size="13" fill="#222">full_name</text>
+<text x="230" y="130" font-size="12" fill="#777">TEXT</text>
+<text x="430" y="130" font-size="11" fill="#555" text-anchor="end">not null</text>
+<line x1="60" y1="114" x2="440" y2="114" stroke="#eee"/>
+<text x="72" y="152" font-size="13" fill="#222">phone</text>
+<text x="230" y="152" font-size="12" fill="#777">TEXT</text>
+<text x="430" y="152" font-size="11" fill="#555" text-anchor="end">not null</text>
+<line x1="60" y1="136" x2="440" y2="136" stroke="#eee"/>
+<text x="72" y="174" font-size="13" fill="#222">email</text>
+<text x="230" y="174" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="158" x2="440" y2="158" stroke="#eee"/>
+<text x="72" y="196" font-size="13" fill="#222">created_at</text>
+<text x="230" y="196" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="180" x2="440" y2="180" stroke="#eee"/>
+<rect x="560" y="60" width="380" height="108" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="560" y="60" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="560" y="86" width="380" height="6" fill="#2f6f4e"/>
+<text x="572" y="82" font-size="15" font-weight="700" fill="#fff">dish_categories</text>
+<text x="572" y="108" font-size="13" fill="#222" font-weight="700">id</text>
+<text x="730" y="108" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="108" font-size="11" fill="#555" text-anchor="end">PK</text>
+<text x="572" y="130" font-size="13" fill="#222">name</text>
+<text x="730" y="130" font-size="12" fill="#777">TEXT</text>
+<text x="930" y="130" font-size="11" fill="#555" text-anchor="end">unique</text>
+<line x1="560" y1="114" x2="940" y2="114" stroke="#eee"/>
+<text x="572" y="152" font-size="13" fill="#222">sort_order</text>
+<text x="730" y="152" font-size="12" fill="#777">INTEGER</text>
+<line x1="560" y1="136" x2="940" y2="136" stroke="#eee"/>
+<rect x="1060" y="60" width="380" height="86" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="1060" y="60" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="1060" y="86" width="380" height="6" fill="#2f6f4e"/>
+<text x="1072" y="82" font-size="15" font-weight="700" fill="#fff">allergens</text>
+<text x="1072" y="108" font-size="13" fill="#222" font-weight="700">id</text>
+<text x="1230" y="108" font-size="12" fill="#777">INTEGER</text>
+<text x="1430" y="108" font-size="11" fill="#555" text-anchor="end">PK</text>
+<text x="1072" y="130" font-size="13" fill="#222">name</text>
+<text x="1230" y="130" font-size="12" fill="#777">TEXT</text>
+<text x="1430" y="130" font-size="11" fill="#555" text-anchor="end">unique</text>
+<line x1="1060" y1="114" x2="1440" y2="114" stroke="#eee"/>
+<rect x="60" y="300" width="380" height="240" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="60" y="300" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="60" y="326" width="380" height="6" fill="#2f6f4e"/>
+<text x="72" y="322" font-size="15" font-weight="700" fill="#fff">events</text>
+<text x="72" y="348" font-size="13" fill="#222" font-weight="700">id</text>
+<text x="230" y="348" font-size="12" fill="#777">INTEGER</text>
+<text x="430" y="348" font-size="11" fill="#555" text-anchor="end">PK</text>
+<text x="72" y="370" font-size="13" fill="#1a4fa3">customer_id</text>
+<text x="230" y="370" font-size="12" fill="#777">INTEGER</text>
+<text x="430" y="370" font-size="11" fill="#555" text-anchor="end">FK → customers</text>
+<line x1="60" y1="354" x2="440" y2="354" stroke="#eee"/>
+<text x="72" y="392" font-size="13" fill="#222">event_type</text>
+<text x="230" y="392" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="376" x2="440" y2="376" stroke="#eee"/>
+<text x="72" y="414" font-size="13" fill="#222">event_date</text>
+<text x="230" y="414" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="398" x2="440" y2="398" stroke="#eee"/>
+<text x="72" y="436" font-size="13" fill="#222">adults</text>
+<text x="230" y="436" font-size="12" fill="#777">INTEGER</text>
+<line x1="60" y1="420" x2="440" y2="420" stroke="#eee"/>
+<text x="72" y="458" font-size="13" fill="#222">children</text>
+<text x="230" y="458" font-size="12" fill="#777">INTEGER</text>
+<line x1="60" y1="442" x2="440" y2="442" stroke="#eee"/>
+<text x="72" y="480" font-size="13" fill="#222">vegetarian_guests</text>
+<text x="230" y="480" font-size="12" fill="#777">INTEGER</text>
+<line x1="60" y1="464" x2="440" y2="464" stroke="#eee"/>
+<text x="72" y="502" font-size="13" fill="#222">vegan_guests</text>
+<text x="230" y="502" font-size="12" fill="#777">INTEGER</text>
+<line x1="60" y1="486" x2="440" y2="486" stroke="#eee"/>
+<text x="72" y="524" font-size="13" fill="#222">dietary_notes</text>
+<text x="230" y="524" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="508" x2="440" y2="508" stroke="#eee"/>
+<rect x="560" y="300" width="380" height="262" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="560" y="300" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="560" y="326" width="380" height="6" fill="#2f6f4e"/>
+<text x="572" y="322" font-size="15" font-weight="700" fill="#fff">dishes</text>
+<text x="572" y="348" font-size="13" fill="#222" font-weight="700">id</text>
+<text x="730" y="348" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="348" font-size="11" fill="#555" text-anchor="end">PK</text>
+<text x="572" y="370" font-size="13" fill="#1a4fa3">category_id</text>
+<text x="730" y="370" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="370" font-size="11" fill="#555" text-anchor="end">FK → dish_categories</text>
+<line x1="560" y1="354" x2="940" y2="354" stroke="#eee"/>
+<text x="572" y="392" font-size="13" fill="#222">name</text>
+<text x="730" y="392" font-size="12" fill="#777">TEXT</text>
+<line x1="560" y1="376" x2="940" y2="376" stroke="#eee"/>
+<text x="572" y="414" font-size="13" fill="#222">description</text>
+<text x="730" y="414" font-size="12" fill="#777">TEXT</text>
+<line x1="560" y1="398" x2="940" y2="398" stroke="#eee"/>
+<text x="572" y="436" font-size="13" fill="#222">pricing_unit</text>
+<text x="730" y="436" font-size="12" fill="#777">TEXT</text>
+<text x="930" y="436" font-size="11" fill="#555" text-anchor="end">per_guest / per_tray / per_item</text>
+<line x1="560" y1="420" x2="940" y2="420" stroke="#eee"/>
+<text x="572" y="458" font-size="13" fill="#222">unit_price</text>
+<text x="730" y="458" font-size="12" fill="#777">REAL</text>
+<line x1="560" y1="442" x2="940" y2="442" stroke="#eee"/>
+<text x="572" y="480" font-size="13" fill="#222">kashrut</text>
+<text x="730" y="480" font-size="12" fill="#777">TEXT</text>
+<text x="930" y="480" font-size="11" fill="#555" text-anchor="end">meat / dairy / pareve / NULL</text>
+<line x1="560" y1="464" x2="940" y2="464" stroke="#eee"/>
+<text x="572" y="502" font-size="13" fill="#222">is_vegetarian</text>
+<text x="730" y="502" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="502" font-size="11" fill="#555" text-anchor="end">1 / 0 / NULL = unknown</text>
+<line x1="560" y1="486" x2="940" y2="486" stroke="#eee"/>
+<text x="572" y="524" font-size="13" fill="#222">is_vegan</text>
+<text x="730" y="524" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="524" font-size="11" fill="#555" text-anchor="end">1 / 0 / NULL = unknown</text>
+<line x1="560" y1="508" x2="940" y2="508" stroke="#eee"/>
+<text x="572" y="546" font-size="13" fill="#222">is_available</text>
+<text x="730" y="546" font-size="12" fill="#777">INTEGER</text>
+<line x1="560" y1="530" x2="940" y2="530" stroke="#eee"/>
+<rect x="1060" y="300" width="380" height="108" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="1060" y="300" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="1060" y="326" width="380" height="6" fill="#2f6f4e"/>
+<text x="1072" y="322" font-size="15" font-weight="700" fill="#fff">dish_allergens</text>
+<text x="1072" y="348" font-size="13" fill="#1a4fa3" font-weight="700">dish_id</text>
+<text x="1230" y="348" font-size="12" fill="#777">INTEGER</text>
+<text x="1430" y="348" font-size="11" fill="#555" text-anchor="end">PK, FK → dishes</text>
+<text x="1072" y="370" font-size="13" fill="#1a4fa3" font-weight="700">allergen_id</text>
+<text x="1230" y="370" font-size="12" fill="#777">INTEGER</text>
+<text x="1430" y="370" font-size="11" fill="#555" text-anchor="end">PK, FK → allergens</text>
+<line x1="1060" y1="354" x2="1440" y2="354" stroke="#eee"/>
+<text x="1072" y="392" font-size="13" fill="#222">status</text>
+<text x="1230" y="392" font-size="12" fill="#777">TEXT</text>
+<text x="1430" y="392" font-size="11" fill="#555" text-anchor="end">contains / free</text>
+<line x1="1060" y1="376" x2="1440" y2="376" stroke="#eee"/>
+<rect x="60" y="650" width="380" height="306" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="60" y="650" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="60" y="676" width="380" height="6" fill="#2f6f4e"/>
+<text x="72" y="672" font-size="15" font-weight="700" fill="#fff">orders</text>
+<text x="72" y="698" font-size="13" fill="#222" font-weight="700">id</text>
+<text x="230" y="698" font-size="12" fill="#777">INTEGER</text>
+<text x="430" y="698" font-size="11" fill="#555" text-anchor="end">PK</text>
+<text x="72" y="720" font-size="13" fill="#1a4fa3">customer_id</text>
+<text x="230" y="720" font-size="12" fill="#777">INTEGER</text>
+<text x="430" y="720" font-size="11" fill="#555" text-anchor="end">FK → customers</text>
+<line x1="60" y1="704" x2="440" y2="704" stroke="#eee"/>
+<text x="72" y="742" font-size="13" fill="#1a4fa3">event_id</text>
+<text x="230" y="742" font-size="12" fill="#777">INTEGER</text>
+<text x="430" y="742" font-size="11" fill="#555" text-anchor="end">FK → events, unique</text>
+<line x1="60" y1="726" x2="440" y2="726" stroke="#eee"/>
+<text x="72" y="764" font-size="13" fill="#222">status</text>
+<text x="230" y="764" font-size="12" fill="#777">TEXT</text>
+<text x="430" y="764" font-size="11" fill="#555" text-anchor="end">4 states, see schema.sql</text>
+<line x1="60" y1="748" x2="440" y2="748" stroke="#eee"/>
+<text x="72" y="786" font-size="13" fill="#222">fulfillment_type</text>
+<text x="230" y="786" font-size="12" fill="#777">TEXT</text>
+<text x="430" y="786" font-size="11" fill="#555" text-anchor="end">pickup / delivery</text>
+<line x1="60" y1="770" x2="440" y2="770" stroke="#eee"/>
+<text x="72" y="808" font-size="13" fill="#222">delivery_address</text>
+<text x="230" y="808" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="792" x2="440" y2="792" stroke="#eee"/>
+<text x="72" y="830" font-size="13" fill="#222">subtotal</text>
+<text x="230" y="830" font-size="12" fill="#777">REAL</text>
+<line x1="60" y1="814" x2="440" y2="814" stroke="#eee"/>
+<text x="72" y="852" font-size="13" fill="#222">delivery_fee</text>
+<text x="230" y="852" font-size="12" fill="#777">REAL</text>
+<line x1="60" y1="836" x2="440" y2="836" stroke="#eee"/>
+<text x="72" y="874" font-size="13" fill="#222">total</text>
+<text x="230" y="874" font-size="12" fill="#777">REAL</text>
+<line x1="60" y1="858" x2="440" y2="858" stroke="#eee"/>
+<text x="72" y="896" font-size="13" fill="#222">decision_note</text>
+<text x="230" y="896" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="880" x2="440" y2="880" stroke="#eee"/>
+<text x="72" y="918" font-size="13" fill="#222">created_at</text>
+<text x="230" y="918" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="902" x2="440" y2="902" stroke="#eee"/>
+<text x="72" y="940" font-size="13" fill="#222">submitted_at</text>
+<text x="230" y="940" font-size="12" fill="#777">TEXT</text>
+<line x1="60" y1="924" x2="440" y2="924" stroke="#eee"/>
+<rect x="560" y="650" width="380" height="196" rx="6" fill="#fff" stroke="#333" stroke-width="1.5"/>
+<rect x="560" y="650" width="380" height="32" rx="6" fill="#2f6f4e"/>
+<rect x="560" y="676" width="380" height="6" fill="#2f6f4e"/>
+<text x="572" y="672" font-size="15" font-weight="700" fill="#fff">order_items</text>
+<text x="572" y="698" font-size="13" fill="#222" font-weight="700">id</text>
+<text x="730" y="698" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="698" font-size="11" fill="#555" text-anchor="end">PK</text>
+<text x="572" y="720" font-size="13" fill="#1a4fa3">order_id</text>
+<text x="730" y="720" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="720" font-size="11" fill="#555" text-anchor="end">FK → orders</text>
+<line x1="560" y1="704" x2="940" y2="704" stroke="#eee"/>
+<text x="572" y="742" font-size="13" fill="#1a4fa3">dish_id</text>
+<text x="730" y="742" font-size="12" fill="#777">INTEGER</text>
+<text x="930" y="742" font-size="11" fill="#555" text-anchor="end">FK → dishes</text>
+<line x1="560" y1="726" x2="940" y2="726" stroke="#eee"/>
+<text x="572" y="764" font-size="13" fill="#222">quantity</text>
+<text x="730" y="764" font-size="12" fill="#777">REAL</text>
+<line x1="560" y1="748" x2="940" y2="748" stroke="#eee"/>
+<text x="572" y="786" font-size="13" fill="#222">snapshot_name</text>
+<text x="730" y="786" font-size="12" fill="#777">TEXT</text>
+<text x="930" y="786" font-size="11" fill="#555" text-anchor="end">frozen at submit</text>
+<line x1="560" y1="770" x2="940" y2="770" stroke="#eee"/>
+<text x="572" y="808" font-size="13" fill="#222">snapshot_unit_price</text>
+<text x="730" y="808" font-size="12" fill="#777">REAL</text>
+<text x="930" y="808" font-size="11" fill="#555" text-anchor="end">frozen at submit</text>
+<line x1="560" y1="792" x2="940" y2="792" stroke="#eee"/>
+<text x="572" y="830" font-size="13" fill="#222">snapshot_line_total</text>
+<text x="730" y="830" font-size="12" fill="#777">REAL</text>
+<text x="930" y="830" font-size="11" fill="#555" text-anchor="end">frozen at submit</text>
+<line x1="560" y1="814" x2="940" y2="814" stroke="#eee"/>
+<path d="M250,212 L250,300" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="250" y="212" dx="6" dy="14" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="250" y="300" dx="6" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">N</text>
+<path d="M60,103.0 L28,103.0 L28,715.0 L60,715.0" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="60" y="103.0" dx="-16" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="60" y="715.0" dx="-18" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">N</text>
+<path d="M250,540 L250,650" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="250" y="540" dx="6" dy="14" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="250" y="650" dx="6" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<path d="M750,168 L750,300" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="750" y="168" dx="6" dy="14" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="750" y="300" dx="6" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">N</text>
+<path d="M750,562 L750,650" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="750" y="562" dx="6" dy="14" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="750" y="650" dx="6" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">N</text>
+<path d="M440,693.0 L500,693.0 L500,715.0 L560,715.0" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="440" y="693.0" dx="6" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="560" y="715.0" dx="-18" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">N</text>
+<path d="M940,343.0 L1060,343.0" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="940" y="343.0" dx="6" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="1060" y="343.0" dx="-18" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">N</text>
+<path d="M1250,146 L1250,300" fill="none" stroke="#1a4fa3" stroke-width="1.8"/>
+<text x="1250" y="146" dx="6" dy="14" font-size="13" font-weight="700" fill="#1a4fa3">1</text>
+<text x="1250" y="300" dx="6" dy="-6" font-size="13" font-weight="700" fill="#1a4fa3">N</text>
+</svg>
