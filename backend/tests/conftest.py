@@ -1,10 +1,12 @@
 from uuid import uuid4
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import event, text
 
 from app.core.config import get_settings
-from app.core.db import init_db, make_engine
+from app.core.db import get_db, init_db, make_engine
+from app.main import app
 
 
 @pytest.fixture
@@ -34,3 +36,16 @@ def engine():
         with admin.begin() as conn:
             conn.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
         admin.dispose()
+
+
+@pytest.fixture
+def client(engine):
+    """The API, reading and writing the throwaway test database."""
+
+    def test_db():
+        with engine.connect() as conn:
+            yield conn
+
+    app.dependency_overrides[get_db] = test_db
+    yield TestClient(app)
+    app.dependency_overrides.clear()

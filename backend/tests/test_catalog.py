@@ -1,10 +1,8 @@
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
-from app.core.db import get_db, init_db
-from app.main import app
+from app.core.db import init_db
 
 
 def dish_id(number: int) -> str:
@@ -16,17 +14,6 @@ def category_id(number: int) -> str:
     return f"c0000000-0000-4000-8000-{number:012d}"
 
 
-@pytest.fixture
-def client(engine):
-    def test_db():
-        with engine.connect() as conn:
-            yield conn
-
-    app.dependency_overrides[get_db] = test_db
-    yield TestClient(app)
-    app.dependency_overrides.clear()
-
-
 def test_init_db_is_idempotent(engine):
     init_db(engine)
     with engine.connect() as conn:
@@ -35,8 +22,10 @@ def test_init_db_is_idempotent(engine):
     assert names == [
         "migrations/0001_init.sql",
         "migrations/0002_availability.sql",
+        "migrations/0003_leads.sql",
         "seeds/0001_sample_catalog.sql",
         "seeds/0002_sample_availability.sql",
+        "seeds/0003_sample_leads.sql",
     ]
 
 

@@ -1,6 +1,6 @@
 # Preliminary Database Schema (PostgreSQL / Supabase)
 
-Status: **Draft v0.1**. Built in `database/migrations/`: catalog, customers, events, orders, order items, delivery zones, time slots and blocked dates. Differences from this draft: `dish_dietary` is folded into `dishes`, without `verified_at`, and `customers.auth_user_id` is not added yet. Not built yet: the AI tables and `quantity_rules`.
+Status: **Draft v0.1**. Built in `database/migrations/`: catalog, customers, events, orders, order items, delivery zones, time slots, blocked dates and leads. Differences from this draft: `dish_dietary` is folded into `dishes`, without `verified_at`, and `customers.auth_user_id` is not added yet. Not built yet: the AI tables and `quantity_rules`.
 
 Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz` `created_at`/`updated_at`, money as `numeric(10,2)`, enums as Postgres enum types, snake_case, RLS enabled on every table.
 
@@ -14,6 +14,8 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
 | `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
 | `allergen_status` | `contains`, `free`, `unknown` | Decision 9 — unknown ≠ free |
+| `lead_status` | `new`, `contacted`, `quoted`, `won`, `lost` | Leads (not in the PRD) |
+| `lead_source` | `referral`, `google`, `instagram`, `website` | Leads (not in the PRD) |
 
 ## Tables
 
@@ -81,6 +83,11 @@ A missing row = **unknown**.
 
 ### blocked_dates
 `id` uuid PK · `date` date unique · `reason` text null
+
+### leads
+A person who asked about catering an event, before any order exists. `won` means the lead ended in an approved order. Not linked to `customers` or `orders` yet. Sample rows only (`database/seeds/0003_sample_leads.sql`).
+
+`id` uuid PK · `full_name` text not null · `phone` text null · `email` text null · `event_type` text not null (same labels as `events.event_type`) · `event_date` date not null · `guests` int not null > 0 · `budget_per_guest` numeric(10,2) not null ≥ 0 · `source` lead_source · `is_returning` bool · `status` lead_status default `new` · `created_at`, `updated_at` timestamptz
 
 ### orders
 | Column | Type | Notes |
