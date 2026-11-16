@@ -59,7 +59,7 @@ Status: **Draft v0.1** · Phase 0 deliverable
 ## 4. Data access **[RECOMMENDATION]**
 
 - Backend connects to Supabase Postgres directly with SQLAlchemy 2.x + `psycopg` using the pooled connection string (`DATABASE_URL`).
-- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via a public bucket (or signed URLs — to confirm in Phase 2).
+- Supabase Storage accessed server-side with the service-role key, only from the backend, for image upload. Public read for dish images via the public `dish-images` bucket. The bucket exists; the upload endpoint is not built yet.
 - Schema changes as SQL migrations in `database/migrations/` (Supabase CLI format), applied to dev first.
 - RLS: enabled on all tables. Since the backend uses a privileged connection, RLS is defense-in-depth; precise policies depend on the auth decision **[OPEN #1]**.
 

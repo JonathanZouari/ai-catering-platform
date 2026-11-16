@@ -8,6 +8,7 @@ RUN cd backend && uv sync --frozen --no-dev
 
 COPY backend backend
 COPY frontend frontend
+COPY database database
 
 WORKDIR /srv/backend
 ENV PATH="/srv/backend/.venv/bin:$PATH"
