@@ -27,6 +27,7 @@ EVENT_TYPES = [
     "אחר",
 ]
 CITIES = ["תל אביב-יפו", "רמת גן", "גבעתיים", "הרצליה", "פתח תקווה", "ראשון לציון"]
+DRIFT_EPOCH = datetime(2025, 1, 1)
 SLOTS = {
     "pickup": ["10:00-12:00", "12:00-14:00", "15:00-17:00"],
     "delivery": ["09:00-11:00", "11:00-13:00", "14:00-16:00"],
@@ -193,7 +194,7 @@ def _lognormal_int(rng: random.Random, median: float, sigma: float, lo: int, hi:
     return max(lo, min(hi, round(rng.lognormvariate(math.log(median), sigma))))
 
 
-def make_lead(rng: random.Random, i: int, start: datetime) -> dict:
+def make_lead(rng: random.Random, i: int, start: datetime, drift: float = 0.0) -> dict:
     created = start + timedelta(minutes=rng.randrange(365 * 24 * 60))
     hour = _pick(rng, {h: (0.3 if h < 6 else 2.0 if 19 <= h <= 23 else 1.2) for h in range(24)})
     created = created.replace(hour=hour)
@@ -313,6 +314,19 @@ def make_lead(rng: random.Random, i: int, start: datetime) -> dict:
         + e["contact_whatsapp"] * (preferred_contact == "whatsapp")
         + e["marketing_consent"] * consent
     )
+    if drift:
+        # Years since DRIFT_EPOCH: the market changes steadily over time.
+        t = (created - DRIFT_EPOCH).days / 365
+        logit += (
+            drift
+            * t
+            * (
+                -0.5  # more competition: fewer leads buy overall
+                + 1.0 * (source == "instagram")  # a new Instagram campaign starts to work
+                - 0.6 * (dishes > 0)  # a draft order becomes a weaker signal
+                + 0.5 * used_ai  # the AI assistant improves
+            )
+        )
     purchased = rng.random() < 1 / (1 + math.exp(-logit))
 
     return {
@@ -369,10 +383,13 @@ def make_lead(rng: random.Random, i: int, start: datetime) -> dict:
     }
 
 
-def generate(rows: int, seed: int, start: date = date(2025, 1, 1)) -> list[dict]:
+def generate(
+    rows: int, seed: int, start: date = date(2025, 1, 1), drift: float = 0.0
+) -> list[dict]:
+    """drift=0 keeps the hidden rules fixed. drift>0 changes them over time (see make_lead)."""
     rng = random.Random(seed)  # noqa: S311  synthetic data, not security-sensitive
     t0 = datetime.combine(start, datetime.min.time())
-    leads = [make_lead(rng, i + 1, t0) for i in range(rows)]
+    leads = [make_lead(rng, i + 1, t0, drift) for i in range(rows)]
     leads.sort(key=lambda r: r["created_at"])  # time order, for a time-based train/test split
     for n, r in enumerate(leads, 1):
         r["lead_id"] = f"L{n:06d}"

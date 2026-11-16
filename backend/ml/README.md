@@ -60,3 +60,15 @@ Rows are sorted by `created_at`, so split train and test **by time**, not at ran
 The session fields require a consent notice (Israeli Privacy Protection Law, Amendment 13).
 Store only the derived values listed above, never the raw IP address or user-agent string.
 The score is for the owner only and must never affect price (ADR-0003).
+
+## Random vs time-based split
+
+```bash
+uv sync --group ml                                   # scikit-learn and pandas, not needed by the app
+uv run --group ml python -m ml.compare_splits         # writes ml/reports/split_comparison.md
+```
+
+Trains the same logistic regression with both split methods, 10 times each, in two scenarios:
+a stable market and a market that changes over time (`generate(..., drift=1.0)`). Each estimate
+is compared with the actual score on a fresh, unseen future year. Results:
+`reports/split_comparison.md`.
