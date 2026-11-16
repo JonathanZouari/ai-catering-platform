@@ -132,6 +132,58 @@
     <section class="cta reveal" aria-labelledby="cta-title">
       <h2 id="cta-title">מוכנים לתכנן?</h2>
       <a class="btn btn-primary btn-lg" href="/customer/">תכננו את האירוע</a>
+      <a class="small" href="#contact">מעדיפים שנחזור אליכם?</a>
+    </section>
+
+    <!-- Lead form: no account needed. Sent to public.submit_lead (supabase/migrations/*_leads.sql). -->
+    <section class="section contact reveal" id="contact" aria-labelledby="contact-title">
+      <h2 id="contact-title">נחזור אליכם</h2>
+      <p class="contact-intro">משאירים פרטים, ובעל העסק מתקשר לתאם את האירוע. שדות שמסומנים ב״(חובה)״ צריך למלא.</p>
+      <form class="contact-form" id="lead-form" novalidate>
+        <div class="field">
+          <label for="lead-name">שם מלא<span class="req"> (חובה)</span></label>
+          <input class="input" id="lead-name" name="name" autocomplete="name" required aria-required="true" maxlength="100" aria-describedby="err-lead-name">
+          <p class="error" id="err-lead-name" hidden></p>
+        </div>
+        <div class="field">
+          <label for="lead-phone">טלפון<span class="req"> (חובה)</span></label>
+          <input class="input" id="lead-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" required aria-required="true" maxlength="20" aria-describedby="err-lead-phone">
+          <p class="error" id="err-lead-phone" hidden></p>
+        </div>
+        <div class="field">
+          <label for="lead-email">אימייל</label>
+          <input class="input" id="lead-email" name="email" type="email" autocomplete="email" dir="ltr" maxlength="200">
+        </div>
+        <div class="field">
+          <label for="lead-type">סוג האירוע</label>
+          <input class="input" id="lead-type" name="event_type" maxlength="60" list="lead-types">
+          <datalist id="lead-types">
+            <option value="יום הולדת"></option><option value="אירוע משפחתי"></option><option value="בר או בת מצווה"></option>
+            <option value="ארוחת שבת"></option><option value="יום נישואין"></option><option value="חגיגה פרטית"></option>
+          </datalist>
+        </div>
+        <div class="field">
+          <label for="lead-date">תאריך משוער</label>
+          <input class="input" id="lead-date" name="event_date" type="date">
+        </div>
+        <div class="field">
+          <label for="lead-guests">כמה אורחים בערך</label>
+          <input class="input" id="lead-guests" name="guests" type="number" inputmode="numeric" min="1" max="5000">
+        </div>
+        <div class="field contact-wide">
+          <label for="lead-message">משהו שחשוב לדעת</label>
+          <textarea class="input" id="lead-message" name="message" maxlength="1000" rows="3"></textarea>
+        </div>
+        <!-- Honeypot: hidden from people and screen readers; bots fill it. -->
+        <div class="contact-hp" aria-hidden="true">
+          <label for="lead-company">חברה</label>
+          <input id="lead-company" name="company" tabindex="-1" autocomplete="off">
+        </div>
+        <div class="contact-wide contact-submit">
+          <button class="btn btn-primary btn-lg" type="submit">שליחה</button>
+          <p class="contact-status" id="lead-status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
     </section>
 
   </main>
@@ -145,5 +197,6 @@
   </footer>
 
   <script type="module" src="/js/landing.js"></script>
+  <script type="module" src="/js/lead-form.js"></script>
 </body>
 </html>

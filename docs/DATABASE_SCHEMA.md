@@ -16,6 +16,7 @@ Conventions **[RECOMMENDATION]**: `uuid` PKs (`gen_random_uuid()`), `timestamptz
 | `order_status` | `draft`, `pending_approval`, `approved`, `rejected` | Spec §10 (preliminary) |
 | `proposal_status` | `pending`, `approved`, `rejected`, `expired`, `failed` | AI design |
 | `allergen_status` | `contains`, `free`, `unknown` | Decision 9 — unknown ≠ free |
+| `lead_status` | `new`, `contacted`, `quoted`, `won`, `lost` | Leads (2026-11-16) |
 
 ## Tables
 
@@ -134,6 +135,22 @@ While `draft`, prices are read live from `dishes`; on `pending_approval` the sna
 | status | proposal_status not null default `pending` | |
 | created_at, decided_at, executed_at | timestamptz | `executed_at` set once → idempotency |
 | PARTIAL UNIQUE | one `pending` per order? **[RECOMMENDATION]** — simplifies UI | |
+
+### leads
+"Call me back" requests from the landing page form. No account needed.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| full_name | text not null | 2–100 chars |
+| phone | text not null | Normalized to local digits (`05XXXXXXXX`) |
+| email | text null | |
+| event_type, event_date, guests, message | null | Optional; guests 1–5000, message ≤ 1000 chars |
+| status | lead_status not null default `new` | Owner changes it |
+| notes | text null | Owner's internal notes |
+| created_at, updated_at | timestamptz | |
+
+Access: visitors (anon) can only call `submit_lead(payload)`, which validates input, drops honeypot submissions, allows one lead per phone per 24 h and caps all leads at 60 per hour. Only the admin reads leads and can update `status` and `notes`. Published to Realtime.
 
 ## Status transitions **[RECOMMENDATION]**
 

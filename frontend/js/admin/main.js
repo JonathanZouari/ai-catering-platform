@@ -1,4 +1,4 @@
-// Owner dashboard: live quotation requests and dish management. RLS enforces the admin role.
+// Owner dashboard: live leads, quotation requests and dish management. RLS enforces the admin role.
 import { announce } from "../lib/announce.js";
 import { fill, h } from "../lib/dom.js";
 import { fmtDate, fmtMoney } from "../lib/format.js";
@@ -14,6 +14,14 @@ const STATUS = {
   rejected: ["badge-danger", "נדחה"],
 };
 
+const LEAD_STATUS = {
+  new: ["badge-warning", "חדש"],
+  contacted: ["badge-pareve", "נוצר קשר"],
+  quoted: ["badge-pareve", "נשלחה הצעה"],
+  won: ["badge-green", "נסגר"],
+  lost: ["badge-danger", "לא רלוונטי"],
+};
+
 const head = h("header", { class: "admin-head" },
   h("h1", { class: "auth-title", text: "ממשק העסק" }),
   h("button", { class: "btn btn-ghost", type: "button", onclick: signOut }, "יציאה"));
@@ -21,6 +29,8 @@ const head = h("header", { class: "admin-head" },
 if (!isAdmin(session)) {
   fill(root, head, h("p", { role: "alert", text: "לחשבון הזה אין הרשאת ניהול." }));
 } else {
+  const leadsBox = h("ul", { class: "admin-list" });
+  const leadsTitle = h("h2", { id: "leads-title", text: "לידים" });
   const ordersBox = h("ul", { class: "admin-list" });
   const dishesBox = h("ul", { class: "admin-list" });
   const message = h("p", { class: "error", role: "alert", hidden: true });
@@ -31,6 +41,7 @@ if (!isAdmin(session)) {
   };
 
   fill(root, head, message,
+    h("section", { class: "stack", "aria-labelledby": "leads-title" }, leadsTitle, leadsBox),
     h("section", { class: "stack", "aria-labelledby": "orders-title" },
       h("h2", { id: "orders-title", text: "בקשות להצעת מחיר" }), ordersBox),
     h("section", { class: "stack", "aria-labelledby": "dishes-title" },
@@ -58,6 +69,52 @@ if (!isAdmin(session)) {
           h("button", { class: "btn btn-primary", type: "button", onclick: () => decide(o.id, "approved", note.value) }, "אישור"),
           h("button", { class: "btn btn-danger", type: "button", onclick: () => decide(o.id, "rejected", note.value) }, "דחייה"))]
         : null);
+  }
+
+  async function updateLead(id, patch) {
+    showError("");
+    const { error } = await sb.from("leads").update(patch).eq("id", id);
+    if (error) showError("עדכון הליד נכשל. נסו שוב.");
+  }
+
+  function leadCard(l) {
+    const [badge, label] = LEAD_STATUS[l.status];
+    const intl = `972${l.phone.slice(1)}`;
+    const details = [
+      l.event_type,
+      l.event_date ? fmtDate(l.event_date) : null,
+      l.guests ? `${l.guests} אורחים` : null,
+    ].filter(Boolean).join(", ");
+    return h("li", { class: "panel admin-order" },
+      h("div", { class: "admin-order-head" },
+        h("strong", { text: l.full_name }),
+        h("span", { class: `badge ${badge}`, text: label })),
+      h("p", { class: "muted small", text: `התקבל ${new Date(l.created_at).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })}` }),
+      details ? h("p", { class: "muted", text: details }) : null,
+      l.message ? h("p", { text: l.message }) : null,
+      h("div", { class: "admin-actions" },
+        h("a", { class: "btn btn-secondary", href: `tel:${l.phone}`, dir: "ltr" }, l.phone),
+        h("a", { class: "btn btn-ghost", href: `https://wa.me/${intl}`, target: "_blank", rel: "noopener" }, "WhatsApp"),
+        l.email ? h("a", { class: "btn btn-ghost", href: `mailto:${l.email}`, dir: "ltr" }, l.email) : null),
+      h("div", { class: "admin-dish-controls" },
+        h("div", { class: "field" },
+          h("label", { for: `lead-status-${l.id}`, text: "סטטוס" }),
+          h("select", { id: `lead-status-${l.id}`, class: "input", onchange: (e) => updateLead(l.id, { status: e.target.value }) },
+            Object.entries(LEAD_STATUS).map(([value, [, text]]) => h("option", { value, selected: value === l.status }, text)))),
+        h("div", { class: "field admin-lead-notes" },
+          h("label", { for: `lead-notes-${l.id}`, text: "הערות פנימיות" }),
+          h("textarea", { id: `lead-notes-${l.id}`, class: "input", rows: 2, maxlength: "2000", value: l.notes ?? "",
+            onchange: (e) => updateLead(l.id, { notes: e.target.value.trim() || null }) }))));
+  }
+
+  async function loadLeads() {
+    const { data, error } = await sb.from("leads")
+      .select("id,full_name,phone,email,event_type,event_date,guests,message,status,notes,created_at")
+      .order("created_at", { ascending: false });
+    if (error) return showError("לא הצלחנו לטעון את הלידים.");
+    const fresh = data.filter((l) => l.status === "new").length;
+    leadsTitle.textContent = fresh ? `לידים (${fresh} חדשים)` : "לידים";
+    fill(leadsBox, data.length ? data.map(leadCard) : h("li", { class: "muted", text: "אין עדיין לידים." }));
   }
 
   async function updateDish(id, patch) {
@@ -112,7 +169,7 @@ if (!isAdmin(session)) {
     fill(dishesBox, data.map(dishRow));
   }
 
-  await Promise.all([loadOrders(), loadDishes()]);
+  await Promise.all([loadLeads(), loadOrders(), loadDishes()]);
 
   sb.channel("admin")
     .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
@@ -120,5 +177,9 @@ if (!isAdmin(session)) {
       announce("רשימת הבקשות עודכנה");
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "dishes" }, loadDishes)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "leads" }, () => {
+      loadLeads();
+      announce("התקבל ליד חדש");
+    })
     .subscribe();
 }

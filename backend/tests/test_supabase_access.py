@@ -106,7 +106,7 @@ def remove_order(service: httpx.Client, order_id: str) -> None:
     service.delete("/rest/v1/events", params={"id": f"eq.{event['event_id']}"}).raise_for_status()
 
 
-@pytest.mark.parametrize("table", ["dishes", "orders", "customers", "ai_messages"])
+@pytest.mark.parametrize("table", ["dishes", "orders", "customers", "ai_messages", "leads"])
 def test_anonymous_visitor_reads_nothing(table):
     with client_for(None) as anon:
         assert anon.get(f"/rest/v1/{table}").status_code == 401
@@ -195,3 +195,61 @@ def test_only_admin_writes_dish_images(customer, owner):
         )
     finally:
         owner.delete(f"/storage/v1/object/dish-images/{path}").raise_for_status()
+
+
+def random_phone() -> str:
+    return "05" + str(uuid.uuid4().int)[:8]
+
+
+def lead_payload(phone: str, **extra) -> dict:
+    return {"payload": {"name": "ליד בדיקה", "phone": phone, "guests": 40, **extra}}
+
+
+def test_visitor_submits_lead_and_only_owner_reads_it(customer, owner, service):
+    phone = random_phone()
+    with client_for(None) as anon:
+        response = anon.post("/rest/v1/rpc/submit_lead", json=lead_payload(phone))
+        assert response.status_code in (200, 204), response.text
+        # One request per phone per day.
+        assert anon.post("/rest/v1/rpc/submit_lead", json=lead_payload(phone)).status_code >= 400
+    try:
+        assert customer.get("/rest/v1/leads", params={"phone": f"eq.{phone}"}).json() == []
+        rows = owner.get("/rest/v1/leads", params={"select": "id,status", "phone": f"eq.{phone}"})
+        assert rows.json() == [{"id": rows.json()[0]["id"], "status": "new"}]
+        lead_id = rows.json()[0]["id"]
+
+        customer.patch("/rest/v1/leads", params={"id": f"eq.{lead_id}"}, json={"status": "won"})
+        changed = owner.patch(
+            "/rest/v1/leads", params={"id": f"eq.{lead_id}"}, json={"status": "contacted"}
+        )
+        assert changed.status_code in (200, 204), changed.text
+        # Contact details are not editable, even by the owner.
+        assert (
+            owner.patch(
+                "/rest/v1/leads", params={"id": f"eq.{lead_id}"}, json={"phone": "0500000000"}
+            ).status_code
+            >= 400
+        )
+        after = service.get("/rest/v1/leads", params={"select": "status", "id": f"eq.{lead_id}"})
+        assert after.json() == [{"status": "contacted"}]
+    finally:
+        service.delete("/rest/v1/leads", params={"phone": f"eq.{phone}"}).raise_for_status()
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [{"phone": "123"}, {"name": ""}, {"guests": -3}, {"event_date": "not-a-date"}],
+)
+def test_invalid_lead_is_rejected(extra):
+    payload = lead_payload(random_phone())
+    payload["payload"].update(extra)
+    with client_for(None) as anon:
+        assert anon.post("/rest/v1/rpc/submit_lead", json=payload).status_code >= 400
+
+
+def test_honeypot_lead_is_dropped_silently(service):
+    phone = random_phone()
+    with client_for(None) as anon:
+        response = anon.post("/rest/v1/rpc/submit_lead", json=lead_payload(phone, company="x"))
+        assert response.status_code in (200, 204)
+    assert service.get("/rest/v1/leads", params={"phone": f"eq.{phone}"}).json() == []

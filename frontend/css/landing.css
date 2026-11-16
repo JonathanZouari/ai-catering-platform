@@ -165,3 +165,14 @@ mark.todo { background: var(--color-highlight); color: var(--color-text); paddin
 .demo-total strong { font-size: var(--text-xl); }
 .done-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); position: relative; }
 .link-btn { background: none; border: 0; padding: 0; min-height: 32px; color: var(--color-accent); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* ---------- lead form ---------- */
+.contact { max-width: 760px; margin-inline: auto; }
+.contact-intro { color: var(--color-muted); margin-block-end: var(--space-6); max-width: 52ch; }
+.contact-form { display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
+@media (min-width: 640px) { .contact-form { grid-template-columns: 1fr 1fr; } .contact-wide { grid-column: 1 / -1; } }
+.contact-submit { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+.contact-status:empty { display: none; }
+.contact-status.is-error { color: var(--color-danger); }
+.contact-status.is-ok { color: var(--color-success); font-weight: 600; }
+.contact-hp { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }

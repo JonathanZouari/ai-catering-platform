@@ -64,7 +64,8 @@ Status: **Draft v0.1** · Phase 0 deliverable
 - Dish images live in the public `dish-images` bucket. Anyone can read them by URL; only the admin can write.
 - Schema changes are SQL migrations in `supabase/migrations/`, applied to dev first.
 - RLS is enabled on all tables. It is the primary access control while the browser talks to Supabase directly.
-- Realtime publishes `orders` and the catalog and logistics tables. Events respect RLS, so customers only receive their own orders.
+- Realtime publishes `orders`, `leads` and the catalog and logistics tables. Events respect RLS, so customers only receive their own orders.
+- Leads: the landing-page form calls `submit_lead` with the publishable key, without signing in. It is the only thing `anon` can do in the database.
 
 ## 5. Authentication **[DECIDED 2026-11-05]**
 
