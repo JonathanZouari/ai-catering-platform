@@ -25,3 +25,6 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local CRM experiment output (SQLite DB, trained model)
+backend/data/
