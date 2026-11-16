@@ -52,9 +52,7 @@ def load(url: str):
     engine = create_engine(url)
     with engine.connect() as connection:
         rows = connection.execute(
-            text(
-                "select outcome, score_at_decision, features from lead_outcomes order by decided_at"
-            )
+            text("select outcome, score_at_decision, features from lead_outcomes order by lead_id")
         ).all()
     # Unknown stays unknown: a missing value stays NaN here, then gets an indicator column.
     matrix = np.array(

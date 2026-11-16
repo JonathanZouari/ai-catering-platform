@@ -4,10 +4,12 @@
 
 Reads `lead_outcomes` from the throwaway synthetic database (name must contain "test"),
 trains the logistic regression on a random split, and compares it with the rule-based score
-`rules-1`. The file works offline: the charts and their script are inside it. It only reads.
+`rules-1`. It also lists every lead with the model's chance to buy next to what really
+happened. The file works offline: the charts and their script are inside it. It only reads.
 """
 
 import argparse
+import html
 from pathlib import Path
 
 import numpy as np
@@ -27,12 +29,18 @@ from sklearn.metrics import (
     roc_auc_score,
     roc_curve,
 )
-from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.model_selection import (
+    StratifiedKFold,
+    cross_val_predict,
+    cross_val_score,
+    train_test_split,
+)
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sqlalchemy import create_engine, text
 
 from scripts import test_database
-from scripts.train_lead_model import NAMES, default_url, load
+from scripts.train_lead_model import NAMES, default_url
 
 STYLE = """
 body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;background:#f6f7f9;color:#1c2330}
@@ -48,8 +56,49 @@ table{border-collapse:collapse;width:100%;background:#fff;border-radius:10px}
 th,td{padding:8px 12px;text-align:right;border-bottom:1px solid #e6e9ef}
 th:first-child,td:first-child{text-align:left}
 .win{font-weight:700;color:#12713a}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.tools select,.tools input{padding:7px 10px;border:1px solid #cfd5df;border-radius:8px;font:inherit}
+#leads th{cursor:pointer;position:sticky;top:0;background:#eef1f6;white-space:nowrap}
+#leads td.l,#leads th.l{text-align:left}
+.pill{padding:2px 9px;border-radius:99px;font-size:.8rem;font-weight:600}
+.high{background:#d9f2e3;color:#12713a}.medium{background:#fff1c9;color:#8a6100}
+.low{background:#fbdcdc;color:#a02323}.ok{color:#12713a}.bad{color:#a02323}
+.scroll{max-height:640px;overflow:auto;border-radius:10px;box-shadow:0 1px 3px #0001}
 @media(max-width:560px){.grid{grid-template-columns:1fr}}
 """
+
+# Filters and click-to-sort for the lead table. Plain JS, nothing loaded from outside.
+TABLE_SCRIPT = """
+const body=document.querySelector('#leads tbody'),rows=[...body.rows];
+const q=document.getElementById('q'),fo=document.getElementById('fo');
+const fr=document.getElementById('fr'),fs=document.getElementById('fs');
+function apply(){let n=0;rows.forEach(r=>{
+const ok=(!q.value||r.cells[0].textContent.includes(q.value))
+&&(!fo.value||r.dataset.outcome===fo.value)
+&&(!fr.value||r.dataset.right===fr.value)&&(!fs.value||r.dataset.split===fs.value);
+r.hidden=!ok;if(ok)n++});
+document.getElementById('count').textContent=n+' of '+rows.length+' leads'}
+[q,fo,fr,fs].forEach(e=>e.addEventListener('input',apply));apply();
+let dir=-1;
+function value(r,c){const t=r.cells[c];if(t.dataset.v)return +t.dataset.v;
+const n=+t.textContent.replace(/,/g,'');return isNaN(n)?t.textContent:n}
+document.querySelectorAll('#leads th').forEach(th=>th.addEventListener('click',()=>{
+const c=+th.dataset.col;dir=-dir;
+rows.sort((a,b)=>{const x=value(a,c),y=value(b,c);return (x>y?1:x<y?-1:0)*dir});
+rows.forEach(r=>body.append(r))}));
+"""
+
+COLUMNS = [
+    ("Lead", "l"),
+    ("Event date", "l"),
+    ("Guests", ""),
+    ("Total (ILS)", ""),
+    ("Model chance to buy", ""),
+    ("rules-1 score", ""),
+    ("Actual outcome", ""),
+    ("Model at 50%", ""),
+    ("Set", ""),
+]
 
 
 def metrics(truth, probability, threshold=0.5) -> dict:
@@ -68,12 +117,84 @@ def chart(figure) -> str:
     return f'<div class="card">{figure.to_html(full_html=False, include_plotlyjs=False)}</div>'
 
 
+def load_leads(url: str) -> list[dict]:
+    """One row per decided lead, in a fixed order so a seed gives the same split every run."""
+    engine = create_engine(url)
+    query = text(
+        "select lo.lead_id, lo.outcome, lo.score_at_decision, lo.features, c.full_name, "
+        "e.event_date, o.total from lead_outcomes lo "
+        "join leads l on l.id = lo.lead_id and l.caterer_id = lo.caterer_id "
+        "join orders o on o.id = l.order_id and o.caterer_id = l.caterer_id "
+        "join events e on e.id = o.event_id and e.caterer_id = o.caterer_id "
+        "join customers c on c.id = o.customer_id and c.caterer_id = o.caterer_id "
+        "order by lo.lead_id"
+    )
+    with engine.connect() as connection:
+        return [dict(row._mapping) for row in connection.execute(query)]
+
+
+def band_of(score: float) -> str:
+    return "low" if score < 0.4 else "medium" if score < 0.65 else "high"
+
+
+def lead_row(row, actual, rule, chance, in_test) -> str:
+    right = int(chance >= 0.5) == actual
+    return (
+        f"<tr data-outcome='{'won' if actual else 'lost'}' "
+        f"data-right='{'right' if right else 'wrong'}' "
+        f"data-split='{'test' if in_test else 'train'}'>"
+        f"<td class='l'>{html.escape(row['full_name'])}</td>"
+        f"<td class='l'>{row['event_date']}</td>"
+        f"<td>{row['features']['guests']}</td>"
+        f"<td>{float(row['total']):,.0f}</td>"
+        f"<td data-v='{chance:.4f}'><b>{chance:.0%}</b></td>"
+        f"<td data-v='{rule:.4f}'>{rule:.0%} <span class='pill {band_of(rule)}'>"
+        f"{band_of(rule)}</span></td>"
+        f"<td>{'won' if actual else 'lost'}</td>"
+        f"<td class='{'ok' if right else 'bad'}'>{'correct' if right else 'wrong'}</td>"
+        f"<td>{'test' if in_test else 'train'}</td></tr>"
+    )
+
+
+def leads_table(rows, labels, rules, chance, test_mask) -> str:
+    order = np.argsort(-chance)
+    body = "".join(lead_row(rows[i], labels[i], rules[i], chance[i], test_mask[i]) for i in order)
+    head = "".join(
+        f"<th class='{css}' data-col='{i}'>{title}</th>" for i, (title, css) in enumerate(COLUMNS)
+    )
+    return (
+        '<div class="tools"><input id="q" placeholder="Search lead name…">'
+        '<select id="fo"><option value="">All outcomes</option><option>won</option>'
+        "<option>lost</option></select>"
+        '<select id="fr"><option value="">Right and wrong</option>'
+        '<option value="right">Model right</option><option value="wrong">Model wrong</option>'
+        "</select>"
+        '<select id="fs"><option value="">Train and test</option><option>test</option>'
+        "<option>train</option></select>"
+        '<span id="count" class="note"></span></div>'
+        f'<div class="scroll"><table id="leads"><thead><tr>{head}</tr></thead>'
+        f"<tbody>{body}</tbody></table></div><script>{TABLE_SCRIPT}</script>"
+    )
+
+
 def build(url: str, train_share: float, seed: int) -> str:
     test_database.require_test_database(url)
-    matrix, labels, rules = load(url)
-    train_x, test_x, train_y, test_y, _, test_rules = train_test_split(
-        matrix, labels, rules, train_size=train_share, random_state=seed, stratify=labels
+    rows = load_leads(url)
+    matrix = np.array(
+        [
+            [np.nan if r["features"][n] is None else float(r["features"][n]) for n in NAMES]
+            for r in rows
+        ]
     )
+    labels = np.array([1 if r["outcome"] == "won" else 0 for r in rows])
+    rules = np.array([float(r["score_at_decision"]) for r in rows])
+
+    train_idx, test_idx = train_test_split(
+        np.arange(len(rows)), train_size=train_share, random_state=seed, stratify=labels
+    )
+    train_x, test_x = matrix[train_idx], matrix[test_idx]
+    train_y, test_y, test_rules = labels[train_idx], labels[test_idx], rules[test_idx]
+
     model = make_pipeline(
         SimpleImputer(strategy="median", add_indicator=True, keep_empty_features=True),
         StandardScaler(),
@@ -83,12 +204,22 @@ def build(url: str, train_share: float, seed: int) -> str:
     model.fit(train_x, train_y)
     prob = model.predict_proba(test_x)[:, 1]
 
+    # Every lead gets a chance from a model that never saw it: 5-fold out-of-fold predictions.
+    chance = cross_val_predict(
+        model,
+        matrix,
+        labels,
+        cv=StratifiedKFold(5, shuffle=True, random_state=seed),
+        method="predict_proba",
+    )[:, 1]
+    test_mask = np.isin(np.arange(len(rows)), test_idx)
+
     scores = {"Logistic regression": metrics(test_y, prob), "rules-1": metrics(test_y, test_rules)}
     best = {
         key: max(scores, key=lambda n: scores[n][key] * (-1 if "Brier" in key else 1))
         for key in scores["rules-1"]
     }
-    rows = "".join(
+    metric_rows = "".join(
         f"<tr><td>{key}</td>"
         + "".join(
             f'<td class="{"win" if best[key] == name else ""}">{scores[name][key]:.3f}</td>'
@@ -98,7 +229,7 @@ def build(url: str, train_share: float, seed: int) -> str:
         for key in best
     )
     head = "<tr><th>Test set</th><th>Logistic regression</th><th>rules-1</th></tr>"
-    table = f"<table>{head}{rows}</table>"
+    table = f"<table>{head}{metric_rows}</table>"
 
     roc = go.Figure()
     for name, p in (("Logistic regression", prob), ("rules-1", test_rules)):
@@ -131,19 +262,19 @@ def build(url: str, train_share: float, seed: int) -> str:
         title="rules-1 score by outcome (all decided leads)",
     )
 
-    bands = pd.cut(
+    band_names = pd.cut(
         rules, [0, 0.4, 0.65, 1.0], labels=["low", "medium", "high"], include_lowest=True
     )
-    rates = pd.DataFrame({"band": bands, "won": labels}).groupby("band", observed=True)["won"]
+    rates = pd.DataFrame({"band": band_names, "won": labels}).groupby("band", observed=True)["won"]
     rates = rates.agg(["mean", "count"]).reset_index()
-    band = px.bar(
+    band_chart = px.bar(
         rates,
         x="band",
         y="mean",
         text=rates["count"].map(lambda n: f"{n} leads"),
         title="Win rate per rules-1 band (what the caterer sees)",
     )
-    band.update_yaxes(range=[0, 1], tickformat=".0%", title="Win rate")
+    band_chart.update_yaxes(range=[0, 1], tickformat=".0%", title="Win rate")
 
     names = NAMES + [f"{NAMES[i]} (missing)" for i in model[0].indicator_.features_]
     effects = pd.DataFrame({"feature": names, "coefficient": model[-1].coef_[0]})
@@ -176,7 +307,8 @@ def build(url: str, train_share: float, seed: int) -> str:
         (f"{folds.mean():.3f}", f"5-fold CV AUC on train (± {folds.std():.3f})"),
     ]
     kpi_html = "".join(f'<div class="kpi"><b>{v}</b><span>{k}</span></div>' for v, k in kpis)
-    charts = "".join(chart(f) for f in (roc, cal, dist, band, coef, conf))
+    charts = "".join(chart(f) for f in (roc, cal, dist, band_chart, coef, conf))
+    leads_html = leads_table(rows, labels, rules, chance, test_mask)
     return f"""<!doctype html><html lang="en"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lead purchase model</title>
@@ -186,7 +318,12 @@ def build(url: str, train_share: float, seed: int) -> str:
 the pipeline works, not how real customers behave. The model is not used by the app yet.</p>
 <div class="kpis">{kpi_html}</div>
 <h2>Model vs. rule-based score (test set, best value in green)</h2>{table}
-<h2>Charts</h2><div class="grid">{charts}</div></main></html>"""
+<h2>Charts</h2><div class="grid">{charts}</div>
+<h2>Every lead: chance to buy vs. what happened</h2>
+<p class="note">"Model chance to buy" is out-of-fold: each lead is scored by a model trained on
+the other four folds, so the model never saw that lead. "Set" marks the {1 - train_share:.0%}
+hold-out used for the metrics above. Click a column to sort. "Model at 50%" says whether the
+model's call at a 50% threshold matched the real outcome.</p>{leads_html}</main></html>"""
 
 
 def main() -> None:
@@ -196,8 +333,8 @@ def main() -> None:
     parser.add_argument("--train-share", type=float, default=0.88)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
-    html = build(args.database_url or default_url(), args.train_share, args.seed)
-    Path(args.out).write_text(html, encoding="utf-8")
+    html_text = build(args.database_url or default_url(), args.train_share, args.seed)
+    Path(args.out).write_text(html_text, encoding="utf-8")
     print(f"Wrote {Path(args.out).resolve()}")
 
 
