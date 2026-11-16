@@ -26,6 +26,7 @@ const LEAD_STATUS = {
 const LEAD_TIER = {
   today: ["badge-green", "לחזור היום"],
   week: ["badge-warning", "לחזור השבוע"],
+  follow_up: ["badge-warning", "במעקב"],
   low: ["badge-pareve", "עדיפות נמוכה"],
   skip: ["badge-danger", "לא כדאי לחזור"],
   closed: ["badge-pareve", "סגור"],
@@ -126,6 +127,8 @@ if (!isAdmin(session)) {
       .order("score", { ascending: false })
       .order("created_at", { ascending: false });
     if (error) return showError("לא הצלחנו לטעון את הלידים.");
+    const rank = Object.keys(LEAD_TIER);
+    data.sort((a, b) => rank.indexOf(a.tier) - rank.indexOf(b.tier));
     const fresh = data.filter((l) => l.status === "new").length;
     leadsTitle.textContent = fresh ? `לידים (${fresh} חדשים)` : "לידים";
     fill(leadsBox, data.length ? data.map(leadCard) : h("li", { class: "muted", text: "אין עדיין לידים." }));

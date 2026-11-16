@@ -265,12 +265,15 @@ def test_lead_priority_is_admin_only_and_ranks_leads(customer, owner, service):
             "phone": soon,
             "guests": 120,
             "event_type": "בדיקה",
+            "email": "hot@example.com",
             "event_date": (dt.date.today() + dt.timedelta(days=20)).isoformat(),
         },
         {
             "full_name": "ליד שעבר",
             "phone": past,
             "guests": 120,
+            "event_type": None,
+            "email": None,
             "event_date": (dt.date.today() - dt.timedelta(days=2)).isoformat(),
         },
     ]
