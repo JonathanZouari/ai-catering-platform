@@ -3,7 +3,7 @@ import { fill, h, icon } from "../../lib/dom.js";
 import { fmtDate, fmtMoney } from "../../lib/format.js";
 import { illustration } from "../../lib/illustrations.js";
 import { confetti } from "../../lib/motion.js";
-import { getState, startOver } from "../store.js";
+import { getState, startOver, subscribe } from "../store.js";
 
 const VIEW = {
   pending_approval: {
@@ -33,6 +33,14 @@ const TRACK = [
 ];
 
 export function mountStatus(root) {
+  let shown = renderStatus(root);
+  // The owner's decision arrives through Realtime, so this screen redraws itself.
+  return subscribe(({ order, step }) => {
+    if (step === "status" && order.status !== shown) shown = renderStatus(root);
+  });
+}
+
+function renderStatus(root) {
   const { order } = getState();
   const view = VIEW[order.status] ?? VIEW.pending_approval;
   const snap = order.snapshot;
@@ -88,7 +96,7 @@ export function mountStatus(root) {
     celebratedFor = snap;
     setTimeout(() => confetti(root.querySelector(".status-mascot")), 600);
   }
-  return () => {};
+  return order.status;
 }
 
 let celebratedFor = null;

@@ -6,7 +6,6 @@ Format: **Question** · *Why it matters* · **Blocks**
 
 | # | Topic | Question | Why it matters | Blocks |
 |---|---|---|---|---|
-| 1 | Customer authentication / guest checkout | Must customers create an account? Email magic link, OTP by phone, password, or guest checkout with a tokenized link? | Determines ownership model, RLS policies, and how a customer returns to a draft/quote | Phase 3 order ownership, Phase 4 chat history |
 | 2 | Payment & deposit | Is any deposit or payment collected in-app? | Payments are out of scope unless approved | Nothing in MVP unless approved |
 | 3 | Serving & quantity formulas | Per category/dish, how much per adult / child? Rounding (e.g., whole trays)? Different for vegetarian/vegan guests? | Quantity recommendation must use business rules, not AI guesses | Phase 3 quantity engine (schema can hold rules; values unknown) |
 | 4 | Overlapping guest dietary categories | Are vegetarian/vegan/restricted guests counted *within* adults/children (subsets) or separately? Is vegan a subset of vegetarian? | Prevents double-counting | Phase 3 guest composition validation |
@@ -25,6 +24,7 @@ Format: **Question** · *Why it matters* · **Blocks**
 | 18 | Weight unit | kg, 100 g, or configurable per dish? | Per-weight pricing math | Phase 2 pricing units |
 | 19 | Delivery zone definition | Zones by city list, postal code, or radius/polygon? | Address → zone lookup method | Phase 2 delivery zones |
 | 20 | Brand | Business name, logo, colors, fonts | Visual identity | Phase 3 UI polish (neutral tokens until then) |
+| 21 | Accessibility statement | Accessibility contact (phone, email), named coordinator or not, review date, WCAG level audited, and whether the business claims a small-business exemption (Kol Zchut: turnover thresholds) | Content of `frontend/accessibility/index.html` (draft, blanks marked `todo`) | Before any public launch |
 
 ## Decision log
 
@@ -33,3 +33,4 @@ When a decision is made, record it here and move the row out of the table above.
 | Date | # | Decision | Decided by |
 |---|---|---|---|
 | 2026-10-29 | 12 | Interface language is **Hebrew only, RTL**. AI responses must also be in Hebrew. | Project owner (chat) |
+| 2026-11-05 | 1 | Customers need an account to order. Login is Supabase Auth with email and password. | Project owner (chat) asked for a login system; email and password chosen by engineering |

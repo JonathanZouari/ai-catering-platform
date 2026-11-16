@@ -6,12 +6,8 @@ import { CATEGORIES, DISHES, priceOrder, qtyLabel, totalGuests } from "../mock-b
 import { CATEGORY_ART, illustration } from "../../lib/illustrations.js";
 import { animatedAmount } from "../../lib/motion.js";
 import { createDishCard } from "../components/dish-card.js";
+import { onCatalogChange } from "../catalog.js";
 import { getState, goto, setQty, subscribe } from "../store.js";
-
-// Stand-in for GET /api/catalog/categories and /dishes. The delay lets the skeleton state be reviewed.
-function loadCatalog() {
-  return new Promise((resolve) => setTimeout(() => resolve({ categories: CATEGORIES, dishes: DISHES }), 350));
-}
 
 export function mountMenu(root) {
   let catalog = null;
@@ -61,6 +57,7 @@ export function mountMenu(root) {
   }
 
   function visible(dish) {
+    if (dish.available === false) return false;
     if (activeCategory !== "all" && dish.categoryId !== activeCategory) return false;
     if (diet.vegan && !dish.vegan) return false;
     if (diet.vegetarian && !(dish.vegetarian || dish.vegan)) return false;
@@ -142,22 +139,17 @@ export function mountMenu(root) {
     h("div", { class: "dish-grid", "aria-hidden": "true" },
       Array.from({ length: 6 }, () => h("div", { class: "skeleton dish-skeleton" }))));
 
-  function boot() {
-    loadCatalog().then((data) => {
-      catalog = data;
-      renderControls();
-      renderCatalog();
-    }).catch(() => {
-      catalogEl.setAttribute("aria-busy", "false");
-      fill(catalogEl, 
-        h("div", { class: "empty", role: "alert" },
-          h("p", { class: "empty-title", text: "לא הצלחנו לטעון את התפריט" }),
-          h("p", { class: "muted", text: "בדקו את החיבור ונסו שוב." }),
-          h("button", { class: "btn btn-secondary", type: "button", onclick: boot }, "ניסיון חוזר")));
-    });
-  }
-  boot();
+  // main.js loaded the catalog before mounting this view; Realtime keeps the same arrays current.
+  catalog = { categories: CATEGORIES, dishes: DISHES };
+  renderControls();
+  renderCatalog();
   renderOrder(getState());
+  const offCatalog = onCatalogChange(() => {
+    cards.clear(); // cards hold a dish object, so rebuild them with the new price and image
+    renderControls();
+    renderCatalog();
+    announce("התפריט עודכן");
+  });
 
   const unsubscribe = subscribe((state) => {
     if (state.step !== "menu") return;
@@ -173,6 +165,7 @@ export function mountMenu(root) {
 
   return () => {
     unsubscribe();
+    offCatalog();
     document.body.classList.remove("has-bottom-bar");
   };
 }
