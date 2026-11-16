@@ -211,6 +211,18 @@ main {
 .icon-seal-check { --icon: url("/assets/icons/hand/seal-check.png"); }
 .icon-seal-warning { --icon: url("/assets/icons/hand/seal-warning.png"); }
 
+/* Standalone navigation links keep their text style and can wrap on narrow screens. */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--touch-target);
+  min-inline-size: var(--touch-target);
+  max-inline-size: 100%;
+  padding: var(--space-2) var(--space-3);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 /* ---------- buttons ---------- */
 .btn {
   display: inline-flex;

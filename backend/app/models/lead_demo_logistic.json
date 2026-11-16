@@ -1,0 +1,57 @@
+{
+  "version": "synthetic-logistic-v1",
+  "synthetic_only": true,
+  "target": "approved_order_within_30_days_of_website_inquiry",
+  "prediction_time": "initial_website_form_submission",
+  "features": [
+    "guest_count",
+    "days_until_event",
+    "budget_per_guest",
+    "date_provided",
+    "budget_provided"
+  ],
+  "mean": [
+    128.72,
+    79.85555555555555,
+    120.1211111111111,
+    0.8533333333333334,
+    0.7455555555555555
+  ],
+  "scale": [
+    68.40840948954221,
+    57.57734143665879,
+    92.47015013198627,
+    0.35377331097124115,
+    0.43554846933010727
+  ],
+  "coefficients": [
+    0.3609748255484358,
+    -0.5521683724406657,
+    1.207893554107544,
+    0.5302136180961454,
+    -0.22107527692872436
+  ],
+  "intercept": -0.5539468226808866,
+  "threshold": 0.5,
+  "metrics": {
+    "evaluation": "SYNTHETIC ONLY — not evidence of real conversion performance",
+    "train_rows": 900,
+    "test_rows": 300,
+    "threshold": 0.5,
+    "roc_auc": 0.833767926988266,
+    "brier_score": 0.15956155342274475,
+    "baseline_brier_score": 0.2386234567901235,
+    "precision": 0.7659574468085106,
+    "recall": 0.6101694915254238,
+    "confusion_matrix_actual_rows_predicted_columns": [
+      [
+        160,
+        22
+      ],
+      [
+        46,
+        72
+      ]
+    ]
+  }
+}
