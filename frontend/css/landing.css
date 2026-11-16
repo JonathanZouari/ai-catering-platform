@@ -176,3 +176,6 @@ mark.todo { background: var(--color-highlight); color: var(--color-text); paddin
 .contact-status.is-error { color: var(--color-danger); }
 .contact-status.is-ok { color: var(--color-success); font-weight: 600; }
 .contact-hp { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
+.cta a.small { color: var(--color-accent); font-weight: 600; }
+/* Keep anchors and focused fields clear of the sticky header. */
+html { scroll-padding-block-start: 96px; }

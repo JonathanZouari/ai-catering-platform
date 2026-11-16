@@ -19,6 +19,7 @@ uv run ruff check .                       # lint (rules E,F,I,B,UP,S; line lengt
 uv run ruff format --check .              # format check (CI enforces)
 uv run pytest                             # all tests
 uv run pytest tests/test_health.py::test_health_ok   # single test
+uv run --env-file ../.env pytest tests/e2e          # browser E2E against the dev Supabase project (skipped without .env)
 ```
 
 The frontend has no build step. Edit the files under `frontend/` and reload the page.

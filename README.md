@@ -61,6 +61,7 @@ uv run pytest
 | `pytest` (dev) | Mandated test runner |
 | `httpx` (dev) | Needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
+| `pytest-playwright` (dev) | Browser E2E tests in `backend/tests/e2e/` (run `uv run playwright install chromium` once) |
 
 `sqlalchemy` and `psycopg` are added when backend database code exists. Today the browser talks to Supabase directly, protected by RLS.
 
@@ -90,7 +91,8 @@ supabase db push --linked
 supabase config push                                              # dev auth settings; see the note below
 (cd backend && uv run --env-file ../.env python scripts/create_demo_users.py)
 supabase db query --linked -f supabase/seed.sql                  # dev only: synthetic data
-(cd backend && uv run --env-file ../.env pytest)                 # includes live access-control tests
+supabase db query --linked -f supabase/seed_leads.sql            # dev only: synthetic leads
+(cd backend && uv run --env-file ../.env pytest)                 # includes live access-control and browser E2E tests
 ```
 
 `supabase/config.toml` turns email confirmation off, because Supabase's built-in email only reaches organization members. Before production, set up custom SMTP and enable confirmations. Do not load the seed or create the demo users in production.
