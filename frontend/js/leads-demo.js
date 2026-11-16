@@ -8,8 +8,11 @@ const percent = new Intl.NumberFormat('he-IL', { style: 'percent', maximumFracti
 let leads = [];
 
 function render() {
-  const visible = leads.filter(row => filter.value === 'all' || row.demo_class === filter.value);
-  if (sort.value === 'score') visible.sort((a, b) => b.demo_probability - a.demo_probability);
+  const topOnly = filter.value === 'top5';
+  let visible = leads.filter(row => topOnly || filter.value === 'all' || row.demo_class === filter.value);
+  if (topOnly || sort.value === 'score') visible.sort((a, b) => b.demo_probability - a.demo_probability || a.id.localeCompare(b.id));
+  if (topOnly) visible = visible.slice(0, 5);
+  sort.disabled = topOnly;
   fill(root, visible.map(row => h('article', {},
     h('h2', { text: row.name }),
     h('p', { class: 'score', text: `ציון הדגמה: ${percent.format(row.demo_probability)}` }),
@@ -21,7 +24,9 @@ function render() {
     h('p', { dir: 'ltr', text: row.email }),
     h('p', { text: 'פנייה חדשה לדוגמה — לא נשלחת הודעה ולא נוצרת הזמנה.' })
   )));
-  status.textContent = `מוצגות ${visible.length} פניות סינתטיות`;
+  status.textContent = topOnly
+    ? `מוצגות ${visible.length} הפניות המובילות מתוך ${leads.length} פניות סינתטיות, לפי ציון יורד`
+    : `מוצגות ${visible.length} פניות סינתטיות`;
 }
 filter.addEventListener('change', render);
 sort.addEventListener('change', render);
