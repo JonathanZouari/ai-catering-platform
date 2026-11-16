@@ -21,6 +21,8 @@ const head = h("header", { class: "admin-head" },
 if (!isAdmin(session)) {
   fill(root, head, h("p", { role: "alert", text: "לחשבון הזה אין הרשאת ניהול." }));
 } else {
+  const leadsBox = h("ul", { class: "admin-list" });
+  const leadsNote = h("div");
   const ordersBox = h("ul", { class: "admin-list" });
   const dishesBox = h("ul", { class: "admin-list" });
   const message = h("p", { class: "error", role: "alert", hidden: true });
@@ -31,6 +33,8 @@ if (!isAdmin(session)) {
   };
 
   fill(root, head, message,
+    h("section", { class: "stack", "aria-labelledby": "leads-title" },
+      h("h2", { id: "leads-title", text: "לידים לפי סיכוי להזמנה" }), leadsNote, leadsBox),
     h("section", { class: "stack", "aria-labelledby": "orders-title" },
       h("h2", { id: "orders-title", text: "בקשות להצעת מחיר" }), ordersBox),
     h("section", { class: "stack", "aria-labelledby": "dishes-title" },
@@ -58,6 +62,66 @@ if (!isAdmin(session)) {
           h("button", { class: "btn btn-primary", type: "button", onclick: () => decide(o.id, "approved", note.value) }, "אישור"),
           h("button", { class: "btn btn-danger", type: "button", onclick: () => decide(o.id, "rejected", note.value) }, "דחייה"))]
         : null);
+  }
+
+  // ---- Leads: open inquiries ranked by the conversion score (a hint for who to call first).
+  const LEAD_STATUS = { new: ["badge-warning", "חדש"], contacted: ["badge-pareve", "נוצר קשר"] };
+  const SOURCE = { landing_form: "טופס באתר", ai_chat: "העוזר החכם", manual: "הוזן ידנית" };
+  const percent = new Intl.NumberFormat("he-IL", { style: "percent", maximumFractionDigits: 0 });
+  const band = (p) => (p >= 0.7 ? ["badge-green", "סיכוי גבוה"] : p >= 0.45 ? ["badge-warning", "סיכוי בינוני"] : ["badge-danger", "סיכוי נמוך"]);
+  // Stored as E.164 (+972…), enforced by the database. Shown in the local format.
+  const localPhone = (p) => (/^\+972\d{8,9}$/.test(p) ? `0${p.slice(4)}` : p);
+
+  function leadCard(l) {
+    const s = l.lead_scores;
+    const [statusBadge, statusLabel] = LEAD_STATUS[l.status];
+    const details = [
+      l.event_type,
+      l.event_date ? fmtDate(l.event_date) : null,
+      l.guest_count ? `${l.guest_count} אורחים` : null,
+      SOURCE[l.source],
+    ].filter(Boolean).join(" · ");
+    const scoreBlock = s
+      ? h("div", { class: "lead-score-row" },
+        h("strong", { class: "lead-score num", text: percent.format(s.probability) }),
+        h("span", { class: `badge ${band(s.probability)[0]}`, text: band(s.probability)[1] }))
+      : h("p", { class: "muted small", text: "עדיין אין הערכה ללקוח הזה." });
+    const reasons = s?.reasons?.length
+      ? h("ul", { class: "lead-reasons small", "aria-label": "מה משפיע על ההערכה" },
+        s.reasons.map((r) => h("li", { class: r.direction === "up" ? "is-up" : "is-down" },
+          h("span", { "aria-hidden": "true", text: r.direction === "up" ? "▲ " : "▼ " }),
+          h("span", { class: "visually-hidden", text: r.direction === "up" ? "מעלה: " : "מוריד: " }),
+          r.label)))
+      : null;
+    return h("li", { class: "panel admin-order" },
+      h("div", { class: "admin-order-head" },
+        h("strong", { text: l.full_name }),
+        h("span", { class: `badge ${statusBadge}`, text: statusLabel })),
+      scoreBlock,
+      reasons,
+      h("p", { class: "muted", text: details || "לא צוינו פרטי אירוע" }),
+      l.message ? h("p", { class: "small lead-message", text: l.message }) : null,
+      h("div", { class: "admin-actions" },
+        h("a", { class: "btn btn-ghost", href: `tel:${l.phone}` },
+          "התקשרות ", h("span", { dir: "ltr", text: localPhone(l.phone) })),
+        h("a", { class: "btn btn-ghost", href: `https://wa.me/${l.phone.slice(1)}`, target: "_blank", rel: "noopener noreferrer" },
+          "וואטסאפ", h("span", { class: "visually-hidden", text: " (נפתח בחלון חדש)" }))));
+  }
+
+  async function loadLeads() {
+    const { data, error } = await sb.from("leads")
+      .select("id,full_name,phone,source,status,event_type,event_date,guest_count,message,created_at,lead_scores(probability,trained_on_synthetic,reasons)")
+      .in("status", ["new", "contacted"]);
+    if (error) return showError("לא הצלחנו לטעון את הלידים.");
+    // Highest score first; unscored leads last, newest first among equals.
+    data.sort((a, b) => (b.lead_scores?.probability ?? -1) - (a.lead_scores?.probability ?? -1)
+      || b.created_at.localeCompare(a.created_at));
+    const demo = data.some((l) => l.lead_scores?.trained_on_synthetic);
+    fill(leadsNote,
+      h("p", { class: "muted", text: `${data.length} לידים פתוחים. ההערכה עוזרת לבחור למי להתקשר קודם, היא לא הבטחה.` }),
+      demo ? h("p", { class: "callout callout-warning small", role: "note",
+        text: "הערכה לדוגמה: המודל אומן על נתונים סינתטיים ואינו משקף לקוחות אמיתיים. הוא יאומן מחדש כשיצטברו מספיק לידים סגורים." }) : null);
+    fill(leadsBox, data.length ? data.map(leadCard) : h("li", { class: "muted", text: "אין לידים פתוחים." }));
   }
 
   async function updateDish(id, patch) {
@@ -112,9 +176,13 @@ if (!isAdmin(session)) {
     fill(dishesBox, data.map(dishRow));
   }
 
-  await Promise.all([loadOrders(), loadDishes()]);
+  await Promise.all([loadLeads(), loadOrders(), loadDishes()]);
 
   sb.channel("admin")
+    .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, () => {
+      loadLeads();
+      announce("רשימת הלידים עודכנה");
+    })
     .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
       loadOrders();
       announce("רשימת הבקשות עודכנה");
