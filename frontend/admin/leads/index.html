@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>לידים | ממשק העסק | yumm.ai</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/leads.css">
+</head>
+<body>
+  <main class="leads-page">
+    <p><a href="/admin/">חזרה לממשק העסק</a></p>
+    <h1>לידים</h1>
+
+    <p class="demo-note">
+      <span class="badge badge-warning">הדגמה</span>
+      הלידים במסך הזה סינתטיים, והמודל אומן רק עליהם. אחוזי הסיכוי מדגימים את המסך ואינם תחזית על לקוחות אמיתיים.
+    </p>
+
+    <div class="leads-toolbar">
+      <div class="field">
+        <label for="status-filter">הצגה לפי סטטוס</label>
+        <select id="status-filter" class="input"></select>
+      </div>
+      <p id="leads-count" class="leads-count" role="status"></p>
+    </div>
+
+    <div id="leads"></div>
+  </main>
+
+  <div id="announce" class="visually-hidden" aria-live="polite" role="status"></div>
+  <script src="/assets/vendor/supabase-2.119.0.js"></script>
+  <script type="module" src="/js/admin/leads.js"></script>
+</body>
+</html>

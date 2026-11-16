@@ -58,6 +58,22 @@ uv run playwright install chromium        # once; or add --browser-channel chrom
 uv run --env-file ../.env pytest tests/e2e
 ```
 
+### Leads and the purchase model
+
+`/admin/leads/` lists leads for the admin, with the estimated chance that each open lead ends in a purchase. **The leads are synthetic and the model was trained only on them, so the percentages are demo values, not a forecast about real customers.**
+
+- `backend/scripts/sample_leads.py` generates the leads and writes `supabase/seed_leads.sql`.
+- `backend/scripts/train_lead_model.py` fits a logistic regression on the closed leads (won or lost) and writes `backend/app/services/lead_model.json`: the coefficients plus metrics from a 25% holdout.
+- `GET /api/admin/leads` passes the caller's Supabase token on to Supabase, where RLS lets only the admin read leads, then scores each lead in `app/services/lead_scoring.py`. The server does not need scikit-learn and uses no secret key.
+- The page saves a status change straight to Supabase; the admin may update only the `status` column.
+
+To regenerate the seed and the model, from `backend/`:
+
+```bash
+uv run python -m scripts.sample_leads
+uv run python -m scripts.train_lead_model
+```
+
 ## Dependencies and why
 
 | Package | Why |
@@ -66,8 +82,9 @@ uv run --env-file ../.env pytest tests/e2e
 | `uvicorn[standard]` | ASGI server for FastAPI |
 | `pydantic-settings` | Typed config from environment variables |
 | `pytest` (dev) | Mandated test runner |
-| `httpx` (dev) | Needed by FastAPI's `TestClient` |
+| `httpx` | Calls Supabase's REST API with the signed-in user's token (leads endpoint); also needed by FastAPI's `TestClient` |
 | `ruff` (dev) | Mandated linter/formatter |
+| `scikit-learn` (dev) | Trains the lead purchase model; not installed in the production image |
 
 `sqlalchemy` and `psycopg` are added when backend database code exists. Today the browser talks to Supabase directly, protected by RLS.
 
@@ -97,6 +114,7 @@ supabase db push --linked
 supabase config push                                              # dev auth settings; see the note below
 (cd backend && uv run --env-file ../.env python scripts/create_demo_users.py)
 supabase db query --linked -f supabase/seed.sql                  # dev only: synthetic data
+supabase db query --linked -f supabase/seed_leads.sql            # dev only: synthetic leads
 (cd backend && uv run --env-file ../.env pytest)                 # includes live access-control tests
 ```
 
