@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -11,8 +12,9 @@ from app.core.rate_limit import limit_chat, limit_order_writes
 from app.models.enums import ProposalStatus
 from app.schemas.ai import ChatReply, ChatRequest, ChatState, ProposalDecision, ProposalOut
 from app.schemas.orders import ItemSet, OrderOut, OrderUpdate, SubmitRequest
-from app.services import assistant, notifications, orders, proposals
+from app.services import assistant, leads, notifications, orders, proposals
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/orders", dependencies=[Depends(limit_order_writes)])
 
 LLMDep = Annotated[LLMClient | None, Depends(get_llm)]
@@ -44,6 +46,16 @@ def remove_item(
     return orders.view(session, scope, order)
 
 
+def _record_lead(session, scope, order_id: UUID) -> None:
+    """Scores the new lead after the order has committed. A scoring failure must never undo or
+    block a customer's submission, so it is logged and the lead can be rescored later."""
+    try:
+        leads.record_submission(session, scope, order_id)
+    except Exception:
+        logger.exception("lead scoring failed order=%s", order_id)
+        session.rollback()
+
+
 @router.post("/{order_id}/submit", response_model=OrderOut)
 def submit_order(
     order_id: UUID,
@@ -54,6 +66,7 @@ def submit_order(
     background: BackgroundTasks,
 ):
     order = orders.submit_order(session, scope, order_id, data)
+    _record_lead(session, scope, order.id)
     email = notifications.new_order_email(session, scope, order) if mailer else None
     if email:
         background.add_task(notifications.deliver, mailer, email, order.id)

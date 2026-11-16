@@ -1,4 +1,5 @@
 import { getConfig, isLoggedIn, login, logout, adminApi } from "/js/admin/auth.js";
+import { renderLeads } from "/js/admin/leads.js";
 import { renderAvailability, renderDelivery } from "/js/admin/logistics.js";
 import { renderMenu } from "/js/admin/menu.js";
 import { renderOrders } from "/js/admin/orders.js";
@@ -10,6 +11,7 @@ import { attempt, field, h } from "/js/ui.js";
 
 const SCREENS = {
   orders: ["הזמנות", "receipt_long", renderOrders],
+  leads: ["לידים", "group", renderLeads],
   menu: ["תפריט", "restaurant_menu", renderMenu],
   availability: ["זמינות", "event_available", renderAvailability],
   delivery: ["משלוחים", "local_shipping", renderDelivery],

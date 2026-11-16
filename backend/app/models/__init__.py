@@ -9,6 +9,7 @@ from app.models.catalog import (
     QuantityRule,
 )
 from app.models.caterer import Caterer, CatererUser
+from app.models.leads import Lead, LeadEvent, LeadOutcome
 from app.models.logistics import BlockedDate, DeliveryZone, TimeSlot
 from app.models.orders import Customer, Event, Order, OrderItem
 
@@ -29,6 +30,9 @@ __all__ = [
     "DishCategory",
     "DishDietary",
     "Event",
+    "Lead",
+    "LeadEvent",
+    "LeadOutcome",
     "Order",
     "OrderItem",
     "QuantityRule",

@@ -170,6 +170,17 @@ While `draft`, prices are read live from `dishes`; on `pending_approval` the sna
 | created_at, decided_at, executed_at | timestamptz | `executed_at` set once → idempotency |
 | PARTIAL UNIQUE | one `pending` per order? **[RECOMMENDATION]** — simplifies UI | |
 
+### Lead CRM (migration `20261116000000_lead_crm.sql`)
+Each submitted order gets one lead. The score is the backend's advisory estimate of the chance the request becomes a sale (`services/lead_scoring.py`, version `rules-1`). All three tables carry `caterer_id` with composite FKs and a read-only RLS policy; writes go through FastAPI.
+
+| Table | Columns |
+|---|---|
+| leads | `id` · `caterer_id` · `order_id` unique, composite FK to `orders` · `stage` lead_stage (`new`, `qualified`, `won`, `lost`) · `score` numeric(4,3) · `score_version` · `reasons` jsonb · `features` jsonb · `scored_at` · `created_at` |
+| lead_events | append-only: `lead_id` composite FK · `kind` (`stage_change`, `note`) · `stage` · `note` · `created_at` |
+| lead_outcomes | one per lead, written when the caterer first sets `won` or `lost`: `outcome` · `score_at_decision` · `score_version` · `features` jsonb. This is the training data for a later model |
+
+`features` holds numbers and flags only (days to event, guests, total, categories, chat messages, proposals accepted or rejected, has email, delivery resolved, kashrut acknowledged), never a name, phone, email or address. A missing input is null and means unknown, never "no".
+
 ## Status transitions **[RECOMMENDATION]**
 
 | From | To | Actor |

@@ -51,6 +51,13 @@ class AllergenStatus(StrEnum):
     UNKNOWN = "unknown"
 
 
+class LeadStage(StrEnum):
+    NEW = "new"
+    QUALIFIED = "qualified"
+    WON = "won"
+    LOST = "lost"
+
+
 class KashrutMixingRule(StrEnum):
     BLOCK = "block"
     WARN = "warn"

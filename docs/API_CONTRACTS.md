@@ -95,6 +95,9 @@ Proposal shape:
 | GET/POST/DELETE | `/api/admin/blocked-dates` |
 | GET | `/api/admin/orders?status=` · GET `/api/admin/orders/{id}` |
 | POST | `/api/admin/orders/{id}/approve` `{version, note?}` · `/api/admin/orders/{id}/reject` `{version, note}` (note required). Drafts aren't listed or readable here |
+| GET | `/api/admin/leads?stage=` · GET `/api/admin/leads/{id}` (score, band, reasons, unknown inputs, history, contact phone). Every submitted order is a lead; drafts are not |
+| PATCH | `/api/admin/leads/{id}/stage` `{stage}` with stage `new`, `qualified`, `won` or `lost`. The first move to `won` or `lost` writes a `lead_outcomes` row, once |
+| POST | `/api/admin/leads/{id}/notes` `{note}` (1 to 1000 characters). The score is computed by the backend and is advisory; no route lets a client set it |
 
 ## Order status transitions
 

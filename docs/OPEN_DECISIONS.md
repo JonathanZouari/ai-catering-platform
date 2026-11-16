@@ -20,6 +20,9 @@ Where a working default is listed, engineering may build on it, but it stays ope
 | 22 | Pilot caterer | Which real caterer is the first pilot? | Validates the defaults and the Phase 8 success criterion | None | Phase 8 |
 | 23 | Platform revenue model | How will caterers pay for the platform after the pilot? | No MVP work, but pricing may shape limits and analytics | Free during pilot | Nothing in MVP |
 | 24 | Accessibility contact | Who handles accessibility requests (name, phone, email), required in the accessibility statement? | The law requires a way to report accessibility problems | The statement shows a marked placeholder and the caterer's public phone | Final accessibility statement before the pilot |
+| 25 | Lead CRM: what is a purchase | Which event counts as a purchase: the caterer approving a request, or a stage the caterer sets by hand when a real sale is made? | The score and any trained model predict this outcome. Approval alone mostly predicts the caterer's own choice | The caterer sets `won` or `lost` by hand; approval is not treated as a sale | Training a real model |
+| 26 | Lead CRM: drafts and contact data | May a caterer see unsubmitted drafts and the contact details in them? How long are lead and outcome data kept, and are customers told about scoring? | Privacy of customers who never asked for a quote | Only submitted requests are leads; feature snapshots hold no name, phone, email or address; retention and customer notice undecided | Pilot |
+| 27 | Lead CRM: stages and weights | Which stages, and who validates the starting score weights (`rules-1`)? Should caterers record contact attempts (see #13)? | The score shapes how a caterer prioritises requests | Stages new, qualified, won, lost; no contact tracking; weights are starting guesses and the score is advisory | Pilot |
 
 ## Decision log
 
