@@ -4,6 +4,14 @@ Hebrew ordering and management site for **one catering business, טעם של י�
 
 > Status: **built, not online**. All building phases are finished, and the test site is skipped for now. The AI chat needs `ANTHROPIC_API_KEY` and has only been tested with a scripted model. New-order emails need a Resend account and domain, and haven't been tested with the real provider. See `docs/DEPLOYMENT.md` to put it online, and `docs/` for the specs.
 
+## Lead purchase model report
+
+The report for the lead CRM: model vs. the rule-based score, charts, and every lead's chance to buy. The outcomes are synthetic.
+
+**[Open the interactive report](https://raw.githack.com/mardar-anna/ai-catering-platform/feat/lead-crm/docs/pr-assets/lead-report.html)** (source: [`docs/pr-assets/lead-report.html`](docs/pr-assets/lead-report.html))
+
+![Lead purchase model report](docs/screenshots/lead-report.png)
+
 ## Screenshots
 
 Sample menu and made-up names. Design based on the Stitch mockups.
