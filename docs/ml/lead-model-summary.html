@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מודל חיזוי רכישה ללידים: סיכום</title>
+<style>
+  body { font-family: system-ui, "Segoe UI", Arial, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1f2933; background: #fafaf7; }
+  h1 { margin-bottom: .2rem; }
+  .sub { color: #52606d; margin-top: 0; }
+  section { background: #fff; border: 1px solid #e4e7eb; border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0; }
+  h2 { margin-top: 0; font-size: 1.2rem; }
+  .step { display: inline-block; background: #2f6f4f; color: #fff; border-radius: 50%; width: 1.7em; height: 1.7em; text-align: center; line-height: 1.7em; margin-inline-end: .4em; font-size: .9em; }
+  table { border-collapse: collapse; width: 100%; margin: .5rem 0; }
+  th, td { border-bottom: 1px solid #e4e7eb; padding: .4rem .5rem; text-align: start; }
+  th { background: #f5f7fa; }
+  td.num { font-variant-numeric: tabular-nums; direction: ltr; text-align: end; }
+  .good { color: #2f6f4f; font-weight: 600; }
+  .bad { color: #b42318; font-weight: 600; }
+  .kpis { display: flex; gap: .75rem; flex-wrap: wrap; }
+  .kpi { flex: 1 1 160px; background: #f5f7fa; border-radius: 8px; padding: .6rem .8rem; }
+  .kpi b { display: block; font-size: 1.6rem; direction: ltr; text-align: end; }
+  .note { background: #fff8e6; border-color: #f5d68a; }
+  code { background: #f0f2f5; padding: 0 .3em; border-radius: 4px; direction: ltr; unicode-bidi: embed; }
+  a { color: #2f6f4f; }
+</style>
+</head>
+<body>
+
+<h1>מודל חיזוי רכישה ללידים</h1>
+<p class="sub">רגרסיה לוגיסטית שחוזה אם ליד יהפוך לרכישה · ענף <code>feat/lead-synthetic-data</code> ·
+  <a href="https://github.com/JonathanZouari/ai-catering-platform/pull/85">PR #85 ליונתן</a></p>
+
+<section>
+  <h2><span class="step">1</span>נתונים סינתטיים</h2>
+  <p>5,000 לידים מומצאים עם 50 עמודות. כ-21% מהם רכשו.</p>
+  <table>
+    <tr><th>קבוצה</th><th>דוגמאות לשדות</th></tr>
+    <tr><td>פרטי לקוח</td><td>שם, טלפון, אימייל, פרטי או עסקי, לקוח קודם, תקציב, כשרות</td></tr>
+    <tr><td>טופס האירוע</td><td>סוג אירוע, ימים עד האירוע, מספר אורחים, משלוח או איסוף, הגבלות תזונה</td></tr>
+    <tr><td>התנהגות באתר</td><td>מכשיר, דפדפן, שפה, שעת כניסה, מקור הגעה, זמן באתר, צ'אט AI, טיוטת הזמנה</td></tr>
+  </table>
+  <p>מי שקנה נקבע לפי "חוקים נסתרים" שהגדרתי מראש, כדי שאפשר יהיה לבדוק אם המודל מגלה אותם.</p>
+</section>
+
+<section>
+  <h2><span class="step">2</span>השוואה: חלוקה אקראית מול חלוקה לפי זמן</h2>
+  <p>10 ריצות בכל תרחיש. בכל ריצה השווינו את מה שכל שיטה מעריכה לעומת הביצועים האמיתיים על שנה עתידית שהמודל לא ראה (מדד PR-AUC).</p>
+  <table>
+    <tr><th>תרחיש</th><th>שיטה</th><th>הערכה</th><th>בפועל</th><th>ההערכה הייתה קרובה יותר</th></tr>
+    <tr><td rowspan="2">שוק יציב</td><td>אקראית</td><td class="num">0.474</td><td class="num">0.466</td><td>3 מתוך 10</td></tr>
+    <tr><td>לפי זמן</td><td class="num">0.457</td><td class="num">0.465</td><td>7 מתוך 10</td></tr>
+    <tr><td rowspan="2">שוק משתנה</td><td>אקראית</td><td class="num bad">0.422</td><td class="num">0.336</td><td>1 מתוך 10</td></tr>
+    <tr><td>לפי זמן</td><td class="num good">0.395</td><td class="num">0.330</td><td class="good">9 מתוך 10</td></tr>
+  </table>
+  <p><b>מסקנה:</b> בשוק יציב אין הבדל של ממש. בשוק משתנה החלוקה האקראית מבטיחה יותר ממה שהמודל נותן בפועל. לכן בחרנו בחלוקה לפי זמן.</p>
+</section>
+
+<section>
+  <h2><span class="step">3</span>המודל הסופי</h2>
+  <p>כוונון על 80% הלידים הראשונים, מבחן חד-פעמי על 20% האחרונים, ואימון סופי על כל הנתונים.</p>
+  <div class="kpis">
+    <div class="kpi">ROC-AUC<b>0.736</b><small>ניחוש: 0.500</small></div>
+    <div class="kpi">PR-AUC<b>0.416</b><small>ניחוש: 0.212</small></div>
+    <div class="kpi">רוכשים ב-20% המובילים<b>42.5%</b><small>לעומת 21.2% בממוצע</small></div>
+  </div>
+  <h3>מה המודל למד</h3>
+  <table>
+    <tr><th>מעלה סיכוי לרכישה</th><th>מוריד סיכוי לרכישה</th></tr>
+    <tr><td>הפניה מחבר · בר או בת מצווה · השאיר טלפון · זמן ארוך באתר · ביקור חוזר</td>
+        <td>אירוע רחוק מאוד בזמן · טופס שמולא כמו בוט · דפדפן באנגלית</td></tr>
+  </table>
+  <p>המודל גם נתן משקל ל-Firefox, למרות שלדפדפן אין השפעה אמיתית. זה רעש של קבוצה קטנה, ולכן מומלץ להוציא את הדפדפן מהמודל.</p>
+</section>
+
+<section class="note">
+  <h2>חשוב לדעת</h2>
+  <ul>
+    <li>הנתונים מומצאים. על לידים אמיתיים צריך לאמן את המודל מחדש.</li>
+    <li>המודל עדיין לא מחובר לאפליקציה. הכול נמצא בתיקייה <code>backend/ml/</code>.</li>
+    <li>לפני שאוספים נתוני גלישה אמיתיים צריך באנר הסכמה, לפי חוק הגנת הפרטיות.</li>
+    <li>הציון מיועד לבעל העסק בלבד ולא ישפיע על המחיר.</li>
+  </ul>
+</section>
+
+</body>
+</html>
