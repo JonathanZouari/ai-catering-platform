@@ -51,6 +51,13 @@ uv run ruff format --check .
 uv run pytest
 ```
 
+Browser end-to-end tests live in `backend/tests/e2e` (pytest-playwright). Without Supabase credentials only the landing-page tests run; the login, customer and admin flows need the dev `.env`:
+
+```bash
+uv run playwright install chromium        # once; or add --browser-channel chrome to use installed Chrome
+uv run --env-file ../.env pytest tests/e2e
+```
+
 ## Dependencies and why
 
 | Package | Why |
