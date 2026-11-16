@@ -83,6 +83,15 @@
         ],
         "createdAt": "2026-11-14T15:51:03.257Z",
         "reason": "agent verified: only hit is .route-band, the same full-bleed photo band already excepted on the admin pages; the image fills it by design and the caption .band-note is inset 14px/16px. Re-check this page by hand if its layout changes."
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "frontend/admin/leads/index.html"
+        ],
+        "createdAt": "2026-11-16T10:10:13.810Z",
+        "reason": "agent decided: the page has the same full-bleed .route-band photo band already excepted on the other admin pages. Measured in the browser at 1310px: every bordered element in #screen (owner-note, table cells) has 12-14px between its text and the visible rule. Re-check this page by hand if its layout changes."
       }
     ]
   }
