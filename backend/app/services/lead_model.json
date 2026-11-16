@@ -1,0 +1,40 @@
+{
+  "version": "v1-synthetic",
+  "intercept": -0.985576,
+  "coefficients": {
+    "src_ai_chat": 0.342636,
+    "src_manual": 0.041361,
+    "has_email": 0.455454,
+    "returning_customer": 1.140616,
+    "repeat_contact": 0.3544,
+    "date_known": 0.681233,
+    "short_notice": -0.948427,
+    "date_passed": -2.177181,
+    "guests_known": 0.599067,
+    "large_event": -1.238936,
+    "guests_log": -0.069417,
+    "has_message": 0.256021
+  },
+  "means": {
+    "src_ai_chat": 0.28,
+    "src_manual": 0.146667,
+    "has_email": 0.618333,
+    "returning_customer": 0.191667,
+    "repeat_contact": 0.101667,
+    "date_known": 0.755,
+    "short_notice": 0.036667,
+    "date_passed": 0.018333,
+    "guests_known": 0.731667,
+    "large_event": 0.166667,
+    "guests_log": 3.117012,
+    "has_message": 0.511667
+  },
+  "trained_on_synthetic": true,
+  "metrics": {
+    "n_train": 600,
+    "base_rate": 0.5533,
+    "holdout_auc": 0.7233,
+    "holdout_brier": 0.2116,
+    "holdout_n": 150
+  }
+}

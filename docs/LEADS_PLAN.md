@@ -121,3 +121,15 @@ Israeli privacy law requires informing people of the purpose of collection. Ther
 6. Docs: `DATABASE_SCHEMA.md`, `ERD.md`, `API_CONTRACTS.md`, `AI_AGENT_DESIGN.md`, `PRD.md` scope, `OPEN_DECISIONS.md`.
 
 Each step ends with E2E, regression and edge-case tests, plus a security review (injection, prompt injection, input validation, secrets), per `CLAUDE.md`.
+
+## 8. Conversion score **[BUILT ON SYNTHETIC DATA]**
+
+Logistic regression giving each open lead a probability of becoming an order, shown to the owner only as a prioritisation hint with its top three reasons. Never shown to customers.
+
+- **Features** (`backend/app/services/lead_scoring.py`): only facts known when the lead arrives (source, email given, returning customer, repeat contact, event date known / under a week / already passed, guest count known / over 150 / size, message written). Status and notes are never inputs, so the outcome cannot leak into training.
+- **Training** (`python -m scripts.train_lead_model`): standard library only (Newton/IRLS with L2), 25% stratified hold-out for AUC and Brier score, then refit on all rows. Output: `backend/app/services/lead_model.json`.
+- **Synthetic history** (`scripts/synthetic_leads.py`): 600 deterministic rows drawn from documented, invented effects. Tests check the pipeline recovers them. These effects say nothing about real customers.
+- **Real data guard:** `--source db` refuses to train until there are 100+ closed leads with 20+ converted and 20+ lost.
+- **Storage:** `lead_scores` (one row per open lead: probability, model version, `trained_on_synthetic`, reasons). Admin reads; only the service-role scoring job (`python -m scripts.score_leads`) writes.
+- **Display rule:** while `trained_on_synthetic` is true, the admin must label the score as a demo.
+- Open: how often to rescore (on new lead vs. nightly) and the label used as "converted" (manual status today; later, a linked submitted order).
