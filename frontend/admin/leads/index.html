@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-route="admin">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>לידים · Yummai</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Assistant:wght@400;600;700&family=Amatic+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<a class="skip-link" href="#screen">דילוג לתוכן</a>
+<header class="site-header">
+  <div class="header-inner wrap">
+    <a class="brand" href="/admin/orders/"><i data-ill="pom"></i>Yummai<small>לוח העסק</small></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">תפריט</span><i></i></button>
+    <nav class="site-nav" id="site-nav" aria-label="ניווט ראשי">
+      <a href="/admin/orders/">הזמנות</a><a href="/admin/leads/" aria-current="page">לידים</a><a href="/admin/">מנות ותמחור</a><a href="/admin/availability/">זמינות</a>
+      <a class="nav-biz" href="/">חזרה לאתר הלקוחות</a>
+    </nav>
+  </div>
+</header>
+
+<div class="route-band bleed" aria-hidden="true"><img src="/assets/img/chef.jpg" alt="" width="900" height="1350"><span class="band-note hand"><i data-ill="basket"></i>מי עוד מתלבט</span></div>
+<div class="app wrap">
+  <main id="screen">
+    <div class="screen-head">
+      <p class="eyebrow">ניהול</p>
+      <h2>לידים</h2>
+      <p class="lede">לקוחות שהשאירו פרטים והתחילו הזמנה אבל עוד לא שלחו אותה, לפי הסיכוי שישלימו את ההזמנה.</p>
+    </div>
+
+    <form id="login" class="event-form" hidden>
+      <div class="field">
+        <label for="token">קוד גישה לבעלים</label>
+        <input id="token" type="password" autocomplete="current-password" required>
+        <span class="help">זמני, עד שתיבחר שיטת התחברות. נשמר רק בלשונית הזו.</span>
+      </div>
+      <div class="actions"><button class="btn primary" type="submit">כניסה</button></div>
+    </form>
+
+    <div id="leads" class="admin-stack" hidden>
+      <section aria-labelledby="list-h">
+        <h3 id="list-h" class="sr-only">רשימת לידים</h3>
+        <p class="owner-note" id="synthetic-note" hidden>הציונים מבוססים על נתוני דמה, ולכן הם עדיין לא משקפים את הלקוחות שלכם. הם יהפכו לאמינים אחרי אימון על הזמנות אמיתיות.</p>
+        <p class="help" id="model-line"></p>
+        <div class="table-scroll" id="lead-table">
+          <table class="lines">
+            <thead><tr><th scope="col">לקוח</th><th scope="col">אירוע</th><th scope="col">אורחים</th><th scope="col">קבלה</th><th scope="col">יצירת קשר</th><th scope="col">נוצר</th><th scope="col">סיכוי רכישה</th></tr></thead>
+            <tbody id="lead-rows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="no-leads" hidden>אין כרגע הזמנות פתוחות שלא נשלחו.</p>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="site-footer wrap"><span>Yummai · לוח העסק</span><a href="/accessibility/">הצהרת נגישות</a></footer>
+<script type="module">
+  import { initMotion, initRouteBand } from "/js/motion.js";
+  import { initLeads } from "/js/admin-leads.js";
+  initMotion();
+  initRouteBand();
+  initLeads();
+</script>
+</body>
+</html>

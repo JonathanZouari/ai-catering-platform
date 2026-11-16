@@ -145,6 +145,7 @@ Proposal shape (`ProposalOut`, shared with owner proposals):
 | GET/POST/DELETE | `/api/admin/blocked-dates` |
 | GET | `/api/admin/orders?status=` · GET `/api/admin/orders/{id}` |
 | POST | `/api/admin/orders/{id}/approve` · `/api/admin/orders/{id}/reject` `{note}` |
+| GET | `/api/admin/leads`: draft orders with a purchase-probability `score` (0–1), highest first. `{model_source: "synthetic"\|"db", model_kind: "linear"\|"logistic", trained_at, leads: [{order_id, customer_name, phone, email, event_type, event_date, guests, fulfillment_type, created_at, score}]}` (`docs/LEAD_SCORING.md`) |
 
 ## Order status transitions
 

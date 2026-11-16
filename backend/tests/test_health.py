@@ -21,6 +21,7 @@ def test_frontend_pages_served():
         "/admin/",
         "/admin/availability/",
         "/admin/orders/",
+        "/admin/leads/",
         "/accessibility/",
         "/menu/",
     ):
@@ -63,6 +64,7 @@ def test_design_assets_served():
         "/js/admin-common.js",
         "/js/admin-availability.js",
         "/js/admin-orders.js",
+        "/js/admin-leads.js",
         "/js/account.js",
         "/js/customer-session.js",
         "/js/event.js",
