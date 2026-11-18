@@ -25,3 +25,5 @@ supabase/.branches/
 Thumbs.db
 .vscode/
 .idea/
+
+backend/ml/out/

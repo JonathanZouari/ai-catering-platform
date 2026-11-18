@@ -9,6 +9,13 @@ dependencies = [
     "pydantic-settings>=2.4",
 ]
 
+[project.optional-dependencies]
+ml = [
+    "numpy>=2.5.5",
+    "scikit-learn>=1.9.1",
+    "streamlit>=1.67.0",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8.3",

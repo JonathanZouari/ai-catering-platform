@@ -1,0 +1,1742 @@
+[
+ {
+  "id": "L03000",
+  "name": "ליד לדוגמה 01",
+  "source": "website_form",
+  "event_type": "אירוע משפחתי",
+  "guests": 31,
+  "days_until_event": 46,
+  "budget": 2820,
+  "quote_amount": 4480,
+  "touches": 7,
+  "response_hours": 0.82,
+  "stage": "negotiating",
+  "score": 0.592,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03001",
+  "name": "ליד לדוגמה 02",
+  "source": "whatsapp",
+  "event_type": "יום הולדת",
+  "guests": 30,
+  "days_until_event": 72,
+  "budget": 3040,
+  "quote_amount": 3030,
+  "touches": 1,
+  "response_hours": 6.65,
+  "stage": "new",
+  "score": 0.165,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "זמן עד האירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03002",
+  "name": "ליד לדוגמה 03",
+  "source": "instagram",
+  "event_type": "יום הולדת",
+  "guests": 58,
+  "days_until_event": 42,
+  "budget": 10040,
+  "quote_amount": 8160,
+  "touches": 0,
+  "response_hours": 3.89,
+  "stage": "new",
+  "score": 0.133,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03003",
+  "name": "ליד לדוגמה 04",
+  "source": "website_form",
+  "event_type": "יום הולדת",
+  "guests": 22,
+  "days_until_event": 93,
+  "budget": 7070,
+  "quote_amount": 3870,
+  "touches": 2,
+  "response_hours": 28.9,
+  "stage": "contacted",
+  "score": 0.118,
+  "band": "low",
+  "factors": [
+   {
+    "label": "זמן תגובה",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "זמן עד האירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03004",
+  "name": "ליד לדוגמה 05",
+  "source": "referral",
+  "event_type": "יום הולדת",
+  "guests": 92,
+  "days_until_event": 21,
+  "budget": 12220,
+  "quote_amount": 9830,
+  "touches": 2,
+  "response_hours": 17.07,
+  "stage": "contacted",
+  "score": 0.274,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   },
+   {
+    "label": "מספר אורחים",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03005",
+  "name": "ליד לדוגמה 06",
+  "source": "instagram",
+  "event_type": "אירוע משפחתי",
+  "guests": 41,
+  "days_until_event": 18,
+  "budget": 9450,
+  "quote_amount": 6440,
+  "touches": 1,
+  "response_hours": 17.13,
+  "stage": "new",
+  "score": 0.126,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "זמן תגובה",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03006",
+  "name": "ליד לדוגמה 07",
+  "source": "instagram",
+  "event_type": "ארוחת שבת",
+  "guests": 39,
+  "days_until_event": 11,
+  "budget": 12750,
+  "quote_amount": 5930,
+  "touches": 4,
+  "response_hours": 2.4,
+  "stage": "quoted",
+  "score": 0.406,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03007",
+  "name": "ליד לדוגמה 08",
+  "source": "website_form",
+  "event_type": "אירוע משפחתי",
+  "guests": 16,
+  "days_until_event": 67,
+  "budget": 1370,
+  "quote_amount": 2070,
+  "touches": 4,
+  "response_hours": 3.44,
+  "stage": "quoted",
+  "score": 0.549,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03008",
+  "name": "ליד לדוגמה 09",
+  "source": "whatsapp",
+  "event_type": "חגיגה פרטית",
+  "guests": 10,
+  "days_until_event": 56,
+  "budget": 900,
+  "quote_amount": 1410,
+  "touches": 2,
+  "response_hours": 6.99,
+  "stage": "contacted",
+  "score": 0.285,
+  "band": "low",
+  "factors": [
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03009",
+  "name": "ליד לדוגמה 10",
+  "source": "website_form",
+  "event_type": "בר או בת מצווה",
+  "guests": 15,
+  "days_until_event": 33,
+  "budget": 2840,
+  "quote_amount": 2790,
+  "touches": 4,
+  "response_hours": 6.08,
+  "stage": "negotiating",
+  "score": 0.548,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "סוג אירוע",
+    "effect": "up"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03010",
+  "name": "ליד לדוגמה 11",
+  "source": "whatsapp",
+  "event_type": "יום הולדת",
+  "guests": 26,
+  "days_until_event": 59,
+  "budget": 5860,
+  "quote_amount": 4920,
+  "touches": 4,
+  "response_hours": 2.52,
+  "stage": "negotiating",
+  "score": 0.543,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03011",
+  "name": "ליד לדוגמה 12",
+  "source": "referral",
+  "event_type": "ארוחת שבת",
+  "guests": 30,
+  "days_until_event": 57,
+  "budget": 4310,
+  "quote_amount": 3690,
+  "touches": 5,
+  "response_hours": 4.86,
+  "stage": "quoted",
+  "score": 0.65,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03012",
+  "name": "ליד לדוגמה 13",
+  "source": "ai_chat",
+  "event_type": "אירוע משפחתי",
+  "guests": 11,
+  "days_until_event": 28,
+  "budget": 2390,
+  "quote_amount": 1670,
+  "touches": 1,
+  "response_hours": 4.46,
+  "stage": "new",
+  "score": 0.489,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03013",
+  "name": "ליד לדוגמה 14",
+  "source": "phone",
+  "event_type": "אחר",
+  "guests": 50,
+  "days_until_event": 16,
+  "budget": 6720,
+  "quote_amount": 6590,
+  "touches": 0,
+  "response_hours": 0.41,
+  "stage": "new",
+  "score": 0.355,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03014",
+  "name": "ליד לדוגמה 15",
+  "source": "website_form",
+  "event_type": "אירוע משפחתי",
+  "guests": 33,
+  "days_until_event": 83,
+  "budget": 5870,
+  "quote_amount": 5170,
+  "touches": 1,
+  "response_hours": 2.58,
+  "stage": "new",
+  "score": 0.313,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "זמן עד האירוע",
+    "effect": "down"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03015",
+  "name": "ליד לדוגמה 16",
+  "source": "website_form",
+  "event_type": "בר או בת מצווה",
+  "guests": 32,
+  "days_until_event": 59,
+  "budget": 2740,
+  "quote_amount": 3300,
+  "touches": 2,
+  "response_hours": 8.1,
+  "stage": "contacted",
+  "score": 0.295,
+  "band": "low",
+  "factors": [
+   {
+    "label": "סוג אירוע",
+    "effect": "up"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03016",
+  "name": "ליד לדוגמה 17",
+  "source": "whatsapp",
+  "event_type": "חגיגה פרטית",
+  "guests": 49,
+  "days_until_event": 21,
+  "budget": 6570,
+  "quote_amount": 8280,
+  "touches": 1,
+  "response_hours": 11.58,
+  "stage": "new",
+  "score": 0.279,
+  "band": "low",
+  "factors": [
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03017",
+  "name": "ליד לדוגמה 18",
+  "source": "phone",
+  "event_type": "אירוע משפחתי",
+  "guests": 9,
+  "days_until_event": 22,
+  "budget": 1510,
+  "quote_amount": 810,
+  "touches": 1,
+  "response_hours": 1.91,
+  "stage": "new",
+  "score": 0.626,
+  "band": "high",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03018",
+  "name": "ליד לדוגמה 19",
+  "source": "website_form",
+  "event_type": "בר או בת מצווה",
+  "guests": 30,
+  "days_until_event": 64,
+  "budget": 5510,
+  "quote_amount": 4010,
+  "touches": 5,
+  "response_hours": 4.88,
+  "stage": "negotiating",
+  "score": 0.833,
+  "band": "high",
+  "factors": [
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03019",
+  "name": "ליד לדוגמה 20",
+  "source": "referral",
+  "event_type": "חגיגה פרטית",
+  "guests": 13,
+  "days_until_event": 50,
+  "budget": 3290,
+  "quote_amount": 2160,
+  "touches": 1,
+  "response_hours": 4.83,
+  "stage": "new",
+  "score": 0.746,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03020",
+  "name": "ליד לדוגמה 21",
+  "source": "whatsapp",
+  "event_type": "בר או בת מצווה",
+  "guests": 27,
+  "days_until_event": 6,
+  "budget": 3730,
+  "quote_amount": 4330,
+  "touches": 5,
+  "response_hours": 0.59,
+  "stage": "negotiating",
+  "score": 0.717,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "up"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03021",
+  "name": "ליד לדוגמה 22",
+  "source": "phone",
+  "event_type": "יום נישואין",
+  "guests": 22,
+  "days_until_event": 17,
+  "budget": 2250,
+  "quote_amount": 3170,
+  "touches": 4,
+  "response_hours": 2.79,
+  "stage": "quoted",
+  "score": 0.422,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03022",
+  "name": "ליד לדוגמה 23",
+  "source": "referral",
+  "event_type": "יום הולדת",
+  "guests": 38,
+  "days_until_event": 41,
+  "budget": 5760,
+  "quote_amount": 5920,
+  "touches": 2,
+  "response_hours": 9.87,
+  "stage": "contacted",
+  "score": 0.316,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03023",
+  "name": "ליד לדוגמה 24",
+  "source": "whatsapp",
+  "event_type": "חגיגה פרטית",
+  "guests": 28,
+  "days_until_event": 20,
+  "budget": 4200,
+  "quote_amount": 3370,
+  "touches": 3,
+  "response_hours": 3.6,
+  "stage": "contacted",
+  "score": 0.549,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03024",
+  "name": "ליד לדוגמה 25",
+  "source": "whatsapp",
+  "event_type": "אירוע משפחתי",
+  "guests": 24,
+  "days_until_event": 49,
+  "budget": 2230,
+  "quote_amount": 2640,
+  "touches": 4,
+  "response_hours": 1.78,
+  "stage": "lost",
+  "score": 0.447,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "זמן תגובה",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03025",
+  "name": "ליד לדוגמה 26",
+  "source": "instagram",
+  "event_type": "אחר",
+  "guests": 36,
+  "days_until_event": 34,
+  "budget": 5430,
+  "quote_amount": 4090,
+  "touches": 3,
+  "response_hours": 7.72,
+  "stage": "lost",
+  "score": 0.119,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03026",
+  "name": "ליד לדוגמה 27",
+  "source": "ai_chat",
+  "event_type": "ארוחת שבת",
+  "guests": 54,
+  "days_until_event": 89,
+  "budget": 10150,
+  "quote_amount": 9560,
+  "touches": 5,
+  "response_hours": 23.11,
+  "stage": "lost",
+  "score": 0.33,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "זמן תגובה",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03027",
+  "name": "ליד לדוגמה 28",
+  "source": "website_form",
+  "event_type": "אירוע משפחתי",
+  "guests": 28,
+  "days_until_event": 42,
+  "budget": 4540,
+  "quote_amount": 2990,
+  "touches": 3,
+  "response_hours": 4.24,
+  "stage": "lost",
+  "score": 0.411,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03028",
+  "name": "ליד לדוגמה 29",
+  "source": "whatsapp",
+  "event_type": "אירוע משפחתי",
+  "guests": 44,
+  "days_until_event": 38,
+  "budget": 7930,
+  "quote_amount": 8890,
+  "touches": 4,
+  "response_hours": 4.68,
+  "stage": "lost",
+  "score": 0.539,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03029",
+  "name": "ליד לדוגמה 30",
+  "source": "phone",
+  "event_type": "אחר",
+  "guests": 31,
+  "days_until_event": 18,
+  "budget": 6180,
+  "quote_amount": 4300,
+  "touches": 2,
+  "response_hours": 4.33,
+  "stage": "won",
+  "score": 0.585,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03030",
+  "name": "ליד לדוגמה 31",
+  "source": "ai_chat",
+  "event_type": "חגיגה פרטית",
+  "guests": 45,
+  "days_until_event": 32,
+  "budget": 5920,
+  "quote_amount": 5210,
+  "touches": 1,
+  "response_hours": 6.04,
+  "stage": "lost",
+  "score": 0.46,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03031",
+  "name": "ליד לדוגמה 32",
+  "source": "website_form",
+  "event_type": "חגיגה פרטית",
+  "guests": 38,
+  "days_until_event": 7,
+  "budget": 4900,
+  "quote_amount": 5030,
+  "touches": 2,
+  "response_hours": 3.6,
+  "stage": "lost",
+  "score": 0.357,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03032",
+  "name": "ליד לדוגמה 33",
+  "source": "website_form",
+  "event_type": "אחר",
+  "guests": 33,
+  "days_until_event": 36,
+  "budget": 4470,
+  "quote_amount": 4100,
+  "touches": 3,
+  "response_hours": 4.46,
+  "stage": "won",
+  "score": 0.486,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03033",
+  "name": "ליד לדוגמה 34",
+  "source": "referral",
+  "event_type": "ארוחת שבת",
+  "guests": 8,
+  "days_until_event": 12,
+  "budget": 920,
+  "quote_amount": 990,
+  "touches": 3,
+  "response_hours": 0.76,
+  "stage": "lost",
+  "score": 0.57,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "מספר אורחים",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03034",
+  "name": "ליד לדוגמה 35",
+  "source": "whatsapp",
+  "event_type": "אירוע משפחתי",
+  "guests": 21,
+  "days_until_event": 27,
+  "budget": 3280,
+  "quote_amount": 3740,
+  "touches": 1,
+  "response_hours": 2.08,
+  "stage": "won",
+  "score": 0.428,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03035",
+  "name": "ליד לדוגמה 36",
+  "source": "whatsapp",
+  "event_type": "יום הולדת",
+  "guests": 14,
+  "days_until_event": 47,
+  "budget": 3420,
+  "quote_amount": 2040,
+  "touches": 1,
+  "response_hours": 3.16,
+  "stage": "lost",
+  "score": 0.263,
+  "band": "low",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03036",
+  "name": "ליד לדוגמה 37",
+  "source": "website_form",
+  "event_type": "אירוע משפחתי",
+  "guests": 17,
+  "days_until_event": 44,
+  "budget": 3000,
+  "quote_amount": 2690,
+  "touches": 2,
+  "response_hours": 8.7,
+  "stage": "lost",
+  "score": 0.264,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03037",
+  "name": "ליד לדוגמה 38",
+  "source": "website_form",
+  "event_type": "יום הולדת",
+  "guests": 7,
+  "days_until_event": 45,
+  "budget": 1170,
+  "quote_amount": 1110,
+  "touches": 5,
+  "response_hours": 2.47,
+  "stage": "lost",
+  "score": 0.463,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03038",
+  "name": "ליד לדוגמה 39",
+  "source": "referral",
+  "event_type": "חגיגה פרטית",
+  "guests": 13,
+  "days_until_event": 37,
+  "budget": 1480,
+  "quote_amount": 1260,
+  "touches": 3,
+  "response_hours": 2.04,
+  "stage": "won",
+  "score": 0.54,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03039",
+  "name": "ליד לדוגמה 40",
+  "source": "google",
+  "event_type": "אירוע משפחתי",
+  "guests": 17,
+  "days_until_event": 20,
+  "budget": 1340,
+  "quote_amount": 1540,
+  "touches": 3,
+  "response_hours": 6.09,
+  "stage": "lost",
+  "score": 0.279,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03040",
+  "name": "ליד לדוגמה 41",
+  "source": "whatsapp",
+  "event_type": "יום הולדת",
+  "guests": 18,
+  "days_until_event": 15,
+  "budget": 2710,
+  "quote_amount": 3190,
+  "touches": 2,
+  "response_hours": 0.23,
+  "stage": "lost",
+  "score": 0.297,
+  "band": "low",
+  "factors": [
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "זמן תגובה",
+    "effect": "up"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03041",
+  "name": "ליד לדוגמה 42",
+  "source": "website_form",
+  "event_type": "יום הולדת",
+  "guests": 11,
+  "days_until_event": 38,
+  "budget": 860,
+  "quote_amount": 1410,
+  "touches": 5,
+  "response_hours": 2.01,
+  "stage": "won",
+  "score": 0.505,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03042",
+  "name": "ליד לדוגמה 43",
+  "source": "referral",
+  "event_type": "אירוע משפחתי",
+  "guests": 21,
+  "days_until_event": 17,
+  "budget": 3920,
+  "quote_amount": 2490,
+  "touches": 3,
+  "response_hours": 41.04,
+  "stage": "won",
+  "score": 0.306,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "זמן תגובה",
+    "effect": "down"
+   },
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03043",
+  "name": "ליד לדוגמה 44",
+  "source": "whatsapp",
+  "event_type": "אירוע משפחתי",
+  "guests": 42,
+  "days_until_event": 7,
+  "budget": 8980,
+  "quote_amount": 6740,
+  "touches": 4,
+  "response_hours": 2.03,
+  "stage": "won",
+  "score": 0.772,
+  "band": "high",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03044",
+  "name": "ליד לדוגמה 45",
+  "source": "phone",
+  "event_type": "יום הולדת",
+  "guests": 16,
+  "days_until_event": 15,
+  "budget": 3260,
+  "quote_amount": 2760,
+  "touches": 1,
+  "response_hours": 0.74,
+  "stage": "won",
+  "score": 0.56,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03045",
+  "name": "ליד לדוגמה 46",
+  "source": "whatsapp",
+  "event_type": "בר או בת מצווה",
+  "guests": 11,
+  "days_until_event": 31,
+  "budget": 1800,
+  "quote_amount": 1630,
+  "touches": 2,
+  "response_hours": 9.08,
+  "stage": "won",
+  "score": 0.517,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "up"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03046",
+  "name": "ליד לדוגמה 47",
+  "source": "website_form",
+  "event_type": "בר או בת מצווה",
+  "guests": 53,
+  "days_until_event": 9,
+  "budget": 5430,
+  "quote_amount": 7130,
+  "touches": 3,
+  "response_hours": 3.27,
+  "stage": "lost",
+  "score": 0.576,
+  "band": "high",
+  "factors": [
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03047",
+  "name": "ליד לדוגמה 48",
+  "source": "instagram",
+  "event_type": "יום הולדת",
+  "guests": 24,
+  "days_until_event": 52,
+  "budget": 2610,
+  "quote_amount": 3170,
+  "touches": 1,
+  "response_hours": 2.83,
+  "stage": "lost",
+  "score": 0.099,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03048",
+  "name": "ליד לדוגמה 49",
+  "source": "phone",
+  "event_type": "אירוע משפחתי",
+  "guests": 28,
+  "days_until_event": 49,
+  "budget": 2200,
+  "quote_amount": 3270,
+  "touches": 2,
+  "response_hours": 12.08,
+  "stage": "won",
+  "score": 0.225,
+  "band": "low",
+  "factors": [
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   },
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "זמן תגובה",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03049",
+  "name": "ליד לדוגמה 50",
+  "source": "instagram",
+  "event_type": "יום הולדת",
+  "guests": 28,
+  "days_until_event": 60,
+  "budget": 3780,
+  "quote_amount": 3550,
+  "touches": 2,
+  "response_hours": 7.1,
+  "stage": "lost",
+  "score": 0.097,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03050",
+  "name": "ליד לדוגמה 51",
+  "source": "whatsapp",
+  "event_type": "אירוע משפחתי",
+  "guests": 15,
+  "days_until_event": 21,
+  "budget": 1380,
+  "quote_amount": 1760,
+  "touches": 5,
+  "response_hours": 1.75,
+  "stage": "lost",
+  "score": 0.617,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03051",
+  "name": "ליד לדוגמה 52",
+  "source": "whatsapp",
+  "event_type": "יום הולדת",
+  "guests": 7,
+  "days_until_event": 31,
+  "budget": 1070,
+  "quote_amount": 1020,
+  "touches": 4,
+  "response_hours": 0.68,
+  "stage": "won",
+  "score": 0.435,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03052",
+  "name": "ליד לדוגמה 53",
+  "source": "website_form",
+  "event_type": "ארוחת שבת",
+  "guests": 16,
+  "days_until_event": 2,
+  "budget": 2270,
+  "quote_amount": 2680,
+  "touches": 3,
+  "response_hours": 2.26,
+  "stage": "won",
+  "score": 0.448,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "down"
+   },
+   {
+    "label": "צפה בתפריט",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03053",
+  "name": "ליד לדוגמה 54",
+  "source": "phone",
+  "event_type": "יום הולדת",
+  "guests": 11,
+  "days_until_event": 30,
+  "budget": 860,
+  "quote_amount": 950,
+  "touches": 3,
+  "response_hours": 8.06,
+  "stage": "won",
+  "score": 0.335,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03054",
+  "name": "ליד לדוגמה 55",
+  "source": "website_form",
+  "event_type": "יום הולדת",
+  "guests": 34,
+  "days_until_event": 76,
+  "budget": 6550,
+  "quote_amount": 4790,
+  "touches": 0,
+  "response_hours": 1.11,
+  "stage": "lost",
+  "score": 0.195,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "up"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03055",
+  "name": "ליד לדוגמה 56",
+  "source": "phone",
+  "event_type": "חגיגה פרטית",
+  "guests": 14,
+  "days_until_event": 11,
+  "budget": 1940,
+  "quote_amount": 1830,
+  "touches": 3,
+  "response_hours": 2.09,
+  "stage": "lost",
+  "score": 0.456,
+  "band": "medium",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   },
+   {
+    "label": "מספר אורחים",
+    "effect": "up"
+   }
+  ]
+ },
+ {
+  "id": "L03056",
+  "name": "ליד לדוגמה 57",
+  "source": "website_form",
+  "event_type": "ארוחת שבת",
+  "guests": 50,
+  "days_until_event": 24,
+  "budget": 6370,
+  "quote_amount": 7610,
+  "touches": 1,
+  "response_hours": 11.61,
+  "stage": "lost",
+  "score": 0.163,
+  "band": "low",
+  "factors": [
+   {
+    "label": "סכום ההצעה",
+    "effect": "up"
+   },
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03057",
+  "name": "ליד לדוגמה 58",
+  "source": "website_form",
+  "event_type": "בר או בת מצווה",
+  "guests": 18,
+  "days_until_event": 55,
+  "budget": 1950,
+  "quote_amount": 2380,
+  "touches": 2,
+  "response_hours": 26.75,
+  "stage": "lost",
+  "score": 0.086,
+  "band": "low",
+  "factors": [
+   {
+    "label": "זמן תגובה",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "up"
+   },
+   {
+    "label": "מקור",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03058",
+  "name": "ליד לדוגמה 59",
+  "source": "whatsapp",
+  "event_type": "יום הולדת",
+  "guests": 16,
+  "days_until_event": 19,
+  "budget": 1820,
+  "quote_amount": 2030,
+  "touches": 1,
+  "response_hours": 6.45,
+  "stage": "lost",
+  "score": 0.299,
+  "band": "low",
+  "factors": [
+   {
+    "label": "מספר פניות",
+    "effect": "down"
+   },
+   {
+    "label": "סוג אירוע",
+    "effect": "down"
+   },
+   {
+    "label": "סכום ההצעה",
+    "effect": "down"
+   }
+  ]
+ },
+ {
+  "id": "L03059",
+  "name": "ליד לדוגמה 60",
+  "source": "referral",
+  "event_type": "יום נישואין",
+  "guests": 40,
+  "days_until_event": 16,
+  "budget": 4400,
+  "quote_amount": 5550,
+  "touches": 4,
+  "response_hours": 10.04,
+  "stage": "won",
+  "score": 0.854,
+  "band": "high",
+  "factors": [
+   {
+    "label": "מקור",
+    "effect": "up"
+   },
+   {
+    "label": "לקוח חוזר",
+    "effect": "up"
+   },
+   {
+    "label": "יחס הצעה לתקציב",
+    "effect": "down"
+   }
+  ]
+ }
+]
