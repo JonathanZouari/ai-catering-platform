@@ -78,6 +78,16 @@ uv run python -m ml.synthetic --n 3000 --seed 7 --out ml/out/leads.csv
 uv run python -m ml.compare_models --data ml/out/leads.csv
 ```
 
+Streamlit dashboard with every metric (ROC-AUC, PR-AUC, Brier, log-loss, accuracy, precision,
+recall, F1, lift, 5-fold CV), ROC/PR/calibration/gains curves, confusion matrices, permutation
+importance and a scored lead list. Sidebar controls the data size, seed, split and decision
+threshold:
+
+```bash
+cd backend
+uv run --extra ml streamlit run ml/dashboard.py
+```
+
 ## 8. Rollout
 
 1. Migration + admin list/detail screen (no scoring).

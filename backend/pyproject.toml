@@ -13,6 +13,7 @@ dependencies = [
 ml = [
     "numpy>=2.5.5",
     "scikit-learn>=1.9.1",
+    "streamlit>=1.67.0",
 ]
 
 [dependency-groups]
