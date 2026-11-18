@@ -16,6 +16,7 @@ const STATUS = {
 
 const head = h("header", { class: "admin-head" },
   h("h1", { class: "auth-title", text: "ממשק העסק" }),
+  h("a", { class: "btn btn-ghost", href: "/admin/leads/" }, "לידים"),
   h("button", { class: "btn btn-ghost", type: "button", onclick: signOut }, "יציאה"));
 
 if (!isAdmin(session)) {
