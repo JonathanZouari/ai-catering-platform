@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ml.compare_models import CATEGORICAL, NUMERIC, build_models, matrix
+from ml.compare_models import CATEGORICAL, NUMERIC, build_models, evaluate, matrix
 from ml.synthetic import generate
 
 OPEN_STAGES = ["new", "contacted", "quoted", "negotiating"]
@@ -104,7 +104,13 @@ def main() -> None:
     leads = export(3000, 60, a.seed)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(leads, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"wrote {len(leads)} leads to {a.out}")
+    rows = generate(3000, 7)
+    y = np.array([r["converted"] for r in rows])
+    models_out = a.out.with_name("demo-models.json")
+    models_out.write_text(
+        json.dumps(evaluate(rows, y, 0), ensure_ascii=False, indent=1), encoding="utf-8"
+    )
+    print(f"wrote {len(leads)} leads to {a.out} and model metrics to {models_out}")
 
 
 if __name__ == "__main__":

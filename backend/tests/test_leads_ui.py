@@ -28,3 +28,15 @@ def test_demo_leads_are_synthetic_and_consistent():
         assert lead["band"] == expected
         assert lead["name"].startswith("ליד לדוגמה")  # placeholder names, never real people
         assert "phone" not in lead and "email" not in lead
+
+
+def test_demo_model_metrics_are_complete():
+    path = DEMO.with_name("demo-models.json")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    names = {m["name"] for m in data["models"]}
+    assert {"base_rate", "logreg", "random_forest", "hist_gb"} <= names
+    assert data["best"] in names - {"base_rate"}
+    for m in data["models"]:
+        assert 0 <= m["roc_auc"] <= 1 and 0 <= m["pr_auc"] <= 1 and 0 <= m["brier"] <= 1
+    assert len(data["calibration"]) == 5
+    assert client.get("/admin/leads/demo-models.json").status_code == 200

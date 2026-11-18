@@ -77,6 +77,38 @@ def top_decile_lift(y: np.ndarray, p: np.ndarray) -> float:
     return float(y[top].mean() / y.mean())
 
 
+def evaluate(rows: list[dict], y: np.ndarray, seed: int = 0) -> dict:
+    """Train every model on a stratified split and return metrics on the held-out part."""
+    X = matrix(rows)
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3, stratify=y, random_state=seed)
+    preds = {"base_rate": np.full(len(y_te), y_tr.mean())}
+    for name, model in build_models().items():
+        model.fit(X_tr, y_tr)
+        preds[name] = model.predict_proba(X_te)[:, 1]
+    models = [
+        {
+            "name": name,
+            "roc_auc": 0.5 if name == "base_rate" else float(roc_auc_score(y_te, p)),
+            "pr_auc": float(average_precision_score(y_te, p)),
+            "brier": float(brier_score_loss(y_te, p)),
+            "lift_top10": top_decile_lift(y_te, p),
+        }
+        for name, p in preds.items()
+    ]
+    best = max((m for m in models if m["name"] != "base_rate"), key=lambda m: m["roc_auc"])["name"]
+    obs, pred = calibration_curve(y_te, preds[best], n_bins=5, strategy="quantile")
+    return {
+        "n_train": len(y_tr),
+        "n_test": len(y_te),
+        "positive_rate": float(y.mean()),
+        "models": models,
+        "best": best,
+        "calibration": [
+            {"predicted": float(p_), "observed": float(o)} for o, p_ in zip(obs, pred, strict=True)
+        ],
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", type=Path, default=Path("ml/out/leads.csv"))
@@ -84,31 +116,19 @@ def main() -> None:
     a = ap.parse_args()
 
     rows, y = load(a.data)
-    X = matrix(rows)
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3, stratify=y, random_state=a.seed)
-
-    base = np.full(len(y_te), y_tr.mean())
-    results = {"base_rate": base}
-    for name, model in build_models().items():
-        model.fit(X_tr, y_tr)
-        results[name] = model.predict_proba(X_te)[:, 1]
-
-    print(f"train={len(y_tr)} test={len(y_te)} positive rate={y.mean():.1%}\n")
+    r = evaluate(rows, y, a.seed)
+    print(f"train={r['n_train']} test={r['n_test']} positive rate={r['positive_rate']:.1%}")
+    print()
     print(f"{'model':<14}{'ROC-AUC':>9}{'PR-AUC':>9}{'Brier':>8}{'Lift@10%':>10}")
-    for name, p in results.items():
-        auc = roc_auc_score(y_te, p) if name != "base_rate" else 0.5
+    for m in r["models"]:
         print(
-            f"{name:<14}{auc:>9.3f}{average_precision_score(y_te, p):>9.3f}"
-            f"{brier_score_loss(y_te, p):>8.3f}{top_decile_lift(y_te, p):>10.2f}"
+            f"{m['name']:<14}{m['roc_auc']:>9.3f}{m['pr_auc']:>9.3f}"
+            f"{m['brier']:>8.3f}{m['lift_top10']:>10.2f}"
         )
-
-    best = max(
-        (n for n in results if n != "base_rate"), key=lambda n: roc_auc_score(y_te, results[n])
-    )
-    print(f"\nCalibration of {best} (predicted vs observed, 5 bins):")
-    obs, pred = calibration_curve(y_te, results[best], n_bins=5, strategy="quantile")
-    for o, p_ in zip(obs, pred, strict=True):
-        print(f"  predicted {p_:.2f}  observed {o:.2f}")
+    print()
+    print(f"Calibration of {r['best']} (predicted vs observed, 5 bins):")
+    for c in r["calibration"]:
+        print(f"  predicted {c['predicted']:.2f}  observed {c['observed']:.2f}")
 
 
 if __name__ == "__main__":

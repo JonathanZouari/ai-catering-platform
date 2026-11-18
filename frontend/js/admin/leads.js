@@ -51,6 +51,51 @@ async function loadLive() {
   });
 }
 
+const MODEL_NAMES = {
+  base_rate: "ללא מודל (שיעור הסגירה הכללי)",
+  logreg: "רגרסיה לוגיסטית",
+  random_forest: "יער אקראי",
+  hist_gb: "Gradient Boosting",
+};
+const METRICS = [
+  ["roc_auc", "ROC-AUC", "עד כמה המודל מבדיל בין ליד שיסגור לליד שלא (0.5 = ניחוש, 1 = מושלם)", 3],
+  ["pr_auc", "PR-AUC", "דיוק בזיהוי הלידים שייסגרו, גבוה יותר טוב", 3],
+  ["brier", "Brier", "שגיאת ההסתברות, נמוך יותר טוב", 3],
+  ["lift_top10", "Lift ב-10% העליונים", "פי כמה סגירות יש ב-10% הלידים עם הציון הגבוה ביותר, לעומת הממוצע", 2],
+];
+
+async function loadModels() {
+  if (!demo) return null;
+  const res = await fetch("/admin/leads/demo-models.json");
+  return res.ok ? res.json() : null;
+}
+
+function modelsSection(m) {
+  if (!m) {
+    return h("section", { class: "stack", "aria-labelledby": "models-title" },
+      h("h2", { id: "models-title", text: "מדדי המודלים" }),
+      h("p", { class: "muted", text: "מדדים יוצגו אחרי שיאומנו מודלים על לידים אמיתיים שנסגרו או אבדו." }));
+  }
+  const pct = (x) => `${Math.round(x * 100)}%`;
+  const head = h("tr", {}, h("th", { scope: "col", text: "מודל" }),
+    METRICS.map(([, label, hint]) => h("th", { scope: "col", title: hint, text: label })));
+  const body = m.models.map((row) => h("tr", {},
+    h("th", { scope: "row" }, MODEL_NAMES[row.name] ?? row.name,
+      row.name === m.best ? h("span", { class: "badge badge-green", text: "הטוב ביותר" }) : null),
+    METRICS.map(([key, , , digits]) => h("td", { class: "num", text: row[key].toFixed(digits) }))));
+  return h("section", { class: "stack", "aria-labelledby": "models-title" },
+    h("h2", { id: "models-title", text: "מדדי המודלים" }),
+    h("p", { class: "muted small", text: `נבדק על ${m.n_test} לידים שהמודלים לא ראו באימון (אומנו על ${m.n_train}). שיעור הסגירה בנתונים: ${pct(m.positive_rate)}.` }),
+    h("p", { class: "leads-demo", text: "המדדים מחושבים על נתונים סינתטיים שנוצרו מנוסחה לוגיסטית, ולכן הרגרסיה הלוגיסטית מנצחת מראש. הם מוכיחים שהצנרת עובדת ולא כמה המודל מדויק על לקוחות אמיתיים." }),
+    h("table", { class: "leads-table" }, h("caption", { class: "muted small", text: "השוואת מודלים. מעבירים עכבר על כותרת מדד להסבר." }),
+      h("thead", {}, head), h("tbody", {}, body)),
+    h("h3", { text: `כיול המודל הטוב ביותר (${MODEL_NAMES[m.best]})` }),
+    h("p", { class: "muted small", text: "אם המודל מכויל, מתוך הלידים שקיבלו סיכוי של 40% בערך 40% באמת נסגרו." }),
+    h("table", { class: "leads-table" }, h("caption", { class: "visually-hidden", text: "טבלת כיול" }),
+      h("thead", {}, h("tr", {}, h("th", { scope: "col", text: "סיכוי שחזה המודל" }), h("th", { scope: "col", text: "שיעור סגירה בפועל" }))),
+      h("tbody", {}, m.calibration.map((c) => h("tr", {}, h("td", { class: "num", text: pct(c.predicted) }), h("td", { class: "num", text: pct(c.observed) }))))));
+}
+
 const dayLabel = (d) => (d == null ? "" : d <= 0 ? "היום או עבר" : `בעוד ${d} ימים`);
 
 async function main() {
@@ -59,8 +104,10 @@ async function main() {
     h("a", { class: "btn btn-ghost", href: "/admin/" }, "חזרה לממשק העסק"));
 
   let leads;
+  let models = null;
   try {
     leads = demo ? await loadDemo() : await loadLive();
+    models = await loadModels().catch(() => null);
   } catch {
     return fill(root, head, h("p", { role: "alert", text: "לא הצלחנו לטעון את הלידים." }));
   }
@@ -148,7 +195,8 @@ async function main() {
       h("thead", {}, h("tr", {},
         ["ליד", "אירוע", "אורחים", "מקור", "שלב", "סיכוי להזמנה", ""].map((t, i) =>
           h("th", { scope: "col", class: i === 2 || i === 3 ? "hide-sm" : null, text: t })))),
-      tbody));
+      tbody),
+    modelsSection(models));
   render();
 }
 
