@@ -52,7 +52,6 @@ def _order(session: Session, **overrides) -> Order:
     session.add(event)
     session.flush()
     fields = {
-        "customer_id": customer.id,
         "event_id": event.id,
         "fulfillment_type": FulfillmentType.pickup,
         "requested_at": datetime(2026, 12, 1, 12, tzinfo=UTC),

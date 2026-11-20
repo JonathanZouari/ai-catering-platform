@@ -9,7 +9,7 @@ from collections.abc import Iterable, Iterator
 from functools import lru_cache
 from pathlib import Path
 
-from sqlalchemy import Engine, Table, create_engine, event, text
+from sqlalchemy import Engine, Table, Uuid, create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import get_settings
@@ -66,6 +66,21 @@ def lockdown_statements(tables: Iterable[Table], *, revoke_api_roles: bool) -> l
     return statements
 
 
+def uuid_default_statements(tables: Iterable[Table]) -> list[str]:
+    """SET DEFAULT gen_random_uuid() on every table whose primary key is a single uuid `id`.
+
+    Postgres only: SQLite has no such function, and the models keep a Python-side uuid4 default.
+    """
+    statements: list[str] = []
+    for table in tables:
+        pk = list(table.primary_key.columns)
+        if len(pk) == 1 and pk[0].name == "id" and isinstance(pk[0].type, Uuid):
+            statements.append(
+                f'ALTER TABLE "{table.name}" ALTER COLUMN "id" SET DEFAULT gen_random_uuid()'
+            )
+    return statements
+
+
 def init_db(engine: Engine | None = None) -> None:
     """Create all tables that do not exist yet."""
     from app import models  # noqa: F401  (registers tables on Base.metadata)
@@ -80,6 +95,8 @@ def init_db(engine: Engine | None = None) -> None:
             for statement in lockdown_statements(
                 Base.metadata.sorted_tables, revoke_api_roles=found == len(SUPABASE_API_ROLES)
             ):
+                conn.execute(text(statement))
+            for statement in uuid_default_statements(Base.metadata.sorted_tables):
                 conn.execute(text(statement))
 
 

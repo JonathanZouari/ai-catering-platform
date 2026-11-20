@@ -6,7 +6,6 @@ live in `DATABASE_SCHEMA.md`. `time_slots` and `blocked_dates` have no foreign k
 ```mermaid
 erDiagram
     customers ||--o{ events : plans
-    customers ||--o{ orders : places
     events ||--o| orders : "is for"
     delivery_zones |o--o{ orders : "delivers to"
     orders ||--o{ order_items : contains
@@ -18,7 +17,7 @@ erDiagram
     orders ||--o{ ai_conversations : has
     ai_conversations ||--o{ ai_messages : contains
     orders ||--o{ ai_change_proposals : receives
-    ai_conversations |o--o{ ai_change_proposals : "produced by"
+    ai_conversations |o--o{ ai_change_proposals : "produced by (same order)"
 
     customers {
         uuid id PK
@@ -75,7 +74,7 @@ erDiagram
         uuid id PK
         text name
         numeric fee
-        json definition
+        jsonb definition
         bool is_active
     }
     time_slots {
@@ -94,7 +93,6 @@ erDiagram
     }
     orders {
         uuid id PK
-        uuid customer_id FK
         uuid event_id FK, UK
         uuid delivery_zone_id FK
         text status
@@ -117,22 +115,22 @@ erDiagram
         numeric snapshot_line_total
     }
     ai_conversations {
-        uuid id PK
-        uuid order_id FK
+        uuid id PK, UK1
+        uuid order_id FK, UK1
         datetime created_at
     }
     ai_messages {
         uuid id PK
         uuid conversation_id FK
         text role
-        json content
+        jsonb content
     }
     ai_change_proposals {
         uuid id PK
         uuid order_id FK
         uuid conversation_id FK
         int base_order_version
-        json changes
+        jsonb changes
         numeric price_before
         numeric price_after
         text status

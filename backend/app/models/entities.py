@@ -15,6 +15,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     Numeric,
@@ -28,6 +29,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -92,6 +94,8 @@ def _updated() -> Mapped[datetime]:
 
 
 MONEY = Numeric(10, 2)
+# jsonb on Postgres, plain JSON on SQLite.
+JSON_DOC = JSON().with_variant(JSONB(), "postgresql")
 
 
 class Customer(Base):
@@ -118,7 +122,7 @@ class Event(Base):
     )
 
     id: Mapped[uuid.UUID] = _uuid_pk()
-    customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"))
+    customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"), index=True)
     event_type: Mapped[str] = mapped_column(Text)
     event_date: Mapped[date] = mapped_column(Date)
     adults: Mapped[int] = mapped_column(Integer)
@@ -188,7 +192,9 @@ class DishAllergen(Base):
     __tablename__ = "dish_allergens"
 
     dish_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("dishes.id"), primary_key=True)
-    allergen_id: Mapped[int] = mapped_column(ForeignKey("allergens.id"), primary_key=True)
+    allergen_id: Mapped[int] = mapped_column(
+        ForeignKey("allergens.id"), primary_key=True, index=True
+    )
     status: Mapped[AllergenStatus] = mapped_column(_enum(AllergenStatus))
 
     dish: Mapped[Dish] = relationship(back_populates="allergens")
@@ -202,7 +208,7 @@ class DeliveryZone(Base):
     id: Mapped[uuid.UUID] = _uuid_pk()
     name: Mapped[str] = mapped_column(Text)
     fee: Mapped[Decimal] = mapped_column(MONEY)
-    definition: Mapped[dict] = mapped_column(JSON)  # shape depends on OPEN #19
+    definition: Mapped[dict] = mapped_column(JSON_DOC)  # shape depends on OPEN #19
     is_active: Mapped[bool] = mapped_column(default=True)
 
 
@@ -218,7 +224,9 @@ class TimeSlot(Base):
     weekday: Mapped[int | None] = mapped_column(SmallInteger)
     start_time: Mapped[time] = mapped_column(Time)
     end_time: Mapped[time] = mapped_column(Time)
-    capacity: Mapped[int | None] = mapped_column(Integer)  # OPEN #5
+    capacity: Mapped[int | None] = mapped_column(
+        Integer, comment="Not enforced: there is no reservations table yet (OPEN #5)."
+    )
     is_active: Mapped[bool] = mapped_column(default=True)
 
 
@@ -240,7 +248,6 @@ class Order(Base):
     )
 
     id: Mapped[uuid.UUID] = _uuid_pk()
-    customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"), index=True)
     event_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("events.id"), unique=True)
     status: Mapped[OrderStatus] = mapped_column(
         _enum(OrderStatus), default=OrderStatus.draft, index=True
@@ -249,7 +256,9 @@ class Order(Base):
     fulfillment_type: Mapped[FulfillmentType] = mapped_column(_enum(FulfillmentType))
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     delivery_address: Mapped[str | None] = mapped_column(Text)
-    delivery_zone_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("delivery_zones.id"))
+    delivery_zone_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("delivery_zones.id"), index=True
+    )
     subtotal: Mapped[Decimal | None] = mapped_column(MONEY)
     delivery_fee: Mapped[Decimal | None] = mapped_column(MONEY)
     total: Mapped[Decimal | None] = mapped_column(MONEY)
@@ -259,6 +268,7 @@ class Order(Base):
     created_at: Mapped[datetime] = _created()
     updated_at: Mapped[datetime] = _updated()
 
+    event: Mapped[Event] = relationship()  # the customer is event.customer_id
     items: Mapped[list["OrderItem"]] = relationship(back_populates="order")
 
 
@@ -271,7 +281,7 @@ class OrderItem(Base):
 
     id: Mapped[uuid.UUID] = _uuid_pk()
     order_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("orders.id"), index=True)
-    dish_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("dishes.id"))
+    dish_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("dishes.id"), index=True)
     quantity: Mapped[Decimal] = mapped_column(MONEY)
     # Price snapshot: filled on submission, authoritative once the order is pending_approval.
     snapshot_name: Mapped[str | None] = mapped_column(Text)
@@ -285,6 +295,8 @@ class OrderItem(Base):
 
 class AiConversation(Base):
     __tablename__ = "ai_conversations"
+    # Target of the composite FK from ai_change_proposals.
+    __table_args__ = (UniqueConstraint("id", "order_id", name="uq_ai_conversations_id_order"),)
 
     id: Mapped[uuid.UUID] = _uuid_pk()
     order_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("orders.id"), index=True)
@@ -300,13 +312,20 @@ class AiMessage(Base):
         ForeignKey("ai_conversations.id"), index=True
     )
     role: Mapped[str] = mapped_column(String(16))
-    content: Mapped[dict | list] = mapped_column(JSON)
+    content: Mapped[dict | list] = mapped_column(JSON_DOC)
     created_at: Mapped[datetime] = _created()
 
 
 class AiChangeProposal(Base):
     __tablename__ = "ai_change_proposals"
     __table_args__ = (
+        # The conversation must belong to the same order (not checked when conversation_id is NULL).
+        ForeignKeyConstraint(
+            ["conversation_id", "order_id"],
+            ["ai_conversations.id", "ai_conversations.order_id"],
+            name="fk_proposal_conversation_same_order",
+        ),
+        Index("ix_ai_change_proposals_conversation_order", "conversation_id", "order_id"),
         # At most one pending proposal per order (RECOMMENDATION in the schema doc).
         Index(
             "uq_one_pending_proposal_per_order",
@@ -319,9 +338,9 @@ class AiChangeProposal(Base):
 
     id: Mapped[uuid.UUID] = _uuid_pk()
     order_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("orders.id"), index=True)
-    conversation_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("ai_conversations.id"))
+    conversation_id: Mapped[uuid.UUID | None] = mapped_column()
     base_order_version: Mapped[int] = mapped_column(Integer)
-    changes: Mapped[list] = mapped_column(JSON)
+    changes: Mapped[list] = mapped_column(JSON_DOC)
     price_before: Mapped[Decimal] = mapped_column(MONEY)
     price_after: Mapped[Decimal] = mapped_column(MONEY)
     status: Mapped[ProposalStatus] = mapped_column(
