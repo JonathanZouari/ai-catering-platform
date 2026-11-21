@@ -2,6 +2,8 @@
 // clickable example of the assistant's approval card (it demonstrates the rule that nothing changes until
 // the customer approves). No data leaves the page.
 import { fmtMoney } from "./lib/format.js";
+import { createLeadForm } from "./lib/lead-form.js";
+import { startTracking } from "./lib/lead-tracker.js";
 import { confetti, reduced, reveal, tweenNumber } from "./lib/motion.js";
 
 // Scroll reveal, with a small stagger inside groups.
@@ -73,3 +75,7 @@ if (demo) {
     $("demo-approve").focus();
   });
 }
+
+// Lead form and the visit signals that go with it.
+startTracking();
+document.getElementById("lead-form")?.replaceChildren(createLeadForm({ idPrefix: "landing-lead" }));

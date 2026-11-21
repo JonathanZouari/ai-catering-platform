@@ -8,6 +8,8 @@ import { animatedAmount } from "../../lib/motion.js";
 import { createDishCard } from "../components/dish-card.js";
 import { onCatalogChange } from "../catalog.js";
 import { getState, goto, setQty, subscribe } from "../store.js";
+import { createLeadForm } from "../../lib/lead-form.js";
+import { markDishViewed } from "../../lib/lead-tracker.js";
 
 export function mountMenu(root) {
   let catalog = null;
@@ -16,6 +18,16 @@ export function mountMenu(root) {
   const cards = new Map();
   let lastItems = null;
   let lastTotal = null;
+  // A dish counts as seen once at least half of its card has been on screen.
+  const seen = "IntersectionObserver" in window
+    ? new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        markDishViewed(entry.target.dataset.dishId);
+        seen.unobserve(entry.target);
+      }
+    }, { threshold: 0.5 })
+    : null;
 
   const chips = h("div", { class: "chip-row scroll-x", role: "group", "aria-label": "קטגוריות" });
   const filters = h("div", { class: "chip-row", role: "group", "aria-label": "סינון תזונתי" });
@@ -28,7 +40,13 @@ export function mountMenu(root) {
     h("h1", { class: "page-title", text: "בחרו מנות לתפריט" }),
     h("p", { class: "page-lead muted", text: `${e0.type}, ${fmtDate(e0.date)}, ${fmtNumber(totalGuests(e0))} אורחים` }),
     h("div", { class: "menu-layout" },
-      h("div", { class: "menu-main stack-lg" }, h("div", { class: "stack" }, chips, filters), catalogEl),
+      h("div", { class: "menu-main stack-lg" }, h("div", { class: "stack" }, chips, filters), catalogEl,
+        getState().order.status === "draft"
+          ? h("section", { class: "panel lead-box", "aria-labelledby": "menu-lead-title" },
+            h("h2", { id: "menu-lead-title", text: "מעדיפים שנחזור אליכם?" }),
+            h("p", { class: "muted", text: "השאירו פרטים, ונחזור אליכם עם הצעה." }),
+            createLeadForm({ idPrefix: "menu-lead", eventType: e0.type }))
+          : null),
       sidebar,
     ),
     bar,
@@ -68,6 +86,8 @@ export function mountMenu(root) {
   function ensureCard(dish) {
     if (!cards.has(dish.id)) {
       const card = createDishCard(dish, { onQty: setQty });
+      card.el.dataset.dishId = String(dish.id);
+      seen?.observe(card.el);
       cards.set(dish.id, card);
     }
     const card = cards.get(dish.id);
@@ -166,6 +186,7 @@ export function mountMenu(root) {
   return () => {
     unsubscribe();
     offCatalog();
+    seen?.disconnect();
     document.body.classList.remove("has-bottom-bar");
   };
 }
