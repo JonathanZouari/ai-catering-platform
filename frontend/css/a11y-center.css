@@ -1,0 +1,117 @@
+/* Accessibility center: the button, the panel, and the display modes it switches on <html>. */
+.a11y-center { font-family: inherit; }
+.a11y-fab {
+  position: fixed;
+  inset-inline-start: var(--space-4);
+  inset-block-end: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 48px;
+  padding-inline: var(--space-4);
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-pill, 999px);
+  background: #1b3a8a;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgb(32 32 32 / 0.25);
+  cursor: pointer;
+}
+.has-bottom-bar .a11y-fab { inset-block-end: calc(84px + env(safe-area-inset-bottom, 0px)); }
+/* Phones: icon only, so it never collides with the assistant button. The label stays as the accessible name. */
+@media (max-width: 599px) {
+  .a11y-fab { padding-inline: var(--space-3); }
+  .a11y-fab-label { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+.a11y-fab:focus-visible { outline: 3px solid var(--color-text); outline-offset: 3px; }
+.a11y-fab-icon { inline-size: 1.4rem; block-size: 1.4rem; border-radius: 50%; background: #fff; position: relative; }
+.a11y-fab-icon::before { content: ""; position: absolute; inset: 22% 46% auto; block-size: 18%; border-radius: 50%; background: #1b3a8a; }
+.a11y-fab-icon::after { content: ""; position: absolute; inset: 45% 25% 20%; border-radius: 2px 2px 40% 40%; background: #1b3a8a; }
+
+.a11y-panel {
+  position: fixed;
+  inset-inline-start: var(--space-4);
+  inset-block-end: calc(76px + env(safe-area-inset-bottom, 0px));
+  z-index: 41;
+  inline-size: min(22rem, calc(100vw - 2 * var(--space-4)));
+  max-block-size: calc(100dvh - 92px - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius, 12px);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 8px 32px rgb(32 32 32 / 0.25);
+}
+.a11y-panel[hidden] { display: none; }
+.has-bottom-bar .a11y-panel {
+  inset-block-end: calc(144px + env(safe-area-inset-bottom, 0px));
+  max-block-size: calc(100dvh - 160px - env(safe-area-inset-bottom, 0px));
+}
+.a11y-head { display: flex; align-items: center; justify-content: space-between; }
+.a11y-head h2 { margin: 0; font-size: 1.25rem; }
+.a11y-close {
+  min-inline-size: 44px; min-block-size: 44px; border: 0; background: transparent;
+  color: inherit; font-size: 1.75rem; line-height: 1; cursor: pointer; border-radius: 8px;
+}
+.a11y-group { display: grid; gap: var(--space-1); margin: 0; padding: 0; border: 0; }
+.a11y-group legend { font-weight: 700; margin-block-end: var(--space-1); }
+.a11y-option { display: flex; align-items: center; gap: var(--space-3); min-block-size: 44px; cursor: pointer; }
+.a11y-option input { inline-size: 1.25rem; block-size: 1.25rem; margin: 0; accent-color: #1b3a8a; }
+.a11y-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.a11y-reset {
+  min-block-size: 44px; padding-inline: var(--space-3); border: 2px solid var(--color-text);
+  border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.a11y-foot a { color: inherit; font-weight: 700; min-block-size: 44px; display: inline-flex; align-items: center; }
+.a11y-close:focus-visible, .a11y-reset:focus-visible, .a11y-foot a:focus-visible, .a11y-option input:focus-visible {
+  outline: 3px solid #1b3a8a; outline-offset: 2px;
+}
+
+/* ----- Modes ----- */
+html.a11y-text-lg { font-size: 118.75%; }
+html.a11y-text-xl { font-size: 137.5%; }
+
+/* Colour tokens only: no filter on an ancestor, so fixed elements stay fixed. */
+html.a11y-contrast {
+  --color-bg: #fff; --color-surface: #fff; --color-surface-2: #fff;
+  --color-line: #000; --color-control-border: #000;
+  --color-text: #000; --color-muted: #000;
+  --color-accent: #000; --color-accent-strong: #000; --color-accent-soft: #fff;
+  --color-on-accent: #fff; --color-fill: #000; --color-on-fill: #fff; --color-highlight: #ff0;
+  --color-success: #000; --color-success-soft: #fff; --color-danger: #a00; --color-danger-soft: #fff;
+  --color-warning: #000; --color-warning-soft: #ff0;
+}
+html.a11y-contrast body { background: #fff !important; color: #000 !important; }
+html.a11y-contrast img, html.a11y-contrast picture { opacity: 1; }
+html.a11y-contrast .badge, html.a11y-contrast .chip, html.a11y-contrast .panel { box-shadow: inset 0 0 0 1px #000; }
+
+html.a11y-links a, html.a11y-links button:not(.a11y-close) {
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+  outline: 2px solid #1b3a8a !important;
+  outline-offset: 2px;
+}
+
+html.a11y-readable body, html.a11y-readable body * { font-family: Arial, "Heebo", sans-serif !important; }
+
+/* WCAG 1.4.12 text spacing values */
+html.a11y-spacing body * { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }
+html.a11y-spacing p { margin-block-end: 2em !important; }
+
+html.a11y-focus *:focus, html.a11y-focus *:focus-visible {
+  outline: 4px solid #d00 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 7px #ff0 !important;
+}
+
+html.a11y-still *, html.a11y-still *::before, html.a11y-still *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
