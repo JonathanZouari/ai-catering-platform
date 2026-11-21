@@ -29,3 +29,18 @@ def test_required_form_fields_are_marked_in_markup_source():
     summary = client.get("/js/customer/views/summary.js").text
     assert "(חובה)" in event and "aria-required" in event
     assert "(חובה)" in summary and "aria-required" in summary
+
+
+def test_accessibility_center_loaded_on_every_page():
+    """Loaded as a classic script in <head> so saved settings apply before the first paint."""
+    for path in ("/", "/accessibility/", "/login/", "/customer/", "/admin/"):
+        html = client.get(path).text
+        head = html.split("</head>")[0]
+        assert '<script src="/js/a11y-center.js"></script>' in head, path
+        assert '<link rel="stylesheet" href="/css/a11y-center.css">' in head, path
+
+
+def test_statement_describes_the_center():
+    html = client.get(STATEMENT).text
+    assert "מרכז הנגישות" in html
+    assert "נציבות שוויון זכויות לאנשים עם מוגבלות" in html
