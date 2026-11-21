@@ -317,3 +317,13 @@ fieldset { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 }
 .mascot-avatar picture { display: block; }
 .mascot-avatar img { position: absolute; left: 50%; top: -3%; transform: translateX(-50%); width: 190%; max-width: none; height: auto; }
+
+/* Lead form (landing page and menu step) */
+.lead-form { display: grid; gap: var(--space-4); }
+.lead-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.lead-form .admin-check { display: flex; gap: var(--space-2); align-items: center; min-block-size: 44px; }
+.lead-form .admin-check input { inline-size: 1.25rem; block-size: 1.25rem; }
+.lead-form .btn { justify-self: start; }
+.lead-status:empty { display: none; }
+.lead-done { font-weight: 700; }
+.lead-box { display: grid; gap: var(--space-3); }

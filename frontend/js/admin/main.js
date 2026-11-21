@@ -1,4 +1,5 @@
 // Owner dashboard: live quotation requests and dish management. RLS enforces the admin role.
+import { api } from "../api.js";
 import { announce } from "../lib/announce.js";
 import { fill, h } from "../lib/dom.js";
 import { fmtDate, fmtMoney } from "../lib/format.js";
@@ -23,6 +24,7 @@ if (!isAdmin(session)) {
 } else {
   const ordersBox = h("ul", { class: "admin-list" });
   const dishesBox = h("ul", { class: "admin-list" });
+  const leadsBox = h("ul", { class: "admin-list" });
   const message = h("p", { class: "error", role: "alert", hidden: true });
 
   const showError = (text) => {
@@ -31,6 +33,9 @@ if (!isAdmin(session)) {
   };
 
   fill(root, head, message,
+    h("section", { class: "stack", "aria-labelledby": "leads-title" },
+      h("h2", { id: "leads-title", text: "לידים לפי סיכוי להזמנה" }),
+      leadsBox),
     h("section", { class: "stack", "aria-labelledby": "orders-title" },
       h("h2", { id: "orders-title", text: "בקשות להצעת מחיר" }), ordersBox),
     h("section", { class: "stack", "aria-labelledby": "dishes-title" },
@@ -112,7 +117,31 @@ if (!isAdmin(session)) {
     fill(dishesBox, data.map(dishRow));
   }
 
-  await Promise.all([loadOrders(), loadDishes()]);
+  const SOURCE = { google: "גוגל", instagram: "אינסטגרם", facebook: "פייסבוק", referral: "המלצה", direct: "ישיר", other: "אחר" };
+
+  function leadCard(l) {
+    const pct = Math.round(l.probability * 100);
+    return h("li", { class: "panel admin-order" },
+      h("div", { class: "admin-order-head" },
+        h("strong", { text: `${l.full_name}, ${l.event_type}` }),
+        h("span", { class: "lead-score" },
+          l.is_hot ? h("span", { class: "badge badge-green", text: "ליד חם" }) : null,
+          h("span", { class: "badge badge-pareve num", text: `${pct}% סיכוי להזמין` }))),
+      h("p", { class: "muted", text: `${l.guests} אורחים, בעוד ${l.days_until_event} ימים, ${l.budget_per_guest} ₪ לאורח` }),
+      h("p", { class: "muted small", text: `פתח ${l.dishes_viewed} מנות, ${l.visits} ביקורים, הגיע מ${SOURCE[l.source] ?? l.source}${l.used_chat ? ", דיבר עם העוזר" : ""}${l.is_demo ? " · ליד לדוגמה" : ""}` }),
+      h("a", { class: "link-btn", href: `tel:${l.phone}`, dir: "ltr", text: l.phone }));
+  }
+
+  async function loadLeads() {
+    try {
+      const leads = await api("/api/admin/leads", { headers: { Authorization: `Bearer ${session.access_token}` } });
+      fill(leadsBox, leads.length ? leads.map(leadCard) : h("li", { class: "muted", text: "אין עדיין לידים." }));
+    } catch {
+      showError("לא הצלחנו לטעון את הלידים.");
+    }
+  }
+
+  await Promise.all([loadLeads(), loadOrders(), loadDishes()]);
 
   sb.channel("admin")
     .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {

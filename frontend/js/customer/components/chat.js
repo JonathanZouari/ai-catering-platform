@@ -4,6 +4,7 @@ import { fmtMoney, fmtSignedMoney } from "../../lib/format.js";
 import { suggestedPrompts } from "../mock-backend.js";
 import { confetti } from "../../lib/motion.js";
 import { mascotAvatar } from "./mascot.js";
+import { markChatUsed } from "../../lib/lead-tracker.js";
 import {
   approveProposalById, getState, proposalStatus, rejectProposal, sendChat, setChatOpen, subscribe,
 } from "../store.js";
@@ -90,6 +91,7 @@ export function mountChat(root) {
       e.preventDefault();
       const text = input.value;
       input.value = "";
+      markChatUsed();
       sendChat(text);
     } }, input, sendBtn),
   );
@@ -148,7 +150,7 @@ export function mountChat(root) {
     }
     fill(prompts, 
       messages.length === 0 && open
-        ? suggestedPrompts().map((q) => h("button", { class: "chip", type: "button", onclick: () => sendChat(q) }, q))
+        ? suggestedPrompts().map((q) => h("button", { class: "chip", type: "button", onclick: () => { markChatUsed(); sendChat(q); } }, q))
         : null,
     );
     sendBtn.disabled = busy;

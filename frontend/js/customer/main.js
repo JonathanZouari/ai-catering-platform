@@ -1,4 +1,5 @@
 import { fill, h } from "../lib/dom.js";
+import { startTracking } from "../lib/lead-tracker.js";
 import { play } from "../lib/motion.js";
 import { requireSession, sb, signOut } from "../lib/supabase.js";
 import { loadCatalog, onCatalogChange, watchCatalog } from "./catalog.js";
@@ -23,6 +24,7 @@ const app = document.getElementById("app");
 const stepperRoot = document.getElementById("stepper");
 
 await requireSession();
+startTracking();
 document.getElementById("sign-out").addEventListener("click", signOut);
 
 try {
